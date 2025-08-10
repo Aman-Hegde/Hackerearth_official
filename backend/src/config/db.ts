@@ -1,20 +1,22 @@
+// backend/src/config/db.ts
 import { Sequelize } from 'sequelize';
 import dotenv from 'dotenv';
 
-dotenv.config(); // make sure env variables are loaded
+dotenv.config(); // Load environment variables
 
 const sequelize = new Sequelize(
-  process.env.PG_DATABASE!,   // Database name
-  process.env.PG_USER!,       // Database username
-  process.env.PG_PASSWORD!,   // Database password
+  process.env.SUPABASE_DB_NAME!,     // Supabase database name
+  process.env.SUPABASE_DB_USER!,     // Supabase database username
+  process.env.SUPABASE_DB_PASSWORD!, // Supabase database password
   {
-    host: process.env.PG_HOST || 'localhost',
-    port: Number(process.env.PG_PORT) || 5432,
+    host: process.env.SUPABASE_DB_HOST || 'localhost',
+    port: Number(process.env.SUPABASE_DB_PORT) || 5432,
     dialect: 'postgres',
     logging: false,
     dialectOptions: {
       ssl: {
-        rejectUnauthorized: false, // Aiven needs SSL
+        require: true,               // Supabase requires SSL
+        rejectUnauthorized: false,    // Stricter SSL check for Supabase
       },
     },
   }
