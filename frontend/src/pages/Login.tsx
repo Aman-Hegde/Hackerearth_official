@@ -13,7 +13,7 @@ declare global {
 }
 
 // ====== SET YOUR GOOGLE CLIENT ID HERE ======
-const GOOGLE_CLIENT_ID = '1091705273919-mtri5f214ivhp6qofs4qgjcm8k9agcek.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
 // =============================================
 
 const Login = () => {
