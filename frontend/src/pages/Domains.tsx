@@ -1,8 +1,18 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Code, Database, Brain, ArrowRight, Sparkles, Zap, Target } from 'lucide-react';
+import { useTheme } from '../context/ThemeContext'; // <-- Add your existing ThemeContext hook
 
 const Domains = () => {
-  const [hoveredDomain, setHoveredDomain] = useState(null);
+  const [hoveredDomain, setHoveredDomain] = useState<number | null>(null);
+  const [scrollY, setScrollY] = useState(0);
+  const { isDark } = useTheme(); // <-- use your theme
+
+  // Track scroll position for parallax
+  useEffect(() => {
+    const handleScroll = () => setScrollY(window.scrollY);
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const domains = [
     {
@@ -101,51 +111,74 @@ const Domains = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 pt-20">
+    <div className={`min-h-screen pt-20 transition-colors duration-500 ${isDark ? 'bg-slate-900' : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100'}`}>
       {/* Background Elements */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-indigo-600/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-purple-400/10 to-pink-600/10 rounded-full blur-3xl"></div>
+      <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div className={`${isDark
+          ? "absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-900/20 to-indigo-900/10"
+          : "absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-indigo-600/10"
+        } rounded-full blur-3xl`}></div>
+        <div className={`${isDark
+          ? "absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-purple-900/20 to-pink-900/10"
+          : "absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-purple-400/10 to-pink-600/10"
+        } rounded-full blur-3xl`}></div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
         <div className="text-center mb-20 animate-fade-in-up">
-          <div className="inline-flex items-center space-x-2 bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-full px-6 py-3 mb-8 shadow-lg">
-            <Code className="w-5 h-5 text-blue-600" />
-            <span className="text-gray-700 font-medium">Technical Domains</span>
+          <div className={`
+            inline-flex items-center space-x-2 backdrop-blur-sm border rounded-full px-6 py-3 mb-8 shadow-lg
+            ${isDark
+              ? "bg-slate-800/80 border-slate-700/50 text-slate-200"
+              : "bg-white/80 border-gray-200/50 text-gray-700"}
+          `}>
+            <Code className={`w-5 h-5 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
+            <span className="font-medium">Technical Domains</span>
           </div>
-          <h1 className="text-5xl md:text-6xl font-bold mb-6">
-            <span className="bg-gradient-to-r from-gray-900 via-blue-900 to-indigo-900 bg-clip-text text-transparent">
+          <h1 className={`text-5xl md:text-6xl font-bold mb-6 ${isDark ? "text-white" : ""}`}>
+            <span className={`${isDark
+              ? "bg-gradient-to-r from-white via-blue-200 to-indigo-300 bg-clip-text text-transparent"
+              : "bg-gradient-to-r from-gray-900 via-blue-900 to-indigo-900 bg-clip-text text-transparent"}`}>
               Our Domains
             </span>
           </h1>
-          <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            Explore our three specialized domains designed to build comprehensive technical expertise 
-            and prepare you for the challenges of tomorrow.
+          <p className={`text-xl max-w-3xl mx-auto leading-relaxed ${isDark ? "text-slate-400" : "text-gray-600"}`}>
+            Explore our three specialized domains designed to build comprehensive technical expertise and prepare you for the challenges of tomorrow.
           </p>
         </div>
 
         {/* Domains Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-20">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-20 overflow-visible">
           {domains.map((domain, index) => {
             const Icon = domain.icon;
-            const isHovered = hoveredDomain === index;
-            
+            // Parallax + hover
+            const parallaxStyle = {
+              transform: `translateY(${scrollY * 0.05 * (index + 1)}px)`,
+              animationDelay: `${index * 150}ms`,
+              animationFillMode: 'both'
+            };
             return (
               <div
                 key={index}
-                className={`group relative bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-3xl p-8 transition-all duration-500 hover:scale-105 cursor-pointer shadow-xl hover:shadow-2xl animate-bounce-in`}
-                style={{ animationDelay: `${index * 200}ms` }}
+                className={`
+                  group relative rounded-3xl p-8 opacity-0 animate-fade-in-up
+                  transition-all duration-300 cursor-pointer shadow-xl min-h-[480px] isolate
+                  border backdrop-blur-sm
+                  ${isDark
+                    ? "bg-slate-800/70 border-slate-700/60 hover:border-slate-600"
+                    : "bg-white/80 border-gray-200/50 hover:border-gray-300"
+                  }
+                  hover:-translate-y-2 hover:shadow-2xl hover:brightness-105
+                `}
+                style={parallaxStyle}
                 onMouseEnter={() => setHoveredDomain(index)}
                 onMouseLeave={() => setHoveredDomain(null)}
               >
                 {/* Background Gradient */}
                 <div className={`absolute inset-0 bg-gradient-to-br ${domain.bgGradient} rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`}></div>
-                
                 {/* Border Gradient */}
                 <div className={`absolute inset-0 bg-gradient-to-r ${domain.borderGradient} rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500 blur-sm`}></div>
-                
                 <div className="relative z-10">
                   {/* Header */}
                   <div className="flex items-center justify-between mb-6">
@@ -153,37 +186,19 @@ const Domains = () => {
                       <Icon className="w-8 h-8 text-white" />
                     </div>
                     <div className="text-right">
-                      <div className="text-sm text-gray-500 font-medium">{domain.projects}</div>
-                      <div className="text-sm text-gray-500 font-medium">{domain.members}</div>
+                      <div className={`text-sm font-medium ${isDark ? "text-slate-400" : "text-gray-500"}`}>{domain.projects}</div>
+                      <div className={`text-sm font-medium ${isDark ? "text-slate-400" : "text-gray-500"}`}>{domain.members}</div>
                     </div>
                   </div>
-                  
-                  <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors">
+                  <h3 className={`text-2xl font-bold mb-4 group-hover:text-blue-300 transition-colors ${isDark ? "text-white" : "text-gray-900"}`}>
                     {domain.title}
                   </h3>
-                  
-                  <p className="text-gray-600 mb-6 leading-relaxed">
-                    {isHovered ? domain.longDescription : domain.description}
+                  <p className={`mb-6 leading-relaxed ${isDark ? "text-slate-300" : "text-gray-600"}`}>
+                    {domain.description}
                   </p>
-
-                  {/* Features */}
-                  {isHovered && (
-                    <div className="mb-6 animate-fade-in">
-                      <h4 className="text-sm font-semibold text-blue-600 mb-3">Key Features:</h4>
-                      <ul className="space-y-2">
-                        {domain.features.map((feature, featureIndex) => (
-                          <li key={featureIndex} className="flex items-center space-x-2 text-sm text-gray-600">
-                            <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
-                            <span>{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                  
                   {/* Technologies */}
                   <div className="mb-6">
-                    <h4 className="text-sm font-semibold text-gray-700 mb-3">Technologies & Skills:</h4>
+                    <h4 className={`text-sm font-semibold mb-3 ${isDark ? "text-slate-200" : "text-gray-700"}`}>Technologies & Skills:</h4>
                     <div className="flex flex-wrap gap-2">
                       {domain.technologies.map((tech, techIndex) => (
                         <span
@@ -195,7 +210,6 @@ const Domains = () => {
                       ))}
                     </div>
                   </div>
-
                   {/* CTA Button */}
                   <button className={`w-full bg-gradient-to-r ${domain.gradient} px-6 py-3 rounded-xl font-semibold text-white transition-all duration-300 hover:scale-105 hover:shadow-lg flex items-center justify-center space-x-2 group shadow-md`}>
                     <span>Explore Domain</span>
@@ -210,27 +224,43 @@ const Domains = () => {
         {/* Learning Paths */}
         <div className="mb-20">
           <div className="text-center mb-16 animate-fade-in">
-            <div className="inline-flex items-center space-x-2 bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-full px-6 py-3 mb-8 shadow-lg">
-              <Target className="w-5 h-5 text-purple-600" />
-              <span className="text-gray-700 font-medium">Learning Journey</span>
+            <div className={`
+              inline-flex items-center space-x-2 backdrop-blur-sm border rounded-full px-6 py-3 mb-8 shadow-lg
+              ${isDark
+                ? "bg-slate-800/80 border-slate-700/50 text-slate-200"
+                : "bg-white/80 border-gray-200/50 text-gray-700"
+              }`
+            }>
+              <Target className={`w-5 h-5 ${isDark ? "text-purple-400" : "text-purple-600"}`} />
+              <span className="font-medium">Learning Journey</span>
             </div>
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              <span className="bg-gradient-to-r from-gray-900 via-purple-900 to-pink-900 bg-clip-text text-transparent">
+            <h2 className={`text-4xl md:text-5xl font-bold mb-6 ${isDark ? "text-white" : ""}`}>
+              <span className={`${isDark
+                ? "bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent"
+                : "bg-gradient-to-r from-gray-900 via-purple-900 to-pink-900 bg-clip-text text-transparent"}`}>
                 Your Path to Mastery
               </span>
             </h2>
-            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+            <p className={`text-xl max-w-2xl mx-auto ${isDark ? "text-slate-400" : "text-gray-600"}`}>
               Follow our structured learning paths designed to take you from beginner to expert.
             </p>
           </div>
-
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {learningPaths.map((path, index) => {
               const Icon = path.icon;
               return (
-                <div 
-                  key={index} 
-                  className="group relative bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-3xl p-8 hover:border-gray-300 transition-all duration-300 shadow-xl hover:shadow-2xl hover:scale-105 animate-slide-in-left"
+                <div
+                  key={index}
+                  className={`
+                    group relative rounded-3xl p-8
+                    border backdrop-blur-sm
+                    transition-all duration-300 shadow-xl
+                    hover:shadow-2xl hover:scale-105
+                    ${isDark
+                      ? "bg-slate-800/80 border-slate-700/50 hover:border-slate-600 text-slate-200"
+                      : "bg-white/80 border-gray-200/50 hover:border-gray-300 text-gray-900"}
+                    animate-slide-in-left
+                  `}
                   style={{ animationDelay: `${index * 200}ms` }}
                 >
                   <div className="flex items-center space-x-4 mb-6">
@@ -238,36 +268,43 @@ const Domains = () => {
                       <Icon className="w-6 h-6 text-white" />
                     </div>
                     <div>
-                      <h3 className="text-xl font-bold text-gray-900">{path.level}</h3>
-                      <p className="text-sm text-gray-600">{path.description}</p>
+                      <h3 className="text-xl font-bold">{path.level}</h3>
+                      <p className={`text-sm ${isDark ? "text-slate-400" : "text-gray-600"}`}>{path.description}</p>
                     </div>
                   </div>
-                  
                   <div className="space-y-3">
                     {path.steps.map((step, stepIndex) => (
                       <div key={stepIndex} className="flex items-center space-x-3">
                         <div className={`w-6 h-6 bg-gradient-to-r ${path.gradient} rounded-full flex items-center justify-center shadow-md`}>
                           <span className="text-white text-xs font-bold">{stepIndex + 1}</span>
                         </div>
-                        <span className="text-gray-700 text-sm">{step}</span>
+                        <span className={`${isDark ? "text-slate-300" : "text-gray-700"} text-sm`}>
+                          {step}
+                        </span>
                       </div>
                     ))}
                   </div>
                 </div>
-              );
+              )
             })}
           </div>
         </div>
 
         {/* CTA Section */}
         <div className="text-center mb-20 animate-scale-in">
-          <div className="bg-white/80 backdrop-blur-sm border border-gray-200/50 rounded-3xl p-12 shadow-xl">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
+          <div className={`
+            rounded-3xl p-12 shadow-xl border
+            ${isDark
+              ? "bg-slate-800/80 border-slate-700/50"
+              : "bg-white/80 border-blue-200/70"}
+            backdrop-blur-sm
+          `}>
+            <h2 className={`text-4xl md:text-5xl font-bold mb-6 ${isDark ? "text-white" : ""}`}>
               <span className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent">
                 Ready to Dive Deep?
               </span>
             </h2>
-            <p className="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
+            <p className={`text-xl mb-8 max-w-2xl mx-auto ${isDark ? "text-slate-400" : "text-gray-600"}`}>
               Choose your domain and start building amazing projects with our expert mentors and passionate community.
             </p>
             <button className="group relative bg-gradient-to-r from-blue-500 to-purple-600 px-10 py-4 rounded-2xl font-semibold text-white transition-all duration-300 hover:scale-105 hover:shadow-2xl shadow-lg">

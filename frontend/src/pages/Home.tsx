@@ -1,19 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import { useState,useEffect } from 'react';
 import { ArrowRight, Code, Users, Trophy, Calendar, Sparkles, Target, Rocket, Star, Globe, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
+import { TypingAnimation } from "../components/TypingAnimation";
+
 
 const Home = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const { isDark } = useTheme();
 
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-    window.addEventListener('mousemove', handleMouseMove);
-    return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+useEffect(() => {
+  const handleMouseMove = (e: MouseEvent) => {
+    setMousePosition({ x: e.clientX, y: e.clientY });
+  };
+  window.addEventListener('mousemove', handleMouseMove);
+  return () => window.removeEventListener('mousemove', handleMouseMove);
+}, []);
+
 
   const features = [
     {
@@ -111,12 +114,12 @@ const Home = () => {
             
             {/* Main Title */}
             <h1 className="text-6xl md:text-8xl font-bold mb-8 leading-tight tracking-tight">
-              <span className={`bg-gradient-to-r bg-clip-text text-transparent block mb-4 transition-all duration-500 ${
+              <span className={`text-5xl md:text-7xl bg-gradient-to-r bg-clip-text text-transparent block mb-4 transition-all duration-500 ${
                 isDark 
                   ? 'from-white via-slate-200 to-slate-300' 
                   : 'from-gray-900 via-blue-900 to-indigo-900'
               }`}>
-                HackerEarth
+                <TypingAnimation>HackerEarth</TypingAnimation>
               </span>
               <span className={`block text-4xl md:text-5xl font-medium tracking-wide transition-colors duration-500 ${
                 isDark ? 'text-slate-400' : 'text-gray-700'
@@ -206,7 +209,7 @@ const Home = () => {
       </section>
 
       {/* Features Section */}
-      <section className={`py-24 transition-colors duration-500 ${
+      <section className={`relative z-10 py-24 transition-colors duration-500 z-0 ${
         isDark ? 'bg-slate-800/30' : 'bg-white'
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -282,7 +285,7 @@ const Home = () => {
       </section>
 
       {/* Stats Section */}
-      <section className={`py-24 transition-colors duration-500 ${
+      <section className={`relative z-10 py-24 transition-colors duration-500 ${
         isDark 
           ? 'bg-gradient-to-r from-slate-900 to-slate-800' 
           : 'bg-gradient-to-r from-slate-50 to-blue-50'
@@ -318,7 +321,7 @@ const Home = () => {
       </section>
 
       {/* CTA Section */}
-      <section className={`py-24 transition-colors duration-500 ${
+      <section className={`relative z-10 py-24 transition-colors duration-500 ${
         isDark ? 'bg-slate-800/30' : 'bg-white'
       }`}>
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">

@@ -15,12 +15,14 @@ import Login from './pages/Login';
 import CodingEnvironment from './pages/CodingEnvironment';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
+import ScrollToTop from './components/ScrollTop';
 
 function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
         <Router>
+          <ScrollToTop />
           <div className="min-h-screen bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
             <Sidebar />
             <Navbar />

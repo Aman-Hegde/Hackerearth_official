@@ -12,6 +12,7 @@ import {
   X,
   Award
 } from 'lucide-react';
+import logo from '../assets/hacker-earth-logo.png';
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -56,10 +57,16 @@ const Sidebar = () => {
         <div className={`flex flex-col h-full p-6 ${isOpen ? 'visible' : 'invisible'}`}>
           {/* Header */}
           <div className="flex items-center justify-between mb-8 pt-4 mt-8">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Code className="w-6 h-6 text-white" />
-              </div>
+            <div className="flex items-center space-x-0">
+            <div className="relative">
+              <img
+                src={logo}
+                alt="HackerEarth Logo"
+                width={100}
+                height={100}
+                className="w-10 h-8 rounded-xl object-contain"
+              />
+            </div>
               <span className="text-xl font-bold text-gray-900">HackerEarth</span>
             </div>
             <button 
