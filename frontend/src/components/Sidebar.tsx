@@ -1,21 +1,15 @@
-import React, { useState } from 'react';
+// Sidebar.tsx
+import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { 
-  Home, 
-  Calendar, 
-  Users, 
-  Code, 
-  Trophy, 
-  Info, 
-  Mail, 
-  ChevronRight,
-  X,
-  Award
-} from 'lucide-react';
+import { Home, Calendar, Users, Code, Award, Trophy, Info, Mail, ChevronRight, X } from 'lucide-react';
 import logo from '../assets/hacker-earth-logo.png';
 
-const Sidebar = () => {
-  const [isOpen, setIsOpen] = useState(false);
+interface SidebarProps {
+  isOpen: boolean;
+  setIsOpen: (open: boolean) => void;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
   const location = useLocation();
 
   const navItems = [
@@ -31,77 +25,88 @@ const Sidebar = () => {
 
   return (
     <>
-      {/* Invisible Hover Trigger Area - Always visible but transparent */}
-      <div 
-        className="fixed left-0 top-0 w-4 h-full z-[60] bg-transparent cursor-pointer"
+      {/* Hover trigger for desktop */}
+      <div
+        className="fixed left-0 top-0 w-4 h-full z-[60] bg-transparent cursor-pointer hidden md:block"
         onMouseEnter={() => setIsOpen(true)}
-        style={{ pointerEvents: 'auto' }}
       />
 
-      {/* Sidebar Overlay for mobile */}
+      {/* Mobile overlay */}
       {isOpen && (
-        <div 
-          className="fixed inset-0 bg-black/20 z-[45] lg:hidden backdrop-blur-sm"
+        <div
+          className="fixed inset-0 bg-black/30 z-40 md:hidden"
           onClick={() => setIsOpen(false)}
         />
       )}
 
-      {/* Sidebar - Transparent and full height */}
-      <div 
-        className={`fixed left-0 top-0 h-screen bg-white/10 backdrop-blur-md border-r border-white/20 z-[50] transition-all duration-500 ease-out ${
-          isOpen ? 'w-64 translate-x-0 opacity-100' : 'w-0 -translate-x-full opacity-0'
-        }`}
-        onMouseLeave={() => setIsOpen(false)}
+      {/* Sidebar */}
+      <aside
+        className={`fixed top-0 left-0 h-full bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-700 shadow-lg z-50 transition-all duration-300 ease-out
+          ${isOpen ? 'w-64' : 'w-14 md:w-14'} translate-x-0 ${isOpen ? '' : 'hidden md:block'}`}
         onMouseEnter={() => setIsOpen(true)}
+        onMouseLeave={() => setIsOpen(false)}
       >
-        <div className={`flex flex-col h-full p-6 ${isOpen ? 'visible' : 'invisible'}`}>
+        <div className="flex flex-col h-full">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8 pt-4 mt-8">
-            <div className="flex items-center space-x-0">
-            <div className="relative">
-              <img
-                src={logo}
-                alt="HackerEarth Logo"
-                width={100}
-                height={100}
-                className="w-10 h-8 rounded-xl object-contain"
-              />
-            </div>
-              <span className="text-xl font-bold text-gray-900">HackerEarth</span>
-            </div>
-            <button 
-              onClick={() => setIsOpen(false)}
-              className="text-gray-600 hover:text-gray-900 transition-colors lg:hidden p-2 hover:bg-white/20 rounded-lg"
-            >
-              <X className="w-5 h-5" />
-            </button>
+          <div className="flex items-center justify-between p-3 border-b dark:border-slate-700 h-20">
+            <Link to="/" className="flex items-center space-x-2" onClick={() => setIsOpen(false)}>
+              <img src={logo} alt="Logo" className="w-10 h-8 rounded-xl object-contain" />
+              {isOpen && (
+                <span className="font-bold text-gray-900 dark:text-white whitespace-nowrap">
+                  HackerEarth Hub-NMAMIT
+                </span>
+              )}
+            </Link>
+            {isOpen && (
+              <button onClick={() => setIsOpen(false)} className="md:hidden">
+                <X size={20} />
+              </button>
+            )}
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1">
+          <nav className="p-1 flex-1 overflow-hidden">
             <ul className="space-y-2">
               {navItems.map((item, index) => {
                 const Icon = item.icon;
-                const isActive = location.pathname === item.path;
-                
+                const active = location.pathname === item.path;
                 return (
-                  <li key={item.name} className="animate-slide-in-left" style={{ animationDelay: `${index * 100}ms` }}>
+                  <li
+                    key={item.name}
+                    className="animate-slide-in-left"
+                    style={{ animationDelay: `${index * 100}ms` }}
+                  >
                     <Link
                       to={item.path}
                       onClick={() => setIsOpen(false)}
-                      className={`group flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-300 transform hover:scale-105 ${
-                        isActive
-                          ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25'
-                          : 'text-gray-700 hover:text-gray-900 hover:bg-white/30 hover:shadow-md'
-                      }`}
+                      className={`group flex items-center rounded-xl px-3 py-3 transition-all duration-300 transform hover:scale-[1.03]
+                        ${
+                          active
+                            ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-500/25'
+                            : 'text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/30 dark:hover:bg-slate-800 hover:shadow-md'
+                        }`}
                     >
-                      <Icon className={`w-5 h-5 transition-transform duration-300 ${
-                        isActive ? 'text-white' : 'text-gray-600 group-hover:text-gray-900 group-hover:scale-110'
-                      }`} />
-                      <span className="font-medium">{item.name}</span>
-                      <ChevronRight className={`w-4 h-4 ml-auto transition-all duration-300 ${
-                        isActive ? 'text-white' : 'text-gray-500 group-hover:text-gray-700 group-hover:translate-x-1'
-                      }`} />
+                      <Icon
+                        className={`flex-shrink-0 w-5 h-5 transition-transform duration-300
+                        ${
+                          active
+                            ? 'text-white'
+                            : 'text-gray-600 dark:text-gray-400 group-hover:text-gray-900 dark:group-hover:text-white group-hover:scale-110'
+                        }`}
+                      />
+                      {isOpen && (
+                        <>
+                          <span className="ml-3 font-medium">{item.name}</span>
+                          <ChevronRight
+                            className={`w-4 h-4 ml-auto transition-all duration-300
+                              ${
+                                active
+                                  ? 'text-white'
+                                  : 'text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-white group-hover:translate-x-1'
+                              }`}
+                          />
+                        </>
+                      )}
                     </Link>
                   </li>
                 );
@@ -110,14 +115,16 @@ const Sidebar = () => {
           </nav>
 
           {/* Footer */}
-          <div className="border-t border-white/20 pt-6 animate-fade-in">
-            <div className="text-center">
-              <p className="text-xs text-gray-600 mb-2 font-medium">NMAMIT Technical Club</p>
-              <p className="text-xs text-gray-500">Building the Future</p>
+          {isOpen && (
+            <div className="border-t border-white/20 pt-4 text-center">
+              <p className="text-xs text-gray-600 mb-1 font-medium dark:text-gray-400">
+                NMAMIT Technical Club
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-500">Building the Future</p>
             </div>
-          </div>
+          )}
         </div>
-      </div>
+      </aside>
     </>
   );
 };
