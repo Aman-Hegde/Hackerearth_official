@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
+import {
   Menu, X, User, LogOut, Zap, Clock, Trophy, ChevronDown, Play, CheckCircle,
-  Sun, Moon 
+  Sun, Moon
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -82,15 +82,14 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
 
   return (
     <nav
-      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
-        scrolled
+      className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled
           ? isDark
             ? 'bg-slate-900/95 backdrop-blur-md shadow-lg border-b border-slate-700/50'
             : 'bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200/50'
           : isDark
-          ? 'bg-slate-900/80 backdrop-blur-sm'
-          : 'bg-white/80 backdrop-blur-sm'
-      }`}
+            ? 'bg-slate-900/80 backdrop-blur-sm'
+            : 'bg-white/80 backdrop-blur-sm'
+        }`}
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
@@ -108,11 +107,10 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
             <button
               onClick={toggleTheme}
               aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              className={`p-3 rounded-xl transition-all duration-300 hover:scale-105 border ${
-                isDark
+              className={`p-3 rounded-xl transition-all duration-300 hover:scale-105 border ${isDark
                   ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border-slate-700'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-200'
-              }`}
+                }`}
               type="button"
             >
               {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -146,9 +144,8 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                   id="daily-challenge-dropdown"
                   role="region"
                   aria-label="Daily challenge details"
-                  className={`absolute top-full right-0 mt-2 w-80 rounded-2xl shadow-xl z-50 border ${
-                    isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-200'
-                  } animate-fade-in`}
+                  className={`absolute top-full right-0 mt-2 w-80 rounded-2xl shadow-xl z-50 border ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-200'
+                    } animate-fade-in`}
                 >
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-4">
@@ -226,14 +223,14 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
           </div>
 
           {/* Mobile hamburger */}
-<div className="md:hidden">
-  <button
-    onClick={onToggleSidebar}
-    className={`${isDark ? 'text-gray-300 hover:text-blue-400' : 'text-gray-700 hover:text-blue-600'} p-2`}
-  >
-    <Menu size={24} />
-  </button>
-</div>
+          <div className="md:hidden">
+            <button
+              onClick={onToggleSidebar}
+              className={`${isDark ? 'text-gray-300 hover:text-blue-400' : 'text-gray-700 hover:text-blue-600'} p-2`}
+            >
+              <Menu size={24} />
+            </button>
+          </div>
         </div>
       </div>
     </nav>
