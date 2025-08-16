@@ -335,9 +335,25 @@ const Login = () => {
           </div>
         </div>
       </div>
+      <div className="hidden md:flex items-center mx-2">
+        <svg
+          width="8"
+          height="200"
+          viewBox="0 0 8 200"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          className="h-full"
+        >
+          <circle cx="4" cy="20" r="3" fill="#6366F1" fillOpacity="0.5" />
+          <circle cx="4" cy="60" r="4" fill="#4F46E5" fillOpacity="0.4" />
+          <circle cx="4" cy="100" r="3" fill="#4338CA" fillOpacity="0.3" />
+          <circle cx="4" cy="140" r="4" fill="#6366F1" fillOpacity="0.2" />
+          <circle cx="4" cy="180" r="3" fill="#4F46E5" fillOpacity="0.1" />
+        </svg>
+      </div>
 
       {/* Right Panel */}
-      <RightPanelLogin/>
+      <RightPanelLogin />
     </div>
   );
 

@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { Mail, Phone, MapPin, Send, Clock, MessageCircle, Building } from 'lucide-react';
+import logo from '../assets/image.png'
+import { TypingAnime } from '../components/TypingAnime';
 import { useTheme } from '../context/ThemeContext';
 
 const Contact = () => {
@@ -59,16 +61,6 @@ const Contact = () => {
     }
   ];
 
-  const officeHours = [
-    { day: "Monday", hours: "2:00 PM - 8:00 PM" },
-    { day: "Tuesday", hours: "2:00 PM - 8:00 PM" },
-    { day: "Wednesday", hours: "2:00 PM - 8:00 PM" },
-    { day: "Thursday", hours: "2:00 PM - 8:00 PM" },
-    { day: "Friday", hours: "2:00 PM - 8:00 PM" },
-    { day: "Saturday", hours: "10:00 AM - 4:00 PM" },
-    { day: "Sunday", hours: "Closed" }
-  ];
-
   return (
     <div className={`min-h-screen pt-20 transition-colors duration-500 ${isDark ? 'bg-slate-900' : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100'}`}>
       {/* Background */}
@@ -99,12 +91,66 @@ const Contact = () => {
             return (
               <div key={i} className={`${isDark ? 'bg-slate-800/80 border-slate-700/50 text-slate-300' : 'bg-white/80 border-gray-200/50 text-gray-800'} backdrop-blur-sm border rounded-3xl p-8 text-center hover:scale-105 transition duration-300 shadow-xl animate-bounce-in`}
                 style={{ animationDelay: `${i * 200}ms` }}>
-                <div className={`w-20 h-20 bg-gradient-to-r ${method.gradient} rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg`}>
-                  <Icon className="w-10 h-10 text-white" />
-                </div>
+                {method.title === "Email Us" ? (
+                  <a
+                    href="mailto:Hackerearth.Nmamit@Nitte.edu.in"
+                    className={`w-20 h-20 bg-gradient-to-r ${method.gradient} rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group`}
+                    aria-label="Send Email"
+                  >
+                    <Mail className="w-10 h-10 text-white group-hover:text-blue-200 transition-colors" />
+                  </a>
+                ) : method.title === "Call Us" ? (
+                  <a
+                    href="tel:+917619545988"
+                    className={`w-20 h-20 bg-gradient-to-r ${method.gradient} rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group`}
+                    aria-label="Call"
+                  >
+                    <Phone className="w-10 h-10 text-white group-hover:text-green-200 transition-colors" />
+                  </a>
+                ) : method.title === "Visit Us" ? (
+                  <a
+                    href="https://www.google.com/maps/search/?api=1&query=Room+301+CS+Building+NMAMIT"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className={`w-20 h-20 bg-gradient-to-r ${method.gradient} rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg group`}
+                    aria-label="Find Location"
+                  >
+                    <MapPin className="w-10 h-10 text-white group-hover:text-pink-200 transition-colors" />
+                  </a>
+                ) : (
+                  <div className={`w-20 h-20 bg-gradient-to-r ${method.gradient} rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-lg`}>
+                    <Icon className="w-10 h-10 text-white" />
+                  </div>
+                )}
                 <h3 className="text-2xl font-semibold mb-4">{method.title}</h3>
                 <p className="mb-6 leading-relaxed">{method.description}</p>
-                <p className="font-semibold text-lg text-blue-400">{method.contact}</p>
+                {method.title === "Email Us" ? (
+                  <a
+                    href="mailto:Hackerearth.Nmamit@Nitte.edu.in"
+                    className="font-semibold text-lg text-blue-400 hover:underline"
+                  >
+                    hackerearth@nmamit.in
+                  </a>
+                ) : method.title === "Call Us" ? (
+                  <a
+                    href="tel:+917619545988"
+                    className="font-semibold text-lg text-green-400 hover:underline"
+                  >
+                    +91 76195 45988
+                  </a>
+                ) : method.title === "Visit Us" ? (
+                  <a
+                    href="https://www.google.com/maps/search/?api=1&query=Room+301+CS+Building+NMAMIT"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-lg text-pink-400 hover:underline"
+                  >
+                    Room 301, CS Building, NMAMIT
+                  </a>
+                ) : (
+                  <p className="font-semibold text-lg text-blue-400">{method.contact}</p>
+                )}
+
               </div>
             );
           })}
@@ -138,8 +184,8 @@ const Contact = () => {
                     required
                     placeholder={field === 'email' ? 'you@example.com' : ''}
                     className={`w-full px-4 py-3 rounded-xl border focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${isDark
-                        ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400'
-                        : 'bg-white/80 border-gray-300 text-gray-900 placeholder-gray-400'
+                      ? 'bg-slate-700 border-slate-600 text-white placeholder-slate-400'
+                      : 'bg-white/80 border-gray-300 text-gray-900 placeholder-gray-400'
                       }`}
                   />
                 </div>
@@ -158,48 +204,13 @@ const Contact = () => {
               </button>
             </form>
           </div>
-
-          {/* Office Hours & Extra Info */}
-          <div className="space-y-8">
-            <div className={`${isDark ? 'bg-slate-800/80 border-slate-700/50' : 'bg-white/80 border-gray-200/50'} backdrop-blur-sm border rounded-3xl p-8 shadow-xl`}>
-              <div className="flex items-center mb-8">
-                <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-2xl flex items-center justify-center mr-4 shadow-lg">
-                  <Clock className="w-8 h-8 text-white" />
-                </div>
-                <h2 className={`text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Office Hours</h2>
-              </div>
-              <div className="space-y-3">
-                {officeHours.map((o, idx) => (
-                  <div key={idx} className={`flex justify-between border-b last:border-b-0 ${isDark ? 'border-slate-700' : 'border-gray-200'} py-3`}>
-                    <span className={`${isDark ? 'text-slate-300' : 'text-gray-700'}`}>{o.day}</span>
-                    <span className={`${o.hours === 'Closed' ? 'text-red-400' : 'text-green-400'}`}>{o.hours}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className={`${isDark ? 'bg-slate-800/80 border-slate-700/50' : 'bg-white/80 border-gray-200/50'} backdrop-blur-sm border rounded-3xl p-8 shadow-xl`}>
-              <div className="flex items-center mb-8">
-                <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center mr-4 shadow-lg">
-                  <Building className="w-8 h-8 text-white" />
-                </div>
-                <h3 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>Quick Information</h3>
-              </div>
-              {/* Quick info cards */}
-              <div className="space-y-4">
-                {[
-                  { title: 'Response Time', desc: 'We typically respond within 24 hours' },
-                  { title: 'Meeting Location', desc: 'Room 301, CS Building, NMAMIT' },
-                  { title: 'Weekly Meetings', desc: 'Every Friday at 6:00 PM' },
-                  { title: 'Membership', desc: 'Open to all NMAMIT students, free registration' }
-                ].map((info, i) => (
-                  <div key={i} className={`${isDark ? 'bg-slate-700 border-slate-600' : 'bg-blue-50 border border-blue-200'} rounded-2xl p-4`}>
-                    <h4 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{info.title}</h4>
-                    <p className={`${isDark ? 'text-slate-300' : 'text-gray-600'} text-sm`}>{info.desc}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
+          <div className="relative z-10 flex flex-col items-center justify-center">
+            <img src={logo} alt="HackerEarth Logo" width={100} height={100}
+              className="w-24 h-20 rounded-xl object-contain mb-6 drop-shadow-xl" />
+            <h1 className="text-5xl font-bold mb-4 tracking-tight text-gray-900 dark:text-white text-center">
+              <TypingAnime text="HackerEarth" speed={80} className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent" />
+            </h1>
+            <p className="text-2xl text-slate-700 dark:text-slate-200 font-medium mb-8 text-center">NMAMIT Tech Club</p>
           </div>
         </div>
 

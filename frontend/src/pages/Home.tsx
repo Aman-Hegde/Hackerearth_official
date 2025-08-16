@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { ArrowRight, Code, Users, Trophy, Calendar, Sparkles, Target, Rocket, Star, Globe, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import { TypingAnimation } from "../components/TypingAnimation";
+import { TypingAnime } from '../components/TypingAnime';
 
 
 const Home = () => {
@@ -17,6 +17,13 @@ const Home = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
+const [scrollY, setScrollY] = useState(0);
+
+useEffect(() => {
+  const handleScroll = () => setScrollY(window.scrollY);
+  window.addEventListener('scroll', handleScroll);
+  return () => window.removeEventListener('scroll', handleScroll);
+}, []);
 
   const features = [
     {
@@ -47,12 +54,6 @@ const Home = () => {
     { number: "50+", label: "Projects Completed", icon: Code },
     { number: "25+", label: "Events Organized", icon: Calendar },
     { number: "15+", label: "Awards Won", icon: Trophy }
-  ];
-
-  const achievements = [
-    { icon: Star, text: "National Hackathon Winners" },
-    { icon: Globe, text: "International Recognition" },
-    { icon: Rocket, text: "Innovation Excellence" }
   ];
 
   return (
@@ -91,7 +92,7 @@ const Home = () => {
       </div>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center pt-16">
+      <section className="relative min-h-screen flex items-center justify-center pt-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <div className="animate-fade-in-up">
             {/* Professional Badge */}
@@ -110,7 +111,7 @@ const Home = () => {
                   ? 'from-white via-slate-200 to-slate-300'
                   : 'from-gray-900 via-blue-900 to-indigo-900'
                 }`}>
-                <TypingAnimation>HackerEarth</TypingAnimation>
+                <TypingAnime text="HackerEarth" speed={150} className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent" />
               </span>
               <span className={`block text-4xl md:text-5xl font-medium tracking-wide transition-colors duration-500 ${isDark ? 'text-slate-400' : 'text-gray-700'
                 }`}>
@@ -157,26 +158,6 @@ const Home = () => {
                   <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </span>
               </Link>
-            </div>
-
-            {/* Professional Achievement Indicators */}
-            <div className="flex flex-wrap justify-center gap-6 mb-12">
-              {achievements.map((achievement, index) => {
-                const Icon = achievement.icon;
-                return (
-                  <div
-                    key={index}
-                    className={`flex items-center space-x-3 backdrop-blur-sm border px-6 py-3 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 shadow-md ${isDark
-                        ? 'bg-slate-800/60 border-slate-700/50 text-slate-300'
-                        : 'bg-white/80 border-gray-200/50 text-gray-700'
-                      }`}
-                    style={{ animationDelay: `${index * 200}ms` }}
-                  >
-                    <Icon className={`w-4 h-4 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
-                    <span>{achievement.text}</span>
-                  </div>
-                );
-              })}
             </div>
           </div>
         </div>

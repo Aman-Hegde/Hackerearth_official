@@ -1,6 +1,8 @@
 import React from 'react';
 import { Target, Eye, Heart, Users, MapPin, Clock, Mail, Phone } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import logo from '../assets/image.png'
+import { TypingAnime } from '../components/TypingAnime';
 
 const About = () => {
   const { isDark } = useTheme();
@@ -45,19 +47,20 @@ const About = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
         <div className="text-center mb-16 animate-fade-in-up">
-          <div className={`inline-flex items-center space-x-2 backdrop-blur-sm border rounded-full px-6 py-3 mb-8 shadow-lg ${
+          <div className={`inline-flex flex-col items-center space-x-2 backdrop-blur-sm border rounded-full px-6 py-3 mb-8 shadow-lg ${
             isDark
             ? 'bg-slate-800/80 border-slate-700/50 text-slate-200'
             : 'bg-white/80 border-gray-200/50 text-gray-700'
           }`}>
-            <Target className={`w-5 h-5 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
+            <img src={logo} alt="HackerEarth Logo" width={100} height={100}
+            className="w-24 h-24 border rounded-[54px] object-contain mb-6 drop-shadow-xl" />
             <span className="font-medium">About Us</span>
           </div>
           <h1 className={`text-5xl md:text-6xl font-bold mb-6 ${isDark ? 'text-white' : ''}`}>
             <span className={isDark
               ? 'bg-gradient-to-r from-white via-blue-200 to-indigo-200 bg-clip-text text-transparent'
               : 'bg-gradient-to-r from-gray-900 via-blue-900 to-indigo-900 bg-clip-text text-transparent'}>
-              About HackerEarth
+              About <TypingAnime text="HackerEarth" speed={80} className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent" />
             </span>
           </h1>
           <p className={`text-xl max-w-3xl mx-auto leading-relaxed ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>

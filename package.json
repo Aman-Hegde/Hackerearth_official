@@ -11,6 +11,7 @@
     "dev": "concurrently \"npm run backend\" \"npm run frontend\""
   },
   "dependencies": {
+    "aos": "^2.3.4",
     "google-auth-library": "^10.2.1",
     "pg": "^8.16.3",
     "pg-hstore": "^2.3.4",

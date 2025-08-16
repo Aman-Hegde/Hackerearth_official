@@ -192,7 +192,7 @@ console.log(twoSum([2, 7, 11, 15], 9)); // Expected: [0, 1]`);
   };
 
   return (
-    <div className={`${isFullscreen ? 'fixed inset-0 z-50' : 'min-h-screen pt-16'} ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <div className={`${isFullscreen ? 'fixed inset-0 z-50' : 'min-h-screen pt-16 ml-16'} ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
       {/* Header */}
       <div className={`${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-b px-6 py-4`}>
         <div className="flex items-center justify-between">

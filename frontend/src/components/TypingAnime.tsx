@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 export const TypingAnime: React.FC<{ text: string; className?: string; speed?: number }> = ({
   text,
   className = "",
-  speed = 80,
+  speed = 150,
 }) => {
   const [displayed, setDisplayed] = useState("");
 

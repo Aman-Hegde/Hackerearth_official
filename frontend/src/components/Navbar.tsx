@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
-import logo from '../assets/hacker-earth-logo.png';
+import logo from '../assets/image.png';
 
 interface NavbarProps {
   onToggleSidebar: () => void;
@@ -95,7 +95,8 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
         <div className="flex justify-between items-center h-20">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2" aria-label="Home">
-            <img src={logo} alt="HackerEarth Logo" className="w-10 h-8 rounded-xl object-contain" />
+            <img src={logo} alt="HackerEarth Logo" width={100} height={100}
+            className="mt-2 mb-2 w-24 h-16 rounded-[25px] object-contain drop-shadow-xl" />
             <span className={`text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent ${isDark ? 'text-white' : 'text-black'}`}>
               HackerEarth
             </span>
@@ -224,6 +225,18 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
 
           {/* Mobile hamburger */}
           <div className="md:hidden">
+                        {/* Theme Toggle */}
+            <button
+              onClick={toggleTheme}
+              aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              className={`p-3 rounded-xl transition-all duration-300 hover:scale-105 border ${isDark
+                  ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border-slate-700'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-200'
+                }`}
+              type="button"
+            >
+              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+            </button>
             <button
               onClick={onToggleSidebar}
               className={`${isDark ? 'text-gray-300 hover:text-blue-400' : 'text-gray-700 hover:text-blue-600'} p-2`}

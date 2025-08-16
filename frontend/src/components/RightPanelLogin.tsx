@@ -25,7 +25,7 @@ function RightPanelLogin(){
           <img src={logo} alt="HackerEarth Logo" width={100} height={100}
             className="w-24 h-20 rounded-xl object-contain mb-6 drop-shadow-xl" />
           <h1 className="text-5xl font-bold mb-4 tracking-tight text-gray-900 dark:text-white text-center">
-            <TypingAnime text="HackerEarth" speed={80} className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent" />
+            <TypingAnime text="HackerEarth" speed={150} className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent" />
           </h1>
           <p className="text-2xl text-slate-700 dark:text-slate-200 font-medium mb-8 text-center">NMAMIT Tech Club</p>
           <div className="flex flex-col items-center gap-4">

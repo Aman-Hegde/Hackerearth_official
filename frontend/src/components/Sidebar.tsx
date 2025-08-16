@@ -118,9 +118,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
           {isOpen && (
             <div className="border-t border-white/20 pt-4 text-center">
               <p className="text-xs text-gray-600 mb-1 font-medium dark:text-gray-400">
-                NMAMIT Technical Club
+                HackerEarth
               </p>
-              <p className="text-xs text-gray-500 dark:text-gray-500">Building the Future</p>
+              <p className="text-xs text-gray-500 dark:text-gray-500">NMAMIT</p>
             </div>
           )}
         </div>

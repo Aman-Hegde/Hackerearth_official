@@ -1,10 +1,11 @@
-import { Code2, Mail, Phone, MapPin, Github, Linkedin, Twitter } from 'lucide-react';
+import { Code2, Mail, Phone, MapPin, Github, Linkedin, Twitter, Instagram } from 'lucide-react';
 
 const Footer = () => {
   const socialLinks = [
-    { icon: Github, href: "#", label: "GitHub" },
-    { icon: Linkedin, href: "#", label: "LinkedIn" },
-    { icon: Twitter, href: "#", label: "Twitter" }
+    { icon: Instagram, href: "https://www.instagram.com/hackerearth_nmamit/?hl=en", label: "Instagram" },
+    { icon: Github, href: "https://github.com/HackerearthHubNmamit", label: "GitHub" },
+    { icon: Linkedin, href: "https://in.linkedin.com/company/hackerearth-hub-nmamit", label: "LinkedIn" },
+    { icon: Twitter, href: "https://x.com/NHackerearth", label: "Twitter" }
   ];
 
   const quickLinks = [
@@ -29,7 +30,7 @@ const Footer = () => {
               </span>
             </div>
             <p className="text-gray-600 mb-6 leading-relaxed max-w-md">
-              Empowering NMAMIT students through technology, innovation, and collaboration. 
+              Empowering NMAMIT students through technology, innovation, and collaboration.
               Join us in our mission to build the future through code and creativity.
             </p>
             <div className="flex space-x-4">
@@ -72,30 +73,65 @@ const Footer = () => {
             <h3 className="text-lg font-semibold text-gray-900 mb-6">Contact Info</h3>
             <div className="space-y-4">
               <div className="flex items-center space-x-3 group">
-                <div className="w-10 h-10 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-lg flex items-center justify-center border border-blue-200 group-hover:from-blue-500 group-hover:to-indigo-600 group-hover:border-blue-500 transition-all duration-300">
+                <a
+                  href="mailto:Hackerearth.Nmamit@Nitte.edu.in"
+                  className="w-10 h-10 bg-gradient-to-r from-blue-100 to-indigo-100 rounded-lg flex items-center justify-center border border-blue-200 group-hover:from-blue-500 group-hover:to-indigo-600 group-hover:border-blue-500 transition-all duration-300"
+                  aria-label="Email"
+                >
                   <Mail className="w-5 h-5 text-blue-600 group-hover:text-white transition-colors" />
-                </div>
+                </a>
                 <div>
                   <p className="text-gray-500 text-sm">Email</p>
-                  <p className="text-gray-900 font-medium">hackerearth@nmamit.in</p>
+                  <p className="text-gray-900 font-medium">
+                    <a
+                      href="mailto:Hackerearth.Nmamit@Nitte.edu.in"
+                      className="hover:underline"
+                    >
+                      hackerearth@nmamit.in
+                    </a>
+                  </p>
                 </div>
               </div>
               <div className="flex items-center space-x-3 group">
-                <div className="w-10 h-10 bg-gradient-to-r from-green-100 to-emerald-100 rounded-lg flex items-center justify-center border border-green-200 group-hover:from-green-500 group-hover:to-emerald-600 group-hover:border-green-500 transition-all duration-300">
+                <a
+                  href="tel:+917619545988"
+                  className="w-10 h-10 bg-gradient-to-r from-green-100 to-emerald-100 rounded-lg flex items-center justify-center border border-green-200 group-hover:from-green-500 group-hover:to-emerald-600 group-hover:border-green-500 transition-all duration-300"
+                  aria-label="Call"
+                >
                   <Phone className="w-5 h-5 text-green-600 group-hover:text-white transition-colors" />
-                </div>
+                </a>
                 <div>
                   <p className="text-gray-500 text-sm">Phone</p>
-                  <p className="text-gray-900 font-medium">+91 76195 45988</p>
+                  <p className="text-gray-900 font-medium">
+                    <a href="tel:+917619545988" className="hover:underline">
+                      +91 76195 45988
+                    </a>
+                  </p>
                 </div>
               </div>
+
               <div className="flex items-center space-x-3 group">
-                <div className="w-10 h-10 bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg flex items-center justify-center border border-purple-200 group-hover:from-purple-500 group-hover:to-pink-600 group-hover:border-purple-500 transition-all duration-300">
+                <a
+                  href="https://www.google.com/maps/search/?api=1&query=NMAMIT+Nitte+College"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-10 h-10 bg-gradient-to-r from-purple-100 to-pink-100 rounded-lg flex items-center justify-center border border-purple-200 group-hover:from-purple-500 group-hover:to-pink-600 group-hover:border-purple-500 transition-all duration-300"
+                  aria-label="Location"
+                >
                   <MapPin className="w-5 h-5 text-purple-600 group-hover:text-white transition-colors" />
-                </div>
+                </a>
                 <div>
                   <p className="text-gray-500 text-sm">Location</p>
-                  <p className="text-gray-900 font-medium">NMAMIT, Nitte College</p>
+                  <p className="text-gray-900 font-medium">
+                    <a
+                      href="https://www.google.com/maps/search/?api=1&query=NMAMIT+Nitte+College"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:underline"
+                    >
+                      NMAMIT, Nitte College
+                    </a>
+                  </p>
                 </div>
               </div>
             </div>
@@ -106,17 +142,14 @@ const Footer = () => {
         <div className="border-t border-gray-200 mt-12 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-500 text-sm">
-              © 2024 HackerEarth Technical Club, NMAMIT. All rights reserved.
+              © 2025 HackerEarth Club, NMAMIT. All rights reserved.
             </p>
             <div className="flex space-x-6 mt-4 md:mt-0">
-              <a href="#" className="text-gray-500 hover:text-blue-600 text-sm transition-colors">
+              <a href="https://www.hackerearth.com/privacy" className="text-gray-500 hover:text-blue-600 text-sm transition-colors">
                 Privacy Policy
               </a>
-              <a href="#" className="text-gray-500 hover:text-blue-600 text-sm transition-colors">
+              <a href="https://www.hackerearth.com/terms-of-service" className="text-gray-500 hover:text-blue-600 text-sm transition-colors">
                 Terms of Service
-              </a>
-              <a href="#" className="text-gray-500 hover:text-blue-600 text-sm transition-colors">
-                Code of Conduct
               </a>
             </div>
           </div>
