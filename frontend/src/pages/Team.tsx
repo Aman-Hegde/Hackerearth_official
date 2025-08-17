@@ -5,20 +5,27 @@ import { TypingAnimation } from '../components/TypingAnimation';
 
 const Team = () => {
   const { isDark } = useTheme();
+
   const teamMembers = [
     {
       name: "Vishnu Prasad",
       position: "Team Lead",
       image: "public/images/wallpaperflare.com_wallpaper (1).jpg",
       skills: ["React Native", "Flutter", "iOS", "Android"],
-      slogan: "Turning coffee into apps ☕📱"
+      slogan: "Turning coffee into apps ☕📱",
+      github: "vishnu-github",
+      linkedin: "vishnu-linkedin",
+      email: "vishnu@hackerearth.edu"
     },
     {
       name: "Anish Bhat",
       position: "Co-Web",
       image: "public/images/wallpaperflare.com_wallpaper (1).jpg",
       skills: ["React", "Node", "CPP", "JS"],
-      slogan: "Breaking bugs, building dreams 🐛✨"
+      slogan: "Breaking bugs, building dreams 🐛✨",
+      github: "anish-github",
+      linkedin: "anish-linkedin",
+      email: "anish@hackerearth.edu"
     }
   ];
 
@@ -51,7 +58,7 @@ const Team = () => {
               isDark ? 'text-white' : 'text-gray-900'
             }`}
           >
-            <TypingAnimation>Meet Our Team</TypingAnimation> 
+            <TypingAnimation>Meet Our Team</TypingAnimation>
           </h1>
           <p
             className={`text-xl max-w-2xl mx-auto ${
@@ -62,7 +69,7 @@ const Team = () => {
           </p>
         </div>
 
-        {/* Team Leads (moved to top) */}
+        {/* Team Leads */}
         <div className="mb-16">
           <h2
             className={`text-3xl font-bold mb-8 text-center ${
@@ -107,16 +114,37 @@ const Team = () => {
                   >
                     {member.name}
                   </h3>
-                  <p className="text-blue-500 font-medium mb-4">
+                  <p className="text-blue-500 font-medium mb-3">
                     {member.position}
                   </p>
+                  {/* Social Links */}
+                  <div className="flex space-x-3">
+                    <a
+                      href={`https://github.com/${member.github}`}
+                      className={`${isDark ? 'text-slate-400 hover:text-white' : 'text-gray-600 hover:text-gray-900'} transition-colors`}
+                    >
+                      <Github className="w-5 h-5" />
+                    </a>
+                    <a
+                      href={`https://linkedin.com/in/${member.linkedin}`}
+                      className={`${isDark ? 'text-slate-400 hover:text-blue-400' : 'text-gray-600 hover:text-blue-600'} transition-colors`}
+                    >
+                      <Linkedin className="w-5 h-5" />
+                    </a>
+                    <a
+                      href={`mailto:${member.email}`}
+                      className={`${isDark ? 'text-slate-400 hover:text-red-400' : 'text-gray-600 hover:text-red-600'} transition-colors`}
+                    >
+                      <Mail className="w-5 h-5" />
+                    </a>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Team Members (moved below leads) */}
+        {/* Team Members */}
         <div className="mb-16">
           <h2
             className={`text-3xl font-bold mb-8 text-center ${
@@ -171,6 +199,7 @@ const Team = () => {
                   >
                     {member.bio}
                   </p>
+                  {/* Social Links */}
                   <div className="flex space-x-3">
                     <a
                       href={`https://github.com/${member.github}`}
