@@ -36,7 +36,7 @@ router.post('/google', async (req, res) => {
 
     // Check if email exists in db - hardcoded emails exist in users table
     const user = await User.findOne({ where: { email } });
-
+    
     if (!user) {
       return res.status(401).json({ error: 'Access denied: Email not authorized' });
     }

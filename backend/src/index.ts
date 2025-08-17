@@ -7,7 +7,13 @@ import dotenv from 'dotenv';
 dotenv.config();
 const app = express();
 
-app.use(cors());
+app.use(cors({
+  origin: [
+    'https://hackerearth-official.onrender.com',
+    'http://localhost:5173'
+  ]
+}));
+
 app.use(express.json());
 
 app.get('/api/health', (_req: Request, res: Response) => {
