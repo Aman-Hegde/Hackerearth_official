@@ -15,7 +15,6 @@ router.post('/google', async (req, res) => {
   }
 
   try {
-    console.log('idToken received:', idToken);
 
     // Verify Google token
     const ticket = await client.verifyIdToken({
@@ -23,15 +22,18 @@ router.post('/google', async (req, res) => {
       audience: GOOGLE_CLIENT_ID,
     });
 
-
+    console.log(GOOGLE_CLIENT_ID)
     const payload = ticket.getPayload();
-
+    console.log(payload)
     if (!payload || payload.hd !== 'nmamit.in') {
       return res.status(403).json({ error: 'Unauthorized domain' });
     }
 
     const email = payload.email;
     const googleId = payload.sub; // unique Google user ID
+
+    console.log(email)
+    console.log(googleId)
 
     if (!email || !googleId) {
       return res.status(400).json({ error: 'Email or Google ID missing from token' });
