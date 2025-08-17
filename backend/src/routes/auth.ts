@@ -48,7 +48,8 @@ router.post('/google', async (req, res) => {
       user.google_id = googleId;
       await user.save();
     }
-
+    console.log(user.email)
+    console.log(user.google_id)
     // Success: send user info
     res.json({ message: 'Access granted', email: user.email, google_id: user.google_id });
   } catch (error) {
