@@ -1,6 +1,10 @@
 // backend/src/config/db.ts
 import { Sequelize } from 'sequelize';
 import dotenv from 'dotenv';
+import dns from 'dns';
+
+// Force IPv4 DNS resolution
+dns.setDefaultResultOrder('ipv4first');
 
 dotenv.config(); // Load environment variables
 
