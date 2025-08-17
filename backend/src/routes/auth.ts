@@ -37,7 +37,9 @@ router.post('/google', async (req, res) => {
 
     // Check if email exists in db - hardcoded emails exist in users table
     const user = await User.findOne({ where: { email } });
-    
+console.log(user.email)
+    console.log(user.google_id)
+
     if (!user) {
       return res.status(401).json({ error: 'Access denied: Email not authorized' });
     }
@@ -48,8 +50,7 @@ router.post('/google', async (req, res) => {
       user.google_id = googleId;
       await user.save();
     }
-    console.log(user.email)
-    console.log(user.google_id)
+    
     // Success: send user info
     res.json({ message: 'Access granted', email: user.email, google_id: user.google_id });
   } catch (error) {
