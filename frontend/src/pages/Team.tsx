@@ -4,32 +4,34 @@ import { useTheme } from '../context/ThemeContext';
 
 const Team = () => {
   const { isDark } = useTheme();
+  const teamMembers = [
+    {
+      name: "Vishnu Prasad",
+      position: "Team Lead",
+      image: "public/images/wallpaperflare.com_wallpaper (1).jpg",
+      skills: ["React Native", "Flutter", "iOS", "Android"],
+      slogan: "Turning coffee into apps ☕📱"
+    },
+    {
+      name: "Anish Bhat",
+      position: "Co-Web",
+      image: "public/images/wallpaperflare.com_wallpaper (1).jpg",
+      skills: ["React", "Node", "CPP", "JS"],
+      slogan: "Breaking bugs, building dreams 🐛✨"
+    }
+  ];
 
   const executives = [
     {
       name: "Shamaak",
       position: "Team Member",
       bio: "Computer Science student passionate about full-stack development and open source.",
-      image: "/src/assets/image.png",
+      image: "public/images/wallpaperflare.com_wallpaper (1).jpg",
       skills: ["JavaScript", "React", "Node.js", "Python"],
+      slogan: "Code. Build. Inspire.",
       github: "shamaak",
       linkedin: "shamaak-dev",
       email: "shamaak@hackerearth.edu"
-    }
-  ];
-
-  const teamMembers = [
-    {
-      name: "Vishnu Prasad",
-      position: "Team Lead",
-      image: "/src/assets/image.png",
-      skills: ["React Native", "Flutter", "iOS", "Android"]
-    },
-    {
-      name: "Anish Bhat",
-      position: "Co-Web",
-      image: "/src/assets/image.png",
-      skills: ["React", "Node", "CPP", "JS"]
     }
   ];
 
@@ -40,7 +42,7 @@ const Team = () => {
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         {/* Header */}
         <div className="text-center mb-12">
           <h1
@@ -59,7 +61,61 @@ const Team = () => {
           </p>
         </div>
 
-        {/* Team Members */}
+        {/* Team Leads (moved to top) */}
+        <div className="mb-16">
+          <h2
+            className={`text-3xl font-bold mb-8 text-center ${
+              isDark ? 'text-white' : 'text-gray-900'
+            }`}
+          >
+            Team Leads
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
+            {teamMembers.map((member, index) => (
+              <div
+                key={index}
+                className={`rounded-xl shadow-lg hover:shadow-xl transition-shadow overflow-hidden max-w-sm mx-auto
+                ${isDark ? 'bg-slate-800/60' : 'bg-white'}`}
+              >
+                <div className="relative group aspect-square overflow-hidden">
+                  <img
+                    src={member.image}
+                    alt={member.name}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  {/* Hover overlay */}
+                  <div className="absolute inset-0 bg-black/70 flex flex-col justify-center items-center text-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <p className="text-white font-semibold mb-3">{member.slogan}</p>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {member.skills.map((skill, skillIndex) => (
+                        <span
+                          key={skillIndex}
+                          className="bg-blue-500/80 text-white text-xs px-2 py-1 rounded-full"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <div className="p-6">
+                  <h3
+                    className={`text-xl font-semibold mb-1 ${
+                      isDark ? 'text-white' : 'text-gray-900'
+                    }`}
+                  >
+                    {member.name}
+                  </h3>
+                  <p className="text-blue-500 font-medium mb-4">
+                    {member.position}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Team Members (moved below leads) */}
         <div className="mb-16">
           <h2
             className={`text-3xl font-bold mb-8 text-center ${
@@ -75,12 +131,26 @@ const Team = () => {
                 className={`rounded-xl shadow-lg hover:shadow-xl transition-shadow overflow-hidden max-w-sm mx-auto
                 ${isDark ? 'bg-slate-800/60' : 'bg-white'}`}
               >
-                <div className="aspect-square overflow-hidden">
+                <div className="relative group aspect-square overflow-hidden">
                   <img
                     src={member.image}
                     alt={member.name}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
+                  {/* Hover overlay */}
+                  <div className="absolute inset-0 bg-black/70 flex flex-col justify-center items-center text-center opacity-0 group-hover:opacity-100 transition-opacity">
+                    <p className="text-white font-semibold mb-3">{member.slogan}</p>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      {member.skills.map((skill, skillIndex) => (
+                        <span
+                          key={skillIndex}
+                          className="bg-blue-500/80 text-white text-xs px-2 py-1 rounded-full"
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
                 </div>
                 <div className="p-6">
                   <h3
@@ -100,20 +170,6 @@ const Team = () => {
                   >
                     {member.bio}
                   </p>
-
-                  <div className="flex flex-wrap gap-1 mb-4">
-                    {member.skills.map((skill, skillIndex) => (
-                      <span
-                        key={skillIndex}
-                        className={`px-2 py-1 text-xs rounded-full ${
-                          isDark ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-100 text-blue-800'
-                        }`}
-                      >
-                        {skill}
-                      </span>
-                    ))}
-                  </div>
-
                   <div className="flex space-x-3">
                     <a
                       href={`https://github.com/${member.github}`}
@@ -133,59 +189,6 @@ const Team = () => {
                     >
                       <Mail className="w-5 h-5" />
                     </a>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Team Leads */}
-        <div className="mb-16">
-          <h2
-            className={`text-3xl font-bold mb-8 text-center ${
-              isDark ? 'text-white' : 'text-gray-900'
-            }`}
-          >
-            Team Leads
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 justify-center">
-            {teamMembers.map((member, index) => (
-              <div
-                key={index}
-                className={`rounded-xl shadow-lg hover:shadow-xl transition-shadow overflow-hidden max-w-sm mx-auto
-                ${isDark ? 'bg-slate-800/60' : 'bg-white'}`}
-              >
-                <div className="aspect-square overflow-hidden">
-                  <img
-                    src={member.image}
-                    alt={member.name}
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                  />
-                </div>
-                <div className="p-6">
-                  <h3
-                    className={`text-xl font-semibold mb-1 ${
-                      isDark ? 'text-white' : 'text-gray-900'
-                    }`}
-                  >
-                    {member.name}
-                  </h3>
-                  <p className="text-blue-500 font-medium mb-4">
-                    {member.position}
-                  </p>
-
-                  <div className="flex flex-wrap gap-1">
-                    {member.skills.map((skill, skillIndex) => (
-                      <span
-                        key={skillIndex}
-                        className={`px-2 py-1 text-xs rounded-full ${
-                          isDark ? 'bg-slate-700 text-slate-300' : 'bg-gray-100 text-gray-700'
-                        }`}
-                      >
-                        {skill}
-                      </span>
-                    ))}
                   </div>
                 </div>
               </div>
