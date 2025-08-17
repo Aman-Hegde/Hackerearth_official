@@ -1,3 +1,4 @@
+process.env.NODE_OPTIONS = '--dns-result-order=ipv4first';
 import authRoutes from './routes/auth';
 import express, { Request, Response } from 'express';
 import cors from 'cors';
