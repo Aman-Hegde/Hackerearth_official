@@ -14,7 +14,7 @@ app.get('/api/health', (_req: Request, res: Response) => {
   res.send('API is running');
 });
 
-app.use('/auth/google', authRoutes);
+app.use('/auth', authRoutes);
 
 const PORT = process.env.PORT || 5000;
 
