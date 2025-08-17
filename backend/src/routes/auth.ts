@@ -15,7 +15,6 @@ router.post('/google', async (req, res) => {
   }
 
   try {
-    console.log('idToken received:', idToken);
 
     // Verify Google token
     const ticket = await client.verifyIdToken({
@@ -23,7 +22,7 @@ router.post('/google', async (req, res) => {
       audience: GOOGLE_CLIENT_ID,
     });
 
-
+    console.log(GOOGLE_CLIENT_ID)
     const payload = ticket.getPayload();
 
     if (!payload || payload.hd !== 'nmamit.in') {
