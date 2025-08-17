@@ -105,7 +105,7 @@ const Login = () => {
       }
 
 const BASE_URL = import.meta.env.VITE_API_URL || '';
-const res = await fetch(`${BASE_URL}/auth`, {
+const res = await fetch(`${BASE_URL}/auth/google`, {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ idToken: response.credential }),
