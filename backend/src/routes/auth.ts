@@ -21,6 +21,7 @@ router.post('/google', async (req, res) => {
       audience: GOOGLE_CLIENT_ID,
     });
 
+
     const payload = ticket.getPayload();
 
     if (!payload || payload.hd !== 'nmamit.in') {
@@ -42,6 +43,7 @@ router.post('/google', async (req, res) => {
     }
 
     // Update google_id if null or different
+
     if (user.google_id !== googleId) {
       user.google_id = googleId;
       await user.save();

@@ -15,7 +15,7 @@ const sequelize = new Sequelize(
     logging: false,
     dialectOptions: {
       ssl: {
-        require: true,               // Supabase requires SSL
+        require: false,               // Supabase requires SSL
         rejectUnauthorized: false,    // Stricter SSL check for Supabase
       },
     },
