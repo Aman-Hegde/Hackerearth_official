@@ -1,6 +1,7 @@
 import React from 'react';
 import { Github, Linkedin, Mail } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
+import { TypingAnimation } from '../components/TypingAnimation';
 
 const Team = () => {
   const { isDark } = useTheme();
@@ -50,7 +51,7 @@ const Team = () => {
               isDark ? 'text-white' : 'text-gray-900'
             }`}
           >
-            Meet Our Team
+            <TypingAnimation>Meet Our Team</TypingAnimation> 
           </h1>
           <p
             className={`text-xl max-w-2xl mx-auto ${
