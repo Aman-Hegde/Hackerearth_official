@@ -17,5 +17,5 @@ app.get('/api/health', (_req: Request, res: Response) => {
 
 app.use('/auth', authRoutes);
 
-// Export for serverless
+// Export the app wrapped by serverless-http for serverless deployment
 export const handler = serverless(app);
