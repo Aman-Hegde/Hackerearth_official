@@ -95,16 +95,6 @@ useEffect(() => {
       <section className="relative min-h-screen flex items-center justify-center pt-0">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
           <div className="animate-fade-in-up">
-            {/* Professional Badge */}
-            <div className={`inline-flex items-center space-x-3 backdrop-blur-sm border rounded-full px-8 py-4 mb-12 shadow-lg transition-all duration-500 ${isDark
-                ? 'bg-slate-800/80 border-slate-700/50 text-slate-300'
-                : 'bg-white/80 border-gray-200/50 text-gray-700'
-              }`}>
-              <div className={`w-2 h-2 rounded-full ${isDark ? 'bg-blue-400' : 'bg-blue-600'}`}></div>
-              <span className="font-medium tracking-wide">NMAMIT Technical Excellence</span>
-              <div className={`w-2 h-2 rounded-full ${isDark ? 'bg-blue-400' : 'bg-blue-600'}`}></div>
-            </div>
-
             {/* Main Title */}
             <h1 className="text-6xl md:text-8xl font-bold mb-8 leading-tight tracking-tight">
               <span className={`text-5xl md:text-7xl bg-gradient-to-r bg-clip-text text-transparent block mb-4 transition-all duration-500 ${isDark
