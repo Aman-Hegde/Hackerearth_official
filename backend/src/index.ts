@@ -2,10 +2,8 @@ import authRoutes from './routes/auth';
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
-import serverless from 'serverless-http';
 
 dotenv.config();
-
 const app = express();
 
 app.use(cors());
@@ -17,5 +15,9 @@ app.get('/api/health', (_req: Request, res: Response) => {
 
 app.use('/auth', authRoutes);
 
-// Export the app wrapped by serverless-http for serverless deployment
-export const handler = serverless(app);
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
+
