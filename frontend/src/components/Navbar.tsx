@@ -96,7 +96,7 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2" aria-label="Home">
             <img src={logo} alt="HackerEarth Logo" width={100} height={100}
-            className="mt-2 mb-2 w-24 h-16 rounded-[25px] object-contain drop-shadow-xl" />
+            className="mt-2 mb-2 w-20 h-14 rounded-full object-cover drop-shadow-xl border" />
             <span className={`text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent ${isDark ? 'text-white' : 'text-black'}`}>
               HackerEarth
             </span>

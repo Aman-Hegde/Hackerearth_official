@@ -38,7 +38,7 @@ const Domains = () => {
       title: "Data Structures & Algorithms",
       description: "Build a rock-solid foundation in computer science fundamentals and competitive programming excellence.",
       longDescription: "Master the art of problem-solving with comprehensive training in data structures and algorithms. Prepare for technical interviews and competitive programming challenges.",
-      technologies: ["C++", "Python", "Java", "LeetCode", "Codeforces", "AtCoder"],
+      technologies: ["C++", "Python", "Java", "LeetCode"],
       projects: "500+ Problems Solved",
       members: "220 Members",
       gradient: "from-purple-500 via-pink-500 to-rose-500",
@@ -71,45 +71,6 @@ const Domains = () => {
     }
   ];
 
-  const learningPaths = [
-    {
-      level: "Beginner",
-      description: "Start your journey with foundational concepts",
-      steps: [
-        "Choose your domain of interest",
-        "Attend introductory workshops",
-        "Complete guided practice sessions",
-        "Join study groups and peer learning"
-      ],
-      gradient: "from-green-500 to-emerald-500",
-      icon: Target
-    },
-    {
-      level: "Intermediate",
-      description: "Build practical skills through hands-on projects",
-      steps: [
-        "Work on real-world projects",
-        "Participate in coding challenges",
-        "Collaborate with team members",
-        "Mentor junior members"
-      ],
-      gradient: "from-blue-500 to-purple-500",
-      icon: Zap
-    },
-    {
-      level: "Advanced",
-      description: "Lead initiatives and drive innovation",
-      steps: [
-        "Lead project teams",
-        "Organize domain workshops",
-        "Represent in competitions",
-        "Contribute to open source"
-      ],
-      gradient: "from-purple-500 to-pink-500",
-      icon: Sparkles
-    }
-  ];
-
   return (
     <div className={`min-h-screen pt-20 transition-colors duration-500 ${isDark ? 'bg-slate-900' : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100'}`}>
       {/* Background Elements */}
@@ -127,15 +88,6 @@ const Domains = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         {/* Header */}
         <div className="text-center mb-20 animate-fade-in-up">
-          <div className={`
-            inline-flex items-center space-x-2 backdrop-blur-sm border rounded-full px-6 py-3 mb-8 shadow-lg
-            ${isDark
-              ? "bg-slate-800/80 border-slate-700/50 text-slate-200"
-              : "bg-white/80 border-gray-200/50 text-gray-700"}
-          `}>
-            <Code className={`w-5 h-5 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-            <span className="font-medium">Technical Domains</span>
-          </div>
           <h1 className={`text-5xl md:text-6xl font-bold mb-6 ${isDark ? "text-white" : ""}`}>
             <span className={`${isDark
               ? "bg-gradient-to-r from-white via-blue-200 to-indigo-300 bg-clip-text text-transparent"
@@ -144,7 +96,7 @@ const Domains = () => {
             </span>
           </h1>
           <p className={`text-xl max-w-3xl mx-auto leading-relaxed ${isDark ? "text-slate-400" : "text-gray-600"}`}>
-            Explore our three specialized domains designed to build comprehensive technical expertise and prepare you for the challenges of tomorrow.
+            Explore our three specialized domains.
           </p>
         </div>
 
@@ -219,75 +171,6 @@ const Domains = () => {
               </div>
             );
           })}
-        </div>
-
-        {/* Learning Paths */}
-        <div className="mb-20">
-          <div className="text-center mb-16 animate-fade-in">
-            <div className={`
-              inline-flex items-center space-x-2 backdrop-blur-sm border rounded-full px-6 py-3 mb-8 shadow-lg
-              ${isDark
-                ? "bg-slate-800/80 border-slate-700/50 text-slate-200"
-                : "bg-white/80 border-gray-200/50 text-gray-700"
-              }`
-            }>
-              <Target className={`w-5 h-5 ${isDark ? "text-purple-400" : "text-purple-600"}`} />
-              <span className="font-medium">Learning Journey</span>
-            </div>
-            <h2 className={`text-4xl md:text-5xl font-bold mb-6 ${isDark ? "text-white" : ""}`}>
-              <span className={`${isDark
-                ? "bg-gradient-to-r from-white via-purple-200 to-pink-200 bg-clip-text text-transparent"
-                : "bg-gradient-to-r from-gray-900 via-purple-900 to-pink-900 bg-clip-text text-transparent"}`}>
-                Your Path to Mastery
-              </span>
-            </h2>
-            <p className={`text-xl max-w-2xl mx-auto ${isDark ? "text-slate-400" : "text-gray-600"}`}>
-              Follow our structured learning paths designed to take you from beginner to expert.
-            </p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {learningPaths.map((path, index) => {
-              const Icon = path.icon;
-              return (
-                <div
-                  key={index}
-                  className={`
-                    group relative rounded-3xl p-8
-                    border backdrop-blur-sm
-                    transition-all duration-300 shadow-xl
-                    hover:shadow-2xl hover:scale-105
-                    ${isDark
-                      ? "bg-slate-800/80 border-slate-700/50 hover:border-slate-600 text-slate-200"
-                      : "bg-white/80 border-gray-200/50 hover:border-gray-300 text-gray-900"}
-                    animate-slide-in-left
-                  `}
-                  style={{ animationDelay: `${index * 200}ms` }}
-                >
-                  <div className="flex items-center space-x-4 mb-6">
-                    <div className={`w-12 h-12 bg-gradient-to-r ${path.gradient} rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
-                      <Icon className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold">{path.level}</h3>
-                      <p className={`text-sm ${isDark ? "text-slate-400" : "text-gray-600"}`}>{path.description}</p>
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    {path.steps.map((step, stepIndex) => (
-                      <div key={stepIndex} className="flex items-center space-x-3">
-                        <div className={`w-6 h-6 bg-gradient-to-r ${path.gradient} rounded-full flex items-center justify-center shadow-md`}>
-                          <span className="text-white text-xs font-bold">{stepIndex + 1}</span>
-                        </div>
-                        <span className={`${isDark ? "text-slate-300" : "text-gray-700"} text-sm`}>
-                          {step}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
         </div>
 
         {/* CTA Section */}
