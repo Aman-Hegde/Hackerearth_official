@@ -13,7 +13,7 @@ app.get('/api/health', (_req: Request, res: Response) => {
   res.send('API is running');
 });
 
-app.use('/auth', authRoutes);
+app.use('/auth.ts', authRoutes);
 
 const PORT = process.env.PORT || 5000;
 
