@@ -1,4 +1,5 @@
 import { Code2, Mail, Phone, MapPin, Github, Linkedin, Twitter, Instagram } from 'lucide-react';
+import logo from '../assets/image.png'
 
 const Footer = () => {
   const socialLinks = [
@@ -22,16 +23,16 @@ const Footer = () => {
           {/* Brand Section */}
           <div className="col-span-1 md:col-span-2">
             <div className="flex items-center space-x-3 mb-6">
-              <div className="w-12 h-12 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center shadow-lg">
-                <Code2 className="w-7 h-7 text-white" />
-              </div>
+              <img src={logo} alt="HackerEarth Logo" width={100} height={100}
+                className="mt-2 mb-2 w-20 h-14 rounded-full object-cover drop-shadow-xl border" />
               <span className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
                 HackerEarth
               </span>
             </div>
             <p className="text-gray-600 mb-6 leading-relaxed max-w-md">
-              Empowering NMAMIT students through technology, innovation, and collaboration.
-              Join us in our mission to build the future through code and creativity.
+              We are a Tech Club which is at service to strengthen your Coding
+              Skills and hence a medium to take leap into the field of Competitive
+              Programming.
             </p>
             <div className="flex space-x-4">
               {socialLinks.map((social, index) => {
