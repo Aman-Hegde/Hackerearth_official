@@ -5,12 +5,12 @@ import dotenv from 'dotenv';
 dotenv.config(); // Load environment variables
 
 const sequelize = new Sequelize(
-  process.env.SUPABASE_DB_NAME!,     // Supabase database name
-  process.env.SUPABASE_DB_USER!,     // Supabase database username
-  process.env.SUPABASE_DB_PASSWORD!, // Supabase database password
+  process.env.NEON_DB_NAME!,     // Supabase database name
+  process.env.NEON_DB_USER!,     // Supabase database username
+  process.env.NEON_DB_PASSWORD!, // Supabase database password
   {
-    host: process.env.SUPABASE_DB_HOST || 'localhost',
-    port: Number(process.env.SUPABASE_DB_PORT) || 5432,
+    host: process.env.NEON_DB_HOST || 'localhost',
+    port: Number(process.env.NEON_DB_PORT) || 5432,
     dialect: 'postgres',
     logging: false,
     dialectOptions: {
