@@ -9,9 +9,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// app.get('/api/health', (_req: Request, res: Response) => {
-//   res.send('API is running');
-// });
+app.get('/', (_req: Request, res: Response) => {
+  res.send('Welcome to my API');
+});
+
+app.get('/api/health', (_req: Request, res: Response) => {
+  res.send('API is running');
+});
 
 app.use('/auth', authRoutes);
 
