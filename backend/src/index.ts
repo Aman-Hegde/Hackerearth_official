@@ -51,9 +51,11 @@ const frontendPath = path.join(__dirname, '../client/dist'); // change if using 
 app.use(express.static(frontendPath));
 
 // ✅ Catch-all: send index.html for React Router routes
-app.get('*', (_req: Request, res: Response) => {
+
+app.get('/*', (_req: Request, res: Response) => {
   res.sendFile(path.join(frontendPath, 'index.html'));
 });
+
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
