@@ -1,0 +1,5 @@
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    google_id VARCHAR(32),
+    email VARCHAR(150) UNIQUE NOT NULL
+);
