@@ -171,7 +171,6 @@ const Home = () => {
               ? 'bg-slate-800/60 border-slate-700/50 text-slate-300'
               : 'bg-blue-50 border-blue-200 text-blue-700'
               }`}>
-              <Target className="w-5 h-5" />
               <span className="font-medium tracking-wide">Technical Domains</span>
             </div>
             <h2 className={`text-4xl md:text-5xl font-bold mb-8 tracking-tight transition-colors duration-500 ${isDark ? 'text-white' : 'text-gray-900'
@@ -199,9 +198,9 @@ const Home = () => {
                 >
                   <div className="relative z-10">
                     {/* Icon */}
-                    <div className={`w-16 h-16 bg-gradient-to-r ${feature.gradient} rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
+                    {/* <div className={`w-16 h-16 bg-gradient-to-r ${feature.gradient} rounded-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 shadow-lg`}>
                       <Icon className="w-8 h-8 text-white" />
-                    </div>
+                    </div> */}
 
                     <h3 className={`text-2xl font-semibold mb-4 transition-colors duration-500 ${isDark ? 'text-white' : 'text-gray-900'
                       }`}>
