@@ -78,11 +78,11 @@ const Domains = () => {
         <div className={`${isDark
           ? "absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-900/20 to-indigo-900/10"
           : "absolute top-1/4 left-1/4 w-96 h-96 bg-gradient-to-r from-blue-400/10 to-indigo-600/10"
-        } rounded-full blur-3xl`}></div>
+          } rounded-full blur-3xl`}></div>
         <div className={`${isDark
           ? "absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-purple-900/20 to-pink-900/10"
           : "absolute bottom-1/4 right-1/4 w-96 h-96 bg-gradient-to-r from-purple-400/10 to-pink-600/10"
-        } rounded-full blur-3xl`}></div>
+          } rounded-full blur-3xl`}></div>
       </div>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
@@ -142,15 +142,46 @@ const Domains = () => {
                       <div className={`text-sm font-medium ${isDark ? "text-slate-400" : "text-gray-500"}`}>{domain.members}</div>
                     </div>
                   </div>
-                  <h3 className={`text-2xl font-bold mb-4 group-hover:text-blue-300 transition-colors ${isDark ? "text-white" : "text-gray-900"}`}>
+                  <h3 className={`
+    text-2xl font-bold mb-4 transition-colors
+    ${isDark
+                      ? hoveredDomain === index
+                        ? "text-black drop-shadow-lg"
+                        : "text-slate-100"
+                      : hoveredDomain === index
+                        ? "text-blue-700"
+                        : "text-gray-900"
+                    }
+  `}>
                     {domain.title}
                   </h3>
-                  <p className={`mb-6 leading-relaxed ${isDark ? "text-slate-300" : "text-gray-600"}`}>
+                  <p className={`mb-6 leading-relaxed transition-colors ${
+    isDark
+      ? hoveredDomain === index
+        ? "text-black"
+        : "text-indigo-200"
+      : hoveredDomain === index
+        ? "text-black"
+        : "text-gray-600"
+  }`}>
                     {domain.description}
                   </p>
                   {/* Technologies */}
                   <div className="mb-6">
-                    <h4 className={`text-sm font-semibold mb-3 ${isDark ? "text-slate-200" : "text-gray-700"}`}>Technologies & Skills:</h4>
+<h4
+  className={`text-sm font-semibold mb-3 transition-colors
+    ${isDark
+      ? hoveredDomain === index
+        ? "text-black drop-shadow-lg"
+        : "text-slate-200"
+      : hoveredDomain === index
+        ? "text-blue-700"
+        : "text-gray-700"
+    }
+  `}
+>
+  Technologies & Skills:
+</h4>
                     <div className="flex flex-wrap gap-2">
                       {domain.technologies.map((tech, techIndex) => (
                         <span

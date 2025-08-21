@@ -14,23 +14,23 @@ interface NavbarProps {
 
 const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
   const [scrolled, setScrolled] = useState(false);
-  const [showChallenge, setShowChallenge] = useState(false);
-  const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
-  const [challengeCompleted] = useState(false);
+  // const [showChallenge, setShowChallenge] = useState(false);
+  // const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
+  // const [challengeCompleted] = useState(false);
 
   const navigate = useNavigate();
   const { user, logout, isAuthenticated } = useAuth();
   const { isDark, toggleTheme } = useTheme();
 
-  const dailyChallenge = {
-    title: 'Two Sum Problem',
-    difficulty: 'Easy',
-    points: 50,
-    description:
-      "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.",
-    timeLimit: '30 min',
-    participants: 127,
-  };
+  // const dailyChallenge = {
+  //   title: 'Two Sum Problem',
+  //   difficulty: 'Easy',
+  //   points: 50,
+  //   description:
+  //     "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.",
+  //   timeLimit: '30 min',
+  //   participants: 127,
+  // };
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -38,57 +38,57 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  useEffect(() => {
-    const updateTimer = () => {
-      const now = new Date();
-      const tomorrow = new Date(now);
-      tomorrow.setDate(tomorrow.getDate() + 1);
-      tomorrow.setHours(0, 0, 0, 0);
-      const diff = tomorrow.getTime() - now.getTime();
+  // useEffect(() => {
+  //   const updateTimer = () => {
+  //     const now = new Date();
+  //     const tomorrow = new Date(now);
+  //     tomorrow.setDate(tomorrow.getDate() + 1);
+  //     tomorrow.setHours(0, 0, 0, 0);
+  //     const diff = tomorrow.getTime() - now.getTime();
 
-      setTimeLeft({
-        hours: Math.floor(diff / (1000 * 60 * 60)),
-        minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
-        seconds: Math.floor((diff % (1000 * 60)) / 1000),
-      });
-    };
-    updateTimer();
-    const timer = setInterval(updateTimer, 1000);
-    return () => clearInterval(timer);
-  }, []);
+  //     setTimeLeft({
+  //       hours: Math.floor(diff / (1000 * 60 * 60)),
+  //       minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
+  //       seconds: Math.floor((diff % (1000 * 60)) / 1000),
+  //     });
+  //   };
+  //   updateTimer();
+  //   const timer = setInterval(updateTimer, 1000);
+  //   return () => clearInterval(timer);
+  // }, []);
 
   const handleLogout = () => {
     logout();
-    setShowChallenge(false);
+    // setShowChallenge(false);
   };
 
-  const handleStartChallenge = () => {
-    navigate('/coding-environment');
-    setShowChallenge(false);
-  };
+  // const handleStartChallenge = () => {
+  //   navigate('/coding-environment');
+  //   setShowChallenge(false);
+  // };
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'Easy':
-        return isDark ? 'text-green-300 bg-green-900/30' : 'text-green-600 bg-green-100';
-      case 'Medium':
-        return isDark ? 'text-orange-300 bg-orange-900/30' : 'text-orange-600 bg-orange-100';
-      case 'Hard':
-        return isDark ? 'text-red-300 bg-red-900/30' : 'text-red-600 bg-red-100';
-      default:
-        return isDark ? 'text-slate-300 bg-slate-800/30' : 'text-gray-600 bg-gray-100';
-    }
-  };
+  // const getDifficultyColor = (difficulty: string) => {
+  //   switch (difficulty) {
+  //     case 'Easy':
+  //       return isDark ? 'text-green-300 bg-green-900/30' : 'text-green-600 bg-green-100';
+  //     case 'Medium':
+  //       return isDark ? 'text-orange-300 bg-orange-900/30' : 'text-orange-600 bg-orange-100';
+  //     case 'Hard':
+  //       return isDark ? 'text-red-300 bg-red-900/30' : 'text-red-600 bg-red-100';
+  //     default:
+  //       return isDark ? 'text-slate-300 bg-slate-800/30' : 'text-gray-600 bg-gray-100';
+  //   }
+  // };
 
   return (
     <nav
       className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled
-          ? isDark
-            ? 'bg-slate-900/95 backdrop-blur-md shadow-lg border-b border-slate-700/50'
-            : 'bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200/50'
-          : isDark
-            ? 'bg-slate-900/80 backdrop-blur-sm'
-            : 'bg-white/80 backdrop-blur-sm'
+        ? isDark
+          ? 'bg-slate-900/95 backdrop-blur-md shadow-lg border-b border-slate-700/50'
+          : 'bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200/50'
+        : isDark
+          ? 'bg-slate-900/80 backdrop-blur-sm'
+          : 'bg-white/80 backdrop-blur-sm'
         }`}
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -96,36 +96,38 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2" aria-label="Home">
             <img src={logo} alt="HackerEarth Logo" width={100} height={100}
-            className="mt-2 mb-2 w-20 h-14 rounded-full object-cover drop-shadow-xl border" />
-            <span className={`text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent ${isDark ? 'text-white' : 'text-black'}`}>
+              className="mt-2 mb-2 w-20 h-14 rounded-full object-cover drop-shadow-xl border" />
+            <span className={`hidden ${isDark ? 'text-white' : 'text-black'} md:inline text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent hidden`}>
               HackerEarth
             </span>
           </Link>
 
           {/* Desktop daily challenge & auth */}
-          <div className="hidden md:flex items-center space-x-3">
+          <div className="md:flex items-center space-x-3">
             {/* Theme Toggle */}
-            <button
-              onClick={toggleTheme}
-              aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              className={`p-3 rounded-xl transition-all duration-300 hover:scale-105 border ${isDark
+            <div className='hidden md:inline lg:inline'>
+              <button
+                onClick={toggleTheme}
+                aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                className={`p-3 rounded-xl transition-all duration-300 hover:scale-105 border ${isDark
                   ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border-slate-700'
                   : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-200'
-                }`}
-              type="button"
-            >
-              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
+                  }`}
+                type="button"
+              >
+                {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+              </button>
+            </div>
 
             {/* Daily Challenge Dropdown */}
-            <div className="relative">
-              <button
+            {/* <div className="relative">  */}
+            {/* <button
                 onClick={() => setShowChallenge(!showChallenge)}
                 aria-expanded={showChallenge}
                 aria-controls="daily-challenge-dropdown"
                 className="group flex items-center space-x-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 hover:border-blue-300 rounded-xl px-4 py-2 transition-transform duration-300 hover:scale-105"
-              >
-                <div className="flex items-center space-x-2">
+              > */}
+            {/* <div className="flex items-center space-x-2">
                   <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
                     <Zap className="w-4 h-4 text-white" />
                   </div>
@@ -136,11 +138,11 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                       <span>{timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s</span>
                     </div>
                   </div>
-                </div>
-                <ChevronDown className={`w-4 h-4 ${isDark ? 'text-slate-400' : 'text-gray-500'} transition-transform ${showChallenge ? 'rotate-180' : ''}`} />
-              </button>
+                </div> */}
+            {/* <ChevronDown className={`w-4 h-4 ${isDark ? 'text-slate-400' : 'text-gray-500'} transition-transform ${showChallenge ? 'rotate-180' : ''}`} />
+              </button> */}
 
-              {showChallenge && (
+            {/* {showChallenge && (
                 <div
                   id="daily-challenge-dropdown"
                   role="region"
@@ -201,7 +203,7 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                   </div>
                 </div>
               )}
-            </div>
+            </div>  */}
 
             {/* Auth Section Desktop */}
             {isAuthenticated ? (
@@ -225,13 +227,13 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
 
           {/* Mobile hamburger */}
           <div className="md:hidden">
-                        {/* Theme Toggle */}
+            {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
               aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               className={`p-3 rounded-xl transition-all duration-300 hover:scale-105 border ${isDark
-                  ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border-slate-700'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-200'
+                ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border-slate-700'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-200'
                 }`}
               type="button"
             >

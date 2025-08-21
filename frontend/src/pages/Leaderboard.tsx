@@ -7,7 +7,8 @@ const Leaderboard = () => {
   const { isDark } = useTheme();
 
   const [data, setData] = useState<{ Name: string; Score: number; Time: string }[]>([]);
-  const filename = "weeklycontest13.xlsx";
+  // File name here------------------------------------------------------------------------------------------------------
+  const filename = "";
 
   useEffect(() => {
     const fetchExcel = async () => {
