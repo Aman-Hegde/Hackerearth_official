@@ -10,6 +10,30 @@ const Leaderboard = () => {
   // File name here------------------------------------------------------------------------------------------------------
   const filename = "";
 
+  function getTimeUntilNextSaturday() {
+  const now = new Date();
+  const dayOfWeek = now.getDay();
+  const daysUntilSaturday = (6 - dayOfWeek + 7) % 7 || 7; // always at least 1 day
+  const nextSaturday = new Date(now);
+  nextSaturday.setDate(now.getDate() + daysUntilSaturday);
+  nextSaturday.setHours(0, 0, 0, 0);
+  const msLeft = nextSaturday.getTime() - now.getTime();
+  const days    = Math.floor(msLeft / (1000*60*60*24));
+  const hours   = Math.floor((msLeft / (1000*60*60)) % 24);
+  const minutes = Math.floor((msLeft / (1000*60)) % 60);
+  const seconds = Math.floor((msLeft / 1000) % 60);
+  return { days, hours, minutes, seconds };
+}
+
+const [countdown, setCountdown] = useState(getTimeUntilNextSaturday());
+
+useEffect(() => {
+  const interval = setInterval(() => {
+    setCountdown(getTimeUntilNextSaturday());
+  }, 1000);
+  return () => clearInterval(interval);
+}, []);
+
   useEffect(() => {
     const fetchExcel = async () => {
       try {
@@ -115,11 +139,17 @@ const Leaderboard = () => {
               {data.length === 0 ? (
                 <tr>
                   <td
-                    colSpan={3}
-                    className="py-6 sm:py-12 text-center text-sm sm:text-xl text-indigo-600 dark:text-indigo-400 select-none"
-                  >
-                    Weekly Contest yet to be conducted.
-                  </td>
+  colSpan={3}
+  className="py-6 sm:py-12 text-center text-sm sm:text-xl text-indigo-600 dark:text-indigo-400 select-none"
+>
+  Weekly Contest yet to be conducted.
+  <div className="mt-2 text-base text-indigo-400 dark:text-indigo-300 font-mono font-semibold">
+    Next contest in{" "}
+    <span className="font-bold">
+      {countdown.days}d {countdown.hours}h {countdown.minutes}m {countdown.seconds}s
+    </span>
+  </div>
+</td>
                 </tr>
               ) : (
                 data.map((row, idx) => (
