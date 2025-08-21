@@ -1,8 +1,14 @@
 // Sidebar.tsx
 import React from 'react';
-import { Link, useLocation } from 'react-router-dom';
-import { Home, Calendar, Users, Code, Award, Trophy, Info, Mail, ChevronRight, X } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Home, Calendar, Users, Code, Award, Info, Mail, ChevronRight} from 'lucide-react';
 import logo from '../assets/hacker-earth-logo.png';
+import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/ThemeContext';
+import {
+  Menu, X, User, LogOut, Zap, Clock, Trophy, ChevronDown, Play, CheckCircle,
+  Sun, Moon
+} from 'lucide-react';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -11,6 +17,15 @@ interface SidebarProps {
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
   const location = useLocation();
+
+    const navigate = useNavigate();
+  const { user, logout, isAuthenticated } = useAuth();
+  const { isDark, toggleTheme } = useTheme();
+
+    const handleLogout = () => {
+    logout();
+    // setShowChallenge(false);
+  };
 
   const navItems = [
     { name: 'Home', path: '/', icon: Home },
@@ -113,6 +128,28 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
               })}
             </ul>
           </nav>
+          <div className={`flex flex-col items-center`}>
+
+          {isAuthenticated ? (
+            isOpen && (
+              <div>
+                <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${isDark ? 'bg-slate-800' : 'bg-gray-50'}`}>
+                  <User className="w-4 h-4 text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded p-1" />
+                  <span className={`text-sm font-medium ${isDark ? 'text-slate-200' : 'text-gray-700'}`}>
+                    {user?.name || user?.email?.split('@')[0]}
+                  </span>
+                </div>
+                <button onClick={logout} className={`${isDark ? 'text-slate-300 hover:text-red-400' : 'text-gray-700 hover:text-red-600'}`}>
+                  <LogOut className="w-4 h-4 inline mr-1" /> Logout
+                </button>
+              </div>
+            )
+          ) : ( isOpen && (
+            <Link to="/login" className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2 rounded-lg w-28 text-center">
+                Sign In
+              </Link> )
+            )}
+            </div>
 
           {/* Footer */}
           {isOpen && (
