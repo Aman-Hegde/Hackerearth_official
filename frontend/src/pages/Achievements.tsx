@@ -7,7 +7,6 @@ const Achievements = () => {
 
   return (
     <div className={`min-h-screen pt-10 sm:pt-20 transition-colors duration-500 ${isDark ? 'bg-slate-900' : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100'}`}>
-      {/* Responsive Background */}
       <div className="fixed inset-0 pointer-events-none">
         <div className={`${isDark ? 'bg-blue-900/15' : 'bg-blue-400/10'} absolute top-1/4 left-1/4 w-48 h-48 sm:w-96 sm:h-96 rounded-full blur-2xl sm:blur-3xl`} />
         <div className={`${isDark ? 'bg-purple-900/15' : 'bg-purple-400/10'} absolute bottom-1/4 right-1/4 w-48 h-48 sm:w-96 sm:h-96 rounded-full blur-2xl sm:blur-3xl`} style={{ animationDelay: '1s' }} />
@@ -27,7 +26,6 @@ const Achievements = () => {
               Achievements
             </span>
           </h1>
-          {/* Coming Soon Message - Responsive */}
           <div className={`${isDark ? 'bg-slate-800/80 border-slate-700/50 text-slate-300' : 'bg-white/80 border-gray-200/50 text-gray-700'} backdrop-blur-sm border rounded-2xl sm:rounded-3xl p-6 sm:p-12 shadow-xl`}>
             <div className="flex items-center justify-center space-x-2 sm:space-x-3 mb-4 sm:mb-6">
               <Sparkles className={`w-5 h-5 sm:w-8 sm:h-8 animate-pulse ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
