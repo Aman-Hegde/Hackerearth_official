@@ -90,14 +90,12 @@ const Login = () => {
       callback: handleGoogleCallback,
       use_fedcm_for_prompt: true,
     });
-    window.google.accounts.id.prompt();
 
-
-    // window.google.accounts.id.prompt((notification: any) => {
-    //   if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-    //     setIsLoading(false);
-    //   }
-    // });
+    window.google.accounts.id.prompt((notification: any) => {
+      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+        setIsLoading(false);
+      }
+    });
   };
 
   const handleGoogleCallback = async (response: any) => {
