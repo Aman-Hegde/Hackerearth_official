@@ -1,9 +1,11 @@
+// 
+
 import { DataTypes, Model } from 'sequelize';
 import sequelize from '../config/db';
 
 class User extends Model {
   public id!: number;
-  public google_id!: string | null; // initially null but not null due to schema, so set default empty string to avoid errors
+  public google_id!: string | null;  // Nullable google_id to allow initially null values
   public email!: string;
 }
 
@@ -17,7 +19,7 @@ User.init(
     google_id: {
       type: DataTypes.STRING(32),
       unique: true,
-      allowNull: true, // Allow null initially, given your requirement
+      allowNull: true,  // Allows google_id to be null initially
       defaultValue: null,
     },
     email: {

@@ -16,21 +16,17 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
-    // Check if user has a theme preference stored
+  const getInitialIsDark = () => {
     const storedTheme = localStorage.getItem('hackerearth_theme');
     if (storedTheme) {
-      setIsDark(storedTheme === 'dark');
-    } else {
-      // Check system preference
-      setIsDark(window.matchMedia('(prefers-color-scheme: dark)').matches);
+      return storedTheme === 'dark';
     }
-  }, []);
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  };
+
+  const [isDark, setIsDark] = useState(getInitialIsDark);
 
   useEffect(() => {
-    // Apply theme to document
     if (isDark) {
       document.documentElement.classList.add('dark');
     } else {
@@ -39,9 +35,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.setItem('hackerearth_theme', isDark ? 'dark' : 'light');
   }, [isDark]);
 
-  const toggleTheme = () => {
-    setIsDark(!isDark);
-  };
+  const toggleTheme = () => setIsDark(prev => !prev);
 
   return (
     <ThemeContext.Provider value={{ isDark, toggleTheme }}>

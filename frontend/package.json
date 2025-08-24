@@ -11,19 +11,28 @@
   },
   "dependencies": {
     "@google-cloud/local-auth": "^3.0.1",
-    "aos": "^2.3.4",
+
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "framer-motion": "^12.23.12",
     "googleapis": "^152.0.0",
+    "gsap": "^3.13.0",
     "lucide-react": "^0.344.0",
+    "motion": "^12.23.12",
     "pg": "^8.16.3",
     "pg-hstore": "^2.3.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.6.3",
-    "sequelize": "^6.37.7"
+    "sequelize": "^6.37.7",
+    "split-type": "^0.3.4",
+    "tailwind-merge": "^3.3.1",
+    "tailwindcss-animate": "^1.0.7",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.9.1",
+    "@types/gsap": "^1.20.2",
     "@types/pg": "^8.15.5",
     "@types/react": "^18.3.5",
     "@types/react-dom": "^18.3.0",
