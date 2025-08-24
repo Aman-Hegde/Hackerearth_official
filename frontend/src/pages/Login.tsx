@@ -88,6 +88,7 @@ const Login = () => {
     window.google.accounts.id.initialize({
       client_id: GOOGLE_CLIENT_ID,
       callback: handleGoogleCallback,
+      use_fedcm_for_prompt: true,
     });
 
     window.google.accounts.id.prompt((notification: any) => {
