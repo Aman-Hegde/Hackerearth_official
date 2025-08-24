@@ -91,10 +91,19 @@ const Login = () => {
     });
 
     window.google.accounts.id.prompt((notification: any) => {
-      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-        setIsLoading(false);
-      }
-    });
+  const momentType = notification.getMomentType();
+
+  if (momentType === 'display') {
+    // One Tap is displayed
+  } else if (momentType === 'skipped') {
+    // User skipped the One Tap
+    setIsLoading(false);
+  } else if (momentType === 'dismissed') {
+    // User dismissed the One Tap
+    setIsLoading(false);
+  }
+});
+
   };
 
   const handleGoogleCallback = async (response: any) => {
