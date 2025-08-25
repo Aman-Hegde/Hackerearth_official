@@ -8,7 +8,7 @@ const app = express();
 
 
 app.use(cors({
-  origin: 'https://hackerearth-official.onrender.com', // front-end URL
+  origin: 'https://hackerearth-official.onrender.com/login', // front-end URL
   credentials: true, // allow cookies to be sent in cross-origin requests
 }));
 
