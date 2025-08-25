@@ -11,6 +11,12 @@
   },
   "dependencies": {
     "@google-cloud/local-auth": "^3.0.1",
+<<<<<<< HEAD
+=======
+
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+>>>>>>> 8084288749b6870ad83a117ef67267a04b290847
     "framer-motion": "^12.23.12",
     "googleapis": "^152.0.0",
     "lucide-react": "^0.344.0",
