@@ -6,12 +6,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 const app = express();
 
-
-app.use(cors({
-  origin: 'https://hackerearth-official.onrender.com/login', // front-end URL
-  credentials: true, // allow cookies to be sent in cross-origin requests
-}));
-
+app.use(cors());
 app.use(express.json());
 
 app.get('/', (_req: Request, res: Response) => {
