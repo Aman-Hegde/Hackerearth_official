@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Code, Database, Brain, ArrowRight, Sparkles, Zap, Target } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext'; // <-- Add your existing ThemeContext hook
+import { useState, useEffect } from 'react';
+import { Code, Database, Brain, ArrowRight} from 'lucide-react';
+import { useTheme } from '../context/ThemeContext';
 
 const Domains = () => {
   const [hoveredDomain, setHoveredDomain] = useState<number | null>(null);
@@ -85,7 +85,7 @@ const Domains = () => {
           } rounded-full blur-3xl`}></div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 h-100">
         {/* Header */}
         <div className="text-center mb-20 animate-fade-in-up">
           <h1 className={`text-5xl md:text-6xl font-bold mb-6 ${isDark ? "text-white" : ""}`}>
@@ -155,33 +155,32 @@ const Domains = () => {
   `}>
                     {domain.title}
                   </h3>
-                  <p className={`mb-6 leading-relaxed transition-colors ${
-    isDark
-      ? hoveredDomain === index
-        ? "text-black"
-        : "text-indigo-200"
-      : hoveredDomain === index
-        ? "text-black"
-        : "text-gray-600"
-  }`}>
+                  <p className={`mb-6 leading-relaxed transition-colors ${isDark
+                      ? hoveredDomain === index
+                        ? "text-black"
+                        : "text-indigo-200"
+                      : hoveredDomain === index
+                        ? "text-black"
+                        : "text-gray-600"
+                    }`}>
                     {domain.description}
                   </p>
                   {/* Technologies */}
                   <div className="mb-6">
-<h4
-  className={`text-sm font-semibold mb-3 transition-colors
+                    <h4
+                      className={`text-sm font-semibold mb-3 transition-colors
     ${isDark
-      ? hoveredDomain === index
-        ? "text-black drop-shadow-lg"
-        : "text-slate-200"
-      : hoveredDomain === index
-        ? "text-blue-700"
-        : "text-gray-700"
-    }
+                          ? hoveredDomain === index
+                            ? "text-black drop-shadow-lg"
+                            : "text-slate-200"
+                          : hoveredDomain === index
+                            ? "text-blue-700"
+                            : "text-gray-700"
+                        }
   `}
->
-  Technologies & Skills:
-</h4>
+                    >
+                      Technologies & Skills:
+                    </h4>
                     <div className="flex flex-wrap gap-2">
                       {domain.technologies.map((tech, techIndex) => (
                         <span
