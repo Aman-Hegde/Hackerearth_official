@@ -2,9 +2,7 @@ import { useState, useEffect } from 'react';
 import { ArrowRight, Code, Users, Trophy, Calendar, Sparkles, Target, Rocket, Star, Globe, ChevronRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
-import ExploreMoreSection from '../components/ExploreMoreSection';
 import { TypingAnime } from '../components/TypingAnime';
-import { TextReveal } from "../components/magicui/text-reveal";
 
 
 const Home = () => {
@@ -59,7 +57,7 @@ const Home = () => {
   ];
 
   return (
-    <div className={`transition-colors duration-500 ${isDark ? 'bg-slate-900' : 'bg-slate-50'
+    <div className={`overflow-hidden transition-colors duration-500 ${isDark ? 'bg-slate-900' : 'bg-slate-50'
       }`}>
       {/* Professional Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -94,9 +92,9 @@ const Home = () => {
       </div>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen min-w-screen flex items-center justify-center pt-6">
+      <section className="relative min-h-screen flex items-center justify-center pt-6">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          <div className="animate-fade-in-up ">
+          <div className="animate-fade-in-up">
             {/* Main Title */}
             <h1 className="text-6xl md:text-8xl font-bold mb-8 leading-tight tracking-tight">
               <span className={`text-5xl md:text-7xl bg-gradient-to-r bg-clip-text text-transparent block mb-4 transition-all duration-500 ${isDark
@@ -117,8 +115,10 @@ const Home = () => {
               Explore the exciting world of Competitive Programming with Hackerearth.
             </p>
 
-
-            <TextReveal>With due support of Hackerearth India, we host several weekly as well as monthly contests and hence keep up with a healthy competitive environment when it comes to 'CP'.</TextReveal>
+            <p className={`text-lg md:text-xl mb-16 max-w-3xl mx-auto leading-relaxed transition-colors duration-500 ${isDark ? 'text-slate-400' : 'text-gray-500'
+              }`}>
+              With due support of Hackerearth India, we host several weekly as well as monthly contests and hence keep up with a healthy competitive environment when it comes to 'CP'.
+            </p>
 
             {/* Professional CTA Buttons */}
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-20">
@@ -191,14 +191,9 @@ const Home = () => {
               return (
                 <div
                   key={index}
-                  className={`feature-card ${index === 1
-                    ? 'feature-middle'
-                    : index === 0
-                      ? 'feature-left'
-                      : 'feature-right'
-                    } group relative border rounded-2xl p-8 transition-all duration-500 hover:scale-105 shadow-lg hover:shadow-xl ${isDark
-                      ? 'bg-slate-800/60 border-slate-700/50 hover:border-slate-600/50'
-                      : 'bg-white border-gray-200 hover:border-gray-300'
+                  className={`group relative border rounded-2xl p-8 transition-all duration-500 hover:scale-105 shadow-lg hover:shadow-xl ${isDark
+                    ? 'bg-slate-800/60 border-slate-700/50 hover:border-slate-600/50'
+                    : 'bg-white border-gray-200 hover:border-gray-300'
                     }`}
                   style={{ animationDelay: feature.delay }}
                 >
@@ -233,8 +228,6 @@ const Home = () => {
           </div>
         </div>
       </section>
-
-      <ExploreMoreSection />
 
       {/* Stats Section */}
       <section className={`relative z-10 py-24 transition-colors duration-500 ${isDark

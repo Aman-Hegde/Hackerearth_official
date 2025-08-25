@@ -20,7 +20,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
 
     const navigate = useNavigate();
   const { user, logout, isAuthenticated } = useAuth();
-  const { isDark } = useTheme();
+  const { isDark, toggleTheme } = useTheme();
 
     const handleLogout = () => {
     logout();
