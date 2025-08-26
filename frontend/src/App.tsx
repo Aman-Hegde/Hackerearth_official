@@ -28,8 +28,8 @@ function AppWrapper() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
-      <Navbar onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />
-      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />
+      {/* <Navbar onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />
+      <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} /> */}
       <main className="pt-16">
         <Routes>
           <Route path="/" element={<Home />} />
