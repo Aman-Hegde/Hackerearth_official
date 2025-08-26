@@ -1,10 +1,9 @@
-// components/NavBar.tsx (or wherever you place it)
-"use client";
+// components/NavBar.tsx
+"use client"; // Keep this if your build setup requires it for some client-side features, otherwise it can be removed in a plain React app.
 
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom'; // Correct React Router imports
 import { motion, AnimatePresence } from 'framer-motion';
-import Image from 'next/image'; // Assuming Image component is used in Next.js context for the logo
 
 // Lucide React Icons
 import {
@@ -15,10 +14,10 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
-// Local logo image (adjust path to your image)
-import logo from '../assets/image.png';
+// Local logo image (assuming `logo` directly imports the image path for a standard React app)
+import logo from '../assets/image.png'; // Adjust path as needed
 
-// Re-usable Button Component (copied for completeness, ideally imported)
+// Re-usable Button Component (copied for completeness, ideally imported from a shared file)
 function Button({
   children,
   className = "",
@@ -58,8 +57,8 @@ function Button({
 
 const NavBar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  // Removed scrolled state and its useEffect as navbar is no longer fixed/sticky
-  const { pathname } = useLocation();
+  // `scrolled` state is no longer needed as the navbar is not fixed/sticky
+  const { pathname } = useLocation(); // Correct for React Router
 
   const navigate = useNavigate();
   const { user, logout, isAuthenticated } = useAuth();
@@ -85,26 +84,28 @@ const NavBar: React.FC = () => {
 
   return (
     <motion.nav
-      // Removed `fixed top-0 w-full z-50` to make it scroll with content
-      // Applied consistent background styling
+      // Removed fixed/sticky positioning and `scrolled` conditional classes
+      // Applied consistent background directly for the desired look
       className="relative bg-black/70 backdrop-blur-md border-b border-gray-800/50 transition-all duration-300"
-      initial={{ y: 0 }} // Start at 0, no initial slide-down animation if not fixed
+      initial={{ y: 0 }} // No initial slide-down if not fixed, ensure starting position is correct
       animate={{ y: 0 }}
       transition={{ duration: 0.6 }}
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center space-x-2" aria-label="Home">
-            <Image
-              src={logo}
-              alt="HackerEarth Logo"
-              width={40}
-              height={40}
-              className="rounded-full object-cover"
+            {/* Using standard <img> tag for React Router app */}
+            {/* The image shows a single logo with text. Adjust width/height/styling as needed. */}
+            <img
+              src={logo} // Use `logo` directly; assumes `logo` holds the image path string
+              alt="HackerEarth Hub-nmamit Logo"
+              width={120} // Example width to fit "HackerEarth Hub-nmamit" text
+              height={32} // Example height
+              className="object-contain" // Use object-contain to fit the whole logo text/icon if it's one image
             />
           </Link>
 
-          {/* Desktop Navigation */}
+          {/* Desktop Navigation - Nav Items */}
           <div className="hidden lg:flex items-center space-x-8">
             {navItems.map((item) => (
               <Link
@@ -112,8 +113,8 @@ const NavBar: React.FC = () => {
                 to={item.href}
                 className={`flex items-center space-x-1 text-sm font-medium transition-colors duration-200 ${
                   pathname === item.href
-                    ? 'text-white'
-                    : 'text-gray-400 hover:text-white'
+                    ? 'text-white' // Active link in white
+                    : 'text-gray-400 hover:text-white' // Inactive in gray, white on hover
                 }`}
               >
                 <span>{item.name}</span>
@@ -121,9 +122,10 @@ const NavBar: React.FC = () => {
             ))}
           </div>
 
-          {/* Desktop Call to Actions (Login Button) */}
+          {/* Desktop Call to Actions (Login Button Only, matches image) */}
           <div className="hidden lg:flex items-center space-x-4">
             {isAuthenticated ? (
+              // Display User Info and Logout if authenticated (not in image, but good practice)
               <>
                 <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
                   <User className="w-4 h-4 text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded p-1" />
@@ -136,13 +138,14 @@ const NavBar: React.FC = () => {
                 </button>
               </>
             ) : (
+              // Login Button (matches image)
               <Link to="/login" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-300">
                 Login
               </Link>
             )}
           </div>
 
-          {/* Mobile Menu Button & Theme Toggle */}
+          {/* Mobile Menu Button (Hamburger) */}
           <div className="lg:hidden flex items-center space-x-3">
             <button
               onClick={() => setIsOpen(!isOpen)}
