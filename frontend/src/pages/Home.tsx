@@ -85,7 +85,7 @@ const features = [
     title: "Web Development",
     subtitle: "Modern & Responsive",
     description: "Master modern web technologies and build stunning, responsive applications.",
-    technologies: ["React", "Next.js", "TypeScript", "Tailwind CSS", "Node.js"],
+    technologies: ["React", "Next.js", "TypeSc  ript", "Tailwind CSS", "Node.js"],
     bgGradient: "from-blue-500/20 via-cyan-400/10 to-blue-600/20",
     accentColor: "text-blue-400",
     link: "/domains",
@@ -112,12 +112,12 @@ const features = [
   },
 ];
 
-const stats = [
-  { number: "500+", label: "Active Members", icon: <Users className="w-10 h-10" /> },
-  { number: "50+", label: "Projects Completed", icon: <Code className="w-10 h-10" /> },
-  { number: "25+", label: "Events Organized", icon: <Calendar className="w-10 h-10" /> },
-  { number: "15+", label: "Awards Won", icon: <Trophy className="w-10 h-10" /> },
-];
+// const stats = [
+//   { number: "500+", label: "Active Members", icon: <Users className="w-10 h-10" /> },
+//   { number: "50+", label: "Projects Completed", icon: <Code className="w-10 h-10" /> },
+//   { number: "25+", label: "Events Organized", icon: <Calendar className="w-10 h-10" /> },
+//   { number: "15+", label: "Awards Won", icon: <Trophy className="w-10 h-10" /> },
+// ];
 
 const Home = () => {
   const { isDark } = useTheme();
