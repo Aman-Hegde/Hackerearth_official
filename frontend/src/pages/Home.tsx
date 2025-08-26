@@ -5,24 +5,6 @@ import { ArrowRight, Code, Users, Trophy, Calendar, Rocket, ChevronRight } from 
 import { useTheme } from "../context/ThemeContext";
 import TypingHero from "../components/TypingHero";
 
-import FolderGit2  from 'lucide-react';
-
-// Add these animation variants
-const fadeIn = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.5 }
-};
-
-const stagger = {
-  animate: {
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-};
-
-
 function ServiceUIGraphic({ feature }: { feature: any }) {
   return (
     <div className="relative">
@@ -85,7 +67,7 @@ const features = [
     title: "Web Development",
     subtitle: "Modern & Responsive",
     description: "Master modern web technologies and build stunning, responsive applications.",
-    technologies: ["React", "Next.js", "TypeSc  ript", "Tailwind CSS", "Node.js"],
+    technologies: ["React", "Next.js", "TypeScript", "Tailwind CSS", "Node.js"],
     bgGradient: "from-blue-500/20 via-cyan-400/10 to-blue-600/20",
     accentColor: "text-blue-400",
     link: "/domains",
@@ -112,12 +94,12 @@ const features = [
   },
 ];
 
-// const stats = [
-//   { number: "500+", label: "Active Members", icon: <Users className="w-10 h-10" /> },
-//   { number: "50+", label: "Projects Completed", icon: <Code className="w-10 h-10" /> },
-//   { number: "25+", label: "Events Organized", icon: <Calendar className="w-10 h-10" /> },
-//   { number: "15+", label: "Awards Won", icon: <Trophy className="w-10 h-10" /> },
-// ];
+const stats = [
+  { number: "500+", label: "Active Members", icon: <Users className="w-10 h-10" /> },
+  { number: "50+", label: "Projects Completed", icon: <Code className="w-10 h-10" /> },
+  { number: "25+", label: "Events Organized", icon: <Calendar className="w-10 h-10" /> },
+  { number: "15+", label: "Awards Won", icon: <Trophy className="w-10 h-10" /> },
+];
 
 const Home = () => {
   const { isDark } = useTheme();
@@ -294,73 +276,31 @@ const Home = () => {
         </div>
       </section>
 
-     <section
-  className="relative z-10 py-24 transition-colors duration-500 bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 dark:bg-none"
->
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      viewport={{ once: true }}
-      className="text-center mb-16"
-    >
-      <h2 className="text-5xl md:text-6xl font-semibold mb-4 text-gray-900 dark:text-white">
-        Delivering Results
-      </h2>
-      <p className="text-xl text-gray-600 dark:text-gray-300">
-        Our journey in numbers and achievements
-      </p>
-    </motion.div>
+      <section
+        className={`relative z-10 py-24 transition-colors duration-500 bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 dark:bg-none`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {stats.map((stat, index) => (
+              <div key={index} className="text-center group">
+                <div className="relative inline-block mb-6">
+                  <div
+                    className={`w-20 h-20 border rounded-xl flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-lg ${isDark
+                      ? "bg-gray-400/60 border-gray-300/50"
+                      : "bg-white border-gray-200"
+                      }`}
+                  >
+                    {stat.icon}
+                  </div>
+                </div>
+                <div className={`text-4xl font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>{stat.number}</div>
+                <div className={`font-medium text-lg ${isDark ? "text-slate-400" : "text-gray-600"}`}>{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-    <motion.div
-      initial="initial"
-      whileInView="animate"
-      viewport={{ once: true }}
-      variants={stagger}
-      className="grid grid-cols-1 md:grid-cols-4 gap-8"
-    >
-      {[
-        { icon: <Users className="w-8 h-8" />, number: "400+", title: "Members, every year" },
-        { icon: <FolderGit2 className="w-8 h-8" />, number: "50+", title: "Projects Completed" },
-        { icon: <Calendar className="w-8 h-8" />, number: "25+", title: "Events Organized" },
-        { icon: <Trophy className="w-8 h-8" />, number: "15+", title: "Awards Won" }
-      ].map((stat, index) => (
-        <motion.div
-          key={index}
-          variants={fadeIn}
-          className="text-center group"
-        >
-          <motion.div 
-            className="relative inline-block mb-6"
-            whileHover={{ scale: 1.05 }}
-            transition={{ duration: 0.3 }}
-          >
-            <motion.div
-              className="w-20 h-20 border rounded-xl flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-lg bg-white dark:bg-gray-800/60 border-gray-200 dark:border-gray-700/50"
-              whileHover={{ rotate: 360 }}
-              transition={{ duration: 0.5 }}
-            >
-              {stat.icon}
-            </motion.div>
-          </motion.div>
-          <motion.h3 
-            className="text-4xl font-bold mb-3 text-gray-900 dark:text-white"
-            whileHover={{ scale: 1.05 }}
-          >
-            {stat.number}
-          </motion.h3>
-          <motion.p 
-            className="font-medium text-lg text-gray-600 dark:text-gray-300"
-            whileHover={{ scale: 1.05 }}
-          >
-            {stat.title}
-          </motion.p>
-        </motion.div>
-      ))}
-    </motion.div>
-  </div>
-</section>
 
       <section className={`relative z-10 py-24 transition-colors duration-500 ${isDark ? "bg-slate-800/30" : "bg-white"}`}>
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
