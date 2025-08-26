@@ -1,9 +1,24 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { motion } from "framer-motion";
-import { ArrowRight, Code, Users, Trophy, Calendar, Rocket, ChevronRight } from "lucide-react";
+import { motion, useScroll, useTransform } from "framer-motion";
+import { ArrowRight, Code, Users, Trophy, Calendar, Rocket, ChevronRight, FolderOpen } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import TypingHero from "../components/TypingHero";
+
+// Add these animation variants
+const fadeIn = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.5 }
+};
+
+const stagger = {
+  animate: {
+    transition: {
+      staggerChildren: 0.1
+    }
+  }
+};
 
 function ServiceUIGraphic({ feature }: { feature: any }) {
   return (
@@ -60,7 +75,6 @@ function ServiceUIGraphic({ feature }: { feature: any }) {
   );
 }
 
-
 const features = [
   {
     icon: <Code className="w-8 h-8" />,
@@ -94,12 +108,89 @@ const features = [
   },
 ];
 
-const stats = [
-  { number: "500+", label: "Active Members", icon: <Users className="w-10 h-10" /> },
-  { number: "50+", label: "Projects Completed", icon: <Code className="w-10 h-10" /> },
-  { number: "25+", label: "Events Organized", icon: <Calendar className="w-10 h-10" /> },
-  { number: "15+", label: "Awards Won", icon: <Trophy className="w-10 h-10" /> },
-];
+const StatsSection = () => {
+  const sectionRef = useRef(null);
+
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ["start end", "end start"]
+  });
+
+  const glowScaleX = useTransform(scrollYProgress, [0, 0.5, 1], [0, 1, 0]);
+  const glowOpacity = useTransform(scrollYProgress, [0, 0.1, 0.9, 1], [0, 1, 1, 0]);
+
+  return (
+    <motion.section
+      ref={sectionRef}
+      initial={{ opacity: 0 }}
+      whileInView={{ opacity: 1 }}
+      transition={{ duration: 0.5 }}
+      viewport={{ once: true }}
+      className="relative bg-black dark:bg-black py-20 overflow-hidden"
+    >
+      {/* The expanding purple glow effect */}
+      <motion.div
+        className="absolute top-0 left-0 w-full h-16 pointer-events-none z-0"
+        style={{
+          opacity: glowOpacity,
+          background: `radial-gradient(ellipse at top center, rgba(139,92,246,0.3) 0%, transparent 70%)`,
+          scaleX: glowScaleX,
+          transformOrigin: 'center',
+        }}
+      />
+
+      {/* Existing content wrapped in a div to ensure it's above the glow and has max-width */}
+      <div className="max-w-6xl mx-auto px-10 relative z-10 py-20">
+        <motion.div
+          variants={fadeIn}
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true }}
+          className="text-center mb-16"
+        >
+          <h2 className="text-5xl md:text-6xl font-semibold mb-4 text-white dark:text-white">
+           Delivering Results
+          </h2>
+          <p className="text-xl text-gray-300 dark:text-gray-300">
+            Our journey in numbers and achievements
+          </p>
+        </motion.div>
+
+        <motion.div
+          variants={stagger}
+          initial="initial"
+          whileInView="animate"
+          viewport={{ once: true }}
+          className="grid md:grid-cols-4 gap-8"
+        >
+          {[
+            { icon: <Users className="w-8 h-8" />, number: "400+", title: "Members, every year" },
+            { icon: <FolderOpen className="w-8 h-8" />, number: "50+", title: "Projects Completed" },
+            { icon: <Calendar className="w-8 h-8" />, number: "25+", title: "Events Organized" },
+            { icon: <Trophy className="w-8 h-8" />, number: "15+", title: "Awards Won" }
+          ].map((stat, i) => (
+            <motion.div
+              key={i}
+              variants={fadeIn}
+              whileHover={{ y: -5, boxShadow: "0 10px 30px -15px rgba(0,0,0,0.2)" }}
+              className="text-center p-6 rounded-xl bg-black/50 dark:bg-black/50 hover:bg-black/70 dark:hover:bg-black/70 transition-all duration-300 border border-gray-800 dark:border-gray-800"
+            >
+              <motion.div
+                className="w-12 h-12 mx-auto mb-4 flex items-center justify-center text-white dark:text-white"
+                whileHover={{ rotate: 360 }}
+                transition={{ duration: 0.5 }}
+              >
+                {stat.icon}
+              </motion.div>
+              <h3 className="text-2xl font-bold mb-2 text-white dark:text-white">{stat.number}</h3>
+              <p className="text-gray-300 dark:text-gray-300">{stat.title}</p>
+            </motion.div>
+          ))}
+        </motion.div>
+      </div>
+    </motion.section>
+  )
+}
 
 const Home = () => {
   const { isDark } = useTheme();
@@ -293,31 +384,8 @@ const Home = () => {
         </div>
       </section>
 
-      <section
-        className={`relative z-10 py-24 transition-colors duration-500 bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 dark:bg-none`}
-      >
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center group">
-                <div className="relative inline-block mb-6">
-                  <div
-                    className={`w-20 h-20 border rounded-xl flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-lg ${isDark
-                      ? "bg-gray-400/60 border-gray-300/50"
-                      : "bg-white border-gray-200"
-                      }`}
-                  >
-                    {stat.icon}
-                  </div>
-                </div>
-                <div className={`text-4xl font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>{stat.number}</div>
-                <div className={`font-medium text-lg ${isDark ? "text-slate-400" : "text-gray-600"}`}>{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
+      {/* Replace the old stats section with the new StatsSection component */}
+      <StatsSection />
 
       <section className={`relative z-10 py-24 transition-colors duration-500 ${isDark ? "bg-slate-800/30" : "bg-white"}`}>
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
