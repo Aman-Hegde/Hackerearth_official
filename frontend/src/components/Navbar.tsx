@@ -1,6 +1,5 @@
 // components/NavBar.tsx
-"use client";
-
+'use client'
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -119,13 +118,12 @@ const NavBar: React.FC = () => {
 
           {/* Desktop Call to Actions & Theme Toggle */}
           <div className="hidden lg:flex items-center space-x-4">
-            {/* Desktop Theme Toggle - RE-ADDED HERE */}
             <button
               onClick={toggleTheme}
               aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               className={`p-2 rounded-lg transition-all duration-300 hover:scale-105 ${isDark
                 ? 'text-gray-300 hover:text-white'
-                : 'text-gray-700 hover:text-gray-900' // Adjust these colors if light mode background is different
+                : 'text-gray-700 hover:text-gray-900'
               }`}
               type="button"
             >
@@ -133,7 +131,6 @@ const NavBar: React.FC = () => {
             </button>
 
             {isAuthenticated ? (
-              // Display User Info and Logout if authenticated
               <>
                 <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
                   <User className="w-4 h-4 text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded p-1" />
@@ -146,14 +143,13 @@ const NavBar: React.FC = () => {
                 </button>
               </>
             ) : (
-              // Login Button
               <Link to="/login" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-300">
                 Login
               </Link>
             )}
           </div>
 
-          {/* Mobile Menu Button (Hamburger) and NO Mobile Theme Toggle here, moved inside sidebar */}
+          {/* Mobile Menu Button (Hamburger) */}
           <div className="lg:hidden flex items-center space-x-3">
             <button
               onClick={() => setIsOpen(!isOpen)}
