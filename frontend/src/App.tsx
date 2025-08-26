@@ -12,7 +12,7 @@ import Achievements from './pages/Achievements';
 import About from './pages/About';
 import Contact from './pages/Contact';
 import Login from './pages/Login';
-import CodingEnvironment from './pages/CodingEnvironment';
+// import CodingEnvironment from './pages/CodingEnvironment';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ScrollToTop from './components/ScrollTop';
@@ -41,7 +41,7 @@ function AppWrapper() {
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/coding-environment" element={<CodingEnvironment />} />
+          {/* <Route path="/coding-environment" element={<CodingEnvironment />} /> */}
         </Routes>
       </main>
       <Footer />

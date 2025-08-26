@@ -81,7 +81,7 @@ function TypingHero() {
   const minWidthEm = maxPhraseLength * 0.68;
 
   return (
-    <h1 className="text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter font-mono">
+    <h1 className="text-2xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter font-mono">
       <div className="flex flex-wrap justify-center">
         <div className="relative">
           <span className={`${baseTextColor}`}>{baseText}</span>

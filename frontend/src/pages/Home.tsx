@@ -154,39 +154,56 @@ const Home = () => {
         ))}
       </div>
 
-      <section className="flex flex-col items-center justify-center min-h-[90vh] px-4 sm:px-6">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
-          <div className="inline-flex items-center px-3 py-2 bg-black/80 backdrop-blur-sm border border-gray-700 rounded-full text-xs text-gray-300 shadow-[0_0_20px_rgba(52,211,153,0.1)] cursor-default">
-            <span className="ml-1 mr-1">powered by Abhuday</span>
-          </div>
-          <TypingHero />
-          <div className="h-px w-24 bg-gradient-to-r from-transparent via-blue-500 to-transparent mx-auto my-8" />
-          <p className="text-muted-foreground max-w-xl mx-auto font-medium relative z-10 text-black-300 dark:text-gray-400">
-            We are a community of developers, designers, and innovators focused on hands-on creation. Join us to collaborate on real-world projects, hone your skills, and build a portfolio that stands out.
-          </p>
-          <div className="pt-8">
-            <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-              <Link
-                to="/domains"
-                className="group relative px-6 py-3 bg-gray-800 text-white rounded-lg font-medium text-base hover:bg-gray-700 transition-all duration-300 transform hover:scale-105 border border-gray-700"
-              >
-                <span className="flex items-center space-x-2">
-                  <span>Services</span>
-                </span>
-              </Link>
-              <Link
-                to="/login"
-                className="group relative px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium text-base hover:from-blue-400 hover:to-purple-500 transition-all duration-300 transform hover:scale-105 hover:shadow-[0_0_20px_rgba(66,153,225,0.3)]"
-              >
-                <span className="flex items-center space-x-2">
-                  <ArrowRight className="w-5 h-5" />
-                  <span>Join Our Community</span>
-                </span>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+<section className="flex flex-col items-center justify-center min-h-[90vh] px-3 sm:px-6 py-6">
+  <div className="max-w-3xl mx-auto text-center space-y-6 sm:space-y-8 sm:max-w-4xl">
+    
+    {/* Badge */}
+    <div className="inline-flex items-center px-0 py-1.5 sm:px-1 sm:py-2 bg-black/80 backdrop-blur-sm border border-gray-700 rounded-full text-[11px] sm:text-xs text-gray-300 shadow-[0_0_20px_rgba(52,211,153,0.1)] cursor-default">
+      <span className="ml-1 mr-1">powered by Abhuday</span>
+    </div>
+
+    {/* Hero */}
+    <TypingHero />
+
+    {/* Divider */}
+    <div className="h-px w-20 sm:w-24 bg-gradient-to-r from-transparent via-blue-500 to-transparent mx-auto my-6 sm:my-8" />
+
+    {/* Paragraph */}
+    <p className="text-gray-700 dark:text-gray-400 max-w-[75%] sm:max-w-xl mx-auto font-medium relative z-10 leading-relaxed text-base sm:text-lg">
+      We are a community of developers, designers, and innovators focused on hands-on creation. 
+      Join us to collaborate on real-world projects, hone your skills, and build a portfolio that stands out.
+    </p>
+
+    {/* Buttons */}
+    <div className="pt-6 sm:pt-8 w-full">
+      <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 w-full">
+        
+        <Link
+          to="/domains"
+          className="group w-32 sm:w-auto text-center px-5 py-2.5 sm:px-6 sm:py-3 bg-gray-800 text-white rounded-lg font-medium text-base hover:bg-gray-700 transition-all duration-300 transform hover:scale-105 border border-gray-700"
+        >
+          <span className="flex justify-center items-center space-x-2">
+            <span>Services</span>
+          </span>
+        </Link>
+
+        <Link
+          to="/login"
+          className="group w-50 sm:w-auto text-center px-5 py-2.5 sm:px-6 sm:py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium text-base hover:from-blue-400 hover:to-purple-500 transition-all duration-300 transform hover:scale-105 hover:shadow-[0_0_20px_rgba(66,153,225,0.3)]"
+        >
+          <span className="flex justify-center items-center space-x-2">
+            <ArrowRight className="w-5 h-5" />
+            <span>Join Our Community</span>
+          </span>
+        </Link>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
 
       <section className="relative overflow-x-clip z-10 max-w-7xl mx-auto px-4 sm:px-6">
         <motion.div
