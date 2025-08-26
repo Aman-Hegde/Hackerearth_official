@@ -7,7 +7,7 @@ const About = () => {
   const { isDark } = useTheme();
 
   return (
-    <div className={`min-h-screen pt-20 transition-colors duration-500 ${isDark ? 'bg-slate-900' : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100'}`}>
+    <div className={`min-h-screen pt-20 transition-colors duration-500 ${isDark ? 'bg-black' : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100'}`}>
       {/* Background Elements */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none z-0">
         <div className={`${isDark
@@ -26,7 +26,7 @@ const About = () => {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="absolute inset-0 z-0 overflow-hidden">
           {/* Floating Bubbles or any SVG/Lottie effect */}
-          <svg className="opacity-30 w-full h-full" style={{ position: 'absolute', left: 150, top: 0 }} xmlns="http://www.w3.org/2000/svg">
+          <svg className="opacity-30 w-full h-full" style={{ position: 'absolute', left: 180, top: 0 }} xmlns="http://www.w3.org/2000/svg">
             {Array.from({ length: 15 }).map((_, i) =>
               <circle
                 key={i}

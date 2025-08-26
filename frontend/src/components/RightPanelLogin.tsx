@@ -4,7 +4,7 @@ import logo from '../assets/image.png'
 function RightPanelLogin(){
     return(
         <div className="hidden md:flex w-0 md:w-1/2 flex-col items-center justify-center relative overflow-hidden p-8 
-    bg-gradient-to-br from-indigo-50 to-blue-200 dark:from-gray-800 dark:to-gray-900">
+    bg-gradient-to-br from-indigo-50 to-blue-200 dark:from-black dark:to-gray-900">
         <div className="absolute inset-0 z-0 overflow-hidden">
           {/* Floating Bubbles or any SVG/Lottie effect */}
           <svg className="opacity-30 w-full h-full" style={{ position: 'absolute', left: 0, top: 0 }} xmlns="http://www.w3.org/2000/svg">

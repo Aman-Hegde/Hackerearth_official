@@ -54,7 +54,7 @@ const getTypeColor = (type: string) => {
   return (
     <div
       className={`min-h-screen py-20 transition-colors duration-500 ${
-        isDark ? 'bg-slate-900' : 'bg-slate-50'
+        isDark ? 'bg-black' : 'bg-slate-50'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

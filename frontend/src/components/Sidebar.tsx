@@ -56,7 +56,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 h-full bg-white dark:bg-slate-900 border-r border-gray-200 dark:border-slate-700 shadow-lg z-50 transition-all duration-300 ease-out
+        className={`fixed top-0 left-0 h-full bg-white dark:bg-black border-r border-gray-200 dark:border-slate-700 shadow-lg z-50 transition-all duration-300 ease-out
           ${isOpen ? 'w-64' : 'w-14 md:w-14'} translate-x-0 ${isOpen ? '' : 'hidden md:block'}`}
         onMouseEnter={() => setIsOpen(true)}
         onMouseLeave={() => setIsOpen(false)}

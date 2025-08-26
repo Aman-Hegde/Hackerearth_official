@@ -62,7 +62,7 @@ const Contact = () => {
   ];
 
   return (
-    <div className={`min-h-screen pt-20 transition-colors duration-500 ${isDark ? 'bg-slate-900' : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100'}`}>
+    <div className={`min-h-screen pt-20 transition-colors duration-500 ${isDark ? 'bg-black' : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100'}`}>
       {/* Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none">
         <div className={`${isDark ? 'bg-blue-900/20' : 'bg-blue-400/10'} absolute top-1/4 left-1/4 w-96 h-96 rounded-full blur-3xl`}></div>

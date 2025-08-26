@@ -127,7 +127,7 @@ const Home = () => {
   };
 
   return (
-    <div className={`${isDark ? "bg-slate-900" : "bg-slate-50"} overflow-hidden transition-colors duration-500`}>
+    <div className={`${isDark ? "bg-black" : "bg-slate-50"} overflow-hidden transition-colors duration-500`}>
       <div className="fixed inset-0 opacity-5 pointer-events-none z-0"
         style={{
           backgroundImage: `radial-gradient(circle at 20% 50%, rgba(255,255,255,0.08) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(255,255,255,0.1) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(255,255,255,0.07) 0%, transparent 50%), radial-gradient(circle at 20% 50%, rgba(255,255,255,0.08) 0%, transparent 50%)`,

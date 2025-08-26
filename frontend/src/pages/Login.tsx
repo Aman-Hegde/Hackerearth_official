@@ -160,7 +160,7 @@ const Login = () => {
 
   return (
     <div className={`min-h-screen bg-gradient-to-br 
-    ${isDark ? 'from-gray-900 via-gray-800 to-gray-900' : 'from-slate-50 via-blue-50 to-indigo-100'} 
+    ${isDark ? 'bg-black' : 'from-slate-50 via-blue-50 to-indigo-100'} 
     flex flex-col md:flex-row items-stretch`}>
 
       {/* Left Panel */}

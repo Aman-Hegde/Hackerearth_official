@@ -22,7 +22,7 @@ const Footer = () => {
   return (
     <footer className={`relative z-10 transition-colors duration-400
       ${isDark
-        ? "bg-slate-900 border-t border-slate-700"
+        ? "bg-black border-t border-slate-700"
         : "bg-white border-t border-gray-200"
       }`}
     >

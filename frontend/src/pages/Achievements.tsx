@@ -6,7 +6,7 @@ const Achievements = () => {
   const { isDark } = useTheme();
 
   return (
-    <div className={`min-h-screen pt-10 sm:pt-20 transition-colors duration-500 ${isDark ? 'bg-slate-900' : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100'}`}>
+    <div className={`min-h-screen pt-10 sm:pt-20 transition-colors duration-500 ${isDark ? 'bg-black' : 'bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100'}`}>
       {/* Responsive Background */}
       <div className="fixed inset-0 pointer-events-none">
         <div className={`${isDark ? 'bg-blue-900/15' : 'bg-blue-400/10'} absolute top-1/4 left-1/4 w-48 h-48 sm:w-96 sm:h-96 rounded-full blur-2xl sm:blur-3xl`} />
