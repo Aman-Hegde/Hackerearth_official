@@ -152,12 +152,7 @@ const NavBar: React.FC = () => {
               </Link>
             )}
 
-            <Link
-              to="/corporate-login"
-              className={`text-sm font-medium transition-colors duration-200 flex items-center space-x-1 ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'}`}
-            >
-              <Monitor className="w-4 h-4" /> <span>Corporate Login</span>
-            </Link>
+          
           </div>
 
           <div className="md:hidden flex items-center space-x-3">
@@ -233,15 +228,7 @@ const NavBar: React.FC = () => {
                 </Link>
               ))}
 
-              <div className="pt-4 border-t border-gray-700">
-                <Link
-                  to="/corporate-login"
-                  onClick={handleMobileLinkClick}
-                  className={`w-full text-center flex items-center justify-center space-x-2 ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'}`}
-                >
-                  <Monitor className="w-5 h-5" /> <span>Corporate Login</span>
-                </Link>
-              </div>
+             
             </div>
           </motion.div>
         )}
