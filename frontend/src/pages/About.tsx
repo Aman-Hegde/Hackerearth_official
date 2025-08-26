@@ -22,7 +22,24 @@ const About = () => {
         />
       </div>
 
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="absolute inset-0 z-0 overflow-hidden">
+          {/* Floating Bubbles or any SVG/Lottie effect */}
+          <svg className="opacity-30 w-full h-full" style={{ position: 'absolute', left: 150, top: 0 }} xmlns="http://www.w3.org/2000/svg">
+            {Array.from({ length: 15 }).map((_, i) =>
+              <circle
+                key={i}
+                cx={Math.random() * 600}
+                cy={Math.random() * 800}
+                r={Math.random() * 40 + 20}
+                fill={i % 3 === 0 ?
+                  "#6366F1" : i % 3 === 1 ? "#818CF8" : "#E0E7FF"}
+                opacity={Math.random() * 0.4 + 0.2}
+              />
+            )}
+          </svg>
+        </div>
         {/* Header */}
         <div className="text-center mb-16 animate-fade-in-up">
           <div className={`inline-flex flex-col items-center space-x-2 backdrop-blur-sm border rounded-full px-6 py-3 mb-8 shadow-lg ${isDark ? 'bg-slate-800/80 border-slate-700/50 text-slate-200' : 'bg-white/80 border-gray-200/50 text-gray-700'}`}>

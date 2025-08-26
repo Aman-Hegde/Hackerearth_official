@@ -16,13 +16,7 @@ export const useTheme = () => {
 };
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const getInitialIsDark = () => {
-    const storedTheme = localStorage.getItem('hackerearth_theme');
-    if (storedTheme) {
-      return storedTheme === 'dark';
-    }
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
-  };
+const getInitialIsDark = () => true;
 
   const [isDark, setIsDark] = useState(getInitialIsDark);
 
