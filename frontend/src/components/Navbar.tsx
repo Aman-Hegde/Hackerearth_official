@@ -1,36 +1,67 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
-  Menu, X, User, LogOut, Zap, Clock, Trophy, ChevronDown, Play, CheckCircle,
-  Sun, Moon
+  Menu, X, User, LogOut, Sun, Moon, Monitor
 } from 'lucide-react';
+
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import logo from '../assets/image.png';
 
-interface NavbarProps {
-  onToggleSidebar: () => void;
+function Button({
+  children,
+  className = "",
+  variant = "default",
+  size = "default",
+  onClick,
+  ...props
+}: {
+  children: React.ReactNode;
+  className?: string;
+  variant?: "default" | "outline" | "ghost";
+  size?: "default" | "sm" | "icon";
+  onClick?: () => void;
+  [key: string]: any;
+}) {
+  const baseClasses =
+    "inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background";
+
+  const variants = {
+    default: "bg-primary text-primary-foreground hover:bg-primary/90",
+    outline: "border border-input hover:bg-accent hover:text-accent-foreground",
+    ghost: "hover:bg-accent hover:text-accent-foreground",
+  };
+
+  const sizes = {
+    default: "h-10 py-2 px-4",
+    sm: "h-9 px-3 rounded-md",
+    icon: "h-10 w-10",
+  };
+
+  return (
+    <button className={`${baseClasses} ${variants[variant]} ${sizes[size]} ${className}`} onClick={onClick} {...props}>
+      {children}
+    </button>
+  );
 }
 
-const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
+const NavBar: React.FC = () => {
+  const [isOpen, setIsOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  // const [showChallenge, setShowChallenge] = useState(false);
-  // const [timeLeft, setTimeLeft] = useState({ hours: 0, minutes: 0, seconds: 0 });
-  // const [challengeCompleted] = useState(false);
+  const { pathname } = useLocation();
 
   const navigate = useNavigate();
   const { user, logout, isAuthenticated } = useAuth();
   const { isDark, toggleTheme } = useTheme();
 
-  // const dailyChallenge = {
-  //   title: 'Two Sum Problem',
-  //   difficulty: 'Easy',
-  //   points: 50,
-  //   description:
-  //     "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.",
-  //   timeLimit: '30 min',
-  //   participants: 127,
-  // };
+  const navItems = [
+    { name: "Events", href: "/events" },
+    { name: "Leaderboard", href: "/leaderboard" },
+    { name: "Team", href: "/team" },
+    { name: "Achievements", href: "/achievements" },
+    { name: "Contact", href: "/contact" },
+  ];
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
@@ -38,47 +69,15 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // useEffect(() => {
-  //   const updateTimer = () => {
-  //     const now = new Date();
-  //     const tomorrow = new Date(now);
-  //     tomorrow.setDate(tomorrow.getDate() + 1);
-  //     tomorrow.setHours(0, 0, 0, 0);
-  //     const diff = tomorrow.getTime() - now.getTime();
-
-  //     setTimeLeft({
-  //       hours: Math.floor(diff / (1000 * 60 * 60)),
-  //       minutes: Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)),
-  //       seconds: Math.floor((diff % (1000 * 60)) / 1000),
-  //     });
-  //   };
-  //   updateTimer();
-  //   const timer = setInterval(updateTimer, 1000);
-  //   return () => clearInterval(timer);
-  // }, []);
+  const handleMobileLinkClick = () => {
+    setIsOpen(false);
+  };
 
   const handleLogout = () => {
     logout();
-    // setShowChallenge(false);
+    handleMobileLinkClick();
+    navigate('/');
   };
-
-  // const handleStartChallenge = () => {
-  //   navigate('/coding-environment');
-  //   setShowChallenge(false);
-  // };
-
-  // const getDifficultyColor = (difficulty: string) => {
-  //   switch (difficulty) {
-  //     case 'Easy':
-  //       return isDark ? 'text-green-300 bg-green-900/30' : 'text-green-600 bg-green-100';
-  //     case 'Medium':
-  //       return isDark ? 'text-orange-300 bg-orange-900/30' : 'text-orange-600 bg-orange-100';
-  //     case 'Hard':
-  //       return isDark ? 'text-red-300 bg-red-900/30' : 'text-red-600 bg-red-100';
-  //     default:
-  //       return isDark ? 'text-slate-300 bg-slate-800/30' : 'text-gray-600 bg-gray-100';
-  //   }
-  // };
 
   return (
     <nav
@@ -93,19 +92,35 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-20">
-          {/* Logo */}
           <Link to="/" className="flex items-center space-x-2" aria-label="Home">
-            <img src={logo} alt="HackerEarth Logo" width={100} height={100}
-              className="mt-2 mb-2 w-20 h-14 rounded-full object-cover drop-shadow-xl border" />
-            <span className={`hidden ${isDark ? 'text-white' : 'text-black'} md:inline text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent hidden`}>
+            <img
+              src={logo.src}
+              alt="HackerEarth Logo"
+              width={100}
+              height={100}
+              className="mt-2 mb-2 w-20 h-14 rounded-full object-cover drop-shadow-xl border"
+            />
+            <span className={`hidden md:inline text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent`}>
               HackerEarth
             </span>
           </Link>
 
-          {/* Desktop daily challenge & auth */}
-          <div className="md:flex items-center space-x-3">
-            {/* Theme Toggle */}
-            <div className='hidden md:inline lg:inline'>
+          <div className="hidden md:flex items-center space-x-3">
+            {navItems.map((item) => (
+              <Link
+                key={item.name}
+                to={item.href}
+                className={`flex items-center space-x-1 text-sm font-medium transition-colors duration-200 ${
+                  pathname === item.href
+                    ? isDark ? 'text-blue-400' : 'text-blue-600'
+                    : isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'
+                }`}
+              >
+                <span>{item.name}</span>
+              </Link>
+            ))}
+
+            <div>
               <button
                 onClick={toggleTheme}
                 aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
@@ -119,93 +134,6 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
               </button>
             </div>
 
-            {/* Daily Challenge Dropdown */}
-            {/* <div className="relative">  */}
-            {/* <button
-                onClick={() => setShowChallenge(!showChallenge)}
-                aria-expanded={showChallenge}
-                aria-controls="daily-challenge-dropdown"
-                className="group flex items-center space-x-3 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 hover:border-blue-300 rounded-xl px-4 py-2 transition-transform duration-300 hover:scale-105"
-              > */}
-            {/* <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg flex items-center justify-center">
-                    <Zap className="w-4 h-4 text-white" />
-                  </div>
-                  <div className="text-left">
-                    <div className="text-sm font-semibold text-gray-900">Daily Challenge</div>
-                    <div className="text-xs text-blue-600 flex items-center space-x-1">
-                      <Clock className="w-3 h-3" />
-                      <span>{timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s</span>
-                    </div>
-                  </div>
-                </div> */}
-            {/* <ChevronDown className={`w-4 h-4 ${isDark ? 'text-slate-400' : 'text-gray-500'} transition-transform ${showChallenge ? 'rotate-180' : ''}`} />
-              </button> */}
-
-            {/* {showChallenge && (
-                <div
-                  id="daily-challenge-dropdown"
-                  role="region"
-                  aria-label="Daily challenge details"
-                  className={`absolute top-full right-0 mt-2 w-80 rounded-2xl shadow-xl z-50 border ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-200'
-                    } animate-fade-in`}
-                >
-                  <div className="p-6">
-                    <div className="flex items-center justify-between mb-4">
-                      <h3 className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{dailyChallenge.title}</h3>
-                      <div className="flex items-center space-x-2">
-                        <Trophy className="w-4 h-4 text-yellow-500" />
-                        <span className={`text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{dailyChallenge.points} pts</span>
-                      </div>
-                    </div>
-                    <div className="space-y-3 mb-4">
-                      <div className="flex justify-between items-center">
-                        <h4 className={`font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{dailyChallenge.title}</h4>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${getDifficultyColor(dailyChallenge.difficulty)}`}>{dailyChallenge.difficulty}</span>
-                      </div>
-                      <p className={`text-sm leading-relaxed ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{dailyChallenge.description}</p>
-                      <div className="flex justify-between text-sm text-gray-500">
-                        <div className="flex items-center space-x-1">
-                          <Clock className="w-4 h-4" />
-                          <span>{dailyChallenge.timeLimit}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <User className="w-4 h-4" />
-                          <span>{dailyChallenge.participants} solving</span>
-                        </div>
-                      </div>
-                    </div>
-                    {challengeCompleted ? (
-                      <div className="flex items-center justify-center space-x-2 bg-green-50 border border-green-200 rounded-xl py-3 text-green-700">
-                        <CheckCircle className="w-5 h-5" />
-                        <span className="font-medium">Challenge Completed!</span>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={handleStartChallenge}
-                        className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 rounded-xl font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-200 flex items-center justify-center space-x-2"
-                      >
-                        <Play className="w-4 h-4 group-hover:scale-110 transition-transform" />
-                        <span>Start Challenge</span>
-                      </button>
-                    )}
-                    <div className={`mt-4 pt-4 border-t ${isDark ? 'border-slate-700' : 'border-gray-200'}`}>
-                      <div className="text-center">
-                        <div className="text-xs mb-1 text-gray-500">Resets in</div>
-                        <div className={`font-mono text-sm font-semibold ${isDark ? 'text-blue-400' : 'text-blue-600'}`}>
-                          {String(timeLeft.hours).padStart(2, '0')}:
-                          {String(timeLeft.minutes).padStart(2, '0')}:
-                          {String(timeLeft.seconds).padStart(2, '0')}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>  */}
-
-            {/* Auth Section Desktop */}
             {isAuthenticated ? (
               <>
                 <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${isDark ? 'bg-slate-800' : 'bg-gray-50'}`}>
@@ -214,8 +142,8 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                     {user?.name || user?.email?.split('@')[0]}
                   </span>
                 </div>
-                <button onClick={logout} className={`${isDark ? 'text-slate-300 hover:text-red-400' : 'text-gray-700 hover:text-red-600'}`}>
-                  <LogOut className="w-4 h-4 inline mr-1" /> Logout
+                <button onClick={handleLogout} className={`flex items-center space-x-1 ${isDark ? 'text-slate-300 hover:text-red-400' : 'text-gray-700 hover:text-red-600'}`}>
+                  <LogOut className="w-4 h-4" /> <span>Logout</span>
                 </button>
               </>
             ) : (
@@ -223,11 +151,16 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                 Sign In
               </Link>
             )}
+
+            <Link
+              to="/corporate-login"
+              className={`text-sm font-medium transition-colors duration-200 flex items-center space-x-1 ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'}`}
+            >
+              <Monitor className="w-4 h-4" /> <span>Corporate Login</span>
+            </Link>
           </div>
 
-          {/* Mobile hamburger */}
-          <div className="md:hidden">
-            {/* Theme Toggle */}
+          <div className="md:hidden flex items-center space-x-3">
             <button
               onClick={toggleTheme}
               aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
@@ -240,16 +173,81 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
               {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
             </button>
             <button
-              onClick={onToggleSidebar}
+              onClick={() => setIsOpen(!isOpen)}
               className={`${isDark ? 'text-gray-300 hover:text-blue-400' : 'text-gray-700 hover:text-blue-600'} p-2`}
+              aria-label="Open menu"
             >
               <Menu size={24} />
             </button>
           </div>
         </div>
       </div>
+
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            className={`md:hidden absolute top-full left-0 right-0 backdrop-blur-md border-b ${isDark ? 'bg-black/90 border-gray-800' : 'bg-white/90 border-gray-200'}`}
+            initial={{ opacity: 0, height: 0 }}
+            animate={{ opacity: 1, height: "auto" }}
+            exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            <div className="px-4 py-6 space-y-4">
+              {isAuthenticated ? (
+                <>
+                  <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${isDark ? 'bg-slate-800' : 'bg-gray-50'}`}>
+                    <User className="w-4 h-4 text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded p-1" />
+                    <span className={`text-sm font-medium ${isDark ? 'text-slate-200' : 'text-gray-700'}`}>
+                      {user?.name || user?.email?.split('@')[0]}
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className={`w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${isDark ? 'text-slate-300 hover:text-red-400 hover:bg-gray-800' : 'text-gray-700 hover:text-red-600 hover:bg-gray-100'}`}
+                  >
+                    <LogOut className="w-5 h-5" /> <span>Logout</span>
+                  </button>
+                </>
+              ) : (
+                <Link
+                  to="/login"
+                  onClick={handleMobileLinkClick}
+                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-lg text-center font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-200"
+                >
+                  Sign In
+                </Link>
+              )}
+
+              {navItems.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  onClick={handleMobileLinkClick}
+                  className={`flex items-center space-x-2 text-base font-medium transition-colors duration-200 ${
+                    pathname === item.href
+                      ? isDark ? 'text-blue-400' : 'text-blue-600'
+                      : isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'
+                  }`}
+                >
+                  <span>{item.name}</span>
+                </Link>
+              ))}
+
+              <div className="pt-4 border-t border-gray-700">
+                <Link
+                  to="/corporate-login"
+                  onClick={handleMobileLinkClick}
+                  className={`w-full text-center flex items-center justify-center space-x-2 ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'}`}
+                >
+                  <Monitor className="w-5 h-5" /> <span>Corporate Login</span>
+                </Link>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </nav>
   );
 };
 
-export default Navbar;
+export default NavBar;
