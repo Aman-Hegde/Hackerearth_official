@@ -30,19 +30,19 @@ function RightPanelLogin(){
           <p className="text-2xl text-slate-700 dark:text-slate-200 font-medium mb-8 text-center">NMAMIT Tech Club</p>
           <div className="flex flex-col items-center gap-4">
             {/* Weekly Coding Contests */}
-            <div className="inline-flex items-center space-x-2 px-6 py-2 rounded-full bg-white/80 dark:bg-slate-800/80 text-lg shadow font-semibold transition">
+            <div className="inline-flex items-center space-x-2 px-6 py-2 rounded-full bg-white/80 dark:bg-slate-800/80 text-lg shadow font-semibold transition dark:text-slate-200">
               {/* Use a Timer or Calendar icon */}
               <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10m-7 5h2m8-5a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"></path></svg>
               <span>Weekly Coding Contests</span>
             </div>
             {/* Aptitude & Reasoning */}
-            <div className="inline-flex items-center space-x-2 px-6 py-2 rounded-full bg-white/80 dark:bg-slate-800/80 text-lg shadow font-semibold transition">
+            <div className="inline-flex items-center space-x-2 px-6 py-2 rounded-full bg-white/80 dark:bg-slate-800/80 text-lg shadow font-semibold transition dark:text-slate-200">
               {/* Use a Brain or Activity icon */}
               <svg className="w-5 h-5 text-pink-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="M16 7c0-.6.4-1 1-1s1 .4 1 1v10c0 .6-.4 1-1 1s-1-.4-1-1V7Zm-9 2a2 2 0 1 1 0 4 2 2 0 0 1 0-4ZM5.6 15.6a2 2 0 1 1 1.8 3.6A5.97 5.97 0 0 1 3 18c0-1.2.5-2.3 1.6-2.4ZM18 12a2 2 0 1 1 0-4 2 2 0 0 1 0 4ZM16 19.6A2 2 0 1 1 18 14a2 2 0 0 1-2 5.6ZM12 5a5 5 0 0 0-5 5v8a5 5 0 0 0 10 0v-8a5 5 0 0 0-5-5Z"></path></svg>
               <span>Aptitude & Reasoning Tests</span>
             </div>
             {/* Developer Roadmaps */}
-            <div className="inline-flex items-center space-x-2 px-6 py-2 rounded-full bg-white/80 dark:bg-slate-800/80 text-lg shadow font-semibold transition">
+            <div className="inline-flex items-center space-x-2 px-6 py-2 rounded-full bg-white/80 dark:bg-slate-800/80 text-lg shadow font-semibold transition dark:text-slate-200">
               {/* Use a Map or Compass icon */}
               <svg className="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path d="m16.24 7.76-1.41 2.83-2.83 1.41 1.41-2.83 2.83-1.41ZM12 22C6.48 22 2 17.52 2 12S6.48 2 12 2s10 4.48 10 10-4.48 10-10 10Z"></path></svg>
               <span>Guided Roadmaps</span>
