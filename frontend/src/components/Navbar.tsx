@@ -1,14 +1,24 @@
+// components/NavBar.tsx (or wherever you place it)
+"use client";
+
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
+import Image from 'next/image'; // Assuming Image component is used in Next.js context for the logo
+
+// Lucide React Icons
 import {
-  Menu, X, User, LogOut, Sun, Moon, Monitor
+  Menu, X, Sun, Moon, User, LogOut,
 } from 'lucide-react';
 
+// Contexts (ensure these are correctly provided in your app's root)
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+
+// Local logo image (adjust path to your image)
 import logo from '../assets/image.png';
 
+// Re-usable Button Component (copied for completeness, ideally imported)
 function Button({
   children,
   className = "",
@@ -48,7 +58,7 @@ function Button({
 
 const NavBar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  // Removed scrolled state and its useEffect as navbar is no longer fixed/sticky
   const { pathname } = useLocation();
 
   const navigate = useNavigate();
@@ -63,12 +73,6 @@ const NavBar: React.FC = () => {
     { name: "Contact", href: "/contact" },
   ];
 
-  useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
   const handleMobileLinkClick = () => {
     setIsOpen(false);
   };
@@ -80,104 +84,78 @@ const NavBar: React.FC = () => {
   };
 
   return (
-    <nav
-      className={`fixed top-0 w-full z-50 transition-all duration-300 ${scrolled
-        ? isDark
-          ? 'bg-black backdrop-blur-md shadow-lg border-b border-slate-700/50'
-          : 'bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-200/50'
-        : isDark
-          ? 'bg-black backdrop-blur-sm'
-          : 'bg-white/80 backdrop-blur-sm'
-        }`}
+    <motion.nav
+      // Removed `fixed top-0 w-full z-50` to make it scroll with content
+      // Applied consistent background styling
+      className="relative bg-black/70 backdrop-blur-md border-b border-gray-800/50 transition-all duration-300"
+      initial={{ y: 0 }} // Start at 0, no initial slide-down animation if not fixed
+      animate={{ y: 0 }}
+      transition={{ duration: 0.6 }}
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-20">
+        <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center space-x-2" aria-label="Home">
-            <img
-              src={logo.src}
+            <Image
+              src={logo}
               alt="HackerEarth Logo"
-              width={100}
-              height={100}
-              className="mt-2 mb-2 w-20 h-14 rounded-full object-cover drop-shadow-xl border"
+              width={40}
+              height={40}
+              className="rounded-full object-cover"
             />
-            <span className={`hidden md:inline text-xl font-bold bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent`}>
-              HackerEarth
-            </span>
           </Link>
 
-          <div className="hidden md:flex items-center space-x-3">
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center space-x-8">
             {navItems.map((item) => (
               <Link
                 key={item.name}
                 to={item.href}
                 className={`flex items-center space-x-1 text-sm font-medium transition-colors duration-200 ${
                   pathname === item.href
-                    ? isDark ? 'text-blue-400' : 'text-blue-600'
-                    : isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'
+                    ? 'text-white'
+                    : 'text-gray-400 hover:text-white'
                 }`}
               >
                 <span>{item.name}</span>
               </Link>
             ))}
+          </div>
 
-            <div>
-              <button
-                onClick={toggleTheme}
-                aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                className={`p-3 rounded-xl transition-all duration-300 hover:scale-105 border ${isDark
-                  ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border-slate-700'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-200'
-                  }`}
-                type="button"
-              >
-                {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-              </button>
-            </div>
-
+          {/* Desktop Call to Actions (Login Button) */}
+          <div className="hidden lg:flex items-center space-x-4">
             {isAuthenticated ? (
               <>
-                <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${isDark ? 'bg-slate-800' : 'bg-gray-50'}`}>
+                <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
                   <User className="w-4 h-4 text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded p-1" />
-                  <span className={`text-sm font-medium ${isDark ? 'text-slate-200' : 'text-gray-700'}`}>
+                  <span className={`text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
                     {user?.name || user?.email?.split('@')[0]}
                   </span>
                 </div>
-                <button onClick={handleLogout} className={`flex items-center space-x-1 ${isDark ? 'text-slate-300 hover:text-red-400' : 'text-gray-700 hover:text-red-600'}`}>
+                <button onClick={handleLogout} className={`flex items-center space-x-1 px-3 py-2 rounded-lg ${isDark ? 'text-gray-300 hover:text-red-400 hover:bg-gray-800' : 'text-gray-700 hover:text-red-600 hover:bg-gray-100'}`}>
                   <LogOut className="w-4 h-4" /> <span>Logout</span>
                 </button>
               </>
             ) : (
-              <Link to="/login" className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-2 rounded-lg">
-                Sign In
+              <Link to="/login" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-300">
+                Login
               </Link>
             )}
-
-          
           </div>
 
-          <div className="md:hidden flex items-center space-x-3">
-            <button
-              onClick={toggleTheme}
-              aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              className={`p-3 rounded-xl transition-all duration-300 hover:scale-105 border ${isDark
-                ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border-slate-700'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-200'
-                }`}
-              type="button"
-            >
-              {isDark ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
-            </button>
+          {/* Mobile Menu Button & Theme Toggle */}
+          <div className="lg:hidden flex items-center space-x-3">
             <button
               onClick={() => setIsOpen(!isOpen)}
-              className={`${isDark ? 'text-gray-300 hover:text-blue-400' : 'text-gray-700 hover:text-blue-600'} p-2`}
+              className="text-gray-300 hover:text-white p-2"
               aria-label="Open menu"
             >
-              <Menu size={24} />
+              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
             </button>
           </div>
         </div>
       </div>
 
+      {/* Mobile Sidebar */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -190,15 +168,15 @@ const NavBar: React.FC = () => {
             <div className="px-4 py-6 space-y-4">
               {isAuthenticated ? (
                 <>
-                  <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${isDark ? 'bg-slate-800' : 'bg-gray-50'}`}>
+                  <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
                     <User className="w-4 h-4 text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded p-1" />
-                    <span className={`text-sm font-medium ${isDark ? 'text-slate-200' : 'text-gray-700'}`}>
+                    <span className={`text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
                       {user?.name || user?.email?.split('@')[0]}
                     </span>
                   </div>
                   <button
                     onClick={handleLogout}
-                    className={`w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${isDark ? 'text-slate-300 hover:text-red-400 hover:bg-gray-800' : 'text-gray-700 hover:text-red-600 hover:bg-gray-100'}`}
+                    className={`w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${isDark ? 'text-gray-300 hover:text-red-400 hover:bg-gray-800' : 'text-gray-700 hover:text-red-600 hover:bg-gray-100'}`}
                   >
                     <LogOut className="w-5 h-5" /> <span>Logout</span>
                   </button>
@@ -207,9 +185,9 @@ const NavBar: React.FC = () => {
                 <Link
                   to="/login"
                   onClick={handleMobileLinkClick}
-                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white px-6 py-3 rounded-lg text-center font-semibold hover:from-blue-700 hover:to-indigo-700 transition-all duration-200"
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg text-center font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200"
                 >
-                  Sign In
+                  Login
                 </Link>
               )}
 
@@ -220,20 +198,34 @@ const NavBar: React.FC = () => {
                   onClick={handleMobileLinkClick}
                   className={`flex items-center space-x-2 text-base font-medium transition-colors duration-200 ${
                     pathname === item.href
-                      ? isDark ? 'text-blue-400' : 'text-blue-600'
-                      : isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'
+                      ? 'text-blue-400'
+                      : 'text-gray-300 hover:text-white'
                   }`}
                 >
                   <span>{item.name}</span>
                 </Link>
               ))}
 
-             
+              {/* Mobile Theme Toggle (visible only in sidebar) */}
+              <div className="pt-4 border-t border-gray-700">
+                <button
+                  onClick={toggleTheme}
+                  aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                  className={`w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-300 border ${isDark
+                    ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border-slate-700'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-200'
+                    }`}
+                  type="button"
+                >
+                  {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                  <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
-    </nav>
+    </motion.nav>
   );
 };
 
