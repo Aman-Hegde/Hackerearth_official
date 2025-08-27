@@ -53,7 +53,7 @@ const NavBar: React.FC = () => {
     { name: "Events", href: "/events" },
     { name: "Leaderboard", href: "/leaderboard" },
     { name: "Team", href: "/team" },
-    { name: "Achievements", href: "/achievements" },
+    { name: "Achievements..", href: "/achievements" },
     { name: "Contact", href: "/contact" },
   ];
 
@@ -69,7 +69,7 @@ const NavBar: React.FC = () => {
 
   return (
     <motion.nav
-      className="fixed top-0 left-0 right-0 w-full z-50 bg-[#1A1D2E] border-b border-gray-800/50"
+      className="fixed top-0 left-0 right-0 w-full z-50 border-b border-gray-800/50"
       initial={{ y: 0 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6 }}
