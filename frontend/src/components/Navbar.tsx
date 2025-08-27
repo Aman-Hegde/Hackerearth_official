@@ -93,8 +93,8 @@ const NavBar: React.FC = () => {
             <img
               src={logo}
               alt="HackerEarth Hub-nmamit Logo"
-              width={120}
-              height={32}
+              width={100}
+              height={20}
               className="object-contain"
             />
           </Link>
