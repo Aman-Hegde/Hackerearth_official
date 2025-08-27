@@ -1,6 +1,6 @@
 import React from 'react';
 import { Code2, Mail, Phone, MapPin, Github, Linkedin, Twitter, Instagram } from 'lucide-react';
-import logo from '../assets/image.png'; // Assuming this path is correct
+import logo from '../assets/image.png';
 import { useTheme } from '../context/ThemeContext';
 
 const Footer = () => {
@@ -23,8 +23,8 @@ const Footer = () => {
   return (
     <footer className={`relative z-10 transition-colors duration-400
       ${isDark
-        ? "bg-[#131222]" // A deep, subtle dark blue/purple, consistent with dark theme nav
-        : "bg-white" // Clean white for light theme
+        ? "bg-[#1E1D36]" // Deep, clean dark background
+        : "bg-white" // Clean white background
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
@@ -52,18 +52,18 @@ const Footer = () => {
                   <a
                     key={index}
                     href={social.href}
-                    className={`group w-12 h-12 rounded-xl flex items-center justify-center shadow-md transition-all duration-300 hover:scale-110
+                    className={`group w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110
                       ${isDark
-                        ? "bg-[#1E1D36] hover:bg-gradient-to-r hover:from-blue-600 hover:to-indigo-800"
-                        : "bg-gray-100 hover:bg-gradient-to-r hover:from-blue-500 hover:to-indigo-600"
+                        ? "bg-slate-800 hover:bg-blue-600/30" // Subtle dark background, hover to blue tint
+                        : "bg-gray-100 hover:bg-blue-200/50" // Subtle light background, hover to blue tint
                       }`}
                     aria-label={social.label}
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <Icon className={`w-5 h-5 transition-colors
-                      ${isDark ? "text-slate-200 group-hover:text-white"
-                      : "text-gray-600 group-hover:text-white"}`} />
+                    <Icon className={`w-5 h-5 transition-colors duration-300
+                      ${isDark ? "text-slate-300 group-hover:text-blue-300" // Dark mode icon color, hover to light blue
+                      : "text-gray-600 group-hover:text-blue-600"}`} /> {/* Light mode icon color, hover to blue */}
                   </a>
                 );
               })}
@@ -87,7 +87,7 @@ const Footer = () => {
                         : "text-gray-600 hover:text-blue-600"
                       }`}
                   >
-                    <span className="w-1.5 h-1.5 bg-blue-600 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></span> {/* Kept blue dot for interactive feel */}
                     <span>{link.name}</span>
                   </a>
                 </li>
@@ -104,14 +104,14 @@ const Footer = () => {
             <div className="space-y-4">
               <div className="flex items-center space-x-3 group">
                 <div
-                  className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110
                     ${isDark
-                      ? "bg-[#1E1D36] group-hover:bg-gradient-to-r group-hover:from-blue-700 group-hover:to-indigo-900"
-                      : "bg-blue-100 group-hover:bg-gradient-to-r group-hover:from-blue-500 group-hover:to-indigo-600"
+                      ? "bg-slate-800 group-hover:bg-blue-600/30"
+                      : "bg-blue-100 group-hover:bg-blue-200/50"
                     }`}
                 >
-                  <Mail className={`w-5 h-5 transition-colors
-                    ${isDark ? "text-blue-300 group-hover:text-white" : "text-blue-600 group-hover:text-white"}`} />
+                  <Mail className={`w-5 h-5 transition-colors duration-300
+                    ${isDark ? "text-blue-300 group-hover:text-blue-200" : "text-blue-600 group-hover:text-blue-700"}`} />
                 </div>
                 <div>
                   <p className={`${isDark ? "text-slate-400" : "text-gray-500"} text-sm`}>Email</p>
@@ -127,14 +127,14 @@ const Footer = () => {
               </div>
               <div className="flex items-center space-x-3 group">
                 <div
-                  className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110
                     ${isDark
-                      ? "bg-[#1E1D36] group-hover:bg-gradient-to-r group-hover:from-green-700 group-hover:to-emerald-900"
-                      : "bg-green-100 group-hover:bg-gradient-to-r group-hover:from-green-500 group-hover:to-emerald-600"
+                      ? "bg-slate-800 group-hover:bg-green-600/30"
+                      : "bg-green-100 group-hover:bg-green-200/50"
                     }`}
                 >
-                  <Phone className={`w-5 h-5 transition-colors
-                    ${isDark ? "text-green-300 group-hover:text-white" : "text-green-600 group-hover:text-white"}`} />
+                  <Phone className={`w-5 h-5 transition-colors duration-300
+                    ${isDark ? "text-green-300 group-hover:text-green-200" : "text-green-600 group-hover:text-green-700"}`} />
                 </div>
                 <div>
                   <p className={`${isDark ? "text-slate-400" : "text-gray-500"} text-sm`}>Phone</p>
@@ -147,14 +147,14 @@ const Footer = () => {
               </div>
               <div className="flex items-center space-x-3 group">
                 <div
-                  className={`w-10 h-10 rounded-lg flex items-center justify-center transition-all duration-300
+                  className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 hover:scale-110
                     ${isDark
-                      ? "bg-[#1E1D36] group-hover:bg-gradient-to-r group-hover:from-purple-700 group-hover:to-pink-900"
-                      : "bg-purple-100 group-hover:bg-gradient-to-r group-hover:from-purple-500 group-hover:to-pink-600"
+                      ? "bg-slate-800 group-hover:bg-purple-600/30"
+                      : "bg-purple-100 group-hover:bg-purple-200/50"
                     }`}
                 >
-                  <MapPin className={`w-5 h-5 transition-colors
-                    ${isDark ? "text-purple-300 group-hover:text-white" : "text-purple-600 group-hover:text-white"}`} />
+                  <MapPin className={`w-5 h-5 transition-colors duration-300
+                    ${isDark ? "text-purple-300 group-hover:text-purple-200" : "text-purple-600 group-hover:text-purple-700"}`} />
                 </div>
                 <div>
                   <p className={`${isDark ? "text-slate-400" : "text-gray-500"} text-sm`}>Location</p>
@@ -175,12 +175,12 @@ const Footer = () => {
         </div>
 
         {/* Bottom Section */}
-        <div className={`border-t mt-12 pt-8 transition-colors duration-300
+        <div className={`mt-12 pt-8 border-t transition-colors duration-300
           ${isDark ? "border-slate-700" : "border-gray-200"}`}>
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className={`${isDark ? "text-slate-400" : "text-gray-500"} text-sm flex items-center gap-1`}>
+            <p className={`${isDark ? "text-slate-400" : "text-gray-500"} text-sm flex flex-wrap items-center gap-1`}>
               © {new Date().getFullYear()} HackerEarth Club, NMAMIT. All rights reserved.
-              <span className="ml-4">
+              <span className="ml-0 md:ml-4 mt-2 md:mt-0">
                 Made with <span className="text-red-500">❤️</span> by&nbsp;
                 <a href="https://github.com/HackerearthHubNmamit" target="_blank" rel="noopener noreferrer" className={`${isDark ? "text-blue-400 hover:underline" : "text-blue-600 hover:underline"} font-medium`}>
                   Hackers
