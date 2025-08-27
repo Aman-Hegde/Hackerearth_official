@@ -366,115 +366,108 @@ const Home = () => {
 
       <StatsSection />
 
-      <section className="relative z-10 py-32 overflow-hidden">
-        {/* Background elements */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5" />
-        <div className="absolute top-0 left-0 w-full h-full opacity-10">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-500 rounded-full blur-3xl animate-pulse delay-1000" />
-        </div>
+   <section className="relative z-10 py-32 overflow-hidden">
+  {/* Enhanced background with subtle gradients */}
+  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/8 to-pink-500/6" />
+  <div className="absolute top-0 left-0 w-full h-full opacity-15">
+    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500 rounded-full blur-3xl animate-pulse" />
+    <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-500 rounded-full blur-3xl animate-pulse delay-1000" />
+  </div>
 
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          {/* Main content container */}
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="relative"
+  <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.8 }}
+      viewport={{ once: true }}
+      className="relative"
+    >
+      {/* Subtle corner lighting effects */}
+      <div className="absolute -top-6 -left-6 w-24 h-24 bg-blue-400/20 rounded-full blur-xl" />
+      <div className="absolute -bottom-6 -right-6 w-20 h-20 bg-purple-400/20 rounded-full blur-xl" />
+
+      {/* Premium card container */}
+      <div className="relative bg-gradient-to-br from-gray-900/95 to-gray-800/95 dark:from-gray-900/98 dark:to-gray-800/98 backdrop-blur-3xl border border-gray-700/30 dark:border-gray-600/20 rounded-3xl p-16 transition-all duration-500 hover:scale-[1.01]">
+        {/* Enhanced edge glow */}
+        <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 pointer-events-none" />
+        
+        {/* Minimalist icon */}
+        <motion.div
+          className="relative mx-auto mb-10 w-16 h-16 flex items-center justify-center"
+          whileHover={{ scale: 1.05 }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-2xl blur-md" />
+          <ArrowRight className="w-8 h-8 text-white transform rotate-45" />
+        </motion.div>
+
+        {/* Enhanced typography */}
+        <motion.h2
+          className="text-5xl md:text-6xl font-bold mb-8 tracking-tight"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          viewport={{ once: true }}
+        >
+          <span className="text-white">Ready to Begin Your </span>
+          <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+            Journey?
+          </span>
+        </motion.h2>
+
+        {/* Softer subtext */}
+        <motion.p
+          className="text-xl md:text-2xl mb-12 leading-relaxed text-gray-300 max-w-2xl mx-auto font-light"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          viewport={{ once: true }}
+        >
+          Join a community of innovators, builders, and leaders. Start your path to technical excellence today.
+        </motion.p>
+
+        {/* Sleek button with enhanced effects */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, delay: 0.6 }}
+          viewport={{ once: true }}
+        >
+          <Link
+            to="/login"
+            className="group relative inline-flex items-center space-x-4 px-14 py-5 rounded-full font-semibold text-xl transition-all duration-500 hover:scale-105 overflow-hidden"
           >
-            {/* Floating elements */}
+            {/* Button background with enhanced gradient */}
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 group-hover:from-blue-500 group-hover:to-purple-500 transition-all duration-300" />
+            
+            {/* Hover glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-blue-400/30 to-purple-400/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full blur-md" />
+            
+            {/* 3D press effect layer */}
+            <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full" />
+
+            {/* Button content */}
+            <span className="relative z-10 text-white">Get Started</span>
             <motion.div
-              className="absolute -top-8 -left-8 w-16 h-16 bg-blue-500/20 rounded-full blur-xl"
-              animate={{
-                scale: [1, 1.2, 1],
-                opacity: [0.3, 0.6, 0.3]
-              }}
-              transition={{ duration: 3, repeat: Infinity }}
-            />
-            <motion.div
-              className="absolute -bottom-8 -right-8 w-20 h-20 bg-purple-500/20 rounded-full blur-xl"
-              animate={{
-                scale: [1, 1.3, 1],
-                opacity: [0.2, 0.5, 0.2]
-              }}
-              transition={{ duration: 4, repeat: Infinity, delay: 1 }}
-            />
+              className="relative z-10"
+              animate={{ x: [0, 4, 0] }}
+              transition={{ duration: 2, repeat: Infinity }}
+            >
+              <ArrowRight className="w-6 h-6 text-white group-hover:translate-x-1 transition-transform duration-300" />
+            </motion.div>
 
-            {/* Main card */}
-            <div className="relative bg-gradient-to-br from-white/95 to-gray-50/95 dark:from-gray-900/95 dark:to-gray-800/95 backdrop-blur-2xl border border-white/20 dark:border-gray-700/30 rounded-3xl p-12 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-[1.02]">
-              {/* Decorative elements */}
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-t-3xl" />
-              
-              {/* Icon container */}
-              <motion.div
-                className="relative mx-auto mb-8 w-20 h-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg"
-                whileHover={{ rotate: 360, scale: 1.1 }}
-                transition={{ duration: 0.7 }}
-              >
-                <Rocket className="w-10 h-10 text-white" />
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-md" />
-              </motion.div>
+            {/* Subtle shine effect on hover */}
+            <div className="absolute inset-0 bg-white/5 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+          </Link>
+        </motion.div>
 
-              {/* Heading */}
-              <motion.h2
-                className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                viewport={{ once: true }}
-              >
-                Ready to Begin Your <span className="italic font-light">Journey</span>?
-              </motion.h2>
-
-              {/* Description */}
-              <motion.p
-                className="text-xl md:text-2xl mb-10 leading-relaxed text-gray-600 dark:text-gray-300 max-w-2xl mx-auto font-light"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                viewport={{ once: true }}
-              >
-                Join a community of innovators, builders, and leaders. Start your path to technical excellence today.
-              </motion.p>
-
-              {/* CTA Button */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.6 }}
-                viewport={{ once: true }}
-              >
-                <Link
-                  to="/login"
-                  className="group relative inline-flex items-center space-x-6 px-14 py-5 rounded-2xl font-semibold text-xl transition-all duration-500 hover:scale-105 shadow-2xl hover:shadow-3xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white overflow-hidden"
-                >
-                  {/* Button background effects */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-white/20 to-purple-500/0 group-hover:via-white/30 transition-all duration-500" />
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  
-                  {/* Button content */}
-                  <span className="relative z-10">Get Started</span>
-                  <motion.div
-                    className="relative z-10"
-                    animate={{ x: [0, 5, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform duration-300" />
-                  </motion.div>
-
-                  {/* Hover effect */}
-                  <div className="absolute inset-0 bg-white/10 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                </Link>
-              </motion.div>
-
-              {/* Additional decorative elements */}
-              <div className="absolute -bottom-4 -left-4 w-8 h-8 bg-blue-400/30 rounded-full blur-sm" />
-              <div className="absolute -top-4 -right-4 w-6 h-6 bg-purple-400/30 rounded-full blur-sm" />
-            </div>
-          </motion.div>
-        </div>
-      </section>
+        {/* Additional subtle decorative elements */}
+        <div className="absolute -bottom-3 -left-3 w-6 h-6 bg-blue-400/20 rounded-full blur-sm" />
+        <div className="absolute -top-3 -right-3 w-5 h-5 bg-purple-400/20 rounded-full blur-sm" />
+      </div>
+    </motion.div>
+  </div>
+</section>
     </div>
   );
 };
