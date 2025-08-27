@@ -63,7 +63,7 @@ const NavBar: React.FC = () => {
     { name: "Events", href: "/events" },
     { name: "Leaderboard", href: "/leaderboard" },
     { name: "Team", href: "/team" },
-    { name: "Achievements x", href: "/achievements" }, // Corrected
+    { name: "Achievements", href: "/achievements" }, // Corrected to "Achievements"
     { name: "Contact", href: "/contact" },
   ];
 
@@ -77,32 +77,37 @@ const NavBar: React.FC = () => {
     navigate('/');
   };
 
-  // Define glow styles for light mode blending.
-  // For dark mode, the navbar is solid, so no glow from it.
-  const lightModeGlowBackground = `radial-gradient(ellipse at top center, rgba(0,0,0,0.03) 0%, transparent 70%)`;
+  // Define glow styles ONLY for dark mode
+  const darkModeGlowBackground = `radial-gradient(ellipse at top center, rgba(78,92,237,0.1) 0%, transparent 70%)`; // Subtle blue/purple glow
+
+  // Custom glow class for the Login button in dark mode
+  const loginButtonGlowClass = "shadow-[0_0_10px_rgba(78,92,237,0.4),_0_0_20px_rgba(147,51,234,0.2)]";
+
 
   return (
     <motion.nav
       className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${
         scrolled
-          ? // Scrolled state: more opaque background, with border
+          ? // Scrolled state: slightly opaque background, with border for both modes
             isDark
-              ? "bg-[#0B0A1E]/90 backdrop-blur-md border-b border-gray-800/50" // Slightly transparent dark background when scrolled
-              : "bg-white/80 backdrop-blur-md border-b border-gray-200/50" // Slightly transparent light background when scrolled
-          : // Not scrolled state:
+              ? "bg-[#1E1D36]/90 backdrop-blur-md border-b border-gray-800/50" // Dark mode scrolled
+              : "bg-white/80 backdrop-blur-md border-b border-gray-200/50" // Light mode scrolled
+          : // Not scrolled state: transparent (dark mode for glow), solid (light mode - or blend as needed)
             isDark
-              ? "bg-transparent backdrop-blur-sm" // Transparent for dark mode to blend with hero
-              : "bg-transparent backdrop-blur-sm" // Transparent for light mode blending
+              ? "bg-transparent backdrop-blur-sm" // Transparent to let the dark mode glow show through
+              : "bg-[#1E1D36]" // Light mode: solid dark background (matching the original intention of the nav image)
+              // OR if light mode should blend with a light hero, change to "bg-transparent backdrop-blur-sm"
+              // and potentially add a separate lightModeGlowBackground if a light glow is needed.
       }`}
       initial={{ y: 0 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6 }}
     >
-      {/* Glow effect at the top of the Navbar, ONLY visible in light mode when not scrolled */}
-      {!scrolled && !isDark && (
+      {/* Glow effect at the top of the Navbar, ONLY visible in dark mode when not scrolled */}
+      {!scrolled && isDark && ( // Glow is now conditional on isDark being TRUE
         <motion.div
           className="absolute top-0 left-0 right-0 h-32 pointer-events-none z-0"
-          style={{ background: lightModeGlowBackground }}
+          style={{ background: darkModeGlowBackground }}
           animate={{ opacity: [0.9, 1.3, 0.9] }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         />
@@ -121,7 +126,7 @@ const NavBar: React.FC = () => {
                     ? 'text-blue-500 dark:text-blue-400' // Active link color
                     : isDark
                       ? 'text-gray-300 hover:text-white' // Dark mode default link
-                      : 'text-gray-700 hover:text-gray-900' // Light mode default link
+                      : 'text-gray-300 hover:text-white' // Light mode default link (assuming nav itself is dark in light mode, per image)
                 }`}
               >
                 <span>{item.name}</span>
@@ -138,9 +143,9 @@ const NavBar: React.FC = () => {
                 aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                 className={`
                   p-2 rounded-lg transition-all duration-300 hover:scale-105
-                  ${isDark // Dark mode button style from image
+                  ${isDark // Dark mode button style from image (rounded square with border, white text)
                     ? 'text-white border border-gray-700 bg-gray-800/20 hover:bg-gray-700/30'
-                    : 'text-gray-700 hover:text-gray-900' // Light mode simple icon
+                    : 'text-white border border-gray-700 bg-gray-800/20 hover:bg-gray-700/30' // Light mode theme toggle button (assuming it's dark like nav)
                   }
                 `}
                 type="button"
@@ -153,24 +158,27 @@ const NavBar: React.FC = () => {
                   <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${
                     isDark
                       ? 'bg-gray-800/50'
-                      : 'bg-gray-100/70 border border-gray-200' // User info background
+                      : 'bg-gray-800/50' // User info background (assuming dark always in this nav design)
                   }`}>
-                    <User className={`w-4 h-4 ${isDark ? 'text-white' : 'text-gray-700'}`} />
-                    <span className={`text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
+                    <User className={`w-4 h-4 ${isDark ? 'text-white' : 'text-white'}`} />
+                    <span className={`text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-200'}`}>
                       {user?.name || user?.email?.split('@')[0]}
                     </span>
                   </div>
                   <button onClick={handleLogout} className={`flex items-center space-x-1 px-3 py-2 rounded-lg ${
                     isDark
                       ? 'text-gray-300 hover:text-red-400 hover:bg-gray-800/50'
-                      : 'text-gray-700 hover:text-red-600 hover:bg-gray-100/50' // Logout button
+                      : 'text-gray-300 hover:text-red-400 hover:bg-gray-800/50' // Logout button (assuming dark always)
                   }`}>
                     <LogOut className="w-4 h-4" /> <span>Logout</span>
                   </button>
                 </>
               ) : (
-                <Link to="/login" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-300">
-                  Login {/* Login button remains consistent with gradient */}
+                <Link
+                  to="/login"
+                  className={`bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-300 ${isDark ? loginButtonGlowClass : ''}`}
+                >
+                  Login {/* Login button with conditional glow in dark mode */}
                 </Link>
               )}
             </div>
@@ -179,7 +187,7 @@ const NavBar: React.FC = () => {
             <div className="lg:hidden flex items-center space-x-3">
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className={`${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'} p-2`} // Mobile menu icon color
+                className={`${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-300 hover:text-white'} p-2`} // Mobile menu icon color (assuming dark always)
                 aria-label="Open menu"
               >
                 {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -196,7 +204,7 @@ const NavBar: React.FC = () => {
             className={`md:hidden absolute top-full left-0 right-0 backdrop-blur-md border-b ${
               isDark
                 ? "bg-black/95 border-gray-800"
-                : "bg-white/95 border-gray-200" // Mobile sidebar background
+                : "bg-black/95 border-gray-800" // Mobile sidebar background (assuming dark always)
             }`}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
@@ -209,10 +217,10 @@ const NavBar: React.FC = () => {
                   <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${
                     isDark
                       ? 'bg-gray-800/50'
-                      : 'bg-gray-100/70 border border-gray-200' // User info mobile
+                      : 'bg-gray-800/50' // User info mobile (assuming dark always)
                   }`}>
-                    <User className={`w-4 h-4 ${isDark ? 'text-white' : 'text-gray-700'}`} />
-                    <span className={`text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
+                    <User className={`w-4 h-4 ${isDark ? 'text-white' : 'text-white'}`} />
+                    <span className={`text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-200'}`}>
                       {user?.name || user?.email?.split('@')[0]}
                     </span>
                   </div>
@@ -221,7 +229,7 @@ const NavBar: React.FC = () => {
                     className={`w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${
                       isDark
                         ? 'text-gray-300 hover:text-red-400 hover:bg-gray-800/50'
-                        : 'text-gray-700 hover:text-red-600 hover:bg-gray-100/50' // Logout mobile
+                        : 'text-gray-300 hover:text-red-400 hover:bg-gray-800/50' // Logout mobile (assuming dark always)
                     }`}
                   >
                     <LogOut className="w-5 h-5" /> <span>Logout</span>
@@ -231,7 +239,7 @@ const NavBar: React.FC = () => {
                 <Link
                   to="/login"
                   onClick={handleMobileLinkClick}
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg text-center font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200"
+                  className={`w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg text-center font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 ${isDark ? loginButtonGlowClass : ''}`}
                 >
                   Login
                 </Link>
@@ -247,21 +255,21 @@ const NavBar: React.FC = () => {
                       ? 'text-blue-500 dark:text-blue-400' // Active link color
                       : isDark
                         ? 'text-gray-300 hover:text-white'
-                        : 'text-gray-700 hover:text-gray-900' // Nav items mobile
+                        : 'text-gray-300 hover:text-white' // Nav items mobile (assuming dark always)
                   }`}
                 >
                   <span>{item.name}</span>
                 </Link>
               ))}
 
-              <div className={`pt-4 ${isDark ? 'border-t border-gray-700' : 'border-t border-gray-200'}`}>
+              <div className={`pt-4 ${isDark ? 'border-t border-gray-700' : 'border-t border-gray-700'}`}>
                 <button
                   onClick={toggleTheme}
                   aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                   className={`w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
                     isDark
                       ? 'text-white border border-gray-700 bg-gray-800/20 hover:bg-gray-700/30'
-                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100/50' // Theme toggle mobile
+                      : 'text-white border border-gray-700 bg-gray-800/20 hover:bg-gray-700/30' // Theme toggle mobile (assuming dark always)
                   }`}
                   type="button"
                 >
