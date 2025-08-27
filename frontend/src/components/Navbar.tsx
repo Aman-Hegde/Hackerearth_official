@@ -1,18 +1,10 @@
-// components/NavBar.tsx
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-
-// Lucide React Icons - Monitor is needed for the logo
-import {
-  Menu, X, Sun, Moon, User, LogOut, Monitor // Monitor is used for the logo in the image
-} from 'lucide-react';
-
-// Contexts (ensure these are correctly provided in your app's root)
+import { Menu, X, Sun, Moon, User, LogOut, Monitor } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
-// Re-usable Button Component (copied for completeness, ideally imported from a shared file)
 function Button({
   children,
   className = "",
@@ -52,7 +44,6 @@ function Button({
 
 const NavBar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  // `scrolled` state and its useEffect are removed as the navbar is fixed with a consistent background
   const { pathname } = useLocation();
 
   const navigate = useNavigate();
@@ -79,23 +70,21 @@ const NavBar: React.FC = () => {
 
   return (
     <motion.nav
-      // Fixed position, solid dark background from image, no `scrolled` conditional classes or blur
       className="fixed top-0 left-0 right-0 w-full z-50 bg-[#1A1D2E] border-b border-gray-800/50"
-      initial={{ y: 0 }} // Ensures it starts in place
+      initial={{ y: 0 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6 }}
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center space-x-2" aria-label="Home">
-            {/* Text-based logo with icon, matching new image exactly */}
             <div className="flex items-center space-x-1 p-1 bg-white rounded-md shadow-md h-8">
-                <Monitor className="w-5 h-5 text-gray-800" />
-                <span className="text-gray-800 text-xs font-semibold whitespace-nowrap">HackerEarth Hub-nmamit</span>
+              <Monitor className="w-5 h-5 text-gray-800" />
+              <span className="text-gray-800 text-xs font-semibold whitespace-nowrap">HackerEarth Hub-nmamit</span>
             </div>
           </Link>
 
-          {/* Desktop Navigation - Nav Items */}
+          {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-8">
             {navItems.map((item) => (
               <Link
@@ -112,42 +101,37 @@ const NavBar: React.FC = () => {
             ))}
           </div>
 
-          {/* Desktop Call to Actions & Theme Toggle - Matches Image */}
+          {/* Desktop Call to Actions */}
           <div className="hidden lg:flex items-center space-x-4">
-            {/* Desktop Theme Toggle - Matches image styling */}
             <button
               onClick={toggleTheme}
               aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              className={`p-2 rounded-lg transition-all duration-300 hover:scale-105 border border-gray-700 bg-gray-800
-                ${isDark ? 'text-gray-300' : 'text-gray-300'}` // Consistent text color for toggle
-              }
+              className={`p-2 rounded-lg transition-all duration-300 hover:scale-105 border border-gray-700 bg-gray-800 text-gray-300`}
               type="button"
             >
               {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
 
             {isAuthenticated ? (
-              // User info & Logout if authenticated (essential functionality)
               <>
-                <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
+                <div className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-800">
                   <User className="w-4 h-4 text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded p-1" />
-                  <span className={`text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
+                  <span className="text-sm font-medium text-gray-200">
                     {user?.name || user?.email?.split('@')[0]}
                   </span>
                 </div>
-                <button onClick={handleLogout} className={`flex items-center space-x-1 px-3 py-2 rounded-lg ${isDark ? 'text-gray-300 hover:text-red-400 hover:bg-gray-800' : 'text-gray-700 hover:text-red-600 hover:bg-gray-100'}`}>
+                <button onClick={handleLogout} className="flex items-center space-x-1 px-3 py-2 rounded-lg text-gray-300 hover:text-red-400 hover:bg-gray-800">
                   <LogOut className="w-4 h-4" /> <span>Logout</span>
                 </button>
               </>
             ) : (
-              // Login Button - Matches image gradient
               <Link to="/login" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-300">
                 Login
               </Link>
             )}
           </div>
 
-          {/* Mobile Menu Button (Hamburger) */}
+          {/* Mobile Menu Button */}
           <div className="lg:hidden flex items-center space-x-3">
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -164,7 +148,7 @@ const NavBar: React.FC = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className={`md:hidden absolute top-full left-0 right-0 backdrop-blur-md border-b ${isDark ? 'bg-black/90 border-gray-800' : 'bg-white/90 border-gray-200'}`}
+            className="md:hidden absolute top-full left-0 right-0 backdrop-blur-md border-b bg-black/90 border-gray-800"
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -173,15 +157,15 @@ const NavBar: React.FC = () => {
             <div className="px-4 py-6 space-y-4">
               {isAuthenticated ? (
                 <>
-                  <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
+                  <div className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-800">
                     <User className="w-4 h-4 text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded p-1" />
-                    <span className={`text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
+                    <span className="text-sm font-medium text-gray-200">
                       {user?.name || user?.email?.split('@')[0]}
                     </span>
                   </div>
                   <button
                     onClick={handleLogout}
-                    className={`w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${isDark ? 'text-gray-300 hover:text-red-400 hover:bg-gray-800' : 'text-gray-700 hover:text-red-600 hover:bg-gray-100'}`}
+                    className="w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors duration-200 text-gray-300 hover:text-red-400 hover:bg-gray-800"
                   >
                     <LogOut className="w-5 h-5" /> <span>Logout</span>
                   </button>
@@ -211,15 +195,11 @@ const NavBar: React.FC = () => {
                 </Link>
               ))}
 
-              {/* Mobile Theme Toggle (visible only in sidebar) */}
               <div className="pt-4 border-t border-gray-700">
                 <button
                   onClick={toggleTheme}
                   aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                  className={`w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-300 border ${isDark
-                    ? 'bg-slate-800 text-slate-300 hover:bg-slate-700 border-slate-700'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-200'
-                    }`}
+                  className="w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-300 border bg-slate-800 text-slate-300 hover:bg-slate-700 border-slate-700"
                   type="button"
                 >
                   {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
