@@ -44,25 +44,16 @@ function Button({
 
 const NavBar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { user, logout, isAuthenticated } = useAuth();
   const { isDark, toggleTheme } = useTheme();
 
-  useEffect(() => {
-    const handleScroll = () => {
-      setScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
   const navItems = [
     { name: "Events", href: "/events" },
     { name: "Leaderboard", href: "/leaderboard" },
     { name: "Team", href: "/team" },
-    { name: "Achievements 3", href: "/achievements" },
+    { name: "Achievements", href: "/achievements" },
     { name: "Contact", href: "/contact" },
   ];
 
@@ -78,10 +69,8 @@ const NavBar: React.FC = () => {
 
   return (
     <motion.nav
-      className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${
-        scrolled ? "bg-black/70 backdrop-blur-md border-b border-gray-800/50" : "bg-transparent"
-      }`}
-      initial={{ y: -100 }}
+      className="fixed top-0 left-0 right-0 w-full z-50 bg-[#1A1D2E] border-b border-gray-800/50"
+      initial={{ y: 0 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6 }}
     >
@@ -102,7 +91,7 @@ const NavBar: React.FC = () => {
             ))}
           </div>
 
-          {/* Right-aligned items (moved to a wrapper div for positioning) */}
+          {/* Right-aligned items */}
           <div className="flex items-center space-x-4 absolute right-0">
             {/* Desktop Call to Actions */}
             <div className="hidden lg:flex items-center space-x-4">
