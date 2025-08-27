@@ -85,14 +85,14 @@ const NavBar: React.FC = () => {
     <motion.nav
       className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${
         scrolled
-          ? // Scrolled state: more opaque background, with border
+          ? 
             isDark
               ? "bg-black/90 backdrop-blur-md border-b border-gray-800/50"
               : "bg-white/80 backdrop-blur-md border-b border-gray-200/50"
-          : // Not scrolled state:
+          : 
             isDark
-              ? "bg-[#1A1C29] border-b border-transparent" // Specific dark background for dark mode (from your image)
-              : "bg-transparent backdrop-blur-sm" // Transparent for light mode blending
+              ? "bg-[#0B0A1E] border-b border-transparent" 
+              : "bg-transparent backdrop-blur-sm" 
       }`}
       initial={{ y: 0 }}
       animate={{ y: 0 }}
