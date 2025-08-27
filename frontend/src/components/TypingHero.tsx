@@ -34,7 +34,7 @@ function TypingHero() {
     }
   ];
 
-  const baseText = "Hackerearth empowers ";
+  const baseText = "HackerEarth empowers ";
   const typingSpeed = 100;
   const deletingSpeed = 50;
   const pauseTime = 2000;
