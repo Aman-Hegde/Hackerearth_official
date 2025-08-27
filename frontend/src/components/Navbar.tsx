@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Sun, Moon, User, LogOut, Monitor } from 'lucide-react';
+import { Menu, X, Sun, Moon, User, LogOut } from 'lucide-react'; // Monitor icon was not used, removed.
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
+// Button component remains unchanged, as it's not directly related to the navbar blending.
 function Button({
   children,
   className = "",
@@ -76,16 +77,40 @@ const NavBar: React.FC = () => {
     navigate('/');
   };
 
+  // Define glow styles based on theme
+  const glowStyles = {
+    dark: `radial-gradient(ellipse at top center, rgba(125,200,255,0.15) 0%, transparent 70%)`,
+    light: `radial-gradient(ellipse at top center, rgba(0,0,0,0.03) 0%, transparent 70%)` // Very subtle for light mode
+  };
+
   return (
     <motion.nav
       className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${
-        scrolled ? "bg-black/90 backdrop-blur-md border-b border-gray-800/50" : "bg-black/80 backdrop-blur-sm"
+        scrolled
+          ? isDark // Scrolled state: more opaque background, with border
+            ? "bg-black/90 backdrop-blur-md border-b border-gray-800/50"
+            : "bg-white/90 backdrop-blur-md border-b border-gray-200/50"
+          : isDark // Not scrolled state: transparent background, but with blur
+            ? "bg-transparent backdrop-blur-sm"
+            : "bg-transparent backdrop-blur-sm"
       }`}
       initial={{ y: 0 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6 }}
     >
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      {/* Glow effect at the top of the Navbar, visible only when not scrolled */}
+      {!scrolled && (
+        <motion.div
+          className="absolute top-0 left-0 right-0 h-32 pointer-events-none z-0" // h-32 to match the height of the glow from the home component more effectively
+          style={{
+            background: isDark ? glowStyles.dark : glowStyles.light,
+          }}
+          animate={{ opacity: [0.9, 1.3, 0.9] }} // Re-using Home's animation properties for consistency
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        />
+      )}
+
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10"> {/* z-10 ensures content is above glow */}
         <div className="flex justify-center items-center h-16 relative">
           {/* Main Navigation Links - Center Aligned */}
           <div className="hidden lg:flex items-center space-x-8">
@@ -94,7 +119,11 @@ const NavBar: React.FC = () => {
                 key={item.name}
                 to={item.href}
                 className={`flex items-center space-x-1 text-sm font-medium transition-colors duration-200 ${
-                  pathname === item.href ? 'text-blue-400' : 'text-gray-300 hover:text-white'
+                  pathname === item.href
+                    ? 'text-blue-400'
+                    : isDark
+                      ? 'text-gray-300 hover:text-white'
+                      : 'text-gray-700 hover:text-gray-900' // Light mode text
                 }`}
               >
                 <span>{item.name}</span>
@@ -109,7 +138,9 @@ const NavBar: React.FC = () => {
               <button
                 onClick={toggleTheme}
                 aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                className="p-2 rounded-lg transition-all duration-300 hover:scale-105 text-gray-300 hover:text-white"
+                className={`p-2 rounded-lg transition-all duration-300 hover:scale-105 ${
+                  isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'
+                }`}
                 type="button"
               >
                 {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
@@ -117,13 +148,17 @@ const NavBar: React.FC = () => {
 
               {isAuthenticated ? (
                 <>
-                  <div className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-800/50">
-                    <User className="w-4 h-4 text-white" />
-                    <span className="text-sm font-medium text-gray-200">
+                  <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${
+                    isDark ? 'bg-gray-800/50' : 'bg-gray-100/70 border border-gray-200' // Light mode user info background
+                  }`}>
+                    <User className={`w-4 h-4 ${isDark ? 'text-white' : 'text-gray-700'}`} />
+                    <span className={`text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
                       {user?.name || user?.email?.split('@')[0]}
                     </span>
                   </div>
-                  <button onClick={handleLogout} className="flex items-center space-x-1 px-3 py-2 rounded-lg text-gray-300 hover:text-red-400 hover:bg-gray-800/50">
+                  <button onClick={handleLogout} className={`flex items-center space-x-1 px-3 py-2 rounded-lg ${
+                    isDark ? 'text-gray-300 hover:text-red-400 hover:bg-gray-800/50' : 'text-gray-700 hover:text-red-600 hover:bg-gray-100/50' // Light mode logout button
+                  }`}>
                     <LogOut className="w-4 h-4" /> <span>Logout</span>
                   </button>
                 </>
@@ -138,7 +173,7 @@ const NavBar: React.FC = () => {
             <div className="lg:hidden flex items-center space-x-3">
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="text-gray-300 hover:text-white p-2"
+                className={`${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'} p-2`}
                 aria-label="Open menu"
               >
                 {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -152,7 +187,9 @@ const NavBar: React.FC = () => {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className="md:hidden absolute top-full left-0 right-0 backdrop-blur-md border-b bg-black/95 border-gray-800"
+            className={`md:hidden absolute top-full left-0 right-0 backdrop-blur-md border-b ${
+              isDark ? "bg-black/95 border-gray-800" : "bg-white/95 border-gray-200" // Light mode mobile sidebar background
+            }`}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -161,15 +198,19 @@ const NavBar: React.FC = () => {
             <div className="px-4 py-6 space-y-4">
               {isAuthenticated ? (
                 <>
-                  <div className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-800/50">
-                    <User className="w-4 h-4 text-white" />
-                    <span className="text-sm font-medium text-gray-200">
+                  <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${
+                    isDark ? 'bg-gray-800/50' : 'bg-gray-100/70 border border-gray-200' // Light mode user info mobile
+                  }`}>
+                    <User className={`w-4 h-4 ${isDark ? 'text-white' : 'text-gray-700'}`} />
+                    <span className={`text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
                       {user?.name || user?.email?.split('@')[0]}
                     </span>
                   </div>
                   <button
                     onClick={handleLogout}
-                    className="w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors duration-200 text-gray-300 hover:text-red-400 hover:bg-gray-800/50"
+                    className={`w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${
+                      isDark ? 'text-gray-300 hover:text-red-400 hover:bg-gray-800/50' : 'text-gray-700 hover:text-red-600 hover:bg-gray-100/50' // Light mode logout mobile
+                    }`}
                   >
                     <LogOut className="w-5 h-5" /> <span>Logout</span>
                   </button>
@@ -190,18 +231,24 @@ const NavBar: React.FC = () => {
                   to={item.href}
                   onClick={handleMobileLinkClick}
                   className={`flex items-center space-x-2 text-base font-medium transition-colors duration-200 ${
-                    pathname === item.href ? 'text-blue-400' : 'text-gray-300 hover:text-white'
+                    pathname === item.href
+                      ? 'text-blue-400'
+                      : isDark
+                        ? 'text-gray-300 hover:text-white'
+                        : 'text-gray-700 hover:text-gray-900' // Light mode nav items mobile
                   }`}
                 >
                   <span>{item.name}</span>
                 </Link>
               ))}
 
-              <div className="pt-4 border-t border-gray-700">
+              <div className={`pt-4 ${isDark ? 'border-t border-gray-700' : 'border-t border-gray-200'}`}> {/* Theme-aware border */}
                 <button
                   onClick={toggleTheme}
                   aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                  className="w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-300 text-gray-300 hover:text-white hover:bg-gray-800/50"
+                  className={`w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
+                    isDark ? 'text-gray-300 hover:text-white hover:bg-gray-800/50' : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100/50'
+                  }`}
                   type="button"
                 >
                   {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
