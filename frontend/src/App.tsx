@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Home from './pages/Home';
 import Events from './pages/Events';
@@ -17,13 +18,10 @@ import ScrollToTop from './components/ScrollTop';
 function AppWrapper() {
   const location = useLocation();
 
-  useEffect(() => {
-    // This effect is now obsolete without the sidebar
-  }, [location]);
-
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
-      <main>
+      <Navbar />
+      <main className="pt-16">
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/events" element={<Events />} />
