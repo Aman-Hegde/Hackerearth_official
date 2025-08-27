@@ -5,8 +5,7 @@ import { Menu, X, Sun, Moon, User, LogOut } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
-// Button component remains unchanged, as it's a generic utility and its styling
-// should be handled by its own variant/theme properties or overridden via className.
+// Button component remains unchanged.
 function Button({
   children,
   className = "",
@@ -78,40 +77,38 @@ const NavBar: React.FC = () => {
     navigate('/');
   };
 
-  // Define glow styles based on theme for a smoother transition
-  const glowStyles = {
-    dark: `radial-gradient(ellipse at top center, rgba(125,200,255,0.15) 0%, transparent 70%)`,
-    light: `radial-gradient(ellipse at top center, rgba(0,0,0,0.03) 0%, transparent 70%)` // Very subtle for light mode
-  };
+  // Define glow styles for light mode blending.
+  // For dark mode, the navbar is solid, so no glow from it.
+  const lightModeGlowBackground = `radial-gradient(ellipse at top center, rgba(0,0,0,0.03) 0%, transparent 70%)`;
 
   return (
     <motion.nav
       className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${
         scrolled
-          ? isDark // Scrolled state: more opaque background, with border
-            ? "bg-black/90 backdrop-blur-md border-b border-gray-800/50"
-            : "bg-white/80 backdrop-blur-md border-b border-gray-200/50" // Light mode: white, slightly opaque
-          : isDark // Not scrolled state: transparent, allowing page background/glow to show
-            ? "bg-transparent backdrop-blur-sm"
-            : "bg-transparent backdrop-blur-sm" // Light mode: transparent for blending
+          ? // Scrolled state: more opaque background, with border
+            isDark
+              ? "bg-black/90 backdrop-blur-md border-b border-gray-800/50"
+              : "bg-white/80 backdrop-blur-md border-b border-gray-200/50"
+          : // Not scrolled state:
+            isDark
+              ? "bg-[#1A1C29] border-b border-transparent" // Specific dark background for dark mode (from your image)
+              : "bg-transparent backdrop-blur-sm" // Transparent for light mode blending
       }`}
       initial={{ y: 0 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6 }}
     >
-      {/* Glow effect at the top of the Navbar, visible only when not scrolled */}
-      {!scrolled && (
+      {/* Glow effect at the top of the Navbar, ONLY visible in light mode when not scrolled */}
+      {!scrolled && !isDark && (
         <motion.div
-          className="absolute top-0 left-0 right-0 h-32 pointer-events-none z-0" // Increased height to cover more of the hero section for a better blend
-          style={{
-            background: isDark ? glowStyles.dark : glowStyles.light,
-          }}
-          animate={{ opacity: [0.9, 1.3, 0.9] }} // Re-using Home's animation properties for consistency
+          className="absolute top-0 left-0 right-0 h-32 pointer-events-none z-0"
+          style={{ background: lightModeGlowBackground }}
+          animate={{ opacity: [0.9, 1.3, 0.9] }}
           transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
         />
       )}
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10"> {/* z-10 ensures content is above glow */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex justify-center items-center h-16 relative">
           {/* Main Navigation Links - Center Aligned */}
           <div className="hidden lg:flex items-center space-x-8">
@@ -121,7 +118,7 @@ const NavBar: React.FC = () => {
                 to={item.href}
                 className={`flex items-center space-x-1 text-sm font-medium transition-colors duration-200 ${
                   pathname === item.href
-                    ? 'text-blue-500 dark:text-blue-400' // Active link color (blue for both, but slightly lighter for dark mode)
+                    ? 'text-blue-500 dark:text-blue-400' // Active link color
                     : isDark
                       ? 'text-gray-300 hover:text-white' // Dark mode default link
                       : 'text-gray-700 hover:text-gray-900' // Light mode default link
@@ -139,9 +136,13 @@ const NavBar: React.FC = () => {
               <button
                 onClick={toggleTheme}
                 aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                className={`p-2 rounded-lg transition-all duration-300 hover:scale-105 ${
-                  isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900' // Theme toggle icon color
-                }`}
+                className={`
+                  p-2 rounded-lg transition-all duration-300 hover:scale-105
+                  ${isDark // Dark mode button style from image
+                    ? 'text-white border border-gray-700 bg-gray-800/20 hover:bg-gray-700/30'
+                    : 'text-gray-700 hover:text-gray-900' // Light mode simple icon
+                  }
+                `}
                 type="button"
               >
                 {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
@@ -152,7 +153,7 @@ const NavBar: React.FC = () => {
                   <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${
                     isDark
                       ? 'bg-gray-800/50'
-                      : 'bg-gray-100/70 border border-gray-200' // Light mode user info background
+                      : 'bg-gray-100/70 border border-gray-200' // User info background
                   }`}>
                     <User className={`w-4 h-4 ${isDark ? 'text-white' : 'text-gray-700'}`} />
                     <span className={`text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
@@ -162,14 +163,14 @@ const NavBar: React.FC = () => {
                   <button onClick={handleLogout} className={`flex items-center space-x-1 px-3 py-2 rounded-lg ${
                     isDark
                       ? 'text-gray-300 hover:text-red-400 hover:bg-gray-800/50'
-                      : 'text-gray-700 hover:text-red-600 hover:bg-gray-100/50' // Light mode logout button
+                      : 'text-gray-700 hover:text-red-600 hover:bg-gray-100/50' // Logout button
                   }`}>
                     <LogOut className="w-4 h-4" /> <span>Logout</span>
                   </button>
                 </>
               ) : (
                 <Link to="/login" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-300">
-                  Login {/* Login button remains consistent with gradient across themes */}
+                  Login {/* Login button remains consistent with gradient */}
                 </Link>
               )}
             </div>
@@ -195,7 +196,7 @@ const NavBar: React.FC = () => {
             className={`md:hidden absolute top-full left-0 right-0 backdrop-blur-md border-b ${
               isDark
                 ? "bg-black/95 border-gray-800"
-                : "bg-white/95 border-gray-200" // Light mode mobile sidebar background
+                : "bg-white/95 border-gray-200" // Mobile sidebar background
             }`}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
@@ -208,7 +209,7 @@ const NavBar: React.FC = () => {
                   <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${
                     isDark
                       ? 'bg-gray-800/50'
-                      : 'bg-gray-100/70 border border-gray-200' // Light mode user info mobile
+                      : 'bg-gray-100/70 border border-gray-200' // User info mobile
                   }`}>
                     <User className={`w-4 h-4 ${isDark ? 'text-white' : 'text-gray-700'}`} />
                     <span className={`text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
@@ -220,7 +221,7 @@ const NavBar: React.FC = () => {
                     className={`w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${
                       isDark
                         ? 'text-gray-300 hover:text-red-400 hover:bg-gray-800/50'
-                        : 'text-gray-700 hover:text-red-600 hover:bg-gray-100/50' // Light mode logout mobile
+                        : 'text-gray-700 hover:text-red-600 hover:bg-gray-100/50' // Logout mobile
                     }`}
                   >
                     <LogOut className="w-5 h-5" /> <span>Logout</span>
@@ -243,24 +244,24 @@ const NavBar: React.FC = () => {
                   onClick={handleMobileLinkClick}
                   className={`flex items-center space-x-2 text-base font-medium transition-colors duration-200 ${
                     pathname === item.href
-                      ? 'text-blue-500 dark:text-blue-400' // Active link color (blue for both, but slightly lighter for dark mode)
+                      ? 'text-blue-500 dark:text-blue-400' // Active link color
                       : isDark
                         ? 'text-gray-300 hover:text-white'
-                        : 'text-gray-700 hover:text-gray-900' // Light mode nav items mobile
+                        : 'text-gray-700 hover:text-gray-900' // Nav items mobile
                   }`}
                 >
                   <span>{item.name}</span>
                 </Link>
               ))}
 
-              <div className={`pt-4 ${isDark ? 'border-t border-gray-700' : 'border-t border-gray-200'}`}> {/* Theme-aware border */}
+              <div className={`pt-4 ${isDark ? 'border-t border-gray-700' : 'border-t border-gray-200'}`}>
                 <button
                   onClick={toggleTheme}
                   aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                   className={`w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
                     isDark
-                      ? 'text-gray-300 hover:text-white hover:bg-gray-800/50'
-                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100/50' // Light mode theme toggle mobile
+                      ? 'text-white border border-gray-700 bg-gray-800/20 hover:bg-gray-700/30'
+                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100/50' // Theme toggle mobile
                   }`}
                   type="button"
                 >
