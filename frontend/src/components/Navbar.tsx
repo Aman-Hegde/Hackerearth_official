@@ -53,7 +53,7 @@ const NavBar: React.FC = () => {
     { name: "Events", href: "/events" },
     { name: "Leaderboard", href: "/leaderboard" },
     { name: "Team", href: "/team" },
-    { name: "Achievements .", href: "/achievements" },
+    { name: "Achievements", href: "/achievements" },
     { name: "Contact", href: "/contact" },
   ];
 
@@ -69,11 +69,22 @@ const NavBar: React.FC = () => {
 
   return (
     <motion.nav
-      className="top-0 left-0 right-0 w-full z-50"
+      className="fixed top-0 left-0 right-0 w-full z-50 bg-[#1A1D2E] border-b border-gray-800/50"
       initial={{ y: 0 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6 }}
     >
+      {/* GLOW EFFECT ADDED HERE */}
+      <motion.div
+        className="absolute w-full h-64 pointer-events-none z-20"
+        style={{
+          background: `radial-gradient(ellipse at top center, rgba(125,200,255,0.1) 0%, transparent 60%)`,
+          top: -120, // Position the glow just above the navbar
+        }}
+        animate={{ opacity: [0.9, 1.3, 0.9] }}
+        transition={{ duration: 4, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
+      />
+      
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex justify-center items-center h-16 relative">
           {/* Main Navigation Links - Center Aligned */}
