@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Code, Users, Trophy, Calendar, Rocket, ChevronRight, FolderOpen, Zap, Target, Lightbulb, TrendingUp, Layers, Database, Shield } from "lucide-react";
@@ -20,21 +20,13 @@ const stagger = {
   }
 };
 
-// Grid Background Component
-const GridBackground = () => {
-  const { isDark } = useTheme();
-  
-  return (
-    <div className="fixed inset-0 pointer-events-none z-0 opacity-40">
-      <div 
-        className="w-full h-full"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23${isDark ? 'ffffff' : '000000'}' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          backgroundSize: '60px 60px'
-        }}
-      />
-    </div>
-  );
+// Helper function to generate a long random binary string (can be outside Home component)
+const generateRandomBinaryString = (length: number) => {
+  let str = '';
+  for (let i = 0; i < length; i++) {
+    str += Math.round(Math.random());
+  }
+  return str;
 };
 
 function ServiceUIGraphic({ feature }: { feature: any }) {
@@ -231,20 +223,128 @@ const Home = () => {
     featureRefs.current[idx]?.scrollIntoView({ behavior: "smooth", block: "center" });
   };
 
+  // --- Binary Code Background Logic (Integrated) ---
+
+  // Helper function to generate a long random binary string
+  const generateRandomBinaryStringLocal = useCallback((length: number) => {
+    let str = '';
+    for (let i = 0; i < length; i++) {
+      str += Math.round(Math.random());
+    }
+    return str;
+  }, []);
+
+  // BinaryColumn component (nested within Home for single-file structure)
+  const BinaryColumn: React.FC<{
+    leftPosition: number;
+    speed: number;
+  }> = React.memo(({ leftPosition, speed }) => { // Using React.memo for performance
+    const [content, setContent] = useState('');
+    const containerRef = useRef<HTMLDivElement>(null);
+    const charHeight = 16; // Approximate height of a character with text-xs and leading-none
+
+    const updateColumnContent = useCallback(() => {
+      if (containerRef.current) {
+        const parentHeight = window.innerHeight; // Use window height for full screen columns
+        const charsNeeded = Math.ceil(parentHeight / charHeight) * 2; // Enough chars to cover screen twice for smooth loop
+        setContent(generateRandomBinaryStringLocal(charsNeeded));
+      }
+    }, [generateRandomBinaryStringLocal]);
+
+    useEffect(() => {
+      updateColumnContent();
+      window.addEventListener('resize', updateColumnContent);
+      const regenInterval = setInterval(() => {
+          updateColumnContent();
+      }, speed * 1000);
+
+      return () => {
+        window.removeEventListener('resize', updateColumnContent);
+        clearInterval(regenInterval);
+      };
+    }, [updateColumnContent, speed]);
+
+    const textColor = isDark
+      ? 'rgba(0, 255, 0, 0.15)' // Subtle green for dark mode
+      : 'rgba(100, 100, 100, 0.05)'; // Subtle gray for light mode
+
+    return (
+      <div
+        ref={containerRef}
+        className={`absolute whitespace-pre-wrap font-mono text-xs leading-none select-none`}
+        style={{
+          color: textColor,
+          left: `${leftPosition}px`,
+          animation: `scrollBinary ${speed}s linear infinite`,
+          animationDelay: `${Math.random() * -speed}s`,
+        }}
+      >
+        {content}
+      </div>
+    );
+  });
+
+  const [columnData, setColumnData] = useState<
+    { id: number; left: number; speed: number }[]
+  >([]);
+  const backgroundContainerRef = useRef<HTMLDivElement>(null);
+  const columnWidth = 10; // Approximate width of a char with text-xs font-mono
+
+  const calculateColumns = useCallback(() => {
+    if (!backgroundContainerRef.current) return;
+
+    const viewportWidth = window.innerWidth;
+    const maxColumns = Math.floor(viewportWidth / columnWidth);
+    
+    // Create new column data if changed significantly or on initial load
+    if (maxColumns !== columnData.length) {
+      const newColumnData = Array.from({ length: maxColumns }).map((_, i) => ({
+        id: i,
+        left: i * columnWidth + Math.random() * 5, // Offset slightly for visual variety
+        speed: Math.random() * 10 + 10, // Speed between 10-20 seconds
+      }));
+      setColumnData(newColumnData);
+    }
+  }, [columnData.length]);
+
+  useEffect(() => {
+    calculateColumns();
+    window.addEventListener('resize', calculateColumns);
+    return () => window.removeEventListener('resize', calculateColumns);
+  }, [calculateColumns]);
+
+  // --- End Binary Code Background Logic ---
+
   return (
     <div className={`overflow-hidden transition-colors duration-500 min-h-screen ${isDark ? "bg-black" : "bg-slate-50"}`}>
-      {/* Grid Background */}
-      <GridBackground />
+      {/* Binary Code Background */}
+      <>
+        <style>{`
+          @keyframes scrollBinary {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+          }
+        `}</style>
+        <div ref={backgroundContainerRef} className="fixed inset-0 overflow-hidden pointer-events-none z-0">
+          {columnData.map((column) => (
+            <BinaryColumn
+              key={column.id}
+              leftPosition={column.left}
+              speed={column.speed}
+            />
+          ))}
+        </div>
+      </>
       
       <section className="flex flex-col items-center justify-center min-h-[90vh] px-3 sm:px-6 py-2 relative z-10">
-        <motion.div
-          className="absolute top-0 left-0 right-0 h-64 pointer-events-none z-0"
-          style={{
-            background: `radial-gradient(ellipse at top center, rgba(125,200,255,0.15) 0%, transparent 70%)`,
-          }}
-          animate={{ opacity: [0.9, 1.3, 0.9] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-        />
+          <motion.div
+            className="absolute top-0 left-0 right-0 h-64 pointer-events-none z-0"
+            style={{
+              background: `radial-gradient(ellipse at top center, rgba(125,200,255,0.15) 0%, transparent 70%)`,
+            }}
+            animate={{ opacity: [0.9, 1.3, 0.9] }}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          />
         <div className="max-w-3xl mx-auto text-center space-y-6 sm:space-y-8 sm:max-w-4xl relative z-10">
           <TypingHero />
           <div className="h-px w-20 sm:w-24 bg-gradient-to-r from-transparent via-blue-500 to-transparent mx-auto my-6 sm:my-8" />
