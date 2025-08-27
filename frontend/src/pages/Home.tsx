@@ -25,7 +25,7 @@ const GridBackground = () => {
   const { isDark } = useTheme();
   
   return (
-    <div className="fixed inset-0 pointer-events-none z-0 opacity-20">
+    <div className="fixed inset-0 pointer-events-none z-0 opacity-40">
       <div 
         className="w-full h-full"
         style={{

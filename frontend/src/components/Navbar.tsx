@@ -81,8 +81,8 @@ const NavBar: React.FC = () => {
       className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${
         scrolled
           ? isDark
-            ? "bg-black/90 backdrop-blur-md border-b border-gray-800/50"
-            : "bg-white/90 backdrop-blur-md border-b border-gray-200/50"
+            ? "bg-black/90 backdrop-blur-md border-gray-800/50"
+            : "bg-white/90 backdrop-blur-md border-gray-200/50"
           : isDark
             ? "bg-black/80 backdrop-blur-sm"
             : "bg-white/80 backdrop-blur-sm"
