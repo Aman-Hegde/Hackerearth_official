@@ -44,13 +44,12 @@ function Button({
 
 const NavBar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false); // Added scrolled state from Code1.tsx
+  const [scrolled, setScrolled] = useState(false);
   const { pathname } = useLocation();
   const navigate = useNavigate();
   const { user, logout, isAuthenticated } = useAuth();
   const { isDark, toggleTheme } = useTheme();
 
-  // Add the scroll effect from Code1.tsx
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
@@ -88,14 +87,7 @@ const NavBar: React.FC = () => {
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex justify-between items-center h-16">
-          <Link to="/" className="flex items-center space-x-2" aria-label="Home">
-            <div className="flex items-center space-x-1 p-1 bg-white rounded-md shadow-md h-8">
-              <Monitor className="w-5 h-5 text-gray-800" />
-              <span className="text-gray-800 text-xs font-semibold whitespace-nowrap">HackerEarth Hub-nmamit</span>
-            </div>
-          </Link>
-
-          {/* Desktop Navigation */}
+          {/* Main Navigation Links - Left Aligned */}
           <div className="hidden lg:flex items-center space-x-8">
             {navItems.map((item) => (
               <Link
@@ -110,45 +102,48 @@ const NavBar: React.FC = () => {
             ))}
           </div>
 
-          {/* Desktop Call to Actions */}
-          <div className="hidden lg:flex items-center space-x-4">
-            <button
-              onClick={toggleTheme}
-              aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              className={`p-2 rounded-lg transition-all duration-300 hover:scale-105 border border-gray-700 bg-gray-800 text-gray-300`}
-              type="button"
-            >
-              {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </button>
+          {/* Right-aligned items */}
+          <div className="flex items-center space-x-4">
+            {/* Desktop Call to Actions */}
+            <div className="hidden lg:flex items-center space-x-4">
+              <button
+                onClick={toggleTheme}
+                aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                className={`p-2 rounded-lg transition-all duration-300 hover:scale-105 border border-gray-700 bg-gray-800 text-gray-300`}
+                type="button"
+              >
+                {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              </button>
 
-            {isAuthenticated ? (
-              <>
-                <div className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-800">
-                  <User className="w-4 h-4 text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded p-1" />
-                  <span className="text-sm font-medium text-gray-200">
-                    {user?.name || user?.email?.split('@')[0]}
-                  </span>
-                </div>
-                <button onClick={handleLogout} className="flex items-center space-x-1 px-3 py-2 rounded-lg text-gray-300 hover:text-red-400 hover:bg-gray-800">
-                  <LogOut className="w-4 h-4" /> <span>Logout</span>
-                </button>
-              </>
-            ) : (
-              <Link to="/login" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-300">
-                Login
-              </Link>
-            )}
-          </div>
+              {isAuthenticated ? (
+                <>
+                  <div className="flex items-center space-x-2 px-3 py-2 rounded-lg bg-gray-800">
+                    <User className="w-4 h-4 text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded p-1" />
+                    <span className="text-sm font-medium text-gray-200">
+                      {user?.name || user?.email?.split('@')[0]}
+                    </span>
+                  </div>
+                  <button onClick={handleLogout} className="flex items-center space-x-1 px-3 py-2 rounded-lg text-gray-300 hover:text-red-400 hover:bg-gray-800">
+                    <LogOut className="w-4 h-4" /> <span>Logout</span>
+                  </button>
+                </>
+              ) : (
+                <Link to="/login" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-300">
+                  Login
+                </Link>
+              )}
+            </div>
 
-          {/* Mobile Menu Button */}
-          <div className="lg:hidden flex items-center space-x-3">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className="text-gray-300 hover:text-white p-2"
-              aria-label="Open menu"
-            >
-              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
+            {/* Mobile Menu Button */}
+            <div className="lg:hidden flex items-center space-x-3">
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="text-gray-300 hover:text-white p-2"
+                aria-label="Open menu"
+              >
+                {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              </button>
+            </div>
           </div>
         </div>
       </div>
