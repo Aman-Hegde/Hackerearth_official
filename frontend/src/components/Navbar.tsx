@@ -1,5 +1,4 @@
 // components/NavBar.tsx
-'use client'
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -56,7 +55,7 @@ function Button({
 
 const NavBar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const { pathname } = useLocation();
+  const { pathname } = useLocation(); // Correct for React Router
 
   const navigate = useNavigate();
   const { user, logout, isAuthenticated } = useAuth();
@@ -82,19 +81,31 @@ const NavBar: React.FC = () => {
 
   return (
     <motion.nav
-      className="relative bg-black/70 backdrop-blur-md border-b border-gray-800/50 transition-all duration-300"
-      initial={{ y: 0 }}
+      // Now fixed at the top with a consistent background matching the image
+      className="fixed top-0 left-0 right-0 w-full z-50 bg-[#1A1D2E] border-b border-gray-800/50 transition-all duration-300"
+      initial={{ y: 0 }} // Starts in position
       animate={{ y: 0 }}
       transition={{ duration: 0.6 }}
     >
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      {/* Grazing Glow Effect - Now inside the NavBar component and fixed with it */}
+      <motion.div
+        className="absolute top-0 left-0 right-0 h-1/2 pointer-events-none z-0" // Half height of nav for subtle glow
+        style={{
+          background: `radial-gradient(ellipse at top center, rgba(125,200,255,0.1) 0%, transparent 60%)`, // Light blue glow
+        }}
+        // Subtle animation for continuous glow
+        animate={{ opacity: [0.9, 1.3, 0.9], scaleY: [1, 1.05, 1] }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+      />
+
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10"> {/* Content wrapper above glow */}
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center space-x-2" aria-label="Home">
             <img
               src={logo}
               alt="HackerEarth Hub-nmamit Logo"
-              width={100}
-              height={20}
+              width={120} // Adjusted width to fit "HackerEarth Hub-nmamit"
+              height={32}  // Adjusted height
               className="object-contain"
             />
           </Link>
@@ -116,21 +127,23 @@ const NavBar: React.FC = () => {
             ))}
           </div>
 
-          {/* Desktop Call to Actions & Theme Toggle */}
+          {/* Desktop Call to Actions & Theme Toggle - Matches Image */}
           <div className="hidden lg:flex items-center space-x-4">
+            {/* Desktop Theme Toggle */}
             <button
               onClick={toggleTheme}
               aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              className={`p-2 rounded-lg transition-all duration-300 hover:scale-105 ${isDark
-                ? 'text-gray-300 hover:text-white'
-                : 'text-gray-700 hover:text-gray-900'
-              }`}
+              // Styling matches the image's toggle button (dark background, border)
+              className={`p-2 rounded-lg transition-all duration-300 hover:scale-105 border border-gray-700 bg-gray-800
+                ${isDark ? 'text-gray-300' : 'text-gray-300'}` // Use consistent text color for toggle in dark theme
+              }
               type="button"
             >
               {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
 
             {isAuthenticated ? (
+              // User info & Logout if authenticated (not in image, but standard functionality)
               <>
                 <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
                   <User className="w-4 h-4 text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded p-1" />
@@ -143,6 +156,7 @@ const NavBar: React.FC = () => {
                 </button>
               </>
             ) : (
+              // Login Button - Matches image gradient
               <Link to="/login" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-300">
                 Login
               </Link>
