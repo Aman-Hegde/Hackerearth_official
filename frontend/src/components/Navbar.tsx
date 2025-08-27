@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Sun, Moon, User, LogOut, Monitor } from 'lucide-react';
@@ -44,11 +44,20 @@ function Button({
 
 const NavBar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false); // Added scrolled state from Code1.tsx
   const { pathname } = useLocation();
-
   const navigate = useNavigate();
   const { user, logout, isAuthenticated } = useAuth();
   const { isDark, toggleTheme } = useTheme();
+
+  // Add the scroll effect from Code1.tsx
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   const navItems = [
     { name: "Events", href: "/events" },
@@ -70,8 +79,10 @@ const NavBar: React.FC = () => {
 
   return (
     <motion.nav
-      className="fixed top-0 left-0 right-0 w-full z-50 bg-[#1A1D2E] border-b border-gray-800/50"
-      initial={{ y: 0 }}
+      className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${
+        scrolled ? "bg-black/70 backdrop-blur-md border-b border-gray-800/50" : "bg-black/30 backdrop-blur-sm"
+      }`}
+      initial={{ y: -100 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6 }}
     >
@@ -91,9 +102,7 @@ const NavBar: React.FC = () => {
                 key={item.name}
                 to={item.href}
                 className={`flex items-center space-x-1 text-sm font-medium transition-colors duration-200 ${
-                  pathname === item.href
-                    ? 'text-white'
-                    : 'text-gray-400 hover:text-white'
+                  pathname === item.href ? 'text-white' : 'text-gray-400 hover:text-white'
                 }`}
               >
                 <span>{item.name}</span>
@@ -186,9 +195,7 @@ const NavBar: React.FC = () => {
                   to={item.href}
                   onClick={handleMobileLinkClick}
                   className={`flex items-center space-x-2 text-base font-medium transition-colors duration-200 ${
-                    pathname === item.href
-                      ? 'text-blue-400'
-                      : 'text-gray-300 hover:text-white'
+                    pathname === item.href ? 'text-blue-400' : 'text-gray-300 hover:text-white'
                   }`}
                 >
                   <span>{item.name}</span>
