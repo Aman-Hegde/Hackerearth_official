@@ -1,9 +1,10 @@
-import { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Code, Users, Trophy, Calendar, Rocket, ChevronRight, FolderOpen } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import TypingHero from "../components/TypingHero";
+import NavBar from "../components/Navbar"; // Navbar is now imported and rendered here
 
 // Add these animation variants
 const fadeIn = {
@@ -128,7 +129,6 @@ const StatsSection = () => {
       viewport={{ once: true }}
       className="relative bg-black dark:bg-black py-20 overflow-hidden"
     >
-      {/* The expanding purple glow effect */}
       <motion.div
         className="absolute top-0 left-0 w-full h-16 pointer-events-none z-0"
         style={{
@@ -138,8 +138,6 @@ const StatsSection = () => {
           transformOrigin: 'center',
         }}
       />
-
-      {/* Existing content wrapped in a div to ensure it's above the glow and has max-width */}
       <div className="max-w-6xl mx-auto px-10 relative z-10 py-20">
         <motion.div
           variants={fadeIn}
@@ -149,7 +147,7 @@ const StatsSection = () => {
           className="text-center mb-16"
         >
           <h2 className="text-5xl md:text-6xl font-semibold mb-4 text-white dark:text-white">
-           Delivering Results
+            Delivering Results
           </h2>
           <p className="text-xl text-gray-300 dark:text-gray-300">
             Our journey in numbers and achievements
@@ -218,83 +216,43 @@ const Home = () => {
   };
 
   return (
-    <div className={`${isDark ? "bg-black" : "bg-slate-50"} overflow-hidden transition-colors duration-500`}>
-      <div className="fixed inset-0 opacity-5 pointer-events-none z-0"
-        style={{
-          backgroundImage: `radial-gradient(circle at 20% 50%, rgba(255,255,255,0.08) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(255,255,255,0.1) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(255,255,255,0.07) 0%, transparent 50%), radial-gradient(circle at 20% 50%, rgba(255,255,255,0.08) 0%, transparent 50%)`,
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "cover",
-        }}
-      />
-
-      <div className="fixed left-6 top-1/2 transform -translate-y-1/2 z-20 hidden lg:flex flex-col space-y-4">
-        {features.map((_, idx) => (
-          <button
-            key={idx}
-            onClick={() => scrollToFeature(idx)}
-            className={`group relative w-3 h-3 rounded-full transition-all duration-300 ${activeFeature === idx ? "bg-white scale-125 shadow-lg" : "bg-white/30 hover:bg-white/60 hover:scale-110"
-              }`}
-            aria-label={`Go to ${features[idx].title}`}
-          >
-            <div className="absolute left-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-              <div className="bg-black/90 text-white px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap border border-white/20">
-                {features[idx].title}
-              </div>
+    <div className={`overflow-hidden transition-colors duration-500 min-h-screen ${isDark ? "bg-black" : "bg-slate-50"}`}>
+      <NavBar />
+      
+      <section className="flex flex-col items-center justify-center min-h-[90vh] px-3 sm:px-6 py-6">
+        <div className="max-w-3xl mx-auto text-center space-y-6 sm:space-y-8 sm:max-w-4xl">
+          <div className="inline-flex items-center px-0 py-1.5 sm:px-1 sm:py-2 bg-black/80 backdrop-blur-sm border border-gray-700 rounded-full text-[11px] sm:text-xs text-gray-300 shadow-[0_0_20px_rgba(52,211,153,0.1)] cursor-default">
+            <span className="ml-1 mr-1">powered by Abhuday</span>
+          </div>
+          <TypingHero />
+          <div className="h-px w-20 sm:w-24 bg-gradient-to-r from-transparent via-blue-500 to-transparent mx-auto my-6 sm:my-8" />
+          <p className="text-gray-700 dark:text-gray-400 max-w-[75%] sm:max-w-xl mx-auto font-medium relative z-10 leading-relaxed text-base sm:text-lg">
+            We are a community of developers, designers, and innovators focused on hands-on creation. 
+            Join us to collaborate on real-world projects, hone your skills, and build a portfolio that stands out.
+          </p>
+          <div className="pt-6 sm:pt-8 w-full">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 w-full">
+              <Link
+                to="/domains"
+                className="group w-32 sm:w-auto text-center px-5 py-2.5 sm:px-6 sm:py-3 bg-gray-800 text-white rounded-lg font-medium text-base hover:bg-gray-700 transition-all duration-300 transform hover:scale-105 border border-gray-700"
+              >
+                <span className="flex justify-center items-center space-x-2">
+                  <span>Services</span>
+                </span>
+              </Link>
+              <Link
+                to="/login"
+                className="group w-50 sm:w-auto text-center px-5 py-2.5 sm:px-6 sm:py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium text-base hover:from-blue-400 hover:to-purple-500 transition-all duration-300 transform hover:scale-105 hover:shadow-[0_0_20px_rgba(66,153,225,0.3)]"
+              >
+                <span className="flex justify-center items-center space-x-2">
+                  <ArrowRight className="w-5 h-5" />
+                  <span>Join Our Community</span>
+                </span>
+              </Link>
             </div>
-          </button>
-        ))}
-      </div>
-
-<section className="flex flex-col items-center justify-center min-h-[90vh] px-3 sm:px-6 py-6">
-  <div className="max-w-3xl mx-auto text-center space-y-6 sm:space-y-8 sm:max-w-4xl">
-    
-    {/* Badge */}
-    <div className="inline-flex items-center px-0 py-1.5 sm:px-1 sm:py-2 bg-black/80 backdrop-blur-sm border border-gray-700 rounded-full text-[11px] sm:text-xs text-gray-300 shadow-[0_0_20px_rgba(52,211,153,0.1)] cursor-default">
-      <span className="ml-1 mr-1">powered by Abhuday</span>
-    </div>
-
-    {/* Hero */}
-    <TypingHero />
-
-    {/* Divider */}
-    <div className="h-px w-20 sm:w-24 bg-gradient-to-r from-transparent via-blue-500 to-transparent mx-auto my-6 sm:my-8" />
-
-    {/* Paragraph */}
-    <p className="text-gray-700 dark:text-gray-400 max-w-[75%] sm:max-w-xl mx-auto font-medium relative z-10 leading-relaxed text-base sm:text-lg">
-      We are a community of developers, designers, and innovators focused on hands-on creation. 
-      Join us to collaborate on real-world projects, hone your skills, and build a portfolio that stands out.
-    </p>
-
-    {/* Buttons */}
-    <div className="pt-6 sm:pt-8 w-full">
-      <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 w-full">
-        
-        <Link
-          to="/domains"
-          className="group w-32 sm:w-auto text-center px-5 py-2.5 sm:px-6 sm:py-3 bg-gray-800 text-white rounded-lg font-medium text-base hover:bg-gray-700 transition-all duration-300 transform hover:scale-105 border border-gray-700"
-        >
-          <span className="flex justify-center items-center space-x-2">
-            <span>Services</span>
-          </span>
-        </Link>
-
-        <Link
-          to="/login"
-          className="group w-50 sm:w-auto text-center px-5 py-2.5 sm:px-6 sm:py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium text-base hover:from-blue-400 hover:to-purple-500 transition-all duration-300 transform hover:scale-105 hover:shadow-[0_0_20px_rgba(66,153,225,0.3)]"
-        >
-          <span className="flex justify-center items-center space-x-2">
-            <ArrowRight className="w-5 h-5" />
-            <span>Join Our Community</span>
-          </span>
-        </Link>
-
-      </div>
-    </div>
-  </div>
-</section>
-
-
-
+          </div>
+        </div>
+      </section>
 
       <section className="relative overflow-x-clip z-10 max-w-7xl mx-auto px-4 sm:px-6">
         <motion.div
@@ -360,10 +318,10 @@ const Home = () => {
                   <Link
                     to={feature.link}
                     className={`inline-flex items-center font-medium transition-colors group ${idx === activeFeature
-                      ? "text-white"
-                      : isDark
-                        ? "text-blue-400 hover:text-blue-300"
-                        : "text-blue-600 hover:text-blue-700"
+                        ? "text-white"
+                        : isDark
+                          ? "text-blue-400 hover:text-blue-300"
+                          : "text-blue-600 hover:text-blue-700"
                       }`}
                   >
                     <span>Explore Domain</span>
@@ -384,15 +342,14 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Replace the old stats section with the new StatsSection component */}
       <StatsSection />
 
       <section className={`relative z-10 py-24 transition-colors duration-500 ${isDark ? "bg-slate-800/30" : "bg-white"}`}>
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <div
             className={`border rounded-2xl p-16 hover:scale-105 transition-all duration-500 shadow-xl ${isDark
-              ? "bg-slate-800/60 border-slate-700/50"
-              : "bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200"
+                ? "bg-slate-800/60 border-slate-700/50"
+                : "bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200"
               }`}
           >
             <div className="mb-8">
@@ -412,8 +369,8 @@ const Home = () => {
             <Link
               to="/login"
               className={`group relative inline-flex items-center space-x-4 px-12 py-4 rounded-xl font-semibold text-xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl ${isDark
-                ? "bg-blue-600 hover:bg-blue-700 text-white"
-                : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700"
+                  ? "bg-blue-600 hover:bg-blue-700 text-white"
+                  : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700"
                 }`}
             >
               <span>Get Started</span>

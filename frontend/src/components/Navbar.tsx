@@ -62,7 +62,7 @@ const NavBar: React.FC = () => {
     { name: "Events", href: "/events" },
     { name: "Leaderboard", href: "/leaderboard" },
     { name: "Team", href: "/team" },
-    { name: "Achievements 2", href: "/achievements" },
+    { name: "Achievements 3", href: "/achievements" },
     { name: "Contact", href: "/contact" },
   ];
 
