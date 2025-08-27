@@ -4,7 +4,7 @@ import { motion, useScroll, useTransform } from "framer-motion";
 import { ArrowRight, Code, Users, Trophy, Calendar, Rocket, ChevronRight, FolderOpen } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import TypingHero from "../components/TypingHero";
-import NavBar from "../components/Navbar"; // Navbar is now imported and rendered here
+import NavBar from "../components/Navbar";
 
 // Add these animation variants
 const fadeIn = {
@@ -219,166 +219,168 @@ const Home = () => {
     <div className={`overflow-hidden transition-colors duration-500 min-h-screen ${isDark ? "bg-black" : "bg-slate-50"}`}>
       <NavBar />
       
-      <section className="flex flex-col items-center justify-center min-h-[90vh] px-3 sm:px-6 py-6">
-        <div className="max-w-3xl mx-auto text-center space-y-6 sm:space-y-8 sm:max-w-4xl">
-          <div className="inline-flex items-center px-0 py-1.5 sm:px-1 sm:py-2 bg-black/80 backdrop-blur-sm border border-gray-700 rounded-full text-[11px] sm:text-xs text-gray-300 shadow-[0_0_20px_rgba(52,211,153,0.1)] cursor-default">
-            <span className="ml-1 mr-1">powered by Abhuday</span>
-          </div>
-          <TypingHero />
-          <div className="h-px w-20 sm:w-24 bg-gradient-to-r from-transparent via-blue-500 to-transparent mx-auto my-6 sm:my-8" />
-          <p className="text-gray-700 dark:text-gray-400 max-w-[75%] sm:max-w-xl mx-auto font-medium relative z-10 leading-relaxed text-base sm:text-lg">
-            We are a community of developers, designers, and innovators focused on hands-on creation. 
-            Join us to collaborate on real-world projects, hone your skills, and build a portfolio that stands out.
-          </p>
-          <div className="pt-6 sm:pt-8 w-full">
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 w-full">
-              <Link
-                to="/domains"
-                className="group w-32 sm:w-auto text-center px-5 py-2.5 sm:px-6 sm:py-3 bg-gray-800 text-white rounded-lg font-medium text-base hover:bg-gray-700 transition-all duration-300 transform hover:scale-105 border border-gray-700"
-              >
-                <span className="flex justify-center items-center space-x-2">
-                  <span>Services</span>
-                </span>
-              </Link>
-              <Link
-                to="/login"
-                className="group w-50 sm:w-auto text-center px-5 py-2.5 sm:px-6 sm:py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium text-base hover:from-blue-400 hover:to-purple-500 transition-all duration-300 transform hover:scale-105 hover:shadow-[0_0_20px_rgba(66,153,225,0.3)]"
-              >
-                <span className="flex justify-center items-center space-x-2">
-                  <ArrowRight className="w-5 h-5" />
-                  <span>Join Our Community</span>
-                </span>
-              </Link>
+      <div className="pt-16">
+        <section className="flex flex-col items-center justify-center min-h-[90vh] px-3 sm:px-6 py-6">
+          <div className="max-w-3xl mx-auto text-center space-y-6 sm:space-y-8 sm:max-w-4xl">
+            <div className="inline-flex items-center px-0 py-1.5 sm:px-1 sm:py-2 bg-black/80 backdrop-blur-sm border border-gray-700 rounded-full text-[11px] sm:text-xs text-gray-300 shadow-[0_0_20px_rgba(52,211,153,0.1)] cursor-default">
+              <span className="ml-1 mr-1">powered by Abhuday</span>
             </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="relative overflow-x-clip z-10 max-w-7xl mx-auto px-4 sm:px-6">
-        <motion.div
-          className="text-center mb-16"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <motion.div
-            className="inline-flex items-center space-x-2 px-6 py-3 bg-gray-800/50 rounded-full border border-gray-700 mb-6 backdrop-blur-sm"
-            animate={{ scale: [1, 1.02, 1] }}
-            transition={{ duration: 3, repeat: Infinity }}
-          >
-            <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-            <span className="text-sm font-medium text-gray-900 dark:text-gray-300">Learning Paths</span>
-          </motion.div>
-
-          <h2 className="text-5xl sm:text-6xl font-black mb-6 leading-tight text-gray-900 dark:text-white">
-            Our Different <span className="font-light italic">Technical Domains</span>
-          </h2>
-
-          <p className="text-xl max-w-3xl mx-auto leading-relaxed text-gray-700 dark:text-gray-400">
-            Comprehensive learning paths designed to accelerate career growth and technical transformation.
-          </p>
-        </motion.div>
-        <div className="space-y-32 relative">
-          {features.map((feature, idx) => (
-            <motion.div
-              key={feature.title}
-              ref={(el) => (featureRefs.current[idx] = el)}
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: idx * 0.08 }}
-              className="min-h-[80vh] flex items-center"
-            >
-              <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <motion.div
-                  className={`space-y-8 ${idx % 2 === 1 ? "lg:order-2" : ""}`}
-                  initial={{ opacity: 0, x: idx % 2 === 1 ? 50 : -50 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.8 }}
-                >
-                  <motion.div
-                    className={`inline-flex items-center space-x-3 px-4 py-2 bg-gradient-to-r ${feature.bgGradient} rounded-full border border-white/10 mb-6`}
-                    animate={{ scale: [1, 1.02, 1] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: idx * 0.5 }}
-                  >
-                    <div className={feature.accentColor}>{feature.icon}</div>
-                    <span className={`text-sm font-medium ${feature.accentColor}`}>{feature.subtitle}</span>
-                  </motion.div>
-                  <h3 className="text-4xl sm:text-5xl font-bold text-black mb-4 leading-tight dark:text-white">{feature.title}</h3>
-                  <p className="text-lg text-gray-900 dark:text-gray-300 leading-relaxed mb-8">{feature.description}</p>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {feature.technologies.map((tech) => (
-                      <span
-                        key={tech}
-                        className={`px-3 py-1 rounded-full border font-semibold text-xs bg-gradient-to-r ${feature.bgGradient} ${feature.accentColor} border-white/20`}
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-                  <Link
-                    to={feature.link}
-                    className={`inline-flex items-center font-medium transition-colors group ${idx === activeFeature
-                        ? "text-white"
-                        : isDark
-                          ? "text-blue-400 hover:text-blue-300"
-                          : "text-blue-600 hover:text-blue-700"
-                      }`}
-                  >
-                    <span>Explore Domain</span>
-                    <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                </motion.div>
-                <motion.div
-                  className={`${idx % 2 === 1 ? "lg:order-1" : ""}`}
-                  initial={{ opacity: 0, scale: 0.85 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8 }}
-                >
-                  <ServiceUIGraphic feature={feature} />
-                </motion.div>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </section>
-
-      <StatsSection />
-
-      <section className={`relative z-10 py-24 transition-colors duration-500 ${isDark ? "bg-slate-800/30" : "bg-white"}`}>
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div
-            className={`border rounded-2xl p-16 hover:scale-105 transition-all duration-500 shadow-xl ${isDark
-                ? "bg-slate-800/60 border-slate-700/50"
-                : "bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200"
-              }`}
-          >
-            <div className="mb-8">
-              <div
-                className={`w-16 h-16 mx-auto mb-6 rounded-xl flex items-center justify-center ${isDark ? "bg-blue-600" : "bg-gradient-to-r from-blue-600 to-indigo-600"
-                  }`}
-              >
-                <Rocket className="w-8 h-8 text-white" />
-              </div>
-            </div>
-            <h2 className={`text-4xl md:text-5xl font-bold mb-8 tracking-tight ${isDark ? "text-white" : "text-gray-900"}`}>
-              Ready to Begin Your Journey?
-            </h2>
-            <p className={`text-xl mb-12 leading-relaxed max-w-3xl mx-auto ${isDark ? "text-slate-400" : "text-gray-600"}`}>
-              Join a community of innovators, builders, and leaders. Start your path to technical excellence today.
+            <TypingHero />
+            <div className="h-px w-20 sm:w-24 bg-gradient-to-r from-transparent via-blue-500 to-transparent mx-auto my-6 sm:my-8" />
+            <p className="text-gray-700 dark:text-gray-400 max-w-[75%] sm:max-w-xl mx-auto font-medium relative z-10 leading-relaxed text-base sm:text-lg">
+              We are a community of developers, designers, and innovators focused on hands-on creation. 
+              Join us to collaborate on real-world projects, hone your skills, and build a portfolio that stands out.
             </p>
-            <Link
-              to="/login"
-              className={`group relative inline-flex items-center space-x-4 px-12 py-4 rounded-xl font-semibold text-xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl ${isDark
-                  ? "bg-blue-600 hover:bg-blue-700 text-white"
-                  : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700"
+            <div className="pt-6 sm:pt-8 w-full">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 w-full">
+                <Link
+                  to="/domains"
+                  className="group w-32 sm:w-auto text-center px-5 py-2.5 sm:px-6 sm:py-3 bg-gray-800 text-white rounded-lg font-medium text-base hover:bg-gray-700 transition-all duration-300 transform hover:scale-105 border border-gray-700"
+                >
+                  <span className="flex justify-center items-center space-x-2">
+                    <span>Services</span>
+                  </span>
+                </Link>
+                <Link
+                  to="/login"
+                  className="group w-50 sm:w-auto text-center px-5 py-2.5 sm:px-6 sm:py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium text-base hover:from-blue-400 hover:to-purple-500 transition-all duration-300 transform hover:scale-105 hover:shadow-[0_0_20px_rgba(66,153,225,0.3)]"
+                >
+                  <span className="flex justify-center items-center space-x-2">
+                    <ArrowRight className="w-5 h-5" />
+                    <span>Join Our Community</span>
+                  </span>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="relative overflow-x-clip z-10 max-w-7xl mx-auto px-4 sm:px-6">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <motion.div
+              className="inline-flex items-center space-x-2 px-6 py-3 bg-gray-800/50 rounded-full border border-gray-700 mb-6 backdrop-blur-sm"
+              animate={{ scale: [1, 1.02, 1] }}
+              transition={{ duration: 3, repeat: Infinity }}
+            >
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+              <span className="text-sm font-medium text-gray-900 dark:text-gray-300">Learning Paths</span>
+            </motion.div>
+
+            <h2 className="text-5xl sm:text-6xl font-black mb-6 leading-tight text-gray-900 dark:text-white">
+              Our Different <span className="font-light italic">Technical Domains</span>
+            </h2>
+
+            <p className="text-xl max-w-3xl mx-auto leading-relaxed text-gray-700 dark:text-gray-400">
+              Comprehensive learning paths designed to accelerate career growth and technical transformation.
+            </p>
+          </motion.div>
+          <div className="space-y-32 relative">
+            {features.map((feature, idx) => (
+              <motion.div
+                key={feature.title}
+                ref={(el) => (featureRefs.current[idx] = el)}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: idx * 0.08 }}
+                className="min-h-[80vh] flex items-center"
+              >
+                <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                  <motion.div
+                    className={`space-y-8 ${idx % 2 === 1 ? "lg:order-2" : ""}`}
+                    initial={{ opacity: 0, x: idx % 2 === 1 ? 50 : -50 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.8 }}
+                  >
+                    <motion.div
+                      className={`inline-flex items-center space-x-3 px-4 py-2 bg-gradient-to-r ${feature.bgGradient} rounded-full border border-white/10 mb-6`}
+                      animate={{ scale: [1, 1.02, 1] }}
+                      transition={{ duration: 2, repeat: Infinity, delay: idx * 0.5 }}
+                    >
+                      <div className={feature.accentColor}>{feature.icon}</div>
+                      <span className={`text-sm font-medium ${feature.accentColor}`}>{feature.subtitle}</span>
+                    </motion.div>
+                    <h3 className="text-4xl sm:text-5xl font-bold text-black mb-4 leading-tight dark:text-white">{feature.title}</h3>
+                    <p className="text-lg text-gray-900 dark:text-gray-300 leading-relaxed mb-8">{feature.description}</p>
+                    <div className="flex flex-wrap gap-2 mb-4">
+                      {feature.technologies.map((tech) => (
+                        <span
+                          key={tech}
+                          className={`px-3 py-1 rounded-full border font-semibold text-xs bg-gradient-to-r ${feature.bgGradient} ${feature.accentColor} border-white/20`}
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+                    <Link
+                      to={feature.link}
+                      className={`inline-flex items-center font-medium transition-colors group ${idx === activeFeature
+                          ? "text-white"
+                          : isDark
+                            ? "text-blue-400 hover:text-blue-300"
+                            : "text-blue-600 hover:text-blue-700"
+                        }`}
+                    >
+                      <span>Explore Domain</span>
+                      <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                    </Link>
+                  </motion.div>
+                  <motion.div
+                    className={`${idx % 2 === 1 ? "lg:order-1" : ""}`}
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.8 }}
+                  >
+                    <ServiceUIGraphic feature={feature} />
+                  </motion.div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </section>
+
+        <StatsSection />
+
+        <section className={`relative z-10 py-24 transition-colors duration-500 ${isDark ? "bg-slate-800/30" : "bg-white"}`}>
+          <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div
+              className={`border rounded-2xl p-16 hover:scale-105 transition-all duration-500 shadow-xl ${isDark
+                  ? "bg-slate-800/60 border-slate-700/50"
+                  : "bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200"
                 }`}
             >
-              <span>Get Started</span>
-              <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
-            </Link>
+              <div className="mb-8">
+                <div
+                  className={`w-16 h-16 mx-auto mb-6 rounded-xl flex items-center justify-center ${isDark ? "bg-blue-600" : "bg-gradient-to-r from-blue-600 to-indigo-600"
+                    }`}
+                >
+                  <Rocket className="w-8 h-8 text-white" />
+                </div>
+              </div>
+              <h2 className={`text-4xl md:text-5xl font-bold mb-8 tracking-tight ${isDark ? "text-white" : "text-gray-900"}`}>
+                Ready to Begin Your Journey?
+              </h2>
+              <p className={`text-xl mb-12 leading-relaxed max-w-3xl mx-auto ${isDark ? "text-slate-400" : "text-gray-600"}`}>
+                Join a community of innovators, builders, and leaders. Start your path to technical excellence today.
+              </p>
+              <Link
+                to="/login"
+                className={`group relative inline-flex items-center space-x-4 px-12 py-4 rounded-xl font-semibold text-xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl ${isDark
+                    ? "bg-blue-600 hover:bg-blue-700 text-white"
+                    : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700"
+                  }`}
+              >
+                <span>Get Started</span>
+                <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
+              </Link>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
   );
 };

@@ -18,8 +18,7 @@ function AppWrapper() {
   const location = useLocation();
 
   useEffect(() => {
-    // Logic for closing the sidebar on route change can be placed here if needed.
-    // The sidebar state has been removed from this file.
+    // This effect is now obsolete without the sidebar
   }, [location]);
 
   return (
