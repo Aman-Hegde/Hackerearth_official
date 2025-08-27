@@ -62,7 +62,7 @@ const NavBar: React.FC = () => {
     { name: "Events", href: "/events" },
     { name: "Leaderboard", href: "/leaderboard" },
     { name: "Team", href: "/team" },
-    { name: "Achievements 1", href: "/achievements" },
+    { name: "Achievements 2", href: "/achievements" },
     { name: "Contact", href: "/contact" },
   ];
 
@@ -79,7 +79,7 @@ const NavBar: React.FC = () => {
   return (
     <motion.nav
       className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${
-        scrolled ? "bg-black/70 backdrop-blur-md border-b border-gray-800/50" : "bg-black/30 backdrop-blur-sm"
+        scrolled ? "bg-black/70 backdrop-blur-md border-b border-gray-800/50" : "bg-transparent"
       }`}
       initial={{ y: -100 }}
       animate={{ y: 0 }}
