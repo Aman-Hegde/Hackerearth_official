@@ -216,11 +216,11 @@ const Home = () => {
 
   return (
     <div className={`overflow-hidden transition-colors duration-500 min-h-screen ${isDark ? "bg-black" : "bg-slate-50"}`}>
-      <section className="flex flex-col items-center justify-center min-h-[90vh] px-3 sm:px-6 py-6">
+      <section className="flex flex-col items-center justify-center min-h-[90vh] px-3 sm:px-6 py-2">
         <div className="max-w-3xl mx-auto text-center space-y-6 sm:space-y-8 sm:max-w-4xl">
-          <div className="inline-flex items-center px-0 py-1.5 sm:px-1 sm:py-2 bg-black/80 backdrop-blur-sm border border-gray-700 rounded-full text-[11px] sm:text-xs text-gray-300 shadow-[0_0_20px_rgba(52,211,153,0.1)] cursor-default">
+          {/* <div className="inline-flex items-center px-0 py-1.5 sm:px-1 sm:py-2 bg-black/80 backdrop-blur-sm border border-gray-700 rounded-full text-[11px] sm:text-xs text-gray-300 shadow-[0_0_20px_rgba(52,211,153,0.1)] cursor-default">
             <span className="ml-1 mr-1">powered by Abhuday</span>
-          </div>
+          </div> */}
           <TypingHero />
           <div className="h-px w-20 sm:w-24 bg-gradient-to-r from-transparent via-blue-500 to-transparent mx-auto my-6 sm:my-8" />
           <p className="text-gray-700 dark:text-gray-400 max-w-[75%] sm:max-w-xl mx-auto font-medium relative z-10 leading-relaxed text-base sm:text-lg">
