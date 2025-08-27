@@ -3,18 +3,17 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Lucide React Icons - Added 'Code' for the logo text
+// Lucide React Icons - Monitor is needed for the logo
 import {
-  Menu, X, Sun, Moon, User, LogOut, Code
+  Menu, X, Sun, Moon, User, LogOut, Monitor // Monitor is used for the logo in the image
 } from 'lucide-react';
 
 // Contexts (ensure these are correctly provided in your app's root)
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
-// Local logo image - No longer directly used as an <img>, but `logo` might be useful for other contexts.
-// The logo in the navbar will now be text-based as per the new image.
-// import logo from '../assets/image.png'; // No longer importing for direct image use in Navbar
+// Local logo image - `logo` is not used as a direct image in Navbar anymore
+// import logo from '../assets/image.png'; // Removed as the logo is now text-based
 
 // Re-usable Button Component (copied for completeness, ideally imported from a shared file)
 function Button({
@@ -56,6 +55,7 @@ function Button({
 
 const NavBar: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
+  // `scrolled` state and its useEffect are removed as the navbar is fixed with a consistent background
   const { pathname } = useLocation(); // Correct for React Router
 
   const navigate = useNavigate();
@@ -82,29 +82,20 @@ const NavBar: React.FC = () => {
 
   return (
     <motion.nav
-      // Fixed position, consistent dark background from image
+      // Fixed position, consistent dark background from image, no `scrolled` conditional classes
       className="fixed top-0 left-0 right-0 w-full z-50 bg-[#1A1D2E] border-b border-gray-800/50 transition-all duration-300"
-      initial={{ y: 0 }}
+      initial={{ y: 0 }} // Ensures it starts in place
       animate={{ y: 0 }}
       transition={{ duration: 0.6 }}
     >
-      {/* Grazing Glow Effect - Now inside the NavBar component and fixed with it */}
-      <motion.div
-        className="absolute top-0 left-0 right-0 h-full pointer-events-none z-0" // Full height of nav
-        style={{
-          background: `radial-gradient(ellipse at center top, rgba(255,255,255,0.04) 0%, transparent 70%)`, // Subtle white/light glow
-        }}
-        // Subtle animation for continuous glow
-        animate={{ opacity: [0.9, 1.1, 0.9], scaleY: [1, 1.02, 1] }} // Slightly adjust opacity for perceived depth
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-      />
+      {/* Grazing Glow Effect - REMOVED entirely as per the latest image */}
 
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10"> {/* Content wrapper above glow */}
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10"> {/* Content wrapper above potential glow */}
         <div className="flex justify-between items-center h-16">
           <Link to="/" className="flex items-center space-x-2" aria-label="Home">
             {/* Text-based logo with icon, matching new image */}
-            <div className="flex items-center space-x-1 p-1 bg-white rounded-md shadow-md"> {/* White background box for logo */}
-                <Code className="w-5 h-5 text-gray-800" />
+            <div className="flex items-center space-x-1 p-1 bg-white rounded-md shadow-md h-8"> {/* White background box for logo */}
+                <Monitor className="w-5 h-5 text-gray-800" /> {/* Computer monitor icon */}
                 <span className="text-gray-800 text-xs font-semibold whitespace-nowrap">HackerEarth Hub-nmamit</span>
             </div>
           </Link>
@@ -126,40 +117,38 @@ const NavBar: React.FC = () => {
             ))}
           </div>
 
-          {/* Desktop Call to Actions & Theme Toggle */}
+          {/* Desktop Call to Actions & Theme Toggle - Matches Image */}
           <div className="hidden lg:flex items-center space-x-4">
-            {/* Desktop Theme Toggle */}
+            {/* Desktop Theme Toggle - Matches image styling */}
             <button
               onClick={toggleTheme}
               aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              // Styling matches the image's toggle button (dark background, border)
               className={`p-2 rounded-lg transition-all duration-300 hover:scale-105 border border-gray-700 bg-gray-800
-                ${isDark ? 'text-gray-300' : 'text-gray-300'}` // Use consistent text color for toggle in dark theme
+                ${isDark ? 'text-gray-300' : 'text-gray-300'}` // Consistent text color for toggle
               }
               type="button"
             >
               {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
             </button>
 
-            {/* Display Login Button if not authenticated */}
-            {!isAuthenticated && (
+            {isAuthenticated ? (
+              // User info & Logout if authenticated (essential functionality)
+              <>
+                <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
+                  <User className="w-4 h-4 text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded p-1" />
+                  <span className={`text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
+                    {user?.name || user?.email?.split('@')[0]}
+                  </span>
+                </div>
+                <button onClick={handleLogout} className={`flex items-center space-x-1 px-3 py-2 rounded-lg ${isDark ? 'text-gray-300 hover:text-red-400 hover:bg-gray-800' : 'text-gray-700 hover:text-red-600 hover:bg-gray-100'}`}>
+                  <LogOut className="w-4 h-4" /> <span>Logout</span>
+                </button>
+              </>
+            ) : (
+              // Login Button - Matches image gradient
               <Link to="/login" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-300">
                 Login
               </Link>
-            )}
-            {/* Display User Info and Logout if authenticated (not in desktop image, but essential for functionality) */}
-            {isAuthenticated && (
-                <>
-                    <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${isDark ? 'bg-gray-800' : 'bg-gray-100'}`}>
-                        <User className="w-4 h-4 text-white bg-gradient-to-r from-blue-600 to-indigo-600 rounded p-1" />
-                        <span className={`text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
-                            {user?.name || user?.email?.split('@')[0]}
-                        </span>
-                    </div>
-                    <button onClick={handleLogout} className={`flex items-center space-x-1 px-3 py-2 rounded-lg ${isDark ? 'text-gray-300 hover:text-red-400 hover:bg-gray-800' : 'text-gray-700 hover:text-red-600 hover:bg-gray-100'}`}>
-                        <LogOut className="w-4 h-4" /> <span>Logout</span>
-                    </button>
-                </>
             )}
           </div>
 
