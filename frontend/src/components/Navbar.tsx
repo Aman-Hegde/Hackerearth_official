@@ -69,7 +69,7 @@ const NavBar: React.FC = () => {
 
   return (
     <motion.nav
-      className="fixed top-0 left-0 right-0 w-full z-50 border-b border-gray-800/50"
+      className="top-0 left-0 right-0 w-full z-50 border-gray-800/50"
       initial={{ y: 0 }}
       animate={{ y: 0 }}
       transition={{ duration: 0.6 }}
@@ -79,9 +79,9 @@ const NavBar: React.FC = () => {
         className="absolute w-full h-64 pointer-events-none z-20"
         style={{
           background: `radial-gradient(ellipse at top center, rgba(125,200,255,0.1) 0%, transparent 60%)`,
-          top: -120, // Position the glow just above the navbar
+          top: -100, // Position the glow just above the navbar
         }}
-        animate={{ opacity: [0.9, 1.3, 0.9] }}
+        animate={{ opacity: [0.9, 1.7, 0.9] }}
         transition={{ duration: 4, repeat: Number.POSITIVE_INFINITY, ease: "easeInOut" }}
       />
       
