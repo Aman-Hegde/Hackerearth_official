@@ -62,7 +62,7 @@ const NavBar: React.FC = () => {
     { name: "Events", href: "/events" },
     { name: "Leaderboard", href: "/leaderboard" },
     { name: "Team", href: "/team" },
-    { name: "Achievements ahh", href: "/achievements" },
+    { name: "Achievements 1", href: "/achievements" },
     { name: "Contact", href: "/contact" },
   ];
 
@@ -86,8 +86,8 @@ const NavBar: React.FC = () => {
       transition={{ duration: 0.6 }}
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="flex justify-between items-center h-16">
-          {/* Main Navigation Links - Left Aligned */}
+        <div className="flex justify-center items-center h-16 relative">
+          {/* Main Navigation Links - Center Aligned */}
           <div className="hidden lg:flex items-center space-x-8">
             {navItems.map((item) => (
               <Link
@@ -102,8 +102,8 @@ const NavBar: React.FC = () => {
             ))}
           </div>
 
-          {/* Right-aligned items */}
-          <div className="flex items-center space-x-4">
+          {/* Right-aligned items (moved to a wrapper div for positioning) */}
+          <div className="flex items-center space-x-4 absolute right-0">
             {/* Desktop Call to Actions */}
             <div className="hidden lg:flex items-center space-x-4">
               <button
