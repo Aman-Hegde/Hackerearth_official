@@ -20,6 +20,23 @@ const stagger = {
   }
 };
 
+// Grid Background Component
+const GridBackground = () => {
+  const { isDark } = useTheme();
+  
+  return (
+    <div className="fixed inset-0 pointer-events-none z-0 opacity-20">
+      <div 
+        className="w-full h-full"
+        style={{
+          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23${isDark ? 'ffffff' : '000000'}' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+          backgroundSize: '60px 60px'
+        }}
+      />
+    </div>
+  );
+};
+
 function ServiceUIGraphic({ feature }: { feature: any }) {
   return (
     <div className="relative">
@@ -216,19 +233,19 @@ const Home = () => {
 
   return (
     <div className={`overflow-hidden transition-colors duration-500 min-h-screen ${isDark ? "bg-black" : "bg-slate-50"}`}>
-      <section className="flex flex-col items-center justify-center min-h-[90vh] px-3 sm:px-6 py-2">
-          <motion.div
-    className="absolute top-0 left-0 right-0 h-64 pointer-events-none z-0"
-    style={{
-      background: `radial-gradient(ellipse at top center, rgba(125,200,255,0.15) 0%, transparent 70%)`,
-    }}
-    animate={{ opacity: [0.9, 1.3, 0.9] }}
-    transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-  />
-        <div className="max-w-3xl mx-auto text-center space-y-6 sm:space-y-8 sm:max-w-4xl">
-          {/* <div className="inline-flex items-center px-0 py-1.5 sm:px-1 sm:py-2 bg-black/80 backdrop-blur-sm border border-gray-700 rounded-full text-[11px] sm:text-xs text-gray-300 shadow-[0_0_20px_rgba(52,211,153,0.1)] cursor-default">
-            <span className="ml-1 mr-1">powered by Abhuday</span>
-          </div> */}
+      {/* Grid Background */}
+      <GridBackground />
+      
+      <section className="flex flex-col items-center justify-center min-h-[90vh] px-3 sm:px-6 py-2 relative z-10">
+        <motion.div
+          className="absolute top-0 left-0 right-0 h-64 pointer-events-none z-0"
+          style={{
+            background: `radial-gradient(ellipse at top center, rgba(125,200,255,0.15) 0%, transparent 70%)`,
+          }}
+          animate={{ opacity: [0.9, 1.3, 0.9] }}
+          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        />
+        <div className="max-w-3xl mx-auto text-center space-y-6 sm:space-y-8 sm:max-w-4xl relative z-10">
           <TypingHero />
           <div className="h-px w-20 sm:w-24 bg-gradient-to-r from-transparent via-blue-500 to-transparent mx-auto my-6 sm:my-8" />
           <p className="text-gray-700 dark:text-gray-400 max-w-[75%] sm:max-w-xl mx-auto font-medium relative z-10 leading-relaxed text-base sm:text-lg">
@@ -349,115 +366,115 @@ const Home = () => {
 
       <StatsSection />
 
-    <section className="relative z-10 py-32 overflow-hidden">
-  {/* Background elements */}
-  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5" />
-  <div className="absolute top-0 left-0 w-full h-full opacity-10">
-    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500 rounded-full blur-3xl animate-pulse" />
-    <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-500 rounded-full blur-3xl animate-pulse delay-1000" />
-  </div>
+      <section className="relative z-10 py-32 overflow-hidden">
+        {/* Background elements */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5" />
+        <div className="absolute top-0 left-0 w-full h-full opacity-10">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-500 rounded-full blur-3xl animate-pulse delay-1000" />
+        </div>
 
-  <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-    {/* Main content container */}
-    <motion.div
-      initial={{ opacity: 0, y: 50 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8 }}
-      viewport={{ once: true }}
-      className="relative"
-    >
-      {/* Floating elements */}
-      <motion.div
-        className="absolute -top-8 -left-8 w-16 h-16 bg-blue-500/20 rounded-full blur-xl"
-        animate={{
-          scale: [1, 1.2, 1],
-          opacity: [0.3, 0.6, 0.3]
-        }}
-        transition={{ duration: 3, repeat: Infinity }}
-      />
-      <motion.div
-        className="absolute -bottom-8 -right-8 w-20 h-20 bg-purple-500/20 rounded-full blur-xl"
-        animate={{
-          scale: [1, 1.3, 1],
-          opacity: [0.2, 0.5, 0.2]
-        }}
-        transition={{ duration: 4, repeat: Infinity, delay: 1 }}
-      />
-
-      {/* Main card */}
-      <div className="relative bg-gradient-to-br from-white/95 to-gray-50/95 dark:from-gray-900/95 dark:to-gray-800/95 backdrop-blur-2xl border border-white/20 dark:border-gray-700/30 rounded-3xl p-12 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-[1.02]">
-        {/* Decorative elements */}
-        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-t-3xl" />
-        
-        {/* Icon container */}
-        <motion.div
-          className="relative mx-auto mb-8 w-20 h-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg"
-          whileHover={{ rotate: 360, scale: 1.1 }}
-          transition={{ duration: 0.7 }}
-        >
-          <Rocket className="w-10 h-10 text-white" />
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-md" />
-        </motion.div>
-
-        {/* Heading */}
-        <motion.h2
-          className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          viewport={{ once: true }}
-        >
-          Ready to Begin Your <span className="italic font-light">Journey</span>?
-        </motion.h2>
-
-        {/* Description */}
-        <motion.p
-          className="text-xl md:text-2xl mb-10 leading-relaxed text-gray-600 dark:text-gray-300 max-w-2xl mx-auto font-light"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          viewport={{ once: true }}
-        >
-          Join a community of innovators, builders, and leaders. Start your path to technical excellence today.
-        </motion.p>
-
-        {/* CTA Button */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          viewport={{ once: true }}
-        >
-          <Link
-            to="/login"
-            className="group relative inline-flex items-center space-x-6 px-14 py-5 rounded-2xl font-semibold text-xl transition-all duration-500 hover:scale-105 shadow-2xl hover:shadow-3xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white overflow-hidden"
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+          {/* Main content container */}
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="relative"
           >
-            {/* Button background effects */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-white/20 to-purple-500/0 group-hover:via-white/30 transition-all duration-500" />
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-            
-            {/* Button content */}
-            <span className="relative z-10">Get Started</span>
+            {/* Floating elements */}
             <motion.div
-              className="relative z-10"
-              animate={{ x: [0, 5, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform duration-300" />
-            </motion.div>
+              className="absolute -top-8 -left-8 w-16 h-16 bg-blue-500/20 rounded-full blur-xl"
+              animate={{
+                scale: [1, 1.2, 1],
+                opacity: [0.3, 0.6, 0.3]
+              }}
+              transition={{ duration: 3, repeat: Infinity }}
+            />
+            <motion.div
+              className="absolute -bottom-8 -right-8 w-20 h-20 bg-purple-500/20 rounded-full blur-xl"
+              animate={{
+                scale: [1, 1.3, 1],
+                opacity: [0.2, 0.5, 0.2]
+              }}
+              transition={{ duration: 4, repeat: Infinity, delay: 1 }}
+            />
 
-            {/* Hover effect */}
-            <div className="absolute inset-0 bg-white/10 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-          </Link>
-        </motion.div>
+            {/* Main card */}
+            <div className="relative bg-gradient-to-br from-white/95 to-gray-50/95 dark:from-gray-900/95 dark:to-gray-800/95 backdrop-blur-2xl border border-white/20 dark:border-gray-700/30 rounded-3xl p-12 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-[1.02]">
+              {/* Decorative elements */}
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-t-3xl" />
+              
+              {/* Icon container */}
+              <motion.div
+                className="relative mx-auto mb-8 w-20 h-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg"
+                whileHover={{ rotate: 360, scale: 1.1 }}
+                transition={{ duration: 0.7 }}
+              >
+                <Rocket className="w-10 h-10 text-white" />
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-md" />
+              </motion.div>
 
-        {/* Additional decorative elements */}
-        <div className="absolute -bottom-4 -left-4 w-8 h-8 bg-blue-400/30 rounded-full blur-sm" />
-        <div className="absolute -top-4 -right-4 w-6 h-6 bg-purple-400/30 rounded-full blur-sm" />
-      </div>
-    </motion.div>
-  </div>
-</section>
+              {/* Heading */}
+              <motion.h2
+                className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                viewport={{ once: true }}
+              >
+                Ready to Begin Your <span className="italic font-light">Journey</span>?
+              </motion.h2>
+
+              {/* Description */}
+              <motion.p
+                className="text-xl md:text-2xl mb-10 leading-relaxed text-gray-600 dark:text-gray-300 max-w-2xl mx-auto font-light"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                viewport={{ once: true }}
+              >
+                Join a community of innovators, builders, and leaders. Start your path to technical excellence today.
+              </motion.p>
+
+              {/* CTA Button */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+                viewport={{ once: true }}
+              >
+                <Link
+                  to="/login"
+                  className="group relative inline-flex items-center space-x-6 px-14 py-5 rounded-2xl font-semibold text-xl transition-all duration-500 hover:scale-105 shadow-2xl hover:shadow-3xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white overflow-hidden"
+                >
+                  {/* Button background effects */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-white/20 to-purple-500/0 group-hover:via-white/30 transition-all duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  
+                  {/* Button content */}
+                  <span className="relative z-10">Get Started</span>
+                  <motion.div
+                    className="relative z-10"
+                    animate={{ x: [0, 5, 0] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform duration-300" />
+                  </motion.div>
+
+                  {/* Hover effect */}
+                  <div className="absolute inset-0 bg-white/10 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                </Link>
+              </motion.div>
+
+              {/* Additional decorative elements */}
+              <div className="absolute -bottom-4 -left-4 w-8 h-8 bg-blue-400/30 rounded-full blur-sm" />
+              <div className="absolute -top-4 -right-4 w-6 h-6 bg-purple-400/30 rounded-full blur-sm" />
+            </div>
+          </motion.div>
+        </div>
+      </section>
     </div>
   );
 };
