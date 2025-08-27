@@ -12,13 +12,6 @@ function Button({
   size = "default",
   onClick,
   ...props
-}: {
-  children: React.ReactNode;
-  className?: string;
-  variant?: "default" | "outline" | "ghost";
-  size?: "default" | "sm" | "icon";
-  onClick?: () => void;
-  [key: string]: any;
 }) {
   const baseClasses =
     "inline-flex items-center justify-center rounded-md font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background";
@@ -76,16 +69,18 @@ const NavBar: React.FC = () => {
     navigate('/');
   };
 
+  const loginButtonGlowClass = "shadow-[0_0_10px_rgba(78,92,237,0.4),_0_0_20px_rgba(147,51,234,0.2)]";
+
   return (
     <motion.nav
       className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${
-        scrolled
-          ? isDark
-            ? "bg-black/90 backdrop-blur-md border-b border-gray-800/50"
-            : "bg-white/90 backdrop-blur-md border-b border-gray-200/50"
-          : isDark
-            ? "bg-black/80 backdrop-blur-sm"
-            : "bg-white/80 backdrop-blur-sm"
+        isDark
+          ? scrolled
+            ? "bg-[#1E1D36]/90 backdrop-blur-md"
+            : "bg-[#1E1D36]"
+          : scrolled
+            ? "bg-white/80 backdrop-blur-md"
+            : "bg-white"
       }`}
       initial={{ y: 0 }}
       animate={{ y: 0 }}
@@ -93,7 +88,6 @@ const NavBar: React.FC = () => {
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="flex justify-center items-center h-16 relative">
-          {/* Main Navigation Links - Center Aligned */}
           <div className="hidden lg:flex items-center space-x-8">
             {navItems.map((item) => (
               <Link
@@ -101,7 +95,7 @@ const NavBar: React.FC = () => {
                 to={item.href}
                 className={`flex items-center space-x-1 text-sm font-medium transition-colors duration-200 ${
                   pathname === item.href
-                    ? 'text-blue-400'
+                    ? 'text-blue-500 dark:text-blue-400'
                     : isDark
                       ? 'text-gray-300 hover:text-white'
                       : 'text-gray-700 hover:text-gray-900'
@@ -112,16 +106,18 @@ const NavBar: React.FC = () => {
             ))}
           </div>
 
-          {/* Right-aligned items */}
           <div className="flex items-center space-x-4 absolute right-0">
-            {/* Desktop Call to Actions */}
             <div className="hidden lg:flex items-center space-x-4">
               <button
                 onClick={toggleTheme}
                 aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                className={`p-2 rounded-lg transition-all duration-300 hover:scale-105 ${
-                  isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'
-                }`}
+                className={`
+                  p-2 rounded-lg transition-all duration-300 hover:scale-105
+                  ${isDark
+                    ? 'text-white bg-gray-800/20 hover:bg-gray-700/30'
+                    : 'text-gray-700 bg-gray-100/50 hover:bg-gray-200/50'
+                  }
+                `}
                 type="button"
               >
                 {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
@@ -144,13 +140,15 @@ const NavBar: React.FC = () => {
                   </button>
                 </>
               ) : (
-                <Link to="/login" className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-300">
+                <Link
+                  to="/login"
+                  className={`bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-300 ${isDark ? loginButtonGlowClass : ''}`}
+                >
                   Login
                 </Link>
               )}
             </div>
 
-            {/* Mobile Menu Button */}
             <div className="lg:hidden flex items-center space-x-3">
               <button
                 onClick={() => setIsOpen(!isOpen)}
@@ -164,12 +162,11 @@ const NavBar: React.FC = () => {
         </div>
       </div>
 
-      {/* Mobile Sidebar */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className={`md:hidden absolute top-full left-0 right-0 backdrop-blur-md border-b ${
-              isDark ? "bg-black/95 border-gray-800" : "bg-white/95 border-gray-200"
+            className={`md:hidden absolute top-full left-0 right-0 backdrop-blur-md ${
+              isDark ? "bg-black/95" : "bg-white/95"
             }`}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
@@ -200,7 +197,7 @@ const NavBar: React.FC = () => {
                 <Link
                   to="/login"
                   onClick={handleMobileLinkClick}
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg text-center font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200"
+                  className={`w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg text-center font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200 ${isDark ? loginButtonGlowClass : ''}`}
                 >
                   Login
                 </Link>
@@ -223,7 +220,7 @@ const NavBar: React.FC = () => {
                 </Link>
               ))}
 
-              <div className={`pt-4 ${isDark ? 'border-t border-gray-700' : 'border-t border-gray-200'}`}>
+              <div className={`pt-4 ${isDark ? 'bg-black/95' : 'bg-white/95'}`}>
                 <button
                   onClick={toggleTheme}
                   aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
