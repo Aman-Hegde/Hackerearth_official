@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 
 // Lucide React Icons
 import {
-  Home, Calendar, Award, Users, Trophy, Mail,
+  Home, Calendar, Award, Users, Trophy, Mail, // Main navigation icons
   User, LogOut, Sun, Moon, ChevronRight, ChevronLeft, Menu, X
 } from 'lucide-react';
 
@@ -24,14 +24,14 @@ interface SidebarProps {
 
 // --- Component Interface Definitions ---
 interface NavItem {
-  id: string;
+  id: string; // Unique ID for keying
   name: string;
   path: string;
-  icon: React.ElementType;
-  badge?: number;
+  icon: React.ElementType; // Type for Lucide icon components
+  badge?: number; // Optional badge for messages or notifications
 }
 
-// --- Navigation Items Data ---
+// --- Navigation Items Data (From your navbar.tsx, plus Home, with appropriate icons) ---
 const navItems: NavItem[] = [
   { id: 'home', name: 'Home', path: '/', icon: Home },
   { id: 'events', name: 'Events', path: '/events', icon: Calendar },
@@ -49,26 +49,30 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
   const { isDark, toggleTheme } = useTheme();
 
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
 
-  // Helper to determine if we're on a desktop screen
+  // Helper to determine if we're on a desktop screen (Tailwind's 'md' breakpoint)
   const isDesktop = () => typeof window !== 'undefined' && window.innerWidth >= 768;
 
   // Effect to manage sidebar state
   useEffect(() => {
+    // Close mobile sidebar if route changes
     if (isMobileOpen) {
       setIsMobileOpen(false);
     }
+    // On desktop, if we navigate while sidebar is expanded (e.g., via click-toggle),
+    // we want it to reset to its collapsed state.
+    // The main hover logic will re-expand it on mouse enter.
     if (isDesktop() && isExpanded) {
-      setIsExpanded(false);
+        setIsExpanded(false);
     }
   }, [location.pathname, isMobileOpen, isExpanded, setIsExpanded]);
+
 
   const handleLogout = () => {
     logout();
     if (isMobileOpen) setIsMobileOpen(false);
-    setIsExpanded(false);
-    navigate('/login');
+    setIsExpanded(false); // Collapse sidebar after logout
+    navigate('/login'); // Redirect to login page
   };
 
   // --- Utility Function for Navigation Link Classes ---
@@ -76,6 +80,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
     const isActive = location.pathname === item.path;
     const baseClasses = "flex items-center rounded-lg px-3 py-3 text-sm font-medium transition-all duration-200 group relative";
     
+    // Adjusted colors for a dark sidebar (bg-gray-950)
     let linkClasses = `${baseClasses} text-gray-300 hover:text-white hover:bg-gray-800`;
     
     if (isActive) {
@@ -87,7 +92,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
 
   return (
     <>
-      {/* Mobile Overlay */}
+      {/* Mobile Overlay: Dims background when mobile sidebar is open */}
       <AnimatePresence>
         {isMobileOpen && (
           <motion.div
@@ -101,11 +106,11 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
         )}
       </AnimatePresence>
 
-      {/* Mobile Menu Button */}
+      {/* Mobile Menu Button: Toggles sidebar on small screens */}
       <div className="fixed top-4 left-4 z-[70] md:hidden">
         <button
           onClick={() => setIsMobileOpen(!isMobileOpen)}
-          className="p-2 rounded-md transition-colors duration-200 text-gray-300 hover:text-white bg-gray-900/70"
+          className={`p-2 rounded-md transition-colors duration-200 text-gray-300 hover:text-white bg-gray-900/70`}
           aria-label="Toggle sidebar"
         >
           {isMobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -116,36 +121,35 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
       <motion.aside
         initial={false}
         animate={
-            isMobileOpen ? { width: '256px', x: 0 } :
-            (isDesktop() ? { width: isExpanded ? '256px' : '64px', x: 0 } :
-            { width: '64px', x: '-100%' })
+            isMobileOpen ? { width: '256px', x: 0 } : // Mobile: open, full width, visible
+            (isDesktop() ? { width: isExpanded ? '256px' : '64px', x: 0 } : // Desktop: expanded or collapsed
+            { width: '64px', x: '-100%' }) // Mobile: closed, hidden off-screen (default to collapsed width)
         }
         transition={{ duration: 0.3, ease: "easeInOut" }}
-        className="fixed top-0 left-0 h-full bg-gray-950 border-r border-gray-800 shadow-xl z-50 overflow-hidden"
+        // Removed all borders for a seamless look
+        className={`fixed top-0 left-0 h-full bg-gray-950 shadow-xl z-50 overflow-hidden`}
+        // **Primary Desktop Hover Logic:**
         onMouseEnter={() => {
           if (isDesktop()) {
-            setIsHovered(true);
             setIsExpanded(true);
           }
         }}
         onMouseLeave={() => {
           if (isDesktop()) {
-            setIsHovered(false);
             setIsExpanded(false);
           }
         }}
       >
         <div className="flex flex-col h-full">
-          {/* Sidebar Header */}
-          <div className="flex items-center p-4 border-b border-gray-800 h-16">
-            <Link 
-              to="/" 
-              className="flex items-center space-x-2" 
-              onClick={() => { setIsMobileOpen(false); setIsExpanded(false); }}
-            >
-              <img src={logo} alt="Logo" className="w-8 h-8 rounded-full object-cover" />
+          {/* Sidebar Header: Logo and Title */}
+          <div className="flex items-center p-4 h-16"> {/* Removed border-b */}
+            <Link to="/" className="flex items-center space-x-2" onClick={() => { setIsMobileOpen(false); setIsExpanded(false); }}>
+              {/* Logo container has a black background from the screenshot */}
+              <div className="w-8 h-8 rounded-full bg-black flex items-center justify-center">
+                 <img src={logo} alt="Logo" className="w-6 h-6 object-contain" /> {/* Smaller logo to fit inside container */}
+              </div>
               <AnimatePresence>
-                {(isExpanded || isHovered) && (
+                {isExpanded && (
                   <motion.span
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -160,29 +164,32 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
             </Link>
           </div>
 
-          {/* Navigation Items */}
-          <nav className="flex-1 px-2 py-4 space-y-2 overflow-y-auto">
-            <ul className="space-y-2">
+          {/* Navigation Items (Flat list) */}
+          <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
+            <ul className="space-y-1">
               {navItems.map((item, itemIndex) => {
                 const Icon = item.icon;
                 const linkClasses = getNavLinkClasses(item);
+                const isActive = location.pathname === item.path; // Re-declare for Chevron logic
+
                 return (
                   <li key={item.id}>
                     <Link
                       to={item.path}
                       onClick={() => {
                         if (isMobileOpen) setIsMobileOpen(false);
+                        // On desktop, the sidebar will naturally collapse on mouseleave after click
                       }}
                       className={linkClasses}
                     >
                       <Icon
                         className={`flex-shrink-0 w-5 h-5 transition-transform duration-200
-                          ${location.pathname === item.path ? 'text-white' : 'text-gray-400 group-hover:text-white'}
-                          ${isExpanded || isHovered ? '' : 'mx-auto'}
+                          ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'}
+                          ${isExpanded ? '' : 'mx-auto'}
                         `}
                       />
                       <AnimatePresence>
-                        {(isExpanded || isHovered) && (
+                        {isExpanded && (
                           <motion.span
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -191,11 +198,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
                             className="ml-3 whitespace-nowrap"
                           >
                             {item.name}
+                            {item.badge !== undefined && (
+                              <span className="ml-2 px-2 py-0.5 text-xs font-semibold rounded-full bg-red-500 text-white">
+                                {item.badge}
+                              </span>
+                            )}
                           </motion.span>
                         )}
                       </AnimatePresence>
                       <AnimatePresence>
-                        {(isExpanded || isHovered) && (
+                        {isExpanded && (
                           <motion.div
                             initial={{ opacity: 0, x: -10 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -205,7 +217,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
                           >
                             <ChevronRight
                               className={`w-4 h-4 transition-transform duration-200
-                                ${location.pathname === item.path ? 'text-white' : 'text-gray-500 group-hover:text-gray-300'}
+                                ${isActive ? 'text-white' : 'text-gray-500 group-hover:text-gray-300'}
                                 group-hover:translate-x-1
                               `}
                             />
@@ -220,17 +232,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
           </nav>
 
           {/* User Auth & Theme Toggle Buttons */}
-          <div className="p-4 border-t border-gray-800 space-y-2">
-            {/* User Login/Logout */}
+          <div className="p-4 space-y-2"> {/* Removed border-t */}
             {isAuthenticated ? (
+              // Logout button
               <motion.button
                 onClick={handleLogout}
-                className="w-full flex items-center rounded-lg px-3 py-3 text-sm font-medium transition-colors duration-200 group
-                  text-gray-300 hover:text-red-400 hover:bg-gray-800"
+                className={`w-full flex items-center rounded-lg px-3 py-3 text-sm font-medium transition-colors duration-200 group
+                  text-gray-300 hover:text-red-400 hover:bg-gray-800`}
               >
-                <LogOut className={`flex-shrink-0 w-5 h-5 ${(isExpanded || isHovered) ? '' : 'mx-auto'}`} />
+                <LogOut className={`flex-shrink-0 w-5 h-5 ${isExpanded ? '' : 'mx-auto'}`} />
                 <AnimatePresence>
-                  {(isExpanded || isHovered) && (
+                  {isExpanded && (
                     <motion.span
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
@@ -244,14 +256,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
                 </AnimatePresence>
               </motion.button>
             ) : (
+              // Login Link - now always gradient when expanded, simple icon when collapsed
               <Link
                 to="/login"
                 onClick={() => { if (isMobileOpen) setIsMobileOpen(false); }}
-                className="w-full flex items-center justify-center rounded-lg px-3 py-3 text-sm font-medium text-center transition-all duration-200
-                  bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700"
+                className={`w-full flex items-center justify-center rounded-lg px-3 py-3 text-sm font-medium text-center transition-all duration-200
+                  ${isExpanded ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700' : 'bg-transparent text-gray-300 hover:bg-gray-800'}
+                `}
               >
                 <AnimatePresence mode="wait">
-                  {(isExpanded || isHovered) ? (
+                  {isExpanded ? (
                     <motion.span
                       key="login-expanded"
                       initial={{ opacity: 0, x: -10 }}
@@ -270,7 +284,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
                       transition={{ duration: 0.2 }}
                       className="flex justify-center"
                     >
-                      <LogOut className="w-5 h-5 rotate-180 text-white" />
+                       <LogOut className={`w-5 h-5 rotate-180 text-gray-300`} /> {/* Rotated LogOut for login cue */}
                     </motion.span>
                   )}
                 </AnimatePresence>
@@ -281,16 +295,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
             <motion.button
               onClick={toggleTheme}
               aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              className="w-full flex items-center rounded-lg px-3 py-3 text-sm font-medium transition-colors duration-200 group
-                text-gray-300 hover:text-white hover:bg-gray-800"
+              className={`mt-2 w-full flex items-center rounded-lg px-3 py-3 text-sm font-medium transition-colors duration-200 group
+                text-gray-300 hover:text-white hover:bg-gray-800`}
             >
               {isDark ? (
-                <Sun className={`flex-shrink-0 w-5 h-5 ${(isExpanded || isHovered) ? '' : 'mx-auto'}`} />
+                <Sun className={`flex-shrink-0 w-5 h-5 ${isExpanded ? '' : 'mx-auto'}`} />
               ) : (
-                <Moon className={`flex-shrink-0 w-5 h-5 ${(isExpanded || isHovered) ? '' : 'mx-auto'}`} />
+                <Moon className={`flex-shrink-0 w-5 h-5 ${isExpanded ? '' : 'mx-auto'}`} />
               )}
               <AnimatePresence>
-                {(isExpanded || isHovered) && (
+                {isExpanded && (
                   <motion.span
                     initial={{ opacity: 0, x: -10 }}
                     animate={{ opacity: 1, x: 0 }}
@@ -305,18 +319,20 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
             </motion.button>
           </div>
           
-          {/* Expand/Collapse Toggle Button */}
+          {/* Expand/Collapse Toggle Button at the very bottom */}
+          {/* This button is now a CLICK-TOGGLE for isExpanded */}
           <motion.button
-            className="flex items-center justify-center h-12 w-full transition-colors duration-200 
-              bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white px-4"
+            className={`flex items-center justify-center h-12 w-full transition-colors duration-200 
+              bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white px-4`}
             onClick={() => {
-                setIsExpanded(!isExpanded);
-                if (!isExpanded && isMobileOpen) setIsMobileOpen(false);
+                setIsExpanded(!isExpanded); // Toggle expanded state on click
+                if (!isExpanded && isMobileOpen) setIsMobileOpen(false); // If opening on mobile, close overlay
             }}
             aria-label={isExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
           >
             <AnimatePresence mode="wait">
-              {(isExpanded || isHovered) ? (
+              {isExpanded ? (
+                // Text for when expanded, visually appears and pushes arrow to the right
                 <motion.span
                   key="collapse-label"
                   initial={{ opacity: 0, x: -10 }}
@@ -328,6 +344,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
                   Collapse
                 </motion.span>
               ) : (
+                // When collapsed, the text is screen reader only, as the icon is the visual cue
                 <motion.span
                   key="expand-label"
                   initial={{ opacity: 0 }}
@@ -341,7 +358,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
               )}
             </AnimatePresence>
             <AnimatePresence mode="wait">
-              {(isExpanded || isHovered) ? (
+              {isExpanded ? (
+                // ChevronLeft when expanded (to collapse)
                 <motion.div
                   key="chevron-left"
                   initial={{ rotate: 90, opacity: 0 }}
@@ -352,6 +370,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
                   <ChevronLeft className="w-5 h-5" />
                 </motion.div>
               ) : (
+                // ChevronRight when collapsed (to expand)
                 <motion.div
                   key="chevron-right"
                   initial={{ rotate: -90, opacity: 0 }}
@@ -365,25 +384,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
             </AnimatePresence>
           </motion.button>
           
-          {/* Sidebar Footer */}
-          <AnimatePresence>
-            {(isExpanded || isHovered) && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                transition={{ duration: 0.2 }}
-                className="p-4 border-t border-gray-800 text-center"
-              >
-                <p className="text-xs text-gray-600 font-medium">
-                  HackerEarth
-                </p>
-                <p className="text-xs text-gray-500">
-                  Hub-NMAMIT
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          {/* Removed Sidebar Footer (HackerEarth Hub-NMAMIT) as it's not in the latest screenshot */}
         </div>
       </motion.aside>
     </>
