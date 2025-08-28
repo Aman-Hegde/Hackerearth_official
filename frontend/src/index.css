@@ -1,6 +1,28 @@
+/* src/index.css */
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Essential for full height and consistent background in fixed layouts */
+html, body, #root { /* #root is common in Create React App. Adjust if your root div has a different ID */
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  /* Prevents horizontal scroll from sidebar transitions or content overflow */
+  overflow-x: hidden;
+}
+
+body {
+  /* Default background for light mode */
+  background-color: theme('colors.slate.50'); /* Matches your App.tsx default */
+}
+
+/* Apply dark background when the 'dark' class is present on the html element */
+html.dark body {
+  background-color: theme('colors.gray.900'); /* Matches your App.tsx dark mode */
+}
+
 
 @layer utilities {
   .animate-fade-in-up {
@@ -92,7 +114,7 @@ html {
 /* Selection styling */
 ::selection {
   background: rgba(59, 130, 246, 0.3);
-  color: white;
+  color: white; /* Ensure text is readable on selection */
 }
 
 /* Focus styles */
@@ -102,20 +124,30 @@ a:focus {
   outline-offset: 2px;
 }
 
-/* Custom scrollbar */
+/* Custom scrollbar - YOUR EXISTING STYLES ARE GOOD HERE */
 ::-webkit-scrollbar {
   width: 8px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: #f1f5f9; /* Consider a dark equivalent for consistency in dark mode */
+}
+html.dark ::-webkit-scrollbar-track { /* Add dark mode specific track */
+  background: theme('colors.gray.800');
 }
 
 ::-webkit-scrollbar-thumb {
   background: linear-gradient(to bottom, #3b82f6, #6366f1);
   border-radius: 4px;
 }
+html.dark ::-webkit-scrollbar-thumb { /* Adjust thumb for dark mode if desired */
+  background: linear-gradient(to bottom, #60a5fa, #818cf8); /* Lighter gradient for dark theme */
+}
+
 
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(to bottom, #2563eb, #4f46e5);
+}
+html.dark ::-webkit-scrollbar-thumb:hover { /* Adjust thumb hover for dark mode if desired */
+  background: linear-gradient(to bottom, #3b82f6, #6366f1);
 }

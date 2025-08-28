@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 // Lucide React Icons - Adjusted to fit the simpler nav items
 import {
   Home, Calendar, Award, Users, Trophy, Mail, // Main navigation icons
-  User, LogOut, Sun, Moon, ChevronRight, ChevronLeft, Menu, X
+  User, LogOut, Sun, Moon, ChevronRight, ChevronLeft, Menu, X, HelpCircle, Settings // Other utility icons
 } from 'lucide-react';
 
 // Using your actual logo import path
@@ -28,17 +28,18 @@ interface NavItem {
   name: string;
   path: string;
   icon: React.ElementType; // Type for Lucide icon components
-  badge?: number; // Optional badge for messages or notifications
+  badge?: number; // Optional badge for messages or notifications (e.g., if "Messages" were here)
 }
 
 // --- Navigation Items Data (From your navbar.tsx, plus Home, with appropriate icons) ---
 const navItems: NavItem[] = [
-  { id: 'home', name: 'Home', path: '/', icon: Home },
+  { id: 'home', name: 'Home', path: '/', icon: Home }, // Added Home as it's common for main nav
   { id: 'events', name: 'Events', path: '/events', icon: Calendar },
   { id: 'leaderboard', name: 'Leaderboard', path: '/leaderboard', icon: Award },
   { id: 'team', name: 'Team', path: '/team', icon: Users },
   { id: 'achievements', name: 'Achievements', path: '/achievements', icon: Trophy },
   { id: 'contact', name: 'Contact', path: '/contact', icon: Mail },
+  // If you later need more items (like 'About', 'Domains' etc.), add them here with appropriate icons.
 ];
 
 // --- Sidebar Component ---
@@ -49,27 +50,27 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
   const { isDark, toggleTheme } = useTheme();
 
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [showIssue, setShowIssue] = useState(true); // State for the "1 Issue" notification
 
   // Helper to determine if we're on a desktop screen (Tailwind's 'md' breakpoint)
   const isDesktop = () => typeof window !== 'undefined' && window.innerWidth >= 768;
 
-  // Effect to manage sidebar state on route change and mobile interaction
+  // Effect to close mobile sidebar on route change
   useEffect(() => {
-    // Close mobile sidebar if route changes
     if (isMobileOpen) {
       setIsMobileOpen(false);
     }
-    // For desktop, if expanded, and we navigate, collapse it back
-    // This allows the sidebar to expand again on hover for the new page
+    // For desktop, if expanded, collapse on navigation change.
     if (isDesktop() && isExpanded) {
         setIsExpanded(false);
     }
   }, [location.pathname, isMobileOpen, isExpanded, setIsExpanded]);
 
+
   const handleLogout = () => {
     logout();
     if (isMobileOpen) setIsMobileOpen(false);
-    setIsExpanded(false); // Collapse sidebar after logout for a clean state
+    setIsExpanded(false); // Collapse sidebar on desktop after logout
     navigate('/login'); // Redirect to login page
   };
 
@@ -108,7 +109,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
       <div className="fixed top-4 left-4 z-[70] md:hidden">
         <button
           onClick={() => setIsMobileOpen(!isMobileOpen)}
-          className={`p-2 rounded-md transition-colors duration-200 text-gray-300 hover:text-white bg-gray-900/70`}
+          className={`p-2 rounded-md transition-colors duration-200 text-gray-300 hover:text-white bg-gray-900/70`} // Dark background, light text for mobile button
           aria-label="Toggle sidebar"
         >
           {isMobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -151,7 +152,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
           </div>
 
           {/* Navigation Items (Flat list) */}
-          <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto custom-scrollbar">
+          <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto"> {/* Removed custom-scrollbar class */}
             <ul className="space-y-1">
               {navItems.map((item, itemIndex) => {
                 const Icon = item.icon;
@@ -311,9 +312,23 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
               bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white
               ${isExpanded ? 'px-4 justify-between' : ''}
             `}
+            // On desktop, hover to expand when collapsed
+            onMouseEnter={() => {
+                if (isDesktop() && !isExpanded) {
+                    setIsExpanded(true);
+                }
+            }}
+            // On desktop, click to collapse when expanded
+            // For mobile, it's always a click-toggle regardless of expanded state
             onClick={() => {
-                setIsExpanded(!isExpanded); // Toggle expanded state on click
-                if (!isExpanded && isMobileOpen) setIsMobileOpen(false); // If opening on mobile, close overlay
+                if (isDesktop()) { // Desktop behavior
+                    if (isExpanded) { // If expanded, click to collapse
+                        setIsExpanded(false);
+                    }
+                    // If collapsed, hover already handled expansion, click won't do anything special here.
+                } else { // Mobile behavior (click to toggle)
+                    setIsExpanded(!isExpanded); // Toggle on mobile
+                }
             }}
             aria-label={isExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
           >
