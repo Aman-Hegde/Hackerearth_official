@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 // Lucide React Icons - Adjusted to fit the simpler nav items
 import {
   Home, Calendar, Award, Users, Trophy, Mail, // Main navigation icons
-  User, LogOut, Sun, Moon, ChevronRight, ChevronLeft, Menu, X, HelpCircle, Settings // Other utility icons
+  User, LogOut, Sun, Moon, ChevronRight, ChevronLeft, Menu, X
 } from 'lucide-react';
 
 // Using your actual logo import path
@@ -28,18 +28,17 @@ interface NavItem {
   name: string;
   path: string;
   icon: React.ElementType; // Type for Lucide icon components
-  badge?: number; // Optional badge for messages or notifications (e.g., if "Messages" were here)
+  badge?: number; // Optional badge for messages or notifications
 }
 
 // --- Navigation Items Data (From your navbar.tsx, plus Home, with appropriate icons) ---
 const navItems: NavItem[] = [
-  { id: 'home', name: 'Home', path: '/', icon: Home }, // Added Home as it's common for main nav
+  { id: 'home', name: 'Home', path: '/', icon: Home },
   { id: 'events', name: 'Events', path: '/events', icon: Calendar },
   { id: 'leaderboard', name: 'Leaderboard', path: '/leaderboard', icon: Award },
   { id: 'team', name: 'Team', path: '/team', icon: Users },
   { id: 'achievements', name: 'Achievements', path: '/achievements', icon: Trophy },
   { id: 'contact', name: 'Contact', path: '/contact', icon: Mail },
-  // If you later need more items (like 'About', 'Domains' etc.), add them here with appropriate icons.
 ];
 
 // --- Sidebar Component ---
@@ -50,27 +49,27 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
   const { isDark, toggleTheme } = useTheme();
 
   const [isMobileOpen, setIsMobileOpen] = useState(false);
-  const [showIssue, setShowIssue] = useState(true); // State for the "1 Issue" notification
 
   // Helper to determine if we're on a desktop screen (Tailwind's 'md' breakpoint)
   const isDesktop = () => typeof window !== 'undefined' && window.innerWidth >= 768;
 
-  // Effect to close mobile sidebar on route change
+  // Effect to manage sidebar state on route change and mobile interaction
   useEffect(() => {
+    // Close mobile sidebar if route changes
     if (isMobileOpen) {
       setIsMobileOpen(false);
     }
-    // For desktop, if expanded, collapse on navigation change.
+    // For desktop, if expanded, and we navigate, collapse it back
+    // This allows the sidebar to expand again on hover for the new page
     if (isDesktop() && isExpanded) {
         setIsExpanded(false);
     }
   }, [location.pathname, isMobileOpen, isExpanded, setIsExpanded]);
 
-
   const handleLogout = () => {
     logout();
     if (isMobileOpen) setIsMobileOpen(false);
-    setIsExpanded(false); // Collapse sidebar on desktop after logout
+    setIsExpanded(false); // Collapse sidebar after logout for a clean state
     navigate('/login'); // Redirect to login page
   };
 
@@ -106,11 +105,10 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
       </AnimatePresence>
 
       {/* Mobile Menu Button: Toggles sidebar on small screens */}
-      {/* This is the toggle button you requested to be included */}
       <div className="fixed top-4 left-4 z-[70] md:hidden">
         <button
           onClick={() => setIsMobileOpen(!isMobileOpen)}
-          className={`p-2 rounded-md transition-colors duration-200 text-gray-300 hover:text-white bg-gray-900/70`} // Dark background, light text for mobile button
+          className={`p-2 rounded-md transition-colors duration-200 text-gray-300 hover:text-white bg-gray-900/70`}
           aria-label="Toggle sidebar"
         >
           {isMobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -127,7 +125,9 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
         }
         transition={{ duration: 0.3, ease: "easeInOut" }}
         className={`fixed top-0 left-0 h-full bg-gray-950 border-r border-gray-800 shadow-xl z-50 overflow-hidden`}
-        // No global onMouseEnter/onMouseLeave on the aside itself anymore
+        // Re-enabled global onMouseEnter/onMouseLeave for desktop hover expansion/collapse
+        onMouseEnter={() => isDesktop() && setIsExpanded(true)}
+        onMouseLeave={() => isDesktop() && setIsExpanded(false)}
       >
         <div className="flex flex-col h-full">
           {/* Sidebar Header: Logo and Title */}
@@ -162,7 +162,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
                       to={item.path}
                       onClick={() => {
                         if (isMobileOpen) setIsMobileOpen(false);
-                        if (isDesktop() && isExpanded) setIsExpanded(false);
+                        // No desktop collapse on link click anymore, as hover handles it
                       }}
                       className={linkClasses}
                     >
@@ -215,60 +215,33 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
             </ul>
           </nav>
 
-          {/* User Auth, Theme Toggle Section */}
+          {/* User Auth & Theme Toggle Buttons - Separate for distinct vertical spacing */}
           <div className="p-4 border-t border-gray-800">
+            {/* User Login/Logout */}
             {isAuthenticated ? (
-              <div className="space-y-2">
-                <AnimatePresence mode="wait">
-                  {isExpanded ? (
-                    <motion.div
-                      key="user-info-expanded"
+              // Logout button
+              <motion.button
+                onClick={handleLogout}
+                className={`w-full flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 group
+                  text-gray-300 hover:text-red-400 hover:bg-gray-800`}
+              >
+                <LogOut className={`flex-shrink-0 w-5 h-5 ${isExpanded ? '' : 'mx-auto'}`} />
+                <AnimatePresence>
+                  {isExpanded && (
+                    <motion.span
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       exit={{ opacity: 0, x: -10 }}
-                      transition={{ duration: 0.2 }}
-                      className={`flex items-center space-x-3 px-3 py-2 rounded-lg bg-gray-800`}
+                      transition={{ duration: 0.2, delay: 0.05 }}
+                      className="ml-3 whitespace-nowrap"
                     >
-                      <User className={`w-5 h-5 text-white`} />
-                      <span className={`text-sm font-medium whitespace-nowrap text-gray-200`}>
-                        {user?.name || user?.email?.split('@')[0]}
-                      </span>
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="user-info-collapsed"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="flex justify-center py-2"
-                    >
-                      <User className={`w-5 h-5 text-white`} />
-                    </motion.div>
+                      Logout
+                    </motion.span>
                   )}
                 </AnimatePresence>
-                <motion.button
-                  onClick={handleLogout}
-                  className={`w-full flex items-center rounded-lg px-3 py-2 text-sm font-medium transition-colors duration-200 group
-                    text-gray-300 hover:text-red-400 hover:bg-gray-800`}
-                >
-                  <LogOut className={`flex-shrink-0 w-5 h-5 ${isExpanded ? '' : 'mx-auto'}`} />
-                  <AnimatePresence>
-                    {isExpanded && (
-                      <motion.span
-                        initial={{ opacity: 0, x: -10 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -10 }}
-                        transition={{ duration: 0.2, delay: 0.05 }}
-                        className="ml-3 whitespace-nowrap"
-                      >
-                        Logout
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
-                </motion.button>
-              </div>
+              </motion.button>
             ) : (
+              // Login Link
               <Link
                 to="/login"
                 onClick={() => { if (isMobileOpen) setIsMobileOpen(false); }}
@@ -296,13 +269,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
                       transition={{ duration: 0.2 }}
                       className="flex justify-center"
                     >
-                       <LogOut className={`w-5 h-5 rotate-180 text-gray-300`} />
+                       <LogOut className={`w-5 h-5 rotate-180 text-gray-300`} /> {/* Rotated LogOut for login cue */}
                     </motion.span>
                   )}
                 </AnimatePresence>
               </Link>
             )}
 
+            {/* Theme Toggle Button */}
             <motion.button
               onClick={toggleTheme}
               aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
@@ -330,55 +304,16 @@ const Sidebar: React.FC<SidebarProps> = ({ isExpanded, setIsExpanded }) => {
             </motion.button>
           </div>
           
-          {/* Issue Notification (visible only when expanded, and if showIssue is true) */}
-          <AnimatePresence>
-            {isExpanded && showIssue && (
-              <motion.button
-                key="issue-button"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: 10 }}
-                transition={{ duration: 0.2 }}
-                className="mx-4 my-2 flex items-center justify-between bg-red-600 text-white rounded-full px-4 py-2 text-sm font-medium shadow-lg hover:bg-red-700 transition-colors duration-200"
-              >
-                <div className="flex items-center space-x-2">
-                    <span className="flex h-6 w-6 items-center justify-center rounded-full bg-white text-red-600 font-bold text-xs">
-                        N
-                    </span>
-                    <span>1 Issue</span>
-                </div>
-                {/* Dismiss button for the issue */}
-                <X className="w-4 h-4 ml-4 cursor-pointer" onClick={(e) => { 
-                  e.stopPropagation(); // Prevent button's own click event from bubbling
-                  setShowIssue(false); // Hide the issue notification
-                }} />
-              </motion.button>
-            )}
-          </AnimatePresence>
-
           {/* Expand/Collapse Toggle Button at the very bottom */}
+          {/* This button is now a CLICK-TOGGLE for isExpanded */}
           <motion.button
             className={`flex items-center justify-center h-12 w-full transition-colors duration-200 
               bg-gray-800 hover:bg-gray-700 text-gray-300 hover:text-white
               ${isExpanded ? 'px-4 justify-between' : ''}
             `}
-            // On desktop, hover to expand when collapsed
-            onMouseEnter={() => {
-                if (isDesktop() && !isExpanded) {
-                    setIsExpanded(true);
-                }
-            }}
-            // On desktop, click to collapse when expanded
-            // For mobile, it's always a click-toggle regardless of expanded state
             onClick={() => {
-                if (isDesktop()) { // Desktop behavior
-                    if (isExpanded) { // If expanded, click to collapse
-                        setIsExpanded(false);
-                    }
-                    // If collapsed, hover already handled expansion, click won't do anything special here.
-                } else { // Mobile behavior (click to toggle)
-                    setIsExpanded(!isExpanded); // Toggle on mobile
-                }
+                setIsExpanded(!isExpanded); // Toggle expanded state on click
+                if (!isExpanded && isMobileOpen) setIsMobileOpen(false); // If opening on mobile, close overlay
             }}
             aria-label={isExpanded ? 'Collapse sidebar' : 'Expand sidebar'}
           >
