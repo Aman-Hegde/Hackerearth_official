@@ -8,39 +8,179 @@ const Team = () => {
 
   const teamMembers = [
     {
-      name: "Vishnu Prasad",
-      position: "Team Lead",
-      image: "public/images/wallpaperflare.com_wallpaper (1).jpg",
-      skills: ["React Native", "Flutter", "iOS", "Android"],
-      slogan: "Turning coffee into apps ☕📱",
-      github: "vishnu-github",
-      linkedin: "vishnu-linkedin",
-      email: "vishnu@hackerearth.edu"
+      name: "Shaamak M B",
+      position: "President",
+      image: "images/shaamak.jpg",
+      skills: ["Ethical hacking ", "Cyber security"],
+      slogan: "Curious Mind. Creative Heart",
+      github: "https://github.com/Shaamak",
+      linkedin: "https://www.linkedin.com/in/shaamak-madhwaraj-089a80307?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app",
+      email: "nnm23cb049@nmamit.in"
     },
     {
-      name: "Anish Bhat",
-      position: "Co-Web",
+      name: "Shetty Vedanga Shivram",
+      position: "Vice President",
       image: "public/images/wallpaperflare.com_wallpaper (1).jpg",
-      skills: ["React", "Node", "CPP", "JS"],
-      slogan: "Breaking bugs, building dreams 🐛✨",
+      skills: ["React", "Python", "Java"],
+      slogan: "Living proof that Ctrl+Z saves lifes",
       github: "anish-github",
       linkedin: "anish-linkedin",
       email: "anish@hackerearth.edu"
-    }
+    },
+    {
+      name: "Samrudh R Shetty",
+      position: "Secretary",
+      image: "images/samrudh.JPG",
+      skills: [],
+      slogan: "",
+      github: "https://github.com/sammyrude",
+      linkedin: "https://www.linkedin.com/in/samrudh-r-shetty-349315277/",
+      email: "nnm23cs168@nmamit.in"
+    },
+    {
+      name: "Pratham S Salian",
+      position: "Tech Lead",
+      image: "images/pratham.jpg",
+      skills: ["Python","Java","MERN stack"],
+      slogan: "Debugging today, Designing tomorrow ",
+      github: "https://github.com/prathamssalian",
+      linkedin: "https://www.linkedin.com/in/pratham-s-salian-33534328b/",
+      email: "nnm23is137@nmamit.in"
+    },
+    {
+      name: "Harshitha P Salian ",
+      position: "Tech Lead",
+      image: "images/harshita.jpg",
+      skills: ["Python","Cybersecurity","Next JS"],
+      slogan: "Finding doors where others see walls",
+      github: "https://github.com/harshithaps11",
+      linkedin: "http://www.linkedin.com/in/harshitha-p-s-163574288",
+      email: "nnm23is076@nmamit.in"
+    },
+    {
+      name: "K S Sujesh ",
+      position: "Tech Lead",
+      image: "images/sujesh.jpg",
+      skills: ["Python","Machine Learning","Deep Learning"],
+      slogan: "Solving tomorrow's problems, today",
+      github: "https://github.com/kssujesh",
+      linkedin: "https://www.linkedin.com/in/k-s-sujesh-5209702a7",
+      email: "nnm23ad027@nmamit.in"
+    },
+     {
+      name: "Aayush Kumar Sinha",
+      position: "Tech Lead",
+      image: "images/wallpaperflare.com_wallpaper (1).jpg",
+      skills: [],
+      slogan: "",
+      github: "https://github.com/bitaayushsinha",
+      linkedin: "https://www.linkedin.com/in/bitaayushsinha",
+      email: "nnm23cs238@nmamit.in"
+    },
+    {
+      name: "V Vishnu Prasad",
+      position: "Web master",
+      image: "images/vishnu.jpg",
+      skills: ["Cloud Computing","MERN Stack","SEO"],
+      slogan: "Eat-Sleep-Code-Repeat",
+      github: "https://github.com/VishnuPrasad55",
+      linkedin: "https://www.linkedin.com/in/vishnu-prasad-bb4755246/",
+      email: "nnm22is202@nmamit.in"
+    },
+
+    {
+      name: "Sam A Rodrigues",
+      position: "Documentation Head",
+      image: "images/sam.jpg",
+      skills: ["Python","Arduino","Rust"],
+      slogan: "Code smarter, not harder",
+      github: "https://github.com/samrodrigues1",
+      linkedin: "https://www.linkedin.com/in/sam-anthony-rodrigues-a670b32a7/",
+      email: "nnm23ad027@nmamit.in"
+    },
+    {
+      name: "Jeevan",
+      position: "Social Media Head",
+      image: "public/images/wallpaperflare.com_wallpaper (1).jpg",
+      skills: [],
+      slogan: "",
+      github: "https://github.com/jeevanshetty131",
+      linkedin: "https://www.linkedin.com/in/jeevan-shetty-9422a6317/",
+      email: "nnm23cs254@nmamit.in"
+    },
+    {
+      name: "H Bhoomika Shenoy",
+      position: "Publicity Head",
+      image: "images/bhoomika.JPG",
+      skills: ["Python","C++","HTML"],
+      slogan: "Born to code, forced to debug.",
+      github: "",
+      linkedin: "https://www.linkedin.com/in/bhoomika-shenoy-650733358?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app",
+      email: "nnm23is073@nmamit.in"
+    },
   ];
 
   const executives = [
+     {
+      name: "Pallavi Pai",
+      position: "Vice Secretary",
+      image: "images/pallavi.jpg",
+      skills: [],
+      slogan: "",
+      github: "https://github.com/pall111",
+      linkedin: "https://www.linkedin.com/in/pallavi-pai-11346927b",
+      email: "nnm23ad033@nmamit.in"
+    },
     {
-      name: "Shamaak",
-      position: "Team Member",
-      bio: "Computer Science student passionate about full-stack development and open source.",
-      image: "public/images/wallpaperflare.com_wallpaper (1).jpg",
-      skills: ["JavaScript", "React", "Node.js", "Python"],
-      slogan: "Code. Build. Inspire.",
-      github: "shamaak",
-      linkedin: "shamaak-dev",
-      email: "shamaak@hackerearth.edu"
-    }
+      name: "Vedant Suresh Mahalle",
+      position: "Documentation Co-Head",
+      image: "images/vedant.jpg",
+      skills: ["ROS2","Java","Python"],
+      slogan: "Designing bots, defining destiny",
+      github: "https://github.com/Vedant10Mahalle",
+      linkedin: "https://www.linkedin.com/in/vedant-mahalle-b217b4290?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app",
+      email: "nnm23ri031@nmamit.in"
+    },
+    {
+      name: "Bindu R",
+      position: "Publicity Co-Head",
+      image: "images/bindu.jpg",
+      skills: ["CSS","HTML"],
+      slogan: "From Logic to Launch",
+      github: "https://github.com/bindu",
+      linkedin: "http://www.linkedin.com/in/bindu-r-a50339312",
+      email: "nnm23ri013@nmamit.in"
+    },
+     {
+      name: "Vidyalakshmi Kamath",
+      position: "Publicity Member",
+      image: "images/vijaya.jpg",
+      skills: ["Python","C","C++"],
+      slogan: "Dreaming in code, living in firewalls",
+      github: "https://github.com/Vidya-kama-th",
+      linkedin: "https://www.linkedin.com/in/vidyalakshmi-kamath-086311325?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app",
+      email: "nnm23cb067@nmamit.in"
+    },
+    {
+      name: "Imaad Baig",
+      position: "Publicity Member",
+      image: "images/imaad.jpg",
+      skills: ["React","UI/UX","Java"],
+      slogan: "Now or never",
+      github: "https://github.com/Imaad-Baig44",
+      linkedin: "https://www.linkedin.com/in/imaad-baig-07a4a82aa?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app",
+      email: "nnm23cs253@nmamit.in"
+    },
+    {
+      name: "K Vinayaka M Sharma",
+      position: "Publicity Member",
+      image: "images/vinayaka.jpg",
+      skills: ["Python","MircosoftWord","PowerPoint"],
+      slogan: "Teaching Simply, Reaching Many — Empowering Minds, One Lesson at a Time",
+      github: "",
+      linkedin: "https://www.linkedin.com/in/k-vinayaka-m-sharma-985a75350?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=android_app",
+      email: "nnm22ee025@nmamit.in"
+    },
   ];
 
   return (
