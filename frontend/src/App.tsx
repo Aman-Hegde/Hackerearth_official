@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
+// import Navbar from './components/Navbar'; // <--- REMOVE NAVBART
+// import Footer from './components/Footer';
 import Home from './pages/Home';
 import Events from './pages/Events';
 import Team from './pages/Team';
@@ -14,14 +14,26 @@ import Login from './pages/Login';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ScrollToTop from './components/ScrollTop';
-
+import Sidebar from './components/Sidebar';
 function AppWrapper() {
   const location = useLocation();
+  const [isSidebarExpanded, setIsSidebarExpanded] = useState(false); // State to manage sidebar expansion
+
+  // Optionally, you might want to reset scroll position on route change
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location.pathname]);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
-      <Navbar />
-      <main className="pt-16">
+      {/* Sidebar is now the primary navigation */}
+      <Sidebar isExpanded={isSidebarExpanded} setIsExpanded={setIsSidebarExpanded} />
+
+      {/* Main content area, with dynamic margin-left based on sidebar expansion */}
+      <main
+        className={`pt-0 transition-all duration-300 ease-in-out
+          ${isSidebarExpanded ? 'ml-64' : 'ml-14 md:ml-14'}`} // Changed pt-16 to pt-0 as sidebar starts from top
+      >
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/events" element={<Events />} />
