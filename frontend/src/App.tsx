@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 // import Navbar from './components/Navbar'; // <--- REMOVE NAVBART
-import Footer from './components/Footer';
+import { Footer } from './components/Footer';
+
 import Home from './pages/Home';
 import Events from './pages/Events';
 import Team from './pages/Team';
@@ -14,7 +15,8 @@ import Login from './pages/Login';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ScrollToTop from './components/ScrollTop';
-import Sidebar from './components/sidebar'; // <--- IMPORT SIDEBAR
+import Sidebar from './components/Sidebar'; // Import Sidebar component
+
 
 function AppWrapper() {
   const location = useLocation();
@@ -27,10 +29,8 @@ function AppWrapper() {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-gray-900 transition-colors duration-300">
-      {/* Sidebar is now the primary navigation */}
       <Sidebar isExpanded={isSidebarExpanded} setIsExpanded={setIsSidebarExpanded} />
 
-      {/* Main content area, with dynamic margin-left based on sidebar expansion */}
       <main
         className={`pt-0 transition-all duration-300 ease-in-out
           ${isSidebarExpanded ? 'ml-64' : 'ml-14 md:ml-14'}`} // Changed pt-16 to pt-0 as sidebar starts from top
