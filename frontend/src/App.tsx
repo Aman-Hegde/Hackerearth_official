@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 // import Navbar from './components/Navbar'; // <--- REMOVE NAVBART
-// import Footer from './components/Footer';
+import Footer from './components/Footer';
 import Home from './pages/Home';
 import Events from './pages/Events';
 import Team from './pages/Team';
@@ -14,7 +14,8 @@ import Login from './pages/Login';
 import { AuthProvider } from './context/AuthContext';
 import { ThemeProvider } from './context/ThemeContext';
 import ScrollToTop from './components/ScrollTop';
-import Sidebar from './components/Sidebar';
+import Sidebar from './components/sidebar'; // <--- IMPORT SIDEBAR
+
 function AppWrapper() {
   const location = useLocation();
   const [isSidebarExpanded, setIsSidebarExpanded] = useState(false); // State to manage sidebar expansion
