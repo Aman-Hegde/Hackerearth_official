@@ -84,12 +84,12 @@ function TypingHero() {
     <h1 className="text-2xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter font-mono">
       <div className="flex flex-wrap justify-center">
         <div className="relative">
-          <span className={`${baseTextColor}`}>{baseText}</span>
+          <span className={`${baseTextColor} text-4xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter font-mono`}>{baseText}</span>
           {/* 
             Use inline block with nowrap and minWidth to keep container stable 
           */}
           <span
-            className={`${phraseColors} drop-shadow-[0_0_20px_rgba(52,211,153,0.5)] inline-block whitespace-nowrap`}
+            className={`${phraseColors} drop-shadow-[0_0_20px_rgba(52,211,153,0.5)] inline-block whitespace-nowrap text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter font-mono`}
             style={{ minWidth: `${minWidthEm}em` }}
           >
             {displayText}
