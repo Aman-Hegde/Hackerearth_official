@@ -302,39 +302,113 @@ const Home = () => {
       </section>
 
 
-      <section className={`relative z-10 py-24 transition-colors duration-500 ${isDark ? "bg-slate-800/30" : "bg-white"}`}>
-        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <div
-            className={`border rounded-2xl p-16 hover:scale-105 transition-all duration-500 shadow-xl ${isDark
-              ? "bg-slate-800/60 border-slate-700/50"
-              : "bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200"
-              }`}
+<section className="relative z-10 py-32 overflow-hidden">
+        {/* Background elements */}
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5" />
+        <div className="absolute top-0 left-0 w-full h-full opacity-10">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-500 rounded-full blur-3xl animate-pulse delay-1000" />
+        </div>
+
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
+          {/* Main content container */}
+          <motion.div
+            initial={{ opacity: 0, y: 50 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+            viewport={{ once: true }}
+            className="relative"
           >
-            <div className="mb-8">
-              <div
-                className={`w-16 h-16 mx-auto mb-6 rounded-xl flex items-center justify-center ${isDark ? "bg-blue-600" : "bg-gradient-to-r from-blue-600 to-indigo-600"
-                  }`}
+            {/* Floating elements */}
+            <motion.div
+              className="absolute -top-8 -left-8 w-16 h-16 bg-blue-500/20 rounded-full blur-xl"
+              animate={{
+                scale: [1, 1.2, 1],
+                opacity: [0.3, 0.6, 0.3]
+              }}
+              transition={{ duration: 3, repeat: Infinity }}
+            />
+            <motion.div
+              className="absolute -bottom-8 -right-8 w-20 h-20 bg-purple-500/20 rounded-full blur-xl"
+              animate={{
+                scale: [1, 1.3, 1],
+                opacity: [0.2, 0.5, 0.2]
+              }}
+              transition={{ duration: 4, repeat: Infinity, delay: 1 }}
+            />
+
+            {/* Main card */}
+            <div className="relative bg-gradient-to-br from-white/95 to-gray-50/95 dark:from-gray-900/95 dark:to-gray-800/95 backdrop-blur-2xl border border-white/20 dark:border-gray-700/30 rounded-3xl p-12 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-[1.02]">
+              {/* Decorative elements */}
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-t-3xl" />
+
+              {/* Icon container */}
+              <motion.div
+                className="relative mx-auto mb-8 w-20 h-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg"
+                whileHover={{ rotate: 360, scale: 1.1 }}
+                transition={{ duration: 0.7 }}
               >
-                <Rocket className="w-8 h-8 text-white" />
-              </div>
+                <Rocket className="w-10 h-10 text-white" />
+                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-md" />
+              </motion.div>
+
+              {/* Heading */}
+              <motion.h2
+                className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2 }}
+                viewport={{ once: true }}
+              >
+                Ready to Begin Your <span className="italic font-light">Journey</span>?
+              </motion.h2>
+
+              {/* Description */}
+              <motion.p
+                className="text-xl md:text-2xl mb-10 leading-relaxed text-gray-600 dark:text-gray-300 max-w-2xl mx-auto font-light"
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.4 }}
+                viewport={{ once: true }}
+              >
+                Join a community of innovators, builders, and leaders. Start your path to technical excellence today.
+              </motion.p>
+
+              {/* CTA Button */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.6 }}
+                viewport={{ once: true }}
+              >
+                <Link
+                  to="/login"
+                  className="group relative inline-flex items-center space-x-6 px-14 py-5 rounded-2xl font-semibold text-xl transition-all duration-500 hover:scale-105 shadow-2xl hover:shadow-3xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white overflow-hidden"
+                >
+                  {/* Button background effects */}
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-white/20 to-purple-500/0 group-hover:via-white/30 transition-all duration-500" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                  {/* Button content */}
+                  <span className="relative z-10">Get Started</span>
+                  <motion.div
+                    className="relative z-10"
+                    animate={{ x: [0, 5, 0] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform duration-300" />
+                  </motion.div>
+
+                  {/* Hover effect */}
+                  <div className="absolute inset-0 bg-white/10 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
+                </Link>
+              </motion.div>
+
+              {/* Additional decorative elements */}
+              <div className="absolute -bottom-4 -left-4 w-8 h-8 bg-blue-400/30 rounded-full blur-sm" />
+              <div className="absolute -top-4 -right-4 w-6 h-6 bg-purple-400/30 rounded-full blur-sm" />
             </div>
-            <h2 className={`text-4xl md:text-5xl font-bold mb-8 tracking-tight ${isDark ? "text-white" : "text-gray-900"}`}>
-              Ready to Begin Your Journey?
-            </h2>
-            <p className={`text-xl mb-12 leading-relaxed max-w-3xl mx-auto ${isDark ? "text-slate-400" : "text-gray-600"}`}>
-              Join a community of innovators, builders, and leaders. Start your path to technical excellence today.
-            </p>
-            <Link
-              to="/login"
-              className={`group relative inline-flex items-center space-x-4 px-12 py-4 rounded-xl font-semibold text-xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl ${isDark
-                ? "bg-blue-600 hover:bg-blue-700 text-white"
-                : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700"
-                }`}
-            >
-              <span>Get Started</span>
-              <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
-            </Link>
-          </div>
+          </motion.div>
         </div>
       </section>
     </div>
