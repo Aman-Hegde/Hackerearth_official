@@ -1,41 +1,9 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Code, Users, Trophy, Calendar, Rocket, ChevronRight, FolderOpen, Zap, Target, Lightbulb, TrendingUp, Layers, Database, Shield } from "lucide-react";
+import { motion } from "framer-motion";
+import { ArrowRight, Code, Users, Trophy, Calendar, Rocket, ChevronRight } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import TypingHero from "../components/TypingHero";
-
-// Add these animation variants
-const fadeIn = {
-  initial: { opacity: 0, y: 20 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.5 }
-};
-
-const stagger = {
-  animate: {
-    transition: {
-      staggerChildren: 0.1
-    }
-  }
-};
-
-// Grid Background Component
-const GridBackground = () => {
-  const { isDark } = useTheme();
-  
-  return (
-    <div className="fixed inset-0 pointer-events-none z-0 opacity-40">
-      <div 
-        className="w-full h-full"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23${isDark ? 'ffffff' : '000000'}' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-          backgroundSize: '60px 60px'
-        }}
-      />
-    </div>
-  );
-};
 
 function ServiceUIGraphic({ feature }: { feature: any }) {
   return (
@@ -92,6 +60,7 @@ function ServiceUIGraphic({ feature }: { feature: any }) {
   );
 }
 
+
 const features = [
   {
     icon: <Code className="w-8 h-8" />,
@@ -125,86 +94,12 @@ const features = [
   },
 ];
 
-const StatsSection = () => {
-  const sectionRef = useRef(null);
-
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"]
-  });
-
-  const glowScaleX = useTransform(scrollYProgress, [0, 0.5, 1], [0, 1, 0]);
-  const glowOpacity = useTransform(scrollYProgress, [0, 0.1, 0.9, 1], [0, 1, 1, 0]);
-
-  return (
-    <motion.section
-      ref={sectionRef}
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
-      viewport={{ once: true }}
-      className="relative bg-black dark:bg-black py-20 overflow-hidden"
-    >
-      <motion.div
-        className="absolute top-0 left-0 w-full h-16 pointer-events-none z-0"
-        style={{
-          opacity: glowOpacity,
-          background: `radial-gradient(ellipse at top center, rgba(139,92,246,0.3) 0%, transparent 70%)`,
-          scaleX: glowScaleX,
-          transformOrigin: 'center',
-        }}
-      />
-      <div className="max-w-6xl mx-auto px-10 relative z-10 py-20">
-        <motion.div
-          variants={fadeIn}
-          initial="initial"
-          whileInView="animate"
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <h2 className="text-5xl md:text-6xl font-semibold mb-4 text-white dark:text-white">
-            Delivering Results
-          </h2>
-          <p className="text-xl text-gray-300 dark:text-gray-300">
-            Our journey in numbers and achievements
-          </p>
-        </motion.div>
-
-        <motion.div
-          variants={stagger}
-          initial="initial"
-          whileInView="animate"
-          viewport={{ once: true }}
-          className="grid md:grid-cols-4 gap-8"
-        >
-          {[
-            { icon: <Users className="w-8 h-8" />, number: "400+", title: "Members, every year" },
-            { icon: <FolderOpen className="w-8 h-8" />, number: "50+", title: "Projects Completed" },
-            { icon: <Calendar className="w-8 h-8" />, number: "25+", title: "Events Organized" },
-            { icon: <Trophy className="w-8 h-8" />, number: "15+", title: "Awards Won" }
-          ].map((stat, i) => (
-            <motion.div
-              key={i}
-              variants={fadeIn}
-              whileHover={{ y: -5, boxShadow: "0 10px 30px -15px rgba(0,0,0,0.2)" }}
-              className="text-center p-6 rounded-xl bg-black/50 dark:bg-black/50 hover:bg-black/70 dark:hover:bg-black/70 transition-all duration-300 border border-gray-800 dark:border-gray-800"
-            >
-              <motion.div
-                className="w-12 h-12 mx-auto mb-4 flex items-center justify-center text-white dark:text-white"
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.5 }}
-              >
-                {stat.icon}
-              </motion.div>
-              <h3 className="text-2xl font-bold mb-2 text-white dark:text-white">{stat.number}</h3>
-              <p className="text-gray-300 dark:text-gray-300">{stat.title}</p>
-            </motion.div>
-          ))}
-        </motion.div>
-      </div>
-    </motion.section>
-  )
-}
+const stats = [
+  { number: "500+", label: "Active Members", icon: <Users className="w-10 h-10" /> },
+  { number: "50+", label: "Projects Completed", icon: <Code className="w-10 h-10" /> },
+  { number: "25+", label: "Events Organized", icon: <Calendar className="w-10 h-10" /> },
+  { number: "15+", label: "Awards Won", icon: <Trophy className="w-10 h-10" /> },
+];
 
 const Home = () => {
   const { isDark } = useTheme();
@@ -232,41 +127,58 @@ const Home = () => {
   };
 
   return (
-    <div className={`overflow-hidden transition-colors duration-500 min-h-screen ${isDark ? "bg-black" : "bg-slate-50"}`}>
-      {/* Grid Background */}
-      <GridBackground />
-      
-      <section className="flex flex-col items-center justify-center min-h-[90vh] px-3 sm:px-6 py-2 relative z-10">
-        <motion.div
-          className="absolute top-0 left-0 right-0 h-64 pointer-events-none z-0"
-          style={{
-            background: `radial-gradient(ellipse at top center, rgba(125,200,255,0.15) 0%, transparent 70%)`,
-          }}
-          animate={{ opacity: [0.9, 1.3, 0.9] }}
-          transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
-        />
-        <div className="max-w-3xl mx-auto text-center space-y-6 sm:space-y-8 sm:max-w-4xl relative z-10">
+    <div className={`${isDark ? "bg-black" : "bg-slate-50"} overflow-hidden transition-colors duration-500`}>
+      <div className="fixed inset-0 opacity-5 pointer-events-none z-0"
+        style={{
+          backgroundImage: `radial-gradient(circle at 20% 50%, rgba(255,255,255,0.08) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(255,255,255,0.1) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(255,255,255,0.07) 0%, transparent 50%), radial-gradient(circle at 20% 50%, rgba(255,255,255,0.08) 0%, transparent 50%)`,
+          backgroundRepeat: "no-repeat",
+          backgroundSize: "cover",
+        }}
+      />
+
+      <div className="fixed left-6 top-1/2 transform -translate-y-1/2 z-20 hidden lg:flex flex-col space-y-4">
+        {features.map((_, idx) => (
+          <button
+            key={idx}
+            onClick={() => scrollToFeature(idx)}
+            className={`group relative w-3 h-3 rounded-full transition-all duration-300 ${activeFeature === idx ? "bg-white scale-125 shadow-lg" : "bg-white/30 hover:bg-white/60 hover:scale-110"
+              }`}
+            aria-label={`Go to ${features[idx].title}`}
+          >
+            <div className="absolute left-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+              <div className="bg-black/90 text-white px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap border border-white/20">
+                {features[idx].title}
+              </div>
+            </div>
+          </button>
+        ))}
+      </div>
+
+      <section className="flex flex-col items-center justify-center min-h-[90vh] px-4 sm:px-6">
+        <div className="max-w-4xl mx-auto text-center space-y-8">
+          <div className="inline-flex items-center px-3 py-2 bg-black/80 backdrop-blur-sm border border-gray-700 rounded-full text-xs text-gray-300 shadow-[0_0_20px_rgba(52,211,153,0.1)] cursor-default">
+            <span className="ml-1 mr-1">powered by Abhuday</span>
+          </div>
           <TypingHero />
-          <div className="h-px w-20 sm:w-24 bg-gradient-to-r from-transparent via-blue-500 to-transparent mx-auto my-6 sm:my-8" />
-          <p className="text-gray-700 dark:text-gray-400 max-w-[75%] sm:max-w-xl mx-auto font-medium relative z-10 leading-relaxed text-base sm:text-lg">
-            We are a community of developers, designers, and innovators focused on hands-on creation. 
-            Join us to collaborate on real-world projects, hone your skills, and build a portfolio that stands out.
+          <div className="h-px w-24 bg-gradient-to-r from-transparent via-blue-500 to-transparent mx-auto my-8" />
+          <p className="text-muted-foreground max-w-xl mx-auto font-medium relative z-10 text-black-300 dark:text-gray-400">
+            We are a community of developers, designers, and innovators focused on hands-on creation. Join us to collaborate on real-world projects, hone your skills, and build a portfolio that stands out.
           </p>
-          <div className="pt-6 sm:pt-8 w-full">
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-4 w-full">
+          <div className="pt-8">
+            <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
               <Link
                 to="/domains"
-                className="group w-32 sm:w-auto text-center px-5 py-2.5 sm:px-6 sm:py-3 bg-gray-800 text-white rounded-lg font-medium text-base hover:bg-gray-700 transition-all duration-300 transform hover:scale-105 border border-gray-700"
+                className="group relative px-6 py-3 bg-gray-800 text-white rounded-lg font-medium text-base hover:bg-gray-700 transition-all duration-300 transform hover:scale-105 border border-gray-700"
               >
-                <span className="flex justify-center items-center space-x-2">
+                <span className="flex items-center space-x-2">
                   <span>Services</span>
                 </span>
               </Link>
               <Link
                 to="/login"
-                className="group w-50 sm:w-auto text-center px-5 py-2.5 sm:px-6 sm:py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium text-base hover:from-blue-400 hover:to-purple-500 transition-all duration-300 transform hover:scale-105 hover:shadow-[0_0_20px_rgba(66,153,225,0.3)]"
+                className="group relative px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium text-base hover:from-blue-400 hover:to-purple-500 transition-all duration-300 transform hover:scale-105 hover:shadow-[0_0_20px_rgba(66,153,225,0.3)]"
               >
-                <span className="flex justify-center items-center space-x-2">
+                <span className="flex items-center space-x-2">
                   <ArrowRight className="w-5 h-5" />
                   <span>Join Our Community</span>
                 </span>
@@ -340,10 +252,10 @@ const Home = () => {
                   <Link
                     to={feature.link}
                     className={`inline-flex items-center font-medium transition-colors group ${idx === activeFeature
-                        ? "text-white"
-                        : isDark
-                          ? "text-blue-400 hover:text-blue-300"
-                          : "text-blue-600 hover:text-blue-700"
+                      ? "text-white"
+                      : isDark
+                        ? "text-blue-400 hover:text-blue-300"
+                        : "text-blue-600 hover:text-blue-700"
                       }`}
                   >
                     <span>Explore Domain</span>
@@ -364,110 +276,67 @@ const Home = () => {
         </div>
       </section>
 
-      <StatsSection />
+      <section
+        className={`relative z-10 py-24 transition-colors duration-500 bg-gradient-to-r from-slate-50 to-blue-50 dark:from-slate-900 dark:to-slate-800 dark:bg-none`}
+      >
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+            {stats.map((stat, index) => (
+              <div key={index} className="text-center group">
+                <div className="relative inline-block mb-6">
+                  <div
+                    className={`w-20 h-20 border rounded-xl flex items-center justify-center group-hover:scale-110 transition-all duration-300 shadow-lg ${isDark
+                      ? "bg-gray-400/60 border-gray-300/50"
+                      : "bg-white border-gray-200"
+                      }`}
+                  >
+                    {stat.icon}
+                  </div>
+                </div>
+                <div className={`text-4xl font-bold mb-3 ${isDark ? "text-white" : "text-gray-900"}`}>{stat.number}</div>
+                <div className={`font-medium text-lg ${isDark ? "text-slate-400" : "text-gray-600"}`}>{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
 
-   <section className="relative z-10 py-32 overflow-hidden">
-  {/* Enhanced background with subtle gradients */}
-  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-purple-500/8 to-pink-500/6" />
-  <div className="absolute top-0 left-0 w-full h-full opacity-15">
-    <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500 rounded-full blur-3xl animate-pulse" />
-    <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-500 rounded-full blur-3xl animate-pulse delay-1000" />
-  </div>
 
-  <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-    <motion.div
-      initial={{ opacity: 0, y: 50 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.8 }}
-      viewport={{ once: true }}
-      className="relative"
-    >
-      {/* Subtle corner lighting effects */}
-      <div className="absolute -top-6 -left-6 w-24 h-24 bg-blue-400/20 rounded-full blur-xl" />
-      <div className="absolute -bottom-6 -right-6 w-20 h-20 bg-purple-400/20 rounded-full blur-xl" />
-
-      {/* Premium card container */}
-      <div className="relative bg-gradient-to-br from-gray-900/95 to-gray-800/95 dark:from-gray-900/98 dark:to-gray-800/98 backdrop-blur-3xl border border-gray-700/30 dark:border-gray-600/20 rounded-3xl p-16 transition-all duration-500 hover:scale-[1.01]">
-        {/* Enhanced edge glow */}
-        <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-500/5 via-purple-500/5 to-pink-500/5 pointer-events-none" />
-        
-        {/* Minimalist icon */}
-        <motion.div
-          className="relative mx-auto mb-10 w-16 h-16 flex items-center justify-center"
-          whileHover={{ scale: 1.05 }}
-          transition={{ duration: 0.3 }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-purple-600/20 rounded-2xl blur-md" />
-          <ArrowRight className="w-8 h-8 text-white transform rotate-45" />
-        </motion.div>
-
-        {/* Enhanced typography */}
-        <motion.h2
-          className="text-5xl md:text-6xl font-bold mb-8 tracking-tight"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          viewport={{ once: true }}
-        >
-          <span className="text-white">Ready to Begin Your </span>
-          <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-            Journey?
-          </span>
-        </motion.h2>
-
-        {/* Softer subtext */}
-        <motion.p
-          className="text-xl md:text-2xl mb-12 leading-relaxed text-gray-300 max-w-2xl mx-auto font-light"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          viewport={{ once: true }}
-        >
-          Join a community of innovators, builders, and leaders. Start your path to technical excellence today.
-        </motion.p>
-
-        {/* Sleek button with enhanced effects */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.6 }}
-          viewport={{ once: true }}
-        >
-          <Link
-            to="/login"
-            className="group relative inline-flex items-center space-x-4 px-14 py-5 rounded-full font-semibold text-xl transition-all duration-500 hover:scale-105 overflow-hidden"
+      <section className={`relative z-10 py-24 transition-colors duration-500 ${isDark ? "bg-slate-800/30" : "bg-white"}`}>
+        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+          <div
+            className={`border rounded-2xl p-16 hover:scale-105 transition-all duration-500 shadow-xl ${isDark
+              ? "bg-slate-800/60 border-slate-700/50"
+              : "bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200"
+              }`}
           >
-            {/* Button background with enhanced gradient */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 group-hover:from-blue-500 group-hover:to-purple-500 transition-all duration-300" />
-            
-            {/* Hover glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-400/30 to-purple-400/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full blur-md" />
-            
-            {/* 3D press effect layer */}
-            <div className="absolute inset-0 bg-gradient-to-b from-white/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-full" />
-
-            {/* Button content */}
-            <span className="relative z-10 text-white">Get Started</span>
-            <motion.div
-              className="relative z-10"
-              animate={{ x: [0, 4, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
+            <div className="mb-8">
+              <div
+                className={`w-16 h-16 mx-auto mb-6 rounded-xl flex items-center justify-center ${isDark ? "bg-blue-600" : "bg-gradient-to-r from-blue-600 to-indigo-600"
+                  }`}
+              >
+                <Rocket className="w-8 h-8 text-white" />
+              </div>
+            </div>
+            <h2 className={`text-4xl md:text-5xl font-bold mb-8 tracking-tight ${isDark ? "text-white" : "text-gray-900"}`}>
+              Ready to Begin Your Journey?
+            </h2>
+            <p className={`text-xl mb-12 leading-relaxed max-w-3xl mx-auto ${isDark ? "text-slate-400" : "text-gray-600"}`}>
+              Join a community of innovators, builders, and leaders. Start your path to technical excellence today.
+            </p>
+            <Link
+              to="/login"
+              className={`group relative inline-flex items-center space-x-4 px-12 py-4 rounded-xl font-semibold text-xl transition-all duration-300 hover:scale-105 shadow-lg hover:shadow-xl ${isDark
+                ? "bg-blue-600 hover:bg-blue-700 text-white"
+                : "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700"
+                }`}
             >
-              <ArrowRight className="w-6 h-6 text-white group-hover:translate-x-1 transition-transform duration-300" />
-            </motion.div>
-
-            {/* Subtle shine effect on hover */}
-            <div className="absolute inset-0 bg-white/5 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-          </Link>
-        </motion.div>
-
-        {/* Additional subtle decorative elements */}
-        <div className="absolute -bottom-3 -left-3 w-6 h-6 bg-blue-400/20 rounded-full blur-sm" />
-        <div className="absolute -top-3 -right-3 w-5 h-5 bg-purple-400/20 rounded-full blur-sm" />
-      </div>
-    </motion.div>
-  </div>
-</section>
+              <span>Get Started</span>
+              <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform" />
+            </Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
