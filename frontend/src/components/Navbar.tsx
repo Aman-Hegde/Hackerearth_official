@@ -63,13 +63,11 @@ const Navbar: React.FC = () => {
               height={100}
               className="mt-2 mb-2 w-20 h-14 rounded-full object-cover drop-shadow-xl border"
             />
-            <Link to="/" className="hidden sm:flex items-center space-x-2" aria-label="Home">
 
-              <div className="flex items-center space-x-1 p-1 bg-white rounded-md shadow-md h-8">
-                <Monitor className="w-5 h-5 text-gray-800" />
-                <span className="text-gray-800 text-xs font-semibold whitespace-nowrap">HackerEarth Hub-nmamit</span>
+              <div className="hidden sm:flex items-center space-x-1 p-1 bg-white rounded-md shadow-md h-8 dark:bg-black">
+                {/* <Monitor className="w-5 h-5 text-gray-800" /> */}
+                <span className="text-gray-800 text-xs font-semibold whitespace-nowrap dark:text-white">HackerEarth Hub-nmamit</span>
               </div>
-            </Link>
           </Link>
 
           {/* Desktop actions */}
