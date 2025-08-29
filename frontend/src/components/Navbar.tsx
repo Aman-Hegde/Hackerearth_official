@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation  } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Sun, Moon, User, LogOut, Monitor } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -12,12 +12,25 @@ const Navbar: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout, isAuthenticated } = useAuth();
   const { isDark, toggleTheme } = useTheme();
+    const { pathname } = useLocation();
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 10);
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  const navItems = [
+    { name: "Events", href: "/events" },
+    { name: "Leaderboard", href: "/leaderboard" },
+    { name: "Team", href: "/team" },
+    { name: "Achievements", href: "/achievements" },
+    { name: "Contact", href: "/contact" },
+  ];
+
+  const handleMobileLinkClick = () => {
+    setIsOpen(false);
+  };
 
   const handleLogout = () => {
     logout();
@@ -134,11 +147,14 @@ const Navbar: React.FC = () => {
       </div>
 
       {/* Mobile Dropdown (slide from below) */}
-      <AnimatePresence>
+            <AnimatePresence>
         {isOpen && (
           <motion.div
-            className={`md:hidden absolute top-full left-0 right-0 backdrop-blur-md border-b ${isDark ? "bg-black/95 border-gray-800" : "bg-white/95 border-gray-200"
-              }`}
+            className={`md:hidden absolute top-full left-0 right-0 backdrop-blur-md border-b ${
+              isDark
+                ? "bg-black/95 border-gray-800"
+                : "bg-white/95 border-gray-200" // Light mode mobile sidebar background
+            }`}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -147,26 +163,23 @@ const Navbar: React.FC = () => {
             <div className="px-4 py-6 space-y-4">
               {isAuthenticated ? (
                 <>
-                  <div
-                    className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${isDark ? 'bg-gray-800/50' : 'bg-gray-100/70'
-                      }`}
-                  >
-                    <User
-                      className={`w-4 h-4 ${isDark ? 'text-white' : 'text-gray-700'}`}
-                    />
-                    <span
-                      className={`text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'
-                        }`}
-                    >
+                  <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${
+                    isDark
+                      ? 'bg-gray-800/50'
+                      : 'bg-gray-100/70 border border-gray-200' // Light mode user info mobile
+                  }`}>
+                    <User className={`w-4 h-4 ${isDark ? 'text-white' : 'text-gray-700'}`} />
+                    <span className={`text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
                       {user?.name || user?.email?.split('@')[0]}
                     </span>
                   </div>
                   <button
                     onClick={handleLogout}
-                    className={`w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${isDark
+                    className={`w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${
+                      isDark
                         ? 'text-gray-300 hover:text-red-400 hover:bg-gray-800/50'
-                        : 'text-gray-700 hover:text-red-600 hover:bg-gray-100/50'
-                      }`}
+                        : 'text-gray-700 hover:text-red-600 hover:bg-gray-100/50' // Light mode logout mobile
+                    }`}
                   >
                     <LogOut className="w-5 h-5" /> <span>Logout</span>
                   </button>
@@ -174,12 +187,45 @@ const Navbar: React.FC = () => {
               ) : (
                 <Link
                   to="/login"
-                  onClick={() => setIsOpen(false)}
+                  onClick={handleMobileLinkClick}
                   className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg text-center font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200"
                 >
                   Login
                 </Link>
               )}
+
+              {navItems.map((item) => (
+                <Link
+                  key={item.name}
+                  to={item.href}
+                  onClick={handleMobileLinkClick}
+                  className={`flex items-center space-x-2 text-base font-medium transition-colors duration-200 ${
+                    pathname === item.href
+                      ? 'text-blue-500 dark:text-blue-400' // Active link color (blue for both, but slightly lighter for dark mode)
+                      : isDark
+                        ? 'text-gray-300 hover:text-white'
+                        : 'text-gray-700 hover:text-gray-900' // Light mode nav items mobile
+                  }`}
+                >
+                  <span>{item.name}</span>
+                </Link>
+              ))}
+
+              <div className={`pt-4 ${isDark ? 'border-t border-gray-700' : 'border-t border-gray-200'}`}> {/* Theme-aware border */}
+                <button
+                  onClick={toggleTheme}
+                  aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                  className={`w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
+                    isDark
+                      ? 'text-gray-300 hover:text-white hover:bg-gray-800/50'
+                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100/50' // Light mode theme toggle mobile
+                  }`}
+                  type="button"
+                >
+                  {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                  <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
+                </button>
+              </div>
             </div>
           </motion.div>
         )}
