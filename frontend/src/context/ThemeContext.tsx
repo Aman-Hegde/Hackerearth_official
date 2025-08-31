@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect } from "react";
 
 interface ThemeContextType {
   isDark: boolean;
@@ -10,26 +10,29 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 export const useTheme = () => {
   const context = useContext(ThemeContext);
   if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
+    throw new Error("useTheme must be used within a ThemeProvider");
   }
   return context;
 };
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-const getInitialIsDark = () => true;
+  const getInitialIsDark = () => {
+    const savedTheme = localStorage.getItem("hackerearth_theme");
+    return savedTheme ? savedTheme === "dark" : true; // default dark
+  };
 
-  const [isDark, setIsDark] = useState(getInitialIsDark);
+  const [isDark, setIsDark] = useState<boolean>(getInitialIsDark);
 
   useEffect(() => {
     if (isDark) {
-      document.documentElement.classList.add('dark');
+      document.documentElement.classList.add("dark");
     } else {
-      document.documentElement.classList.remove('dark');
+      document.documentElement.classList.remove("dark");
     }
-    localStorage.setItem('hackerearth_theme', isDark ? 'dark' : 'light');
+    localStorage.setItem("hackerearth_theme", isDark ? "dark" : "light");
   }, [isDark]);
 
-  const toggleTheme = () => setIsDark(prev => !prev);
+  const toggleTheme = () => setIsDark((prev) => !prev);
 
   return (
     <ThemeContext.Provider value={{ isDark, toggleTheme }}>
