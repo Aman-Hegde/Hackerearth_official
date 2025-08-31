@@ -4,7 +4,7 @@ import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Navbar from "./components/Navbar";
 import Events from "./pages/Events";
-import Team from "./pages/Team";
+// import Team from "./pages/Team";
 import Domains from "./pages/Domains";
 import Leaderboard from "./pages/Leaderboard";
 // import Achievements from "./pages/Achievements";
@@ -38,7 +38,7 @@ function AppWrapper() {
         <Routes>
           <Route path="/" element={<Home />} />
           <Route path="/events" element={<Events />} />
-          <Route path="/team" element={<Team />} />
+          {/* <Route path="/team" element={<Team />} /> */}
           <Route path="/domains" element={<Domains />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           {/* <Route path="/achievements" element={<Achievements />} /> */}
