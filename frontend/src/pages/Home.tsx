@@ -126,7 +126,7 @@ const StatsSection = () => {
       whileInView={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
       viewport={{ once: true }}
-      className="relative bg-black dark:bg-black py-20 overflow-hidden"
+      className="relative bg-white dark:bg-black py-20 overflow-hidden"
     >
       {/* The expanding purple glow effect */}
       <motion.div
@@ -148,10 +148,10 @@ const StatsSection = () => {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-5xl md:text-6xl font-semibold mb-4 text-white dark:text-white">
+          <h2 className="text-5xl md:text-6xl font-semibold mb-4 text-black dark:text-white">
             Delivering Results
           </h2>
-          <p className="text-xl text-gray-300 dark:text-gray-300">
+          <p className="text-xl text-gray-900 dark:text-gray-300">
             Our journey in numbers and achievements
           </p>
         </motion.div>
@@ -173,17 +173,17 @@ const StatsSection = () => {
               key={i}
               variants={fadeIn}
               whileHover={{ y: -5, boxShadow: "0 10px 30px -15px rgba(0,0,0,0.2)" }}
-              className="text-center p-6 rounded-xl bg-black/50 dark:bg-black/50 hover:bg-black/70 dark:hover:bg-black/70 transition-all duration-300 border border-gray-800 dark:border-gray-800"
+              className="text-center p-6 rounded-xl bg-white/50 dark:bg-black/70 hover:bg-white/70 dark:hover:bg-black/70 transition-all duration-300 border border-gray-800 dark:border-gray-800"
             >
               <motion.div
-                className="w-12 h-12 mx-auto mb-4 flex items-center justify-center text-white dark:text-white"
+                className="w-12 h-12 mx-auto mb-4 flex items-center justify-center text-black dark:text-white"
                 whileHover={{ rotate: 360 }}
                 transition={{ duration: 0.5 }}
               >
                 {stat.icon}
               </motion.div>
-              <h3 className="text-2xl font-bold mb-2 text-white dark:text-white">{stat.number}</h3>
-              <p className="text-gray-300 dark:text-gray-300">{stat.title}</p>
+              <h3 className="text-2xl font-bold mb-2 text-black dark:text-white">{stat.number}</h3>
+              <p className="text-gray-900 dark:text-gray-300">{stat.title}</p>
             </motion.div>
           ))}
         </motion.div>
@@ -246,7 +246,7 @@ const Home = () => {
       </div>
 
       <section className="flex flex-col items-center justify-center min-h-[90vh] px-4 sm:px-6">
-        <div className="max-w-4xl mx-auto text-center space-y-8">
+        <div className="max-w-3xl mx-auto text-center space-y-8">
           <div className="inline-flex items-center px-3 py-2 bg-black/80 backdrop-blur-sm border border-gray-700 rounded-full text-xs text-gray-300 shadow-[0_0_20px_rgba(52,211,153,0.1)] cursor-default">
             <span className="ml-1 mr-1">powered by Abhuday</span>
           </div>

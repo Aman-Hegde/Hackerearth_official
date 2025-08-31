@@ -78,7 +78,7 @@ const Leaderboard = () => {
 
   return (
     <div
-      className={`min-h-screen pt-7 pb-10 px-4 sm:px-8 lg:px-12 transition-colors duration-700 ${
+      className={`min-h-screen pt-24 pb-10 px-4 sm:px-8 lg:px-12 transition-colors duration-700 ${
         isDark
           ? "bg-gradient-to-br from-gray-900 via-black to-gray-800"
           : "bg-gradient-to-br from-blue-50 via-indigo-100 to-purple-200"
