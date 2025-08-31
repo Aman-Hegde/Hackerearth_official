@@ -287,12 +287,12 @@ const Home = () => {
           transition={{ duration: 0.6 }}
         >
           <motion.div
-            className="inline-flex items-center space-x-2 px-6 py-3 bg-gray-800/50 rounded-full border border-gray-700 mb-6 backdrop-blur-sm"
+            className="inline-flex items-center space-x-2 px-6 py-3 bg-gray-200/50 rounded-full border border-gray-700 mb-6 backdrop-blur-sm"
             animate={{ scale: [1, 1.02, 1] }}
             transition={{ duration: 3, repeat: Infinity }}
           >
-            <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
-            <span className="text-sm font-medium text-gray-900 dark:text-gray-300">Learning Paths</span>
+            <div className="w-2 h-2 bg-black rounded-full animate-pulse dark:bg-white" />
+            <span className="text-sm font-medium text-black dark:text-gray-900">Learning Paths</span>
           </motion.div>
 
           <h2 className="text-5xl sm:text-6xl font-black mb-6 leading-tight text-gray-900 dark:text-white">
