@@ -137,7 +137,7 @@ const Leaderboard = () => {
             <table className="min-w-full border-collapse border-spacing-0">
               <thead className={`${isDark ? "bg-indigo-900" : "bg-indigo-200"} z-10`}>
                 <tr>
-                  {["Name", "Email", "Total Score", "Time Taken"].map((header) => (
+                  {["Name", "Email", "Total Score (out of 500)", "Time Taken"].map((header) => (
                     <th
                       key={header}
                       scope="col"
