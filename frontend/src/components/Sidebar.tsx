@@ -33,7 +33,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
     { name: 'Team', path: '/team', icon: Users },
     { name: 'Domains', path: '/domains', icon: Code },
     { name: 'Leaderboard', path: '/leaderboard', icon: Award },
-    { name: 'Achievements', path: '/achievements', icon: Trophy },
+    // { name: 'Achievements', path: '/achievements', icon: Trophy },
     { name: 'About', path: '/about', icon: Info },
     { name: 'Contact', path: '/contact', icon: Mail },
   ];

@@ -7,7 +7,7 @@ import Events from "./pages/Events";
 import Team from "./pages/Team";
 import Domains from "./pages/Domains";
 import Leaderboard from "./pages/Leaderboard";
-import Achievements from "./pages/Achievements";
+// import Achievements from "./pages/Achievements";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import LoginPage from "./pages/Login";
@@ -41,7 +41,7 @@ function AppWrapper() {
           <Route path="/team" element={<Team />} />
           <Route path="/domains" element={<Domains />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route path="/achievements" element={<Achievements />} />
+          {/* <Route path="/achievements" element={<Achievements />} /> */}
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<LoginPage />} />
