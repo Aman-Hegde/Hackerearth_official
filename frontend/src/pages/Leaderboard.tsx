@@ -137,7 +137,9 @@ const Leaderboard = () => {
             <table className="min-w-full border-collapse border-spacing-0">
               <thead className={`${isDark ? "bg-indigo-900" : "bg-indigo-200"} z-10`}>
                 <tr>
-                  {["Name", "Email", "Total Score (out of 500)", "Time Taken"].map((header) => (
+                  {["Name",
+                  //  "Email",
+                    "Total Score (out of 500)", "Time Taken"].map((header) => (
                     <th
                       key={header}
                       scope="col"
@@ -154,7 +156,7 @@ const Leaderboard = () => {
                 {fileMissing ? (
                   <tr>
                     <td
-                      colSpan={4}
+                      colSpan={3}
                       className="py-6 sm:py-12 text-center text-sm sm:text-xl text-indigo-600 dark:text-indigo-400 select-none"
                     >
                       Weekly Contest yet to be conducted.
@@ -169,7 +171,7 @@ const Leaderboard = () => {
                 ) : loading ? (
                   <tr>
                     <td
-                      colSpan={4}
+                      colSpan={3}
                       className="py-6 sm:py-12 text-center text-sm sm:text-xl text-indigo-600 dark:text-indigo-400 select-none"
                     >
                       Loading leaderboard...
@@ -178,7 +180,7 @@ const Leaderboard = () => {
                 ) : data.length === 0 ? (
                   <tr>
                     <td
-                      colSpan={4}
+                      colSpan={3}
                       className="py-6 sm:py-12 text-center text-sm sm:text-xl text-indigo-600 dark:text-indigo-400 select-none"
                     >
                       No entries found.
@@ -213,9 +215,9 @@ const Leaderboard = () => {
                         </span>
                         <span>{idx + 1}. {row.Name}</span>
                       </td>
-                      <td className="px-2 sm:px-6 py-2 sm:py-4 text-indigo-400 text-sm sm:text-lg whitespace-nowrap">
+                      {/* <td className="px-2 sm:px-6 py-2 sm:py-4 text-indigo-400 text-sm sm:text-lg whitespace-nowrap">
                         {row.Email}
-                      </td>
+                      </td> */}
                       <td className="px-2 sm:px-6 py-2 sm:py-4 font-bold text-yellow-400 text-sm sm:text-lg whitespace-nowrap">
                         {row.Score}
                       </td>
