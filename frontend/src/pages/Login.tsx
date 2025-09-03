@@ -215,104 +215,6 @@ const LoginPage: React.FC = () => {
                 {isLoading ? 'Signing in...' : 'Continue with Google'}
               </button>
 
-              {/* <div className="relative text-center text-sm">
-                <div className="absolute inset-0 flex items-center">
-                  <div className={`w-full border-t ${isDark ? 'border-gray-700' : 'border-gray-300'}`}></div>
-                </div>
-                <div className="relative flex justify-center">
-                  <span className={`px-2 ${isDark ? 'bg-gray-950 text-gray-300' : 'bg-white text-gray-500'}`}>
-                    Or continue with email
-                  </span>
-                </div>
-              </div>
-
-              {!isLogin && (
-                <div className="grid gap-2">
-                  <label htmlFor="name" className="text-gray-900 dark:text-gray-50">Full Name</label>
-                  <input 
-                    id="name" 
-                    name="name"
-                    type="text" 
-                    placeholder="Your Name" 
-                    required 
-                    value={formData.name}
-                    onChange={handleChange}
-                    className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-800 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-gray-50 ring-offset-background placeholder:text-gray-500 dark:placeholder:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  />
-                  {errors.name && <p className="text-sm text-red-600">{errors.name}</p>}
-                </div>
-              )}
-
-              <div className="grid gap-2">
-                <label htmlFor="email" className="text-gray-900 dark:text-gray-50">Email</label>
-                <input 
-                  id="email" 
-                  name="email"
-                  type="email" 
-                  placeholder="m@example.com" 
-                  required 
-                  value={formData.email}
-                  onChange={handleChange}
-                  className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-800 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-gray-50 ring-offset-background placeholder:text-gray-500 dark:placeholder:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                />
-                {errors.email && <p className="text-sm text-red-600">{errors.email}</p>}
-              </div>
-              
-              <div className="grid gap-2">
-                <div className="flex items-center">
-                  <label htmlFor="password" className="text-gray-900 dark:text-gray-50">Password</label>
-                  <a href="#" className="ml-auto text-sm text-blue-600 dark:text-blue-500 underline-offset-4 hover:underline">
-                    Forgot your password?
-                  </a>
-                </div>
-                <input 
-                  id="password" 
-                  name="password"
-                  type="password" 
-                  required 
-                  value={formData.password}
-                  onChange={handleChange}
-                  className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-800 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-gray-50 ring-offset-background placeholder:text-gray-500 dark:placeholder:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                />
-                {errors.password && <p className="text-sm text-red-600">{errors.password}</p>}
-              </div>
-
-              {!isLogin && (
-                <div className="grid gap-2">
-                  <label htmlFor="confirmPassword" className="text-gray-900 dark:text-gray-50">Confirm Password</label>
-                  <input 
-                    id="confirmPassword" 
-                    name="confirmPassword"
-                    type="password" 
-                    required 
-                    value={formData.confirmPassword}
-                    onChange={handleChange}
-                    className="flex h-10 w-full rounded-md border border-gray-300 dark:border-gray-800 bg-white dark:bg-gray-900 px-3 py-2 text-sm text-gray-900 dark:text-gray-50 ring-offset-background placeholder:text-gray-500 dark:placeholder:text-gray-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                  />
-                  {errors.confirmPassword && <p className="text-sm text-red-600">{errors.confirmPassword}</p>}
-                </div>
-              )}
-
-              <button type="submit" 
-                className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background
-                           h-10 px-4 py-2 w-full
-                           bg-blue-600 text-white hover:bg-blue-700" 
-                disabled={isLoading}
-              >
-                {isLoading ? 'Signing in...' : isLogin ? 'Login' : 'Sign Up'}
-              </button>
-
-              <div className="text-center text-sm text-gray-900 dark:text-gray-50">
-                {isLogin ? "Don't have an account? " : "Already have an account? "}
-                <button 
-                  type="button" 
-                  className="underline underline-offset-4 text-blue-600 dark:text-blue-500"
-                  onClick={() => setIsLogin(!isLogin)}
-                >
-                  {isLogin ? 'Sign up' : 'Login'}
-                </button>
-              </div> */}
-
               {/* Features */}
               <div className="grid grid-cols-3 gap-4 text-center mt-6">
                 <div className="backdrop-blur-sm rounded-xl p-3 border border-gray-300 dark:border-gray-800 bg-white dark:bg-gray-900">
@@ -333,15 +235,74 @@ const LoginPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Right Panel - Image */}
-      <div className="relative hidden bg-gray-100 dark:bg-gray-900 lg:block">
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-8">
-          <div className="text-white">
-            <h2 className="text-2xl font-bold mb-2">Join HackerEarth Community</h2>
-            <p className="text-sm opacity-80">Connect with developers, participate in hackathons, and build amazing projects</p>
+      {/* Right Panel - Updated with HeroContent effects */}
+      <div className="relative hidden lg:block bg-gradient-to-br from-blue-900/80 via-purple-900/70 to-pink-800/60">
+        {/* Background pattern */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--primary)_0%,_transparent_70%)] opacity-20"></div>
+        
+        {/* Animated gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 animate-pulse"></div>
+        
+        {/* Hero Content */}
+        <div className="absolute bottom-8 left-8 z-20 max-w-lg">
+          <div className="text-left">
+            {/* Badge with glass effect */}
+            <div
+              className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-md mb-6 relative border border-white/20"
+              style={{
+                filter: "url(#glass-effect)",
+              }}
+            >
+              <div className="absolute top-0 left-2 right-2 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+              <span className="text-white/90 text-sm font-light relative z-10">✨ HackerEarth Community</span>
+            </div>
+
+            {/* Main Heading */}
+            <h1 className="text-5xl md:text-6xl md:leading-16 tracking-tight font-light text-white mb-6">
+              <span className="font-medium italic">Code, Compete, Conquer</span>
+              <br />
+              <span className="font-light tracking-tight text-white bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">
+                {/* Experiences */}
+              </span>
+            </h1>
+
+            {/* Description */}
+            <p className="text-sm font-light text-white/80 mb-8 leading-relaxed max-w-md">
+          Take on coding challenges, sharpen your skills, and climb the leaderboard. Push your limits with every problem you solve.
+            </p>
+
+            {/* Buttons with glass effect */}
+            <div className="flex items-center gap-4 flex-wrap">
+              <div 
+                className="px-8 py-3 rounded-full bg-transparent border border-white/30 text-white font-normal text-sm transition-all duration-200 hover:bg-white/10 hover:border-white/50 cursor-pointer backdrop-blur-sm"
+                style={{ filter: "url(#glass-effect)" }}
+              >
+                Learn More
+              </div>
+              <div 
+                className="px-8 py-3 rounded-full bg-white/90 text-black font-normal text-sm transition-all duration-200 hover:bg-white cursor-pointer backdrop-blur-sm"
+                style={{ filter: "url(#glass-effect)" }}
+              >
+                Join Community
+              </div>
+            </div>
           </div>
         </div>
+
+        {/* Floating elements */}
+        <div className="absolute top-1/4 right-1/4 w-16 h-16 bg-blue-500/20 rounded-full blur-xl animate-pulse"></div>
+        <div className="absolute bottom-1/3 left-1/3 w-24 h-24 bg-purple-500/20 rounded-full blur-xl animate-pulse delay-1000"></div>
+        <div className="absolute top-1/3 right-1/3 w-20 h-20 bg-pink-500/20 rounded-full blur-xl animate-pulse delay-2000"></div>
       </div>
+
+      {/* SVG filter for glass effect - Now visible and properly implemented */}
+      <svg width="0" height="0" className="absolute">
+        <filter id="glass-effect" x="0" y="0" width="100%" height="100%">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
+          <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -8" result="glass" />
+          <feBlend in="SourceGraphic" in2="glass" />
+        </filter>
+      </svg>
     </div>
   );
 };
