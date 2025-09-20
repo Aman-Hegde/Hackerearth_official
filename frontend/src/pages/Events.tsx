@@ -123,7 +123,7 @@ const Events = () => {
                 </button>
               </div>
               <h2 className={`mt-7 text-center text-4xl font-semibold tracking-tighter md:text-[58px] md:leading-[60px] ${ isDark ? "bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-clip-text text-transparent" : "text-gray-900" }`}>
-                Explore our Past Events
+                Recent Events
               </h2> 
               <p className={`text-xl max-w-3xl mx-auto leading-relaxed mt-2 ${isDark ? 'text-gray-400' : 'text-gray-700'}`}>
                 Discover our past events that brought the community together to learn, collaborate, and innovate.

@@ -1,124 +1,101 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Code, Users, Trophy, Calendar, Rocket, ChevronRight,FolderOpen, Quote, ExternalLink } from "lucide-react";
+import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { ArrowRight, Users, Trophy, Calendar, Rocket, ChevronRight,FolderOpen, Quote } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import TypingHero from "../components/TypingHero";
+import { Code, Brain, Lightbulb, Puzzle, Calculator, TrendingUp, Menu, Share2, Shuffle } from "lucide-react";
 
 const EventCard = ({ event, index }: { event: any; index: number }) => {
   const { isDark } = useTheme();
-  
+
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 50 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: index * 0.1 }}
-      viewport={{ once: true, margin: "-100px" }}
-      className={`relative w-full overflow-hidden rounded-3xl border p-8 ${
-        isDark 
-          ? "border-white/10 bg-gradient-to-b from-white/5 to-white/[0.02] shadow-[0px_2px_0px_0px_rgba(255,255,255,0.1)_inset]" 
-          : "border-gray-200 bg-gradient-to-b from-gray-50 to-white shadow-lg"
-      }`}
-    >
-      {isDark && (
-        <div className="absolute -top-5 -left-5 -z-10 h-40 w-40 rounded-full bg-gradient-to-b from-blue-500/10 to-transparent blur-md"></div>
-      )}
-      
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex items-center space-x-3">
-          <div className={`p-3 rounded-xl ${event.color} bg-opacity-20`}>
-            {event.icon}
-          </div>
-          <div>
-            <h3 className="text-xl font-bold text-gray-900 dark:text-white">{event.title}</h3>
-            <p className="text-sm text-gray-600 dark:text-gray-400">{event.date}</p>
-          </div>
-        </div>
-        <div className={`px-3 py-1 text-xs font-medium rounded-full ${
-          isDark ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-gray-700"
-        }`}>
-          {event.attendees}+ attended
-        </div>
-      </div>
-      <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">{event.description}</p>
-      <div className="flex flex-wrap gap-2 mb-6">
-        {event.tags.map((tag: string, i: number) => (
-          <span
-            key={i}
-            className={`px-3 py-1 text-xs font-medium rounded-full ${
-          isDark ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-gray-700"
-        }`}
-          >
-            {tag}
-          </span>
-        ))}
-      </div>
-      <div className="flex items-center justify-between">
-        <span className={`text-sm font-medium ${isDark ? "text-gray-400" : "text-gray-600"}`}>
-          {event.type}
-        </span>
-        <Link
-          to="/events"
-          className="inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+    <Link to={`/events/${event.id}`}>
+      <motion.div
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: index * 0.1 }}
+        viewport={{ once: true, amount: 0.3 }}
+className="group relative aspect-[3/4] w-full overflow-hidden rounded-3xl border border-white/10 shadow-lg cursor-pointer"
+      >
+        {/* Background Image with Hover Zoom Effect */}
+        <img
+          src={event.image}
+          alt={`${event.title} poster`}
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
+        />
+
+        {/* Gradient Overlay (hidden by default, appears on hover) */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/0 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+        {/* Content - truly hidden until hover */}
+        <div
+          className="absolute inset-0 flex flex-col justify-end p-6 text-white 
+                     opacity-0 invisible translate-y-8 pointer-events-none
+                     group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:pointer-events-auto
+                     transition-all duration-300 ease-in-out bg-gradient-to-t from-black/90 via-black/50 to-transparent"
         >
-          View details
-          <ExternalLink className="w-4 h-4 ml-1" />
-        </Link>
-      </div>
-    </motion.div>
+          <h3 className="text-2xl font-bold mb-2">{event.title}</h3>
+          <p className="text-sm text-gray-300 mb-3">{event.date}</p>
+          <p className="text-gray-200 mb-4 leading-relaxed">{event.description}</p>
+
+          <div className="flex flex-wrap gap-2">
+            {event.tags.map((tag: string) => (
+              <span
+                key={tag}
+                className="px-3 py-1 text-xs font-medium rounded-full bg-white/20 text-white backdrop-blur-sm border border-white/10"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+
+          {/* View Details button */}
+          <div className="mt-4">
+            <div className="inline-flex items-center text-sm font-medium text-white/90 hover:text-white">
+              <span>View Details</span>
+              <ArrowRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
+            </div>
+          </div>
+        </div>
+      </motion.div>
+    </Link>
   );
 };
-
 // Events Data
 const events = [
   {
-    id: 1, // Add unique ID
-    title: "Hackathon 2023",
-    date: "October 15-16, 2023",
-    description: "24-hour coding marathon where developers built innovative solutions to real-world problems.",
-    attendees: 120,
-    tags: ["Coding", "Innovation", "Teamwork"],
-    type: "Competition",
-    icon: <Code className="w-6 h-6 text-blue-500" />,
-    color: "bg-blue-100",
-    image: "", // Add image URL
+    id: 1,
+    title: "The Tech Triad",
+    date: "March 22, 2025",
+    description: "A thrilling 3 rounds of debugging and finding clues, with a prize pool of 15k, open to all participants.",
+    tags: ["Hackathon", "Competition", "Prize Pool"],
+    image: "/images/techtriad.jpg", 
   },
   {
     id: 2,
-    title: "Tech Talk Series",
-    date: "September 5, 2023",
-    description: "Industry experts shared insights on emerging technologies and career opportunities in tech.",
-    attendees: 85,
-    tags: ["Learning", "Networking", "Career"],
-    type: "Workshop",
-    icon: <Users className="w-6 h-6 text-purple-500" />,
-    color: "bg-blue-700",
-    image: "",
+    title: "Tech EmpowerHER",
+    date: "March 08 | 09, 2024",
+    description: "An online MCQ challenge celebrating women in tech. Test your knowledge and solve encrypted clues.",
+    tags: ["Online", "MCQ", "Women in Tech"],
+    image: "/images/tech.jpg",
   },
   {
     id: 3,
-    title: "Code Camp Beginners",
-    date: "August 12-13, 2023",
-    description: "A weekend intensive designed to help beginners build their first web applications from scratch.",
-    attendees: 65,
-    tags: ["Beginners", "Web Development", "Hands-on"],
-    type: "Training",
-    icon: <Rocket className="w-6 h-6 text-orange-500" />,
-    color: "bg-purple-500",
-    image: "",
+    title: "Maze of Codes",
+    date: "November 9, 2023",
+    description: "An intense coding challenge in collaboration with ACSA, testing problem-solving skills to the limit.",
+    tags: ["Coding", "Beginners", "On-site"],
+    image: "/images/mazeofcodes.jpg",
   },
-  // {
-  //   id: 4,
-  //   title: "Design Sprint",
-  //   date: "July 22, 2023",
-  //   description: "Collaborative session focused on solving UX challenges and creating intuitive user interfaces.",
-  //   attendees: 45,
-  //   tags: ["UI/UX", "Design", "Prototyping"],
-  //   type: "Workshop",
-  //   icon: <Trophy className="w-6 h-6 text-green-500" />,
-  //   color: "bg-green-500",
-  //   image: "",
-  // }
+{
+    id: 4,
+    title : "CodeClash",
+    date: "October 05, 2024",
+    description : "A coding competition with a 3k prize pool, open to all skill levels.",
+    tags: ["Coding", "Beginners"],
+    image: "/images/codeclash.jpg",
+},
 ];
 
 // Marquee Component
@@ -256,227 +233,242 @@ const stagger = {
     }
   }
 };
-
 function ServiceUIGraphic({ feature, isDark }: { feature: any; isDark: boolean }) {
   return (
     <div className="relative">
       <motion.div
         className="absolute inset-0 bg-white/5 rounded-3xl blur-3xl dark:bg-gray-800/30"
         animate={{ scale: [1, 1.05, 1] }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
       />
       
-      <div className="relative bg-white/95 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-300 dark:border-gray-700 rounded-3xl p-6 overflow-hidden shadow-2xl">
-        
-        {/* Web Development - Code Editor */}
+      {/* The graphics are rendered directly for an open, integrated feel */}
+      <div className="relative flex items-center justify-center h-full min-h-[340px]">
         {feature.title === "Web Development" && (
-          <WebDevelopmentGraphic isDark={isDark} feature={feature} />
+          <WebDevelopmentGraphic isDark={isDark} />
         )}
-        
-        {/* Data Structures & Algorithms - Flowchart */}
         {feature.title === "Data Structures & Algorithms" && (
-          <DSAGraphic isDark={isDark} feature={feature} />
+          <DSAGraphic isDark={isDark} />
         )}
-        
-        {/* Aptitude & Reasoning - Abstract Mind Map */}
         {feature.title === "Aptitude & Reasoning" && (
-          <AptitudeGraphic isDark={isDark} feature={feature} />
+          <AptitudeGraphic isDark={isDark} />
         )}
-        
       </div>
     </div>
   );
 }
 
-// Web Development - Code Editor
-function WebDevelopmentGraphic({ isDark, feature }: { isDark: boolean; feature: any }) {
-  return (
-    <div className="space-y-4">
-      {/* Browser Header */}
-      <div className="flex items-center space-x-2 px-4 py-3 bg-gray-200 dark:bg-gray-700 rounded-t-lg">
-        <div className="flex space-x-2">
-          <div className="w-3 h-3 bg-red-400 rounded-full" />
-          <div className="w-3 h-3 bg-yellow-400 rounded-full" />
-          <div className="w-3 h-3 bg-green-400 rounded-full" />
-        </div>
-        <div className="flex-1 bg-white dark:bg-gray-800 rounded px-3 py-1 ml-2">
-          <span className="text-xs text-gray-600 dark:text-gray-400">app.jsx - HackerEarth</span>
-        </div>
-      </div>
-      
-      {/* Code Content */}
-      <div className="bg-gray-900 rounded-b-lg p-4 font-mono text-sm">
-        <div className="space-y-2">
-          <div className="flex">
-            <span className="text-gray-500 w-8 text-right mr-4">1</span>
-            <span className="text-blue-400">import</span> <span className="text-green-400">React</span> <span className="text-blue-400">from</span> <span className="text-yellow-400">'react'</span>
-          </div>
-          <div className="flex">
-            <span className="text-gray-500 w-8 text-right mr-4">2</span>
-            <span className="text-blue-400">import</span> <span className="text-green-400">TailwindCSS</span> <span className="text-blue-400">from</span> <span className="text-yellow-400">'tailwindcss'</span>
-          </div>
-          <div className="flex">
-            <span className="text-gray-500 w-8 text-right mr-4">3</span>
-            <span className="text-purple-400">export default</span> <span className="text-blue-400">function</span> <span className="text-yellow-300">App</span>()
-          </div>
-          <div className="flex">
-            <span className="text-gray-500 w-8 text-right mr-4">4</span>
-            <span className="text-gray-400 ml-4">{`{`}</span>
-          </div>
-          <div className="flex">
-            <span className="text-gray-500 w-8 text-right mr-4">5</span>
-            <span className="text-gray-400 ml-8">return</span> <span className="text-yellow-300">&lt;div&gt;</span>
-          </div>
-          <div className="flex">
-            <span className="text-gray-500 w-8 text-right mr-4">6</span>
-            <span className="text-gray-400 ml-12">Hello, World!</span>
-          </div>
-          <div className="flex">
-            <span className="text-gray-500 w-8 text-right mr-4">7</span>
-            <span className="text-yellow-300 ml-8">&lt;/div&gt;</span>
-          </div>
-          <div className="flex">
-            <span className="text-gray-500 w-8 text-right mr-4">8</span>
-            <span className="text-gray-400 ml-4">{`}`}</span>
-          </div>
-        </div>
-        
-        {/* Blinking Cursor */}
-        <motion.div
-          className="w-2 h-4 bg-blue-400 ml-2 inline-block"
-          animate={{ opacity: [0, 1, 0] }}
-          transition={{ duration: 1, repeat: Infinity }}
-        />
-      </div>
-    </div>
-  );
-}
 
-// Data Structures & Algorithms - Flowchart
-function DSAGraphic({ isDark, feature }: { isDark: boolean; feature: any }) {
-  return (
-    <div className="space-y-4">
-      <div className="text-center mb-4">
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Algorithm Visualization</span>
-      </div>
-      
-      <div className="grid grid-cols-3 gap-3 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
-        {/* Nodes */}
-        <motion.div
-          className="bg-blue-500 text-white p-3 rounded-lg text-xs text-center shadow-md"
-          whileHover={{ scale: 1.05 }}
-          transition={{ duration: 0.2 }}
-        >
-          Input
-        </motion.div>
-        
-        <motion.div
-          className="bg-purple-500 text-white p-3 rounded-lg text-xs text-center shadow-md"
-          whileHover={{ scale: 1.05 }}
-          transition={{ duration: 0.2 }}
-        >
-          Process
-        </motion.div>
-        
-        <motion.div
-          className="bg-green-500 text-white p-3 rounded-lg text-xs text-center shadow-md"
-          whileHover={{ scale: 1.05 }}
-          transition={{ duration: 0.2 }}
-        >
-          Output
-        </motion.div>
-        
-        {/* Connecting Lines */}
-        <div className="col-span-3 relative h-4">
-          <div className="absolute top-2 left-1/3 w-1/3 h-0.5 bg-blue-300 dark:bg-blue-600"></div>
-          <div className="absolute top-2 right-1/3 w-1/3 h-0.5 bg-purple-300 dark:bg-purple-600"></div>
-        </div>
-        
-        {/* Second Row */}
-        <motion.div
-          className="bg-cyan-500 text-white p-3 rounded-lg text-xs text-center shadow-md col-start-2"
-          whileHover={{ scale: 1.05 }}
-          transition={{ duration: 0.2 }}
-        >
-          Sort
-        </motion.div>
-      </div>
-      
-      <div className="flex justify-center space-x-3">
-        {["O(n)", "O(log n)", "O(n²)"].map((complexity, i) => (
-          <motion.div
-            key={i}
-            className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded-full text-xs"
-            whileHover={{ y: -2 }}
-            transition={{ duration: 0.2 }}
-          >
-            {complexity}
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  );
-}
+// --- 1. Web Development Graphic (Aesthetic Overhaul) ---
+function WebDevelopmentGraphic({ isDark }: { isDark: boolean }) {
+  const codeLines = [
+    { text: "import { motion } from 'framer-motion';", color1: "text-purple-400", color2: "text-yellow-400" },
+    { text: "", color1: "", color2: "" },
+    { text: "const App = () => (", color1: "text-cyan-400", color2: "text-yellow-400" },
+    { text: "  <motion.div animate={{ scale: 1.1 }}>", color1: "text-green-400", color2: "text-yellow-400" },
+    { text: "   Build the Future", color1: "", color2: "text-blue-400" },
+    { text: "  </motion.div>", color1: "text-green-400", color2: "text-green-400" },
+    { text: ");", color1: "text-cyan-400", color2: "" },
+  ];
+  const lineHeight = 22;
+  const finalHeight = codeLines.length * lineHeight + 32;
 
-// Aptitude & Reasoning - Abstract Mind Map
-function AptitudeGraphic({ isDark, feature }: { isDark: boolean; feature: any }) {
   return (
-    <div className="space-y-4">
-      <div className="text-center mb-4">
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Logical Thinking</span>
+    <motion.div
+      className="w-full max-w-lg mx-auto font-mono text-sm shadow-2xl shadow-blue-500/10 rounded-lg"
+      initial="initial"
+      whileInView="animate"
+      viewport={{ once: true, amount: 0.5 }}
+    >
+      <div className="bg-[#1e212b] rounded-t-lg p-3 flex items-center gap-2 border-b border-white/10">
+        <div className="w-3 h-3 bg-red-500 rounded-full" />
+        <div className="w-3 h-3 bg-yellow-500 rounded-full" />
+        <div className="w-3 h-3 bg-green-500 rounded-full" />
       </div>
-      
-      <div className="relative h-40 bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
-        {/* Central Node */}
-        <motion.div
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-white text-xs shadow-lg"
-          animate={{ scale: [1, 1.05, 1] }}
-          transition={{ duration: 2, repeat: Infinity }}
-        >
-          Problem
-        </motion.div>
-        
-        {/* Connecting Nodes */}
-        {[0, 1, 2, 3].map((i) => (
-          <motion.div
-            key={i}
-            className="absolute w-8 h-8 bg-blue-400 rounded-full flex items-center justify-center text-white text-xs shadow-md"
-            style={{
-              top: `${25 + 50 * Math.sin((i * Math.PI) / 2)}%`,
-              left: `${25 + 50 * Math.cos((i * Math.PI) / 2)}%`,
-            }}
-            animate={{ y: [0, -3, 0] }}
-            transition={{ duration: 2, repeat: Infinity, delay: i * 0.5 }}
-          >
-            {["A", "B", "C", "D"][i]}
-          </motion.div>
-        ))}
-        
-        {/* Connecting Lines */}
-        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
-          {[0, 1, 2, 3].map((i) => (
-            <line
-              key={i}
-              x1="50"
-              y1="50"
-              x2={50 + 40 * Math.cos((i * Math.PI) / 2)}
-              y2={50 + 40 * Math.sin((i * Math.PI) / 2)}
-              stroke={isDark ? "#4B5563" : "#9CA3AF"}
-              strokeWidth="1"
-            />
+      <motion.div
+        className="bg-[#282c34] rounded-b-lg p-4 overflow-hidden"
+        variants={{ initial: { height: 0 }, animate: { height: finalHeight } }}
+        transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.2 }}
+      >
+        <motion.div variants={{ animate: { transition: { staggerChildren: 0.12 } } }}>
+          {codeLines.map((line, index) => (
+            <motion.p
+              key={index}
+              variants={{ initial: { opacity: 0 }, animate: { opacity: 1 } }}
+              style={{ height: lineHeight }}
+            >
+              <span className="text-gray-600 w-6 inline-block select-none">{index + 1}</span>
+              <span className={line.color1}>{line.text.split(' ')[0]}</span>
+              <span className={line.color2}> {line.text.split(' ').slice(1).join(' ')}</span>
+            </motion.p>
           ))}
-        </svg>
+          <motion.div
+            className="w-0.5 h-4 bg-cyan-400 mt-1"
+            variants={{ initial: { opacity: 0 }, animate: { opacity: [0, 1, 0] } }}
+            transition={{ duration: 1.2, repeat: Infinity, delay: codeLines.length * 0.12 + 0.5 }}
+          />
+        </motion.div>
+      </motion.div>
+    </motion.div>
+  );
+}
+
+
+// --- 2. DSA Graphic (Carousel with Corrected & Improved Visualizations) ---
+function DSAGraphic({ isDark }: { isDark: boolean }) {
+  const visualizations = [
+    { title: "Pathfinding Algorithm", component: <PathfindingViz isDark={isDark} /> },
+    { title: "Sorting Algorithm", component: <SortingViz isDark={isDark} /> },
+    { title: "Graph Traversal", component: <GraphTraversalViz isDark={isDark} /> },
+  ];
+  
+  const [index, setIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((prevIndex) => (prevIndex + 1) % visualizations.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="w-full flex flex-col items-center justify-center space-y-4">
+      <AnimatePresence mode="wait">
+        <motion.h3
+          key={visualizations[index].title}
+          className="text-sm font-medium text-gray-700 dark:text-gray-300"
+          initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
+          transition={{ duration: 0.4, ease: "easeInOut" }}
+        >
+          {visualizations[index].title}
+        </motion.h3>
+      </AnimatePresence>
+      <div className="relative w-full h-48 max-w-sm">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.5, ease: "easeInOut" }}
+            className="absolute inset-0"
+          >
+            {visualizations[index].component}
+          </motion.div>
+        </AnimatePresence>
       </div>
-      
-      <div className="flex justify-center">
-        <div className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded-full text-xs">
-          Analytical Reasoning
-        </div>
+      <div className="flex justify-center space-x-3">
+        {["O(n log n)", "O(n²)", "O(V+E)"].map((complexity) => (
+          <div key={complexity} className="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-xs">
+            {complexity}
+          </div>
+        ))}
       </div>
     </div>
   );
 }
 
+// Sub-components for the DSA Carousel
+const PathfindingViz = ({ isDark }: { isDark: boolean }) => {
+  const path = "M 20,50 C 60,0, 140,100, 180,50";
+  return (
+    <svg className="w-full h-full" viewBox="0 0 200 100">
+      <path d={path} fill="none" stroke={isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"} strokeWidth="2" strokeDasharray="5 5" />
+      <motion.circle r="6" fill={isDark ? "#A5B4FC" : "#4F46E5"}
+        style={{ offsetPath: `path("${path}")` }}
+        animate={{ offsetDistance: "100%" }}
+        transition={{ duration: 4, repeat: Infinity, ease: "linear" }} />
+    </svg>
+  );
+};
+const SortingViz = ({ isDark }: { isDark: boolean }) => (
+  <div className="w-full h-full flex items-end justify-center gap-2 px-4">
+    {[50, 80, 30, 95, 40, 70, 60, 20].map((height, i) => (
+      <motion.div
+        key={i} layout className={`w-full rounded-t-full ${isDark ? 'bg-purple-400' : 'bg-purple-500'}`}
+        initial={{ height: `${height}%` }}
+        animate={{ height: `${i * 9 + 25}%` }}
+        transition={{ type: "spring", stiffness: 120, damping: 12, delay: i * 0.05 }} />
+    ))}
+  </div>
+);
+const GraphTraversalViz = ({ isDark }: { isDark: boolean }) => {
+  const nodes = [{ x: 50, y: 50 }, { x: 100, y: 20 }, { x: 150, y: 50 }, { x: 100, y: 80 }];
+  const edges = [{ from: 0, to: 1 }, { from: 1, to: 2 }, { from: 2, to: 3 }, { from: 3, to: 0 }];
+  return (
+    <svg className="w-full h-full" viewBox="0 0 200 100">
+      {edges.map((edge, i) => (
+        <line key={i} x1={nodes[edge.from].x} y1={nodes[edge.from].y} x2={nodes[edge.to].x} y2={nodes[edge.to].y} stroke={isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"} strokeWidth="1" />
+      ))}
+      {nodes.map((node, i) => (
+        <circle key={i} cx={node.x} cy={node.y} r="5" fill={isDark ? "#4B5563" : "#9CA3AF"} />
+      ))}
+      <motion.circle r="6" fill={isDark ? "#67E8F9" : "#0891B2"}
+        animate={{ cx: nodes.map(n => n.x), cy: nodes.map(n => n.y) }}
+        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", times: [0, 0.25, 0.5, 0.75] }} />
+    </svg>
+  );
+};
+
+
+// --- 3. Aptitude Graphic (Fluid Keyframe-based Orbit) ---
+function AptitudeGraphic({ isDark }: { isDark: boolean }) {
+  const orbitRadius = 80;
+  return (
+    <div className="w-full h-64 flex flex-col items-center justify-center space-y-4">
+      {/* <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+        Logical Thinking Network
+      </h3> */}
+      <div className="relative w-56 h-56">
+        <div className="absolute inset-0 flex items-center justify-center">
+            <div className={`w-48 h-48 rounded-full ${isDark ? "bg-purple-500/5" : "bg-purple-500/10"} blur-xl`}></div>
+        </div>
+
+        <motion.div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
+          <motion.div
+            className="w-20 h-20 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center shadow-lg"
+            animate={{ scale: [1, 1.05, 1] }}
+            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <Brain className="w-9 h-9 text-white" />
+          </motion.div>
+        </motion.div>
+
+        {[
+          { icon: Calculator, duration: 28, delay: 0 },
+          { icon: TrendingUp, duration: 22, delay: 1.5 },
+          { icon: Lightbulb, duration: 25, delay: 0.5 },
+          { icon: Puzzle, duration: 30, delay: 1.0 },
+        ].map(({ icon: Icon, duration, delay }, i) => (
+          <motion.div
+            key={i}
+            className="absolute top-1/2 left-1/2"
+            style={{ x: -20, y: -20 }} // Center the icon origin
+            animate={{
+              rotate: 360,
+              x: [orbitRadius, 0, -orbitRadius, 0, orbitRadius].map(v => v - 20),
+              y: [0, orbitRadius, 0, -orbitRadius, 0].map(v => v - 20),
+            }}
+            transition={{ duration, repeat: Infinity, ease: "linear", delay }}
+          >
+            <motion.div
+              className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center shadow-md"
+              whileHover={{ scale: 1.25, transition: { type: 'spring', stiffness: 300 } }}
+            >
+              <Icon className="w-5 h-5 text-white" />
+            </motion.div>
+          </motion.div>
+        ))}
+      </div>
+      <div className="px-4 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-xs font-medium">
+        Analytical Reasoning
+      </div>
+    </div>
+  );
+}
+
+
+// Updated features config with new gradient system
 const features = [
   {
     icon: <Code className="w-8 h-8" />,
@@ -484,7 +476,7 @@ const features = [
     subtitle: "Modern & Responsive",
     description: "Master modern web technologies and build stunning, responsive applications.",
     technologies: ["React", "Next.js", "TypeScript", "Tailwind CSS", "Node.js"],
-    bgGradient: "from-blue-500/20 via-cyan-400/10 to-blue-600/20",
+    bgGradient: "from-cyan-500/40 via-blue-800/10 to-cyan-600/20",
     accentColor: "text-blue-400",
     link: "/domains",
   },
@@ -494,8 +486,8 @@ const features = [
     subtitle: "Foundation Fundamentals",
     description: "Build a rock-solid foundation in computer science fundamentals.",
     technologies: ["Python", "Java", "C++", "Algorithm Design", "Complexity Analysis"],
-    bgGradient: "from-purple-500/20 via-pink-400/10 to-purple-600/20",
-    accentColor: "text-purple-400",
+    bgGradient: "from-blue-400/20 via-purple-400/10 to-blue-600/20",
+    accentColor: "text-blue-400",
     link: "/domains",
   },
   {
@@ -504,12 +496,11 @@ const features = [
     subtitle: "Analytical Thinking",
     description: "Sharpen your analytical thinking and logical reasoning skills.",
     technologies: ["Quantitative", "Verbal", "Logical", "Analytical", "Critical Thinking"],
-    bgGradient: "from-orange-500/20 via-yellow-400/10 to-red-600/20",
-    accentColor: "text-orange-400",
+    bgGradient: "from-purple-400/20 via-pink-400/10 to-purple-600/20",
+    accentColor: "text-purple-400",
     link: "/domains",
   },
 ];
-
 const StatsSection = () => {
   const sectionRef = useRef(null);
 
@@ -649,9 +640,9 @@ const Home = () => {
 
       <section className="flex flex-col items-center justify-center min-h-[90vh] px-4 sm:px-6">
         <div className="max-w-3xl mx-auto text-center space-y-8">
-          <div className="inline-flex items-center px-3 py-2 bg-black/80 backdrop-blur-sm border border-gray-700 rounded-full text-xs text-gray-300 shadow-[0_0_20px_rgba(52,211,153,0.1)] cursor-default">
+          {/* <div className="inline-flex items-center px-3 py-2 bg-black/80 backdrop-blur-sm border border-gray-700 rounded-full text-xs text-gray-300 shadow-[0_0_20px_rgba(52,211,153,0.1)] cursor-default">
             <span className="ml-1 mr-1">powered by Abhuday</span>
-          </div>
+          </div> */}
           <TypingHero />
           <div className="h-px w-24 bg-gradient-to-r from-transparent via-blue-500 to-transparent mx-auto my-8" />
           <p className="text-muted-foreground max-w-xl mx-auto font-medium relative z-10 text-black-300 dark:text-gray-400">
@@ -766,18 +757,22 @@ const Home = () => {
               ))}
             </div>
             
-            <Link
-              to={feature.link}
-              className={`inline-flex items-center font-medium transition-colors group ${idx === activeFeature
-                ? "text-white"
-                : isDark
-                  ? "text-blue-400 hover:text-blue-300"
-                  : "text-blue-600 hover:text-blue-700"
-                }`}
-            >
-              <span>Explore Domain</span>
-              <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-            </Link>
+     <Link
+  to={feature.link}
+  className={`inline-flex items-center font-medium transition-colors group ${
+    idx === activeFeature
+      ? isDark
+        ? "text-white"
+        : "text-indigo-700 from-indigo-600 to-purple-600 bg-clip-text text-transparent" 
+    
+      : isDark
+        ? "text-blue-400 hover:text-blue-300"
+        : "text-blue-600 hover:text-blue-700"
+  }`}
+>
+  <span>Explore Domain</span>
+  <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+</Link>
           </motion.div>
           
           <motion.div
@@ -797,7 +792,7 @@ const Home = () => {
       <StatsSection />
           
           {/* events */}
-    <section className={`relative z-10 py-24 ${isDark ? "bg-black" : "bg-slate-50"}`}>
+      <section className={`relative z-10 py-24 ${isDark ? "bg-black" : "bg-slate-50"}`}>
   <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     {/* Section Header */}
     <motion.div
@@ -837,136 +832,16 @@ const Home = () => {
       </p>
     </motion.div>
 
-    {/* Events Grid (3-column layout) */}
+    {/* Events Grid - Using the EventCard component */}
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
       {events.map((event, index) => (
-        <motion.div
-          key={index}
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: index * 0.1 }}
-          viewport={{ once: true }}
-          className="group relative aspect-[3/4] overflow-hidden rounded-2xl shadow-lg"
-        >
-          <div className={`absolute inset-[-2px] z-0 rounded-2xl bg-gradient-to-r ${
-            event.color === "bg-blue-500" ? "from-blue-500 to-cyan-500" :
-            event.color === "bg-purple-500" ? "from-purple-500 to-pink-500" :
-            event.color === "bg-orange-500" ? "from-orange-500 to-red-500" :
-            event.color === "bg-green-500" ? "from-green-500 to-emerald-500" :
-            "from-blue-500 to-purple-500"
-          }`} />
-          
-          <div className="relative h-full w-full overflow-hidden rounded-[14px]">
-            {/* Event image - Add your image URL to event data */}
-            {event.image ? (
-              <img
-                src={event.image}
-                alt={event.title}
-                className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
-              />
-            ) : (
-              <div className={`absolute inset-0 h-full w-full transition-transform duration-500 ease-in-out group-hover:scale-105 ${
-                event.color === "bg-blue-500" ? "bg-blue-600" : 
-                event.color === "bg-purple-500" ? "bg-purple-600" :
-                event.color === "bg-orange-500" ? "bg-orange-600" : 
-                event.color === "bg-green-500" ? "bg-green-600" : "bg-blue-600"
-              }`} />
-            )}
-            
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-            
-            <div className="relative flex h-full flex-col justify-end p-6">
-              {/* Hover content */}
-              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                <div className="flex items-center gap-2 text-sm text-white/80 mb-2">
-                  <Calendar className="w-4 h-4" />
-                  <span>{event.date}</span>
-                </div>
-                
-                <h3 className="text-2xl font-bold text-white mb-4">{event.title}</h3>
-                
-                <div className="flex flex-wrap gap-2 mb-6">
-                  {event.tags.map((tag, tagIndex) => (
-                    <div key={tagIndex} className={`rounded-full p-px ${
-                      event.color === "bg-blue-500" ? "bg-gradient-to-r from-blue-500 to-cyan-500" :
-                      event.color === "bg-purple-500" ? "bg-gradient-to-r from-purple-500 to-pink-500" :
-                      event.color === "bg-orange-500" ? "bg-gradient-to-r from-orange-500 to-red-500" :
-                      event.color === "bg-green-500" ? "bg-gradient-to-r from-green-500 to-emerald-500" :
-                      "bg-gradient-to-r from-blue-500 to-purple-500"
-                    }`}>
-                      <span className={`block rounded-full px-3 py-1 text-xs font-medium backdrop-blur-sm ${
-                        isDark ? "bg-black/70 text-white/90" : "bg-white/80 text-gray-900"
-                      }`}>
-                        {tag}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-                
-                <Link
-                  to={`/events/${event.id}`} // Add event.id to your data
-                  className="group/button relative inline-flex items-center gap-2 text-base font-semibold"
-                >
-                  <span className={`${
-                    event.color === "bg-blue-500" ? "bg-gradient-to-r from-blue-500 to-cyan-500" :
-                    event.color === "bg-purple-500" ? "bg-gradient-to-r from-purple-500 to-pink-500" :
-                    event.color === "bg-orange-500" ? "bg-gradient-to-r from-orange-500 to-red-500" :
-                    event.color === "bg-green-500" ? "bg-gradient-to-r from-green-500 to-emerald-500" :
-                    "bg-gradient-to-r from-blue-500 to-purple-500"
-                  } bg-clip-text text-transparent`}>
-                    View Details
-                  </span>
-                  <ArrowRight className={`w-4 h-4 ${
-                    event.color === "bg-blue-500" ? "bg-gradient-to-r from-blue-500 to-cyan-500" :
-                    event.color === "bg-purple-500" ? "bg-gradient-to-r from-purple-500 to-pink-500" :
-                    event.color === "bg-orange-500" ? "bg-gradient-to-r from-orange-500 to-red-500" :
-                    event.color === "bg-green-500" ? "bg-gradient-to-r from-green-500 to-emerald-500" :
-                    "bg-gradient-to-r from-blue-500 to-purple-500"
-                  } bg-clip-text text-transparent transition-transform group-hover/button:translate-x-1`} />
-                  <span className={`absolute -bottom-1 left-0 h-0.5 w-0 ${
-                    event.color === "bg-blue-500" ? "bg-gradient-to-r from-blue-500 to-cyan-500" :
-                    event.color === "bg-purple-500" ? "bg-gradient-to-r from-purple-500 to-pink-500" :
-                    event.color === "bg-orange-500" ? "bg-gradient-to-r from-orange-500 to-red-500" :
-                    event.color === "bg-green-500" ? "bg-gradient-to-r from-green-500 to-emerald-500" :
-                    "bg-gradient-to-r from-blue-500 to-purple-500"
-                  } transition-all duration-300 group-hover/button:w-full`} />
-                </Link>
-              </div>
-              
-              {/* Default visible content */}
-              <div className="group-hover:opacity-0 transition-opacity duration-500">
-                <div className="flex items-center gap-2 text-sm text-white/80 mb-2">
-                  <Calendar className="w-4 h-4" />
-                  <span>{event.date}</span>
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-2">{event.title}</h3>
-                <p className="text-white/80 text-sm">{event.description}</p>
-              </div>
-            </div>
-          </div>
-        </motion.div>
+        <EventCard key={event.id} event={event} index={index} />
       ))}
-    </div>
 
-    {/* "View All Events" Button */}
-    {/* <motion.div
-      className="text-center mt-16"
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6, delay: 0.2 }}
-      viewport={{ once: true }}
-    >
-      <Link
-        to="/events"
-        className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold text-lg hover:from-blue-500 hover:to-purple-500 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
-      >
-        <span>View All Events</span>
-        <ArrowRight className="w-5 h-5 ml-2" />
-      </Link>
-    </motion.div> */}
+      
+    </div>
   </div>
 </section>
-          
 
            {/* Testimonials Section */}
       <section className={`relative z-10 py-24 ${isDark ? "bg-black" : "bg-gray-50"}`}>
