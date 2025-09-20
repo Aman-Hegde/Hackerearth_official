@@ -1,9 +1,247 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import { motion, useScroll, useTransform } from "framer-motion";
-import { ArrowRight, Code, Users, Trophy, Calendar, Rocket, ChevronRight, FolderOpen } from "lucide-react";
+import { ArrowRight, Code, Users, Trophy, Calendar, Rocket, ChevronRight,FolderOpen, Quote, ExternalLink } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import TypingHero from "../components/TypingHero";
+
+const EventCard = ({ event, index }: { event: any; index: number }) => {
+  const { isDark } = useTheme();
+  
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 50 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: index * 0.1 }}
+      viewport={{ once: true, margin: "-100px" }}
+      className={`relative w-full overflow-hidden rounded-3xl border p-8 ${
+        isDark 
+          ? "border-white/10 bg-gradient-to-b from-white/5 to-white/[0.02] shadow-[0px_2px_0px_0px_rgba(255,255,255,0.1)_inset]" 
+          : "border-gray-200 bg-gradient-to-b from-gray-50 to-white shadow-lg"
+      }`}
+    >
+      {isDark && (
+        <div className="absolute -top-5 -left-5 -z-10 h-40 w-40 rounded-full bg-gradient-to-b from-blue-500/10 to-transparent blur-md"></div>
+      )}
+      
+      <div className="flex items-start justify-between mb-4">
+        <div className="flex items-center space-x-3">
+          <div className={`p-3 rounded-xl ${event.color} bg-opacity-20`}>
+            {event.icon}
+          </div>
+          <div>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">{event.title}</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">{event.date}</p>
+          </div>
+        </div>
+        <div className={`px-3 py-1 text-xs font-medium rounded-full ${
+          isDark ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-gray-700"
+        }`}>
+          {event.attendees}+ attended
+        </div>
+      </div>
+      <p className="text-gray-700 dark:text-gray-300 mb-6 leading-relaxed">{event.description}</p>
+      <div className="flex flex-wrap gap-2 mb-6">
+        {event.tags.map((tag: string, i: number) => (
+          <span
+            key={i}
+            className={`px-3 py-1 text-xs font-medium rounded-full ${
+          isDark ? "bg-gray-700 text-gray-300" : "bg-gray-100 text-gray-700"
+        }`}
+          >
+            {tag}
+          </span>
+        ))}
+      </div>
+      <div className="flex items-center justify-between">
+        <span className={`text-sm font-medium ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+          {event.type}
+        </span>
+        <Link
+          to="/events"
+          className="inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
+        >
+          View details
+          <ExternalLink className="w-4 h-4 ml-1" />
+        </Link>
+      </div>
+    </motion.div>
+  );
+};
+
+// Events Data
+const events = [
+  {
+    id: 1, // Add unique ID
+    title: "Hackathon 2023",
+    date: "October 15-16, 2023",
+    description: "24-hour coding marathon where developers built innovative solutions to real-world problems.",
+    attendees: 120,
+    tags: ["Coding", "Innovation", "Teamwork"],
+    type: "Competition",
+    icon: <Code className="w-6 h-6 text-blue-500" />,
+    color: "bg-blue-100",
+    image: "", // Add image URL
+  },
+  {
+    id: 2,
+    title: "Tech Talk Series",
+    date: "September 5, 2023",
+    description: "Industry experts shared insights on emerging technologies and career opportunities in tech.",
+    attendees: 85,
+    tags: ["Learning", "Networking", "Career"],
+    type: "Workshop",
+    icon: <Users className="w-6 h-6 text-purple-500" />,
+    color: "bg-blue-700",
+    image: "",
+  },
+  {
+    id: 3,
+    title: "Code Camp Beginners",
+    date: "August 12-13, 2023",
+    description: "A weekend intensive designed to help beginners build their first web applications from scratch.",
+    attendees: 65,
+    tags: ["Beginners", "Web Development", "Hands-on"],
+    type: "Training",
+    icon: <Rocket className="w-6 h-6 text-orange-500" />,
+    color: "bg-purple-500",
+    image: "",
+  },
+  // {
+  //   id: 4,
+  //   title: "Design Sprint",
+  //   date: "July 22, 2023",
+  //   description: "Collaborative session focused on solving UX challenges and creating intuitive user interfaces.",
+  //   attendees: 45,
+  //   tags: ["UI/UX", "Design", "Prototyping"],
+  //   type: "Workshop",
+  //   icon: <Trophy className="w-6 h-6 text-green-500" />,
+  //   color: "bg-green-500",
+  //   image: "",
+  // }
+];
+
+// Marquee Component
+function Marquee({
+  className = "",
+  reverse,
+  pauseOnHover = false,
+  children,
+  vertical = false,
+  repeat = 4,
+  ...props
+}: any) {
+  const baseClasses = "group flex overflow-hidden p-2 [--duration:40s] [--gap:1rem] [gap:var(--gap)]";
+  const directionClasses = vertical ? "flex-col" : "flex-row";
+
+  return (
+    <div {...props} className={`${baseClasses} ${directionClasses} ${className}`}>
+      {Array(repeat)
+        .fill(0)
+        .map((_, i) => (
+          <div
+            key={i}
+            className={`flex shrink-0 justify-around [gap:var(--gap)] ${
+              vertical
+                ? `animate-marquee-vertical flex-col ${reverse ? "[animation-direction:reverse]" : ""}`
+                : `animate-marquee flex-row ${reverse ? "[animation-direction:reverse]" : ""}`
+            } ${pauseOnHover ? "group-hover:[animation-play-state:paused]" : ""}`}
+          >
+            {children}
+          </div>
+        ))}
+    </div>
+  );
+}
+
+// Testimonial Card Component
+const TestimonialCard = ({
+  img,
+  name,
+  username,
+  body,
+}: {
+  img: string;
+  name: string;
+  username: string;
+  body: string;
+}) => {
+  const { isDark } = useTheme();
+  
+  return (
+    <div className={`relative w-full max-w-xs overflow-hidden rounded-3xl border p-8 ${
+      isDark 
+        ? "border-white/10 bg-gradient-to-b from-white/5 to-white/[0.02] shadow-[0px_2px_0px_0px_rgba(255,255,255,0.1)_inset]" 
+        : "border-gray-200 bg-gradient-to-b from-gray-50 to-white shadow-lg"
+    }`}>
+      {isDark && (
+        <div className="absolute -top-5 -left-5 -z-10 h-40 w-40 rounded-full bg-gradient-to-b from-blue-500/10 to-transparent blur-md"></div>
+      )}
+      
+      <Quote className={`w-8 h-8 mb-4 ${isDark ? "text-blue-400" : "text-blue-600"} opacity-60`} />
+      
+      <div className={`leading-relaxed ${isDark ? "text-gray-200" : "text-gray-700"}`}>{body}</div>
+
+      <div className="mt-6 flex items-center gap-3">
+        <img 
+          src={img} 
+          alt={name} 
+          height="48" 
+          width="48" 
+          className="h-12 w-12 rounded-full border-2 border-white/20" 
+        />
+        <div className="flex flex-col">
+          <div className={`leading-5 font-medium ${isDark ? "text-white" : "text-gray-900"}`}>{name}</div>
+          <div className={`leading-5 ${isDark ? "text-gray-400" : "text-gray-500"}`}>{username}</div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Testimonials Data
+const testimonials = [
+  {
+    name: "Arjun Mehta",
+    username: "@arjdev",
+    body: "HackerEarth completely changed the way I learn coding. The hands-on projects and community support are incredible.",
+    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+  },
+  {
+    name: "Sara Lin",
+    username: "@sara.codes",
+    body: "The DSA learning path helped me crack my dream company's coding interview. The practice problems are perfectly curated.",
+    img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop&crop=face",
+  },
+  {
+    name: "Devon Carter",
+    username: "@devninja",
+    body: "Our team built a full-stack project in 2 weeks using the web development resources. Saved so much learning time.",
+    img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h-150&fit=crop&crop=face",
+  },
+  {
+    name: "Priya Shah",
+    username: "@priyacodes",
+    body: "The aptitude training helped me improve my logical thinking and problem-solving skills significantly.",
+    img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face",
+  },
+  {
+    name: "Leo Martin",
+    username: "@leobuilds",
+    body: "Found my perfect study group here. The community events and hackathons are game changers for networking.",
+    img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+  },
+  {
+    name: "Chloe Winters",
+    username: "@chloewinters",
+    body: "The leaderboard system keeps me motivated to practice daily. Climbing ranks never felt so rewarding!",
+    img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w-150&h=150&fit=crop&crop=face",
+  },
+];
+
+const firstColumn = testimonials.slice(0, 2);
+const secondColumn = testimonials.slice(2, 4);
+const thirdColumn = testimonials.slice(4, 6);
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -19,7 +257,7 @@ const stagger = {
   }
 };
 
-function ServiceUIGraphic({ feature }: { feature: any }) {
+function ServiceUIGraphic({ feature, isDark }: { feature: any; isDark: boolean }) {
   return (
     <div className="relative">
       <motion.div
@@ -27,53 +265,217 @@ function ServiceUIGraphic({ feature }: { feature: any }) {
         animate={{ scale: [1, 1.05, 1] }}
         transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
       />
-      <div className="relative bg-white/95 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-300 dark:border-gray-700 rounded-3xl p-8 overflow-hidden shadow-2xl">
-        <div className="space-y-6">
-          <div className="bg-gray-100 dark:bg-gray-800 rounded-lg shadow-xl overflow-hidden">
-            <div className="flex items-center space-x-2 px-4 py-3 bg-gray-200 dark:bg-gray-700">
-              <div className="w-3 h-3 bg-gray-500 dark:bg-gray-600 rounded-full animate-pulse" />
-              <div
-                className="w-3 h-3 bg-gray-600 dark:bg-gray-700 rounded-full animate-pulse"
-                style={{ animationDelay: "0.2s" }}
-              />
-              <div
-                className="w-3 h-3 bg-gray-700 dark:bg-gray-800 rounded-full animate-pulse"
-                style={{ animationDelay: "0.4s" }}
-              />
-              <div className="flex-1 bg-white dark:bg-gray-900 rounded px-3 py-1 ml-4 shadow-inner">
-                <span className="text-xs text-gray-600 dark:text-gray-400">{feature.title} Learning Path</span>
-              </div>
-            </div>
-            <div className="p-6 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 min-h-[140px]">
-              <div className="space-y-4">
-                <motion.div
-                  className="h-6 bg-gradient-to-r from-gray-700 to-gray-800 dark:from-gray-600 dark:to-gray-700 rounded w-3/4 shadow-sm"
-                  animate={{ opacity: [0.7, 1, 0.7] }}
-                  transition={{ duration: 2, repeat: Infinity }}
-                />
-                <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-full shadow-sm" />
-                <div className="h-3 bg-gray-300 dark:bg-gray-600 rounded w-2/3 shadow-sm" />
-                <div className="grid grid-cols-3 gap-4 mt-6">
-                  {["Beginner", "Intermediate", "Advanced"].map((level, i) => (
-                    <motion.div
-                      key={level}
-                      className="h-14 bg-gradient-to-br from-gray-200 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded shadow-md hover:shadow-lg transition-shadow flex items-center justify-center"
-                      animate={{ y: [0, -2, 0] }}
-                      transition={{ duration: 2, repeat: Infinity, delay: i * 0.3 }}
-                    >
-                      <span className="text-xs font-medium text-gray-900 dark:text-gray-300">{level}</span>
-                    </motion.div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+      
+      <div className="relative bg-white/95 dark:bg-gray-900/90 backdrop-blur-xl border border-gray-300 dark:border-gray-700 rounded-3xl p-6 overflow-hidden shadow-2xl">
+        
+        {/* Web Development - Code Editor */}
+        {feature.title === "Web Development" && (
+          <WebDevelopmentGraphic isDark={isDark} feature={feature} />
+        )}
+        
+        {/* Data Structures & Algorithms - Flowchart */}
+        {feature.title === "Data Structures & Algorithms" && (
+          <DSAGraphic isDark={isDark} feature={feature} />
+        )}
+        
+        {/* Aptitude & Reasoning - Abstract Mind Map */}
+        {feature.title === "Aptitude & Reasoning" && (
+          <AptitudeGraphic isDark={isDark} feature={feature} />
+        )}
+        
       </div>
     </div>
   );
 }
 
+// Web Development - Code Editor
+function WebDevelopmentGraphic({ isDark, feature }: { isDark: boolean; feature: any }) {
+  return (
+    <div className="space-y-4">
+      {/* Browser Header */}
+      <div className="flex items-center space-x-2 px-4 py-3 bg-gray-200 dark:bg-gray-700 rounded-t-lg">
+        <div className="flex space-x-2">
+          <div className="w-3 h-3 bg-red-400 rounded-full" />
+          <div className="w-3 h-3 bg-yellow-400 rounded-full" />
+          <div className="w-3 h-3 bg-green-400 rounded-full" />
+        </div>
+        <div className="flex-1 bg-white dark:bg-gray-800 rounded px-3 py-1 ml-2">
+          <span className="text-xs text-gray-600 dark:text-gray-400">app.jsx - HackerEarth</span>
+        </div>
+      </div>
+      
+      {/* Code Content */}
+      <div className="bg-gray-900 rounded-b-lg p-4 font-mono text-sm">
+        <div className="space-y-2">
+          <div className="flex">
+            <span className="text-gray-500 w-8 text-right mr-4">1</span>
+            <span className="text-blue-400">import</span> <span className="text-green-400">React</span> <span className="text-blue-400">from</span> <span className="text-yellow-400">'react'</span>
+          </div>
+          <div className="flex">
+            <span className="text-gray-500 w-8 text-right mr-4">2</span>
+            <span className="text-blue-400">import</span> <span className="text-green-400">TailwindCSS</span> <span className="text-blue-400">from</span> <span className="text-yellow-400">'tailwindcss'</span>
+          </div>
+          <div className="flex">
+            <span className="text-gray-500 w-8 text-right mr-4">3</span>
+            <span className="text-purple-400">export default</span> <span className="text-blue-400">function</span> <span className="text-yellow-300">App</span>()
+          </div>
+          <div className="flex">
+            <span className="text-gray-500 w-8 text-right mr-4">4</span>
+            <span className="text-gray-400 ml-4">{`{`}</span>
+          </div>
+          <div className="flex">
+            <span className="text-gray-500 w-8 text-right mr-4">5</span>
+            <span className="text-gray-400 ml-8">return</span> <span className="text-yellow-300">&lt;div&gt;</span>
+          </div>
+          <div className="flex">
+            <span className="text-gray-500 w-8 text-right mr-4">6</span>
+            <span className="text-gray-400 ml-12">Hello, World!</span>
+          </div>
+          <div className="flex">
+            <span className="text-gray-500 w-8 text-right mr-4">7</span>
+            <span className="text-yellow-300 ml-8">&lt;/div&gt;</span>
+          </div>
+          <div className="flex">
+            <span className="text-gray-500 w-8 text-right mr-4">8</span>
+            <span className="text-gray-400 ml-4">{`}`}</span>
+          </div>
+        </div>
+        
+        {/* Blinking Cursor */}
+        <motion.div
+          className="w-2 h-4 bg-blue-400 ml-2 inline-block"
+          animate={{ opacity: [0, 1, 0] }}
+          transition={{ duration: 1, repeat: Infinity }}
+        />
+      </div>
+    </div>
+  );
+}
+
+// Data Structures & Algorithms - Flowchart
+function DSAGraphic({ isDark, feature }: { isDark: boolean; feature: any }) {
+  return (
+    <div className="space-y-4">
+      <div className="text-center mb-4">
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Algorithm Visualization</span>
+      </div>
+      
+      <div className="grid grid-cols-3 gap-3 p-4 bg-gray-100 dark:bg-gray-800 rounded-lg">
+        {/* Nodes */}
+        <motion.div
+          className="bg-blue-500 text-white p-3 rounded-lg text-xs text-center shadow-md"
+          whileHover={{ scale: 1.05 }}
+          transition={{ duration: 0.2 }}
+        >
+          Input
+        </motion.div>
+        
+        <motion.div
+          className="bg-purple-500 text-white p-3 rounded-lg text-xs text-center shadow-md"
+          whileHover={{ scale: 1.05 }}
+          transition={{ duration: 0.2 }}
+        >
+          Process
+        </motion.div>
+        
+        <motion.div
+          className="bg-green-500 text-white p-3 rounded-lg text-xs text-center shadow-md"
+          whileHover={{ scale: 1.05 }}
+          transition={{ duration: 0.2 }}
+        >
+          Output
+        </motion.div>
+        
+        {/* Connecting Lines */}
+        <div className="col-span-3 relative h-4">
+          <div className="absolute top-2 left-1/3 w-1/3 h-0.5 bg-blue-300 dark:bg-blue-600"></div>
+          <div className="absolute top-2 right-1/3 w-1/3 h-0.5 bg-purple-300 dark:bg-purple-600"></div>
+        </div>
+        
+        {/* Second Row */}
+        <motion.div
+          className="bg-cyan-500 text-white p-3 rounded-lg text-xs text-center shadow-md col-start-2"
+          whileHover={{ scale: 1.05 }}
+          transition={{ duration: 0.2 }}
+        >
+          Sort
+        </motion.div>
+      </div>
+      
+      <div className="flex justify-center space-x-3">
+        {["O(n)", "O(log n)", "O(n²)"].map((complexity, i) => (
+          <motion.div
+            key={i}
+            className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded-full text-xs"
+            whileHover={{ y: -2 }}
+            transition={{ duration: 0.2 }}
+          >
+            {complexity}
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Aptitude & Reasoning - Abstract Mind Map
+function AptitudeGraphic({ isDark, feature }: { isDark: boolean; feature: any }) {
+  return (
+    <div className="space-y-4">
+      <div className="text-center mb-4">
+        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Logical Thinking</span>
+      </div>
+      
+      <div className="relative h-40 bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+        {/* Central Node */}
+        <motion.div
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-white text-xs shadow-lg"
+          animate={{ scale: [1, 1.05, 1] }}
+          transition={{ duration: 2, repeat: Infinity }}
+        >
+          Problem
+        </motion.div>
+        
+        {/* Connecting Nodes */}
+        {[0, 1, 2, 3].map((i) => (
+          <motion.div
+            key={i}
+            className="absolute w-8 h-8 bg-blue-400 rounded-full flex items-center justify-center text-white text-xs shadow-md"
+            style={{
+              top: `${25 + 50 * Math.sin((i * Math.PI) / 2)}%`,
+              left: `${25 + 50 * Math.cos((i * Math.PI) / 2)}%`,
+            }}
+            animate={{ y: [0, -3, 0] }}
+            transition={{ duration: 2, repeat: Infinity, delay: i * 0.5 }}
+          >
+            {["A", "B", "C", "D"][i]}
+          </motion.div>
+        ))}
+        
+        {/* Connecting Lines */}
+        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100">
+          {[0, 1, 2, 3].map((i) => (
+            <line
+              key={i}
+              x1="50"
+              y1="50"
+              x2={50 + 40 * Math.cos((i * Math.PI) / 2)}
+              y2={50 + 40 * Math.sin((i * Math.PI) / 2)}
+              stroke={isDark ? "#4B5563" : "#9CA3AF"}
+              strokeWidth="1"
+            />
+          ))}
+        </svg>
+      </div>
+      
+      <div className="flex justify-center">
+        <div className="px-3 py-1 bg-gray-200 dark:bg-gray-700 rounded-full text-xs">
+          Analytical Reasoning
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const features = [
   {
@@ -279,204 +681,447 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="relative overflow-x-clip z-10 max-w-7xl mx-auto px-4 sm:px-6">
+    <section className="relative overflow-x-clip z-10 max-w-7xl mx-auto px-4 sm:px-6">
+  <motion.div
+    className="text-center mb-16"
+    initial={{ opacity: 0, y: 20 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.6 }}
+  >
+    <div className="flex justify-center">
+      <button
+        type="button"
+        className="group relative z-[60] mx-auto rounded-full border mt-7 px-6 py-1 text-xs backdrop-blur transition-all duration-300 active:scale-100 md:text-sm"
+        style={{
+          borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
+          backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'
+        }}
+      >
+        <div className="absolute inset-x-0 -top-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:w-3/4"></div>
+        <div className="absolute inset-x-0 -bottom-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:h-px"></div>
+        <span className={`relative ${isDark ? "text-white" : "text-gray-900"}`}>Learning Paths</span>
+      </button>
+    </div>
+
+    <h2 className={`mt-5 text-center text-4xl font-bold tracking-tighter md:text-[54px] md:leading-[60px] ${
+      isDark 
+        ? "bg-gradient-to-r from-gray-300 via-white to-gray-300 bg-clip-text text-transparent" 
+        : "bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 bg-clip-text text-transparent"
+    }`}>
+      Our Different <span className="font-light italic bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">Technical Domains</span>
+    </h2>
+
+    <p className={`text-xl max-w-3xl mx-auto leading-relaxed mt-6 ${
+      isDark ? "text-gray-300" : "text-gray-700"
+    }`}>
+      Comprehensive learning paths designed to accelerate career growth and technical transformation.
+    </p>
+  </motion.div>
+
+  <div className="space-y-32 relative">
+    {features.map((feature, idx) => (
+      <motion.div
+        key={feature.title}
+        ref={(el) => (featureRefs.current[idx] = el)}
+        initial={{ opacity: 0, y: 50 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.8, delay: idx * 0.08 }}
+        className="min-h-[80vh] flex items-center"
+      >
+        <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+          <motion.div
+            className={`space-y-8 ${idx % 2 === 1 ? "lg:order-2" : ""}`}
+            initial={{ opacity: 0, x: idx % 2 === 1 ? 50 : -50 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            {/* REPLACED: Gradient badge with testimonials-style button */}
+                       {/* <div className="flex justify-center">
+              <button
+                type="button"
+                className="group relative z-[60] mx-auto rounded-full border px-6 py-1 text-xs backdrop-blur transition-all duration-300 hover:scale-105 hover:shadow-xl active:scale-100 md:text-sm"
+                style={{
+                  borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'
+                }}
+              >
+                <div className="absolute inset-x-0 -top-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:w-3/4"></div>
+                <div className="absolute inset-x-0 -bottom-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:h-px"></div>
+                <span className={`relative ${isDark ? "text-white" : "text-gray-900"}`}>Testimonials</span>
+              </button>
+            </div> */}
+
+
+            <h3 className="text-4xl sm:text-5xl font-bold text-black mb-4 leading-tight dark:text-white">{feature.title}</h3>
+            <p className="text-lg text-gray-900 dark:text-gray-300 leading-relaxed mb-8">{feature.description}</p>
+            
+            <div className="flex flex-wrap gap-2 mb-4">
+              {feature.technologies.map((tech) => (
+                <span
+                  key={tech}
+                  className={`px-3 py-1 rounded-full border font-semibold text-xs bg-gradient-to-r ${feature.bgGradient} ${feature.accentColor} border-white/20`}
+                >
+                  {tech}
+                </span>
+              ))}
+            </div>
+            
+            <Link
+              to={feature.link}
+              className={`inline-flex items-center font-medium transition-colors group ${idx === activeFeature
+                ? "text-white"
+                : isDark
+                  ? "text-blue-400 hover:text-blue-300"
+                  : "text-blue-600 hover:text-blue-700"
+                }`}
+            >
+              <span>Explore Domain</span>
+              <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+            </Link>
+          </motion.div>
+          
+          <motion.div
+            className={`${idx % 2 === 1 ? "lg:order-1" : ""}`}
+            initial={{ opacity: 0, scale: 0.85 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.8 }}
+          >
+            <ServiceUIGraphic feature={feature} isDark={isDark} />
+          </motion.div>
+        </div>
+      </motion.div>
+    ))}
+  </div>
+</section>
+
+      <StatsSection />
+          
+          {/* events */}
+    <section className={`relative z-10 py-24 ${isDark ? "bg-black" : "bg-slate-50"}`}>
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    {/* Section Header */}
+    <motion.div
+      className="text-center mb-16"
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      viewport={{ once: true }}
+    >
+      <div className="flex justify-center">
+        <button
+          type="button"
+          className="group relative z-[60] mx-auto rounded-full border px-7 py-2 text-xl backdrop-blur transition-all duration-300 hover:shadow-xl active:scale-100 md:text-sm"
+          style={{
+            borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
+            backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'
+          }}
+        >
+          <div className="absolute inset-x-0 -top-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:w-3/4"></div>
+          <div className="absolute inset-x-0 -bottom-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:h-px"></div>
+          <span className={`relative ${isDark ? "text-white" : "text-gray-900"}`}>Community Events</span>
+        </button>
+      </div>
+
+      <h2 className={`mt-7 text-center text-4xl font-semibold tracking-tighter md:text-[58px] md:leading-[60px] ${
+        isDark 
+          ? "bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-clip-text text-transparent" 
+          : "text-gray-900"
+      }`}>
+        Explore our Past Events
+      </h2> 
+
+      <p className={`text-xl max-w-3xl mx-auto leading-relaxed mt-2 ${
+        isDark ? "text-gray-400" : "text-gray-700"
+      }`}>
+        Discover our past events that brought the community together to learn, collaborate, and innovate.
+      </p>
+    </motion.div>
+
+    {/* Events Grid (3-column layout) */}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      {events.map((event, index) => (
         <motion.div
-          className="text-center mb-16"
+          key={index}
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.5, delay: index * 0.1 }}
+          viewport={{ once: true }}
+          className="group relative aspect-[3/4] overflow-hidden rounded-2xl shadow-lg"
         >
-          <motion.div
-            className="inline-flex items-center space-x-2 px-6 py-3 bg-gray-200/50 rounded-full border border-gray-700 mb-6 backdrop-blur-sm"
-            animate={{ scale: [1, 1.02, 1] }}
-            transition={{ duration: 3, repeat: Infinity }}
-          >
-            <div className="w-2 h-2 bg-black rounded-full animate-pulse dark:bg-white" />
-            <span className="text-sm font-medium text-black dark:text-gray-900">Learning Paths</span>
-          </motion.div>
-
-          <h2 className="text-5xl sm:text-6xl font-black mb-6 leading-tight text-gray-900 dark:text-white">
-            Our Different <span className="font-light italic">Technical Domains</span>
-          </h2>
-
-          <p className="text-xl max-w-3xl mx-auto leading-relaxed text-gray-700 dark:text-gray-400">
-            Comprehensive learning paths designed to accelerate career growth and technical transformation.
-          </p>
-        </motion.div>
-        <div className="space-y-32 relative">
-          {features.map((feature, idx) => (
-            <motion.div
-              key={feature.title}
-              ref={(el) => (featureRefs.current[idx] = el)}
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: idx * 0.08 }}
-              className="min-h-[80vh] flex items-center"
-            >
-              <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <motion.div
-                  className={`space-y-8 ${idx % 2 === 1 ? "lg:order-2" : ""}`}
-                  initial={{ opacity: 0, x: idx % 2 === 1 ? 50 : -50 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.8 }}
-                >
-                  <motion.div
-                    className={`inline-flex items-center space-x-3 px-4 py-2 bg-gradient-to-r ${feature.bgGradient} rounded-full border border-white/10 mb-6`}
-                    animate={{ scale: [1, 1.02, 1] }}
-                    transition={{ duration: 2, repeat: Infinity, delay: idx * 0.5 }}
-                  >
-                    <div className={feature.accentColor}>{feature.icon}</div>
-                    <span className={`text-sm font-medium ${feature.accentColor}`}>{feature.subtitle}</span>
-                  </motion.div>
-                  <h3 className="text-4xl sm:text-5xl font-bold text-black mb-4 leading-tight dark:text-white">{feature.title}</h3>
-                  <p className="text-lg text-gray-900 dark:text-gray-300 leading-relaxed mb-8">{feature.description}</p>
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {feature.technologies.map((tech) => (
-                      <span
-                        key={tech}
-                        className={`px-3 py-1 rounded-full border font-semibold text-xs bg-gradient-to-r ${feature.bgGradient} ${feature.accentColor} border-white/20`}
-                      >
-                        {tech}
+          <div className={`absolute inset-[-2px] z-0 rounded-2xl bg-gradient-to-r ${
+            event.color === "bg-blue-500" ? "from-blue-500 to-cyan-500" :
+            event.color === "bg-purple-500" ? "from-purple-500 to-pink-500" :
+            event.color === "bg-orange-500" ? "from-orange-500 to-red-500" :
+            event.color === "bg-green-500" ? "from-green-500 to-emerald-500" :
+            "from-blue-500 to-purple-500"
+          }`} />
+          
+          <div className="relative h-full w-full overflow-hidden rounded-[14px]">
+            {/* Event image - Add your image URL to event data */}
+            {event.image ? (
+              <img
+                src={event.image}
+                alt={event.title}
+                className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
+              />
+            ) : (
+              <div className={`absolute inset-0 h-full w-full transition-transform duration-500 ease-in-out group-hover:scale-105 ${
+                event.color === "bg-blue-500" ? "bg-blue-600" : 
+                event.color === "bg-purple-500" ? "bg-purple-600" :
+                event.color === "bg-orange-500" ? "bg-orange-600" : 
+                event.color === "bg-green-500" ? "bg-green-600" : "bg-blue-600"
+              }`} />
+            )}
+            
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+            
+            <div className="relative flex h-full flex-col justify-end p-6">
+              {/* Hover content */}
+              <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                <div className="flex items-center gap-2 text-sm text-white/80 mb-2">
+                  <Calendar className="w-4 h-4" />
+                  <span>{event.date}</span>
+                </div>
+                
+                <h3 className="text-2xl font-bold text-white mb-4">{event.title}</h3>
+                
+                <div className="flex flex-wrap gap-2 mb-6">
+                  {event.tags.map((tag, tagIndex) => (
+                    <div key={tagIndex} className={`rounded-full p-px ${
+                      event.color === "bg-blue-500" ? "bg-gradient-to-r from-blue-500 to-cyan-500" :
+                      event.color === "bg-purple-500" ? "bg-gradient-to-r from-purple-500 to-pink-500" :
+                      event.color === "bg-orange-500" ? "bg-gradient-to-r from-orange-500 to-red-500" :
+                      event.color === "bg-green-500" ? "bg-gradient-to-r from-green-500 to-emerald-500" :
+                      "bg-gradient-to-r from-blue-500 to-purple-500"
+                    }`}>
+                      <span className={`block rounded-full px-3 py-1 text-xs font-medium backdrop-blur-sm ${
+                        isDark ? "bg-black/70 text-white/90" : "bg-white/80 text-gray-900"
+                      }`}>
+                        {tag}
                       </span>
-                    ))}
-                  </div>
-                  <Link
-                    to={feature.link}
-                    className={`inline-flex items-center font-medium transition-colors group ${idx === activeFeature
-                      ? "text-white"
-                      : isDark
-                        ? "text-blue-400 hover:text-blue-300"
-                        : "text-blue-600 hover:text-blue-700"
-                      }`}
-                  >
-                    <span>Explore Domain</span>
-                    <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                  </Link>
-                </motion.div>
-                <motion.div
-                  className={`${idx % 2 === 1 ? "lg:order-1" : ""}`}
-                  initial={{ opacity: 0, scale: 0.85 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8 }}
+                    </div>
+                  ))}
+                </div>
+                
+                <Link
+                  to={`/events/${event.id}`} // Add event.id to your data
+                  className="group/button relative inline-flex items-center gap-2 text-base font-semibold"
                 >
-                  <ServiceUIGraphic feature={feature} />
-                </motion.div>
+                  <span className={`${
+                    event.color === "bg-blue-500" ? "bg-gradient-to-r from-blue-500 to-cyan-500" :
+                    event.color === "bg-purple-500" ? "bg-gradient-to-r from-purple-500 to-pink-500" :
+                    event.color === "bg-orange-500" ? "bg-gradient-to-r from-orange-500 to-red-500" :
+                    event.color === "bg-green-500" ? "bg-gradient-to-r from-green-500 to-emerald-500" :
+                    "bg-gradient-to-r from-blue-500 to-purple-500"
+                  } bg-clip-text text-transparent`}>
+                    View Details
+                  </span>
+                  <ArrowRight className={`w-4 h-4 ${
+                    event.color === "bg-blue-500" ? "bg-gradient-to-r from-blue-500 to-cyan-500" :
+                    event.color === "bg-purple-500" ? "bg-gradient-to-r from-purple-500 to-pink-500" :
+                    event.color === "bg-orange-500" ? "bg-gradient-to-r from-orange-500 to-red-500" :
+                    event.color === "bg-green-500" ? "bg-gradient-to-r from-green-500 to-emerald-500" :
+                    "bg-gradient-to-r from-blue-500 to-purple-500"
+                  } bg-clip-text text-transparent transition-transform group-hover/button:translate-x-1`} />
+                  <span className={`absolute -bottom-1 left-0 h-0.5 w-0 ${
+                    event.color === "bg-blue-500" ? "bg-gradient-to-r from-blue-500 to-cyan-500" :
+                    event.color === "bg-purple-500" ? "bg-gradient-to-r from-purple-500 to-pink-500" :
+                    event.color === "bg-orange-500" ? "bg-gradient-to-r from-orange-500 to-red-500" :
+                    event.color === "bg-green-500" ? "bg-gradient-to-r from-green-500 to-emerald-500" :
+                    "bg-gradient-to-r from-blue-500 to-purple-500"
+                  } transition-all duration-300 group-hover/button:w-full`} />
+                </Link>
               </div>
-            </motion.div>
-          ))}
+              
+              {/* Default visible content */}
+              <div className="group-hover:opacity-0 transition-opacity duration-500">
+                <div className="flex items-center gap-2 text-sm text-white/80 mb-2">
+                  <Calendar className="w-4 h-4" />
+                  <span>{event.date}</span>
+                </div>
+                <h3 className="text-2xl font-bold text-white mb-2">{event.title}</h3>
+                <p className="text-white/80 text-sm">{event.description}</p>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      ))}
+    </div>
+
+    {/* "View All Events" Button */}
+    {/* <motion.div
+      className="text-center mt-16"
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6, delay: 0.2 }}
+      viewport={{ once: true }}
+    >
+      <Link
+        to="/events"
+        className="inline-flex items-center px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-semibold text-lg hover:from-blue-500 hover:to-purple-500 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl"
+      >
+        <span>View All Events</span>
+        <ArrowRight className="w-5 h-5 ml-2" />
+      </Link>
+    </motion.div> */}
+  </div>
+</section>
+          
+
+           {/* Testimonials Section */}
+      <section className={`relative z-10 py-24 ${isDark ? "bg-black" : "bg-gray-50"}`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-[540px] text-center mb-16">
+            <div className="flex justify-center">
+              <button
+                type="button"
+                className="group relative z-[60] mx-auto rounded-full border px-6 py-1 text-xs backdrop-blur transition-all duration-300 hover:shadow-xl active:scale-100 md:text-sm"
+                style={{
+                  borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'
+                }}
+              >
+                <div className="absolute inset-x-0 -top-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:w-3/4"></div>
+                <div className="absolute inset-x-0 -bottom-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:h-px"></div>
+                <span className={`relative ${isDark ? "text-white" : "text-gray-900"}`}>Testimonials</span>
+              </button>
+            </div>
+           
+            <h2 className={`mt-5 text-center text-4xl font-semibold tracking-tighter md:text-[54px] md:leading-[60px] ${
+              isDark 
+                ? "bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-clip-text text-transparent" 
+                : "text-gray-900"
+            }`}>
+              What our members say
+            </h2>
+
+            <p className={`mt-5 text-center text-lg ${
+              isDark ? "text-gray-400" : "text-gray-600"
+            }`}>
+              From coding skills to career growth, our community has helped students achieve their goals.
+            </p>
+          </div>
+
+          <div className="my-16 flex max-h-[738px] justify-center gap-6 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_25%,black_75%,transparent)]">
+            <div>
+              <Marquee pauseOnHover vertical className="[--duration:20s]">
+                {firstColumn.map((testimonial) => (
+                  <TestimonialCard key={testimonial.username} {...testimonial} />
+                ))}
+              </Marquee>
+            </div>
+
+            <div className="hidden md:block">
+              <Marquee reverse pauseOnHover vertical className="[--duration:25s]">
+                {secondColumn.map((testimonial) => (
+                  <TestimonialCard key={testimonial.username} {...testimonial} />
+                ))}
+              </Marquee>
+            </div>
+
+            <div className="hidden lg:block">
+              <Marquee pauseOnHover vertical className="[--duration:30s]">
+                {thirdColumn.map((testimonial) => (
+                  <TestimonialCard key={testimonial.username} {...testimonial} />
+                ))}
+              </Marquee>
+            </div>
+          </div>
+
+          <div className="-mt-8 flex justify-center">
+            <button className={`group relative inline-flex items-center gap-2 rounded-full border px-6 py-3 text-sm font-medium transition-all hover:bg-blue-500/10 active:scale-95 ${
+              isDark 
+                ? "border-blue-500/30 bg-black/50 text-white hover:border-blue-500/60" 
+                : "border-blue-400/30 bg-white text-gray-900 hover:border-blue-400/60"
+            }`}>
+              <div className="absolute inset-x-0 -top-px mx-auto h-px w-3/4 bg-gradient-to-r from-transparent via-blue-500/40 to-transparent"></div>
+              <div className="absolute inset-x-0 -bottom-px mx-auto h-px w-3/4 bg-gradient-to-r from-transparent via-blue-500/40 to-transparent"></div>
+              Share your experience
+            </button>
+          </div>
         </div>
       </section>
 
-      <StatsSection />
-
-
-      <section className="relative z-10 py-32 overflow-hidden">
-        {/* Background elements */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-purple-500/5 to-pink-500/5" />
-        <div className="absolute top-0 left-0 w-full h-full opacity-10">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-purple-500 rounded-full blur-3xl animate-pulse delay-1000" />
-        </div>
-
-        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10">
-          {/* Main content container */}
-          <motion.div
-            initial={{ opacity: 0, y: 50 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-            viewport={{ once: true }}
-            className="relative"
-          >
-            {/* Floating elements */}
-            <motion.div
-              className="absolute -top-8 -left-8 w-16 h-16 bg-blue-500/20 rounded-full blur-xl"
-              animate={{
-                scale: [1, 1.2, 1],
-                opacity: [0.3, 0.6, 0.3]
+    <section className={`relative z-10 py-24 transition-colors duration-500 ${isDark ? "bg-black" : "bg-white"}`}>
+        <div className="mx-auto max-w-4xl rounded-[40px] border border-black/5 dark:border-white/20 p-2 shadow-sm">
+          <div className={`relative mx-auto overflow-hidden rounded-[38px] border border-black/5 dark:border-white/20 p-2 shadow-sm ${
+            isDark ? "bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900" : "bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-500"
+          }`}>
+            {/* Background effects */}
+            <div
+              className="absolute inset-0 z-0"
+              style={{
+                background: isDark 
+                  ? "radial-gradient(ellipse 60% 40% at 50% 50%, rgba(59, 130, 246, 0.15), transparent 70%)"
+                  : "radial-gradient(ellipse 60% 40% at 50% 50%, rgba(255, 255, 255, 0.2), transparent 70%)",
               }}
-              transition={{ duration: 3, repeat: Infinity }}
-            />
-            <motion.div
-              className="absolute -bottom-8 -right-8 w-20 h-20 bg-purple-500/20 rounded-full blur-xl"
-              animate={{
-                scale: [1, 1.3, 1],
-                opacity: [0.2, 0.5, 0.2]
-              }}
-              transition={{ duration: 4, repeat: Infinity, delay: 1 }}
             />
 
-            {/* Main card */}
-            <div className="relative bg-gradient-to-br from-white/95 to-gray-50/95 dark:from-gray-900/95 dark:to-gray-800/95 backdrop-blur-2xl border border-white/20 dark:border-gray-700/30 rounded-3xl p-12 shadow-2xl hover:shadow-3xl transition-all duration-500 hover:scale-[1.02]">
-              {/* Decorative elements */}
-              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 rounded-t-3xl" />
+            <div
+              className="absolute inset-0 z-0 opacity-[0.03]"
+              style={{
+                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter'%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+              }}
+            />
 
-              {/* Icon container */}
-              <motion.div
-                className="relative mx-auto mb-8 w-20 h-20 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl flex items-center justify-center shadow-lg"
-                whileHover={{ rotate: 360, scale: 1.1 }}
-                transition={{ duration: 0.7 }}
-              >
-                <Rocket className="w-10 h-10 text-white" />
-                <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-purple-500/20 rounded-2xl blur-md" />
-              </motion.div>
+            <div className="relative z-10 p-12">
+              <div className="text-center">
+                {/* Main heading */}
+             <h2 className={`text-4xl font-bold mb-6 tracking-tighter ${
+  isDark 
+    ? "bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-clip-text text-transparent" 
+    : "text-white"
+}`}>
+  Ready to Begin Your Journey?
+</h2>
+                
+                {/* Subtitle */}
+                <p className={`text-lg mb-8 max-w-2xl mx-auto ${
+                  isDark ? "text-blue-200" : "text-blue-100"
+                }`}>
+                  Join a community of innovators, builders, and leaders. Start your path to technical excellence today.
+                </p>
 
-              {/* Heading */}
-              <motion.h2
-                className="text-5xl md:text-6xl font-bold mb-6 bg-gradient-to-r from-gray-900 to-gray-700 dark:from-white dark:to-gray-300 bg-clip-text text-transparent"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.2 }}
-                viewport={{ once: true }}
-              >
-                Ready to Begin Your <span className="italic font-light">Journey</span>?
-              </motion.h2>
+                {/* Animated CTA button */}
+                <div className="flex items-center justify-center mt-10">
+                  <Link to="/login">
+                    <div className="group border-white/30 bg-white/20 flex h-[64px] cursor-pointer items-center gap-2 rounded-full border p-[11px] backdrop-blur-sm transition-all hover:bg-white/30">
+                      <div className="border-white/30 bg-white flex h-[43px] items-center justify-center rounded-full border">
+                        <p className="mr-3 ml-2 flex items-center justify-center gap-2 font-medium tracking-tight text-blue-900">
+                          <Rocket className="w-5 h-5" />
+                          Get Started
+                        </p>
+                      </div>
+                      <div className="border-white/30 flex size-[26px] items-center justify-center rounded-full border-2 transition-all ease-in-out group-hover:ml-2">
+                        <ArrowRight className="w-4 h-4 text-white transition-all ease-in-out group-hover:rotate-45" />
+                      </div>
+                    </div>
+                  </Link>
+                </div>
 
-              {/* Description */}
-              <motion.p
-                className="text-xl md:text-2xl mb-10 leading-relaxed text-gray-600 dark:text-gray-300 max-w-2xl mx-auto font-light"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.4 }}
-                viewport={{ once: true }}
-              >
-                Join a community of innovators, builders, and leaders. Start your path to technical excellence today.
-              </motion.p>
-
-              {/* CTA Button */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: 0.6 }}
-                viewport={{ once: true }}
-              >
-                <Link
-                  to="/login"
-                  className="group relative inline-flex items-center space-x-6 px-14 py-5 rounded-2xl font-semibold text-xl transition-all duration-500 hover:scale-105 shadow-2xl hover:shadow-3xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white overflow-hidden"
+                {/* Background text effect */}
+                <h1
+                  className="absolute inset-x-0 -bottom-20 text-center text-[80px] font-semibold text-transparent sm:text-[120px] pointer-events-none"
+                  style={{
+                    WebkitTextStroke: isDark ? "1px rgba(255,255,255,0.1)" : "1px rgba(255,255,255,0.2)",
+                    color: "transparent",
+                  }}
+                  aria-hidden="true"
                 >
-                  {/* Button background effects */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-500/0 via-white/20 to-purple-500/0 group-hover:via-white/30 transition-all duration-500" />
-                  <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-
-                  {/* Button content */}
-                  <span className="relative z-10">Get Started</span>
-                  <motion.div
-                    className="relative z-10"
-                    animate={{ x: [0, 5, 0] }}
-                    transition={{ duration: 2, repeat: Infinity }}
-                  >
-                    <ArrowRight className="w-6 h-6 group-hover:translate-x-2 transition-transform duration-300" />
-                  </motion.div>
-
-                  {/* Hover effect */}
-                  <div className="absolute inset-0 bg-white/10 transform -skew-x-12 -translate-x-full group-hover:translate-x-full transition-transform duration-700" />
-                </Link>
-              </motion.div>
-
-              {/* Additional decorative elements */}
-              <div className="absolute -bottom-4 -left-4 w-8 h-8 bg-blue-400/30 rounded-full blur-sm" />
-              <div className="absolute -top-4 -right-4 w-6 h-6 bg-purple-400/30 rounded-full blur-sm" />
+                  HackerEarth
+                </h1>
+                <h1
+                  className="absolute inset-x-0 -bottom-20 text-center text-[80px] font-semibold pointer-events-none opacity-10 sm:text-[120px]"
+                  style={{
+                    color: isDark ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.4)",
+                  }}
+                  aria-hidden="true"
+                >
+                  HackerEarth
+                </h1>
+              </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </section>
     </div>

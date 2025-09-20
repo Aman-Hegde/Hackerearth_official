@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation  } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Sun, Moon, User, LogOut, Monitor } from 'lucide-react';
@@ -9,23 +9,42 @@ import logo from '../assets/image.png';
 const Navbar: React.FC = () => {
   const [scrolled, setScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const [lastScrollY, setLastScrollY] = useState(0);
   const navigate = useNavigate();
   const { user, logout, isAuthenticated } = useAuth();
   const { isDark, toggleTheme } = useTheme();
-    const { pathname } = useLocation();
+  const { pathname } = useLocation();
+  const navRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    const handleScroll = () => setScrolled(window.scrollY > 10);
-    window.addEventListener('scroll', handleScroll);
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      // Set scrolled state for background change
+      setScrolled(currentScrollY > 10);
+      
+      // Hide/show navbar logic
+      if (currentScrollY > lastScrollY && currentScrollY > 100) {
+        // Scrolling down - hide navbar
+        setHidden(true);
+      } else if (currentScrollY < lastScrollY) {
+        // Scrolling up - show navbar
+        setHidden(false);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [lastScrollY]);
 
   const navItems = [
     { name: "Events", href: "/events" },
     { name: "Leaderboard", href: "/leaderboard" },
     { name: "Team", href: "/team" },
     { name: "About us", href: "/about" },
-    // { name: "Achievements", href: "/achievements" },
     { name: "Contact", href: "/contact" },
   ];
 
@@ -41,6 +60,7 @@ const Navbar: React.FC = () => {
 
   return (
     <motion.nav
+      ref={navRef}
       className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${scrolled
           ? isDark
             ? "bg-black/90 backdrop-blur-md border-gray-800/50"
@@ -50,13 +70,14 @@ const Navbar: React.FC = () => {
             : "bg-white/80 backdrop-blur-sm"
         }`}
       initial={{ y: 0 }}
-      animate={{ y: 0 }}
-      transition={{ duration: 0.6 }}
+      animate={{ y: hidden ? -100 : 0 }}
+      transition={{ duration: 0.3, ease: "easeInOut" }}
+      style={{ transform: hidden ? 'translateY(-100%)' : 'translateY(0)' }}
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-<Link to="/" className="flex items-center space-x-2" aria-label="Home">
+          <Link to="/" className="flex items-center space-x-2" aria-label="Home">
             <img
               src={logo}
               alt="HackerEarth Logo"
@@ -65,10 +86,9 @@ const Navbar: React.FC = () => {
               className="mt-2 mb-2 w-20 h-14 rounded-full object-cover drop-shadow-xl border"
             />
 
-              <div className="hidden sm:flex items-center space-x-1 p-1 bg-white rounded-md shadow-md h-8 dark:bg-black">
-                {/* <Monitor className="w-5 h-5 text-gray-800" /> */}
-                <span className="text-gray-800 text-xs font-semibold whitespace-nowrap dark:text-white">HackerEarth Hub-nmamit</span>
-              </div>
+            <div className="hidden sm:flex items-center space-x-1 p-1 bg-white rounded-md shadow-md h-8 dark:bg-black">
+              <span className="text-gray-800 text-xs font-semibold whitespace-nowrap dark:text-white">HackerEarth Hub-nmamit</span>
+            </div>
           </Link>
 
           {/* Desktop actions */}
@@ -146,13 +166,13 @@ const Navbar: React.FC = () => {
       </div>
 
       {/* Mobile Dropdown (slide from below) */}
-            <AnimatePresence>
+      <AnimatePresence>
         {isOpen && (
           <motion.div
             className={`md:hidden absolute top-full left-0 right-0 backdrop-blur-md border-b ${
               isDark
                 ? "bg-black/95 border-gray-800"
-                : "bg-white/95 border-gray-200" // Light mode mobile sidebar background
+                : "bg-white/95 border-gray-200"
             }`}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
@@ -165,7 +185,7 @@ const Navbar: React.FC = () => {
                   <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${
                     isDark
                       ? 'bg-gray-800/50'
-                      : 'bg-gray-100/70 border border-gray-200' // Light mode user info mobile
+                      : 'bg-gray-100/70 border border-gray-200'
                   }`}>
                     <User className={`w-4 h-4 ${isDark ? 'text-white' : 'text-gray-700'}`} />
                     <span className={`text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
@@ -177,7 +197,7 @@ const Navbar: React.FC = () => {
                     className={`w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${
                       isDark
                         ? 'text-gray-300 hover:text-red-400 hover:bg-gray-800/50'
-                        : 'text-gray-700 hover:text-red-600 hover:bg-gray-100/50' // Light mode logout mobile
+                        : 'text-gray-700 hover:text-red-600 hover:bg-gray-100/50'
                     }`}
                   >
                     <LogOut className="w-5 h-5" /> <span>Logout</span>
@@ -200,24 +220,24 @@ const Navbar: React.FC = () => {
                   onClick={handleMobileLinkClick}
                   className={`flex items-center space-x-2 text-base font-medium transition-colors duration-200 ${
                     pathname === item.href
-                      ? 'text-blue-500 dark:text-blue-400' // Active link color (blue for both, but slightly lighter for dark mode)
+                      ? 'text-blue-500 dark:text-blue-400'
                       : isDark
                         ? 'text-gray-300 hover:text-white'
-                        : 'text-gray-700 hover:text-gray-900' // Light mode nav items mobile
+                        : 'text-gray-700 hover:text-gray-900'
                   }`}
                 >
                   <span>{item.name}</span>
                 </Link>
               ))}
 
-              <div className={`pt-4 ${isDark ? 'border-t border-gray-700' : 'border-t border-gray-200'}`}> {/* Theme-aware border */}
+              <div className={`pt-4 ${isDark ? 'border-t border-gray-700' : 'border-t border-gray-200'}`}>
                 <button
                   onClick={toggleTheme}
                   aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                   className={`w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
                     isDark
                       ? 'text-gray-300 hover:text-white hover:bg-gray-800/50'
-                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100/50' // Light mode theme toggle mobile
+                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100/50'
                   }`}
                   type="button"
                 >

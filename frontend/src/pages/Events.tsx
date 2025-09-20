@@ -1,219 +1,218 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, MapPin, Clock, Users, ArrowRight } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext';
+// FIX: Removed unused icons (MapPin, Clock, Users)
+import { Calendar, ArrowRight } from 'lucide-react'; 
+// FIX: Reinstated useTheme to work with your existing theme toggle
+import { useTheme } from '../context/ThemeContext'; 
+import { motion } from 'framer-motion';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
+// --- Data for Past Events ---
+const pastEvents = [
+  {
+    id: 1,
+    title: "Git & Github Workshop",
+    date: "2025-09-06",
+    tags: ['Git', 'Github'],
+    image: "/images/workshop1.jpg", // Ensure this image exists at /public/images/workshop1.jpg
+    gradient: "from-purple-200 to-purple-500",
+  },
+  // {
+  //   id: 2,
+  //   title: "InnovateAI Hackathon '23",
+  //   date: "2023-10-20",
+  //   tags: ['AI', 'Machine Learning', 'Python'],
+  //   image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1470&q=80",
+  //   gradient: "from-green-500 to-teal-500",
+  // },
+];
+
+// --- Framer Motion Variants for the card reveal animation ---
+const revealVariants = {
+  initial: { opacity: 0, y: 20 },
+  hover: { opacity: 1, y: 0, transition: { duration: 0.3, ease: "easeOut" } }
+};
+
+// --- Reusable Poster-Style Event Card Component ---
+const EventCard = ({ event, index, isDark }) => {
+  return (
+    <motion.div
+      initial="initial"
+      whileHover="hover"
+      className="group relative aspect-[3/4] overflow-hidden rounded-2xl shadow-lg"
+      variants={{
+        initial: { opacity: 0, y: 20 },
+        animate: { opacity: 1, y: 0, transition: { duration: 0.5, delay: index * 0.1 } },
+      }}
+      viewport={{ once: true }}
+      animate="animate"
+    >
+      <div className={`absolute inset-[-2px] z-0 rounded-2xl bg-gradient-to-r ${event.gradient}`} />
+      <div className="relative h-full w-full overflow-hidden rounded-[14px]">
+        <img
+          src={event.image}
+          alt={event.title}
+          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-100"
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+        <div className="relative flex h-full flex-col justify-end p-6">
+          <motion.div variants={revealVariants}>
+            {/* FIX: Text color is now explicitly set for robustness, remains white as it's on a dark overlay */}
+            <div className="flex items-center gap-2 text-sm text-white/80 mb-2">
+              <Calendar className="w-4 h-4" />
+              <span>{new Date(event.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+            </div>
+            <h3 className="text-2xl font-bold text-white mb-4">{event.title}</h3>
+            <div className="flex flex-wrap gap-2 mb-6">
+              {event.tags.map((tag) => (
+                <div key={tag} className={`rounded-full bg-gradient-to-r p-px ${event.gradient}`}>
+                  {/* FIX: This span is now fully theme-aware for tags */}
+                  <span className={`block rounded-full px-3 py-1 text-xs font-medium backdrop-blur-sm ${isDark ? "bg-black/70 text-white/90" : "bg-white/80 text-gray-900"}`}>
+                    {tag}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <button className="group/button relative inline-flex items-center gap-2 text-base font-semibold">
+              <span className={`bg-gradient-to-r ${event.gradient} bg-clip-text text-transparent`}>
+                View Highlights
+              </span>
+              <ArrowRight className={`w-4 h-4 bg-gradient-to-r ${event.gradient} bg-clip-text text-transparent transition-transform group-hover/button:translate-x-1`} />
+              <span className={`absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r ${event.gradient} transition-all duration-300 group-hover/button:w-full`} />
+            </button>
+          </motion.div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+// --- Main Events Page Component ---
 const Events = () => {
-  const [selectedEvent, setSelectedEvent] = useState(null);
+  // FIX: Using the useTheme hook as intended by your project setup.
   const { isDark } = useTheme();
 
   useEffect(() => {
     AOS.init({ duration: 600, once: true });
   }, []);
 
-  const events = [
-
-  ];
-
-  const handleRegister = (eventId: number) => {
-    setSelectedEvent(eventId);
-    alert(`Registration for event ${eventId} would be processed here!`);
-};
-
-const getTypeColor = (type: string) => {
-    if (isDark) {
-    switch (type) {
-      case 'Workshop':
-        return 'bg-blue-900/30 text-blue-300';
-      case 'Hackathon':
-        return 'bg-green-900/30 text-green-300';
-      case 'Seminar':
-        return 'bg-purple-900/30 text-purple-300';
-      case 'Talk':
-        return 'bg-orange-900/30 text-orange-300';
-      default:
-        return 'bg-gray-800/50 text-gray-300';
-    }
-  } else {
-    switch (type) {
-      case 'Workshop':
-        return 'bg-blue-100 text-blue-800';
-      case 'Hackathon':
-        return 'bg-green-100 text-green-800';
-      case 'Seminar':
-        return 'bg-purple-100 text-purple-800';
-      case 'Talk':
-        return 'bg-orange-100 text-orange-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  }
-};
+  const events = []; // Upcoming events data
 
   return (
-    <div
-      className={`min-h-screen py-20 transition-colors duration-500 ${
-        isDark ? 'bg-black' : 'bg-slate-50'
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center mb-12" data-aos="fade-up">
-          <h1
-            className={`text-4xl md:text-5xl font-bold mb-4 ${
-              isDark ? 'text-white' : 'text-gray-900'
-            }`}
-          >
-            Upcoming Events
-          </h1>
-          <p
-            className={`text-xl max-w-2xl mx-auto ${
-              isDark ? 'text-slate-400' : 'text-gray-600'
-            }`}
-          >
-            Join our workshops, hackathons, and seminars to enhance your skills
-            and network with fellow developers.
-          </p>
-        </div>
+    <div className={`transition-colors duration-500 ${isDark ? 'bg-black' : 'bg-slate-50'}`}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        
+        {/* SECTION: Past Events */}
+        <section className="relative z-10">
+            <motion.div
+              className="text-center mb-16" 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
+              viewport={{ once: true }}
+            >
+              <div className="flex justify-center">
+                <button
+                  type="button"
+                  className="group relative z-[60] mx-auto rounded-full border px-7 py-2 text-xl backdrop-blur transition-all duration-300 hover:shadow-xl active:scale-100 md:text-sm"
+                  style={{ borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)', backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }}
+                >
+                  <div className="absolute inset-x-0 -top-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:w-3/4"></div>
+                  <div className="absolute inset-x-0 -bottom-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:h-px"></div>
+                  <span className={`relative ${isDark ? "text-white" : "text-gray-900"}`}>Past Events</span>
+                </button>
+              </div>
+              <h2 className={`mt-7 text-center text-4xl font-semibold tracking-tighter md:text-[58px] md:leading-[60px] ${ isDark ? "bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-clip-text text-transparent" : "text-gray-900" }`}>
+                Explore our Past Events
+              </h2> 
+              <p className={`text-xl max-w-3xl mx-auto leading-relaxed mt-2 ${isDark ? 'text-gray-400' : 'text-gray-700'}`}>
+                Discover our past events that brought the community together to learn, collaborate, and innovate.
+              </p>
+            </motion.div>
 
-        {/* Events Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-{events.length === 0 ? (
-            <div className="col-span-1 md:col-span-2 lg:col-span-3 text-center text-xl text-gray-400 py-20" data-aos="fade-up">
-              No upcoming events.
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {pastEvents.map((event, index) => (
+                <EventCard key={event.id} event={event} index={index} isDark={isDark} />
+              ))}
             </div>
-          ) : (
-            events.map((event) => (
-              <div
-                key={event.id}
-                data-aos="fade-up"
-                data-aos-delay={event.id * 100}
-                className={`group relative overflow-hidden rounded-2xl border ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-100'
-                  } shadow-lg transition-shadow duration-500 ease-in-out transform-gpu hover:shadow-2xl hover:scale-[1.03]`}
+
+            <motion.div
+              className="text-center mt-16"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+              viewport={{ once: true }}
+            >
+              {/* <button
+                className={`inline-flex items-center px-8 py-4 text-white rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl ${
+                    isDark
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500'
+                    : 'bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-400 hover:to-purple-400'
+                }`}
               >
-                {/* Top gradient bar/accent */}
-                <div
-                  className={`absolute top-0 left-0 w-full h-2
-                  ${event.type === 'Workshop'
-                      ? 'bg-gradient-to-r from-blue-500 to-indigo-500'
-                      : ''
-                    }
-                  ${event.type === 'Hackathon'
-                      ? 'bg-gradient-to-r from-green-500 to-blue-500'
-                      : ''
-                    }
-                  ${event.type === 'Seminar'
-                      ? 'bg-gradient-to-r from-purple-500 to-pink-500'
-                      : ''
-                    }
-                  ${event.type === 'Talk'
-                      ? 'bg-gradient-to-r from-yellow-400 to-orange-400'
-                      : ''
-                    }
-                  rounded-t-2xl`}
-                />
+                <span>View All Past Events</span>
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </button> */}
+            </motion.div>
+        </section>
+        
+        {/* Divider */}
+        <hr className={`my-24 border-dashed ${isDark ? 'border-slate-700/50' : 'border-gray-200'}`} />
 
-                <div className="p-7 flex flex-col h-full">
-                  {/* Event type & date */}
-                  <div className="flex items-center justify-between mb-1">
-                    <span
-                      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium shadow
-                      ${getTypeColor(event.type)} uppercase tracking-wide`}
-                    >
-                      {event.type}
-                    </span>
-                    <span className="ml-2 text-xs font-semibold bg-blue-50 dark:bg-slate-700 text-blue-600 dark:text-blue-300 px-2 py-1 rounded shadow">
-                      {new Date(event.date).toLocaleDateString()}
-                    </span>
+        {/* SECTION: Upcoming Events */}
+        <section className="relative z-10">
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <div className="flex justify-center">
+              <button
+                type="button"
+                className="group relative z-[60] mx-auto rounded-full border px-7 py-2 text-xl backdrop-blur transition-all duration-300 hover:shadow-xl active:scale-100 md:text-sm"
+                style={{ borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)', backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)' }}
+              >
+                <div className="absolute inset-x-0 -top-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:w-3/4"></div>
+                <div className="absolute inset-x-0 -bottom-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:h-px"></div>
+                <span className={`relative ${isDark ? "text-white" : "text-gray-900"}`}>Upcoming Events</span>
+              </button>
+            </div>
+            <h2 className={`mt-7 text-center text-4xl font-semibold tracking-tighter md:text-[58px] md:leading-[60px] ${isDark ? "bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-clip-text text-transparent" : "text-gray-900"}`}>
+              Join Our Community Events
+            </h2> 
+            <p className={`text-xl max-w-3xl mx-auto leading-relaxed mt-2 ${isDark ? 'text-gray-400' : 'text-gray-700'}`}>
+              Discover our upcoming events that bring the community together to learn, collaborate, and innovate.
+            </p>
+          </motion.div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {events.length === 0 ? (
+              <div className="col-span-1 md:col-span-2 lg:col-span-3" data-aos="fade-up">
+                <div className={`group relative overflow-hidden rounded-2xl backdrop-blur-lg border p-8 text-center shadow-lg transition-all duration-500 ease-in-out hover:shadow-2xl ${
+                    isDark 
+                    ? "bg-black/30 border-slate-700/50 text-white" 
+                    : "bg-white/30 border-gray-200/50 text-gray-900"
+                }`}>
+                  <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 to-purple-500/10 opacity-50 group-hover:opacity-70 transition-opacity duration-500"></div>
+                  <div className="relative z-10">
+                    <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 ${
+                        isDark ? 'bg-gradient-to-r from-blue-500 to-purple-500' : 'bg-gradient-to-r from-blue-600 to-purple-600'
+                    }`}>
+                      {/* FIX: Icon text is now dynamic, though white works on both gradients */}
+                      <Calendar className={`w-8 h-8 ${isDark ? 'text-white' : 'text-white'}`} />
+                    </div>
+                    <h3 className="text-2xl font-semibold mb-2">Stay Tuned!</h3>
+                    <p className={`text-lg ${isDark ? 'opacity-80' : 'opacity-70'}`}>Exciting events coming soon 🚀</p>
                   </div>
-
-                  {/* Title */}
-                  <h3 className="mt-2 text-base md:text-lg font-semibold leading-6 mb-1 group-hover:text-blue-600 dark:group-hover:text-indigo-400 transition-colors">
-                    {event.title}
-                  </h3>
-
-                  {/* Description */}
-                  <p className="mb-3 text-sm line-clamp-3 text-gray-500 dark:text-gray-300">
-                    {event.description}
-                  </p>
-
-                  {/* Details */}
-                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-400 dark:text-gray-500 mb-5">
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-4 h-4" /> {event.time}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" /> {event.location}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Users className="w-4 h-4" /> {event.registered}/{event.capacity}
-                    </span>
-                  </div>
-
-                  {/* Tags */}
-                  <div className="flex flex-wrap gap-2 mb-6">
-                    {event.tags.map((tag, idx) => (
-                      <span
-                        key={idx}
-                        className="text-xs py-1 px-2 rounded bg-blue-50 text-blue-700 dark:bg-slate-700 dark:text-blue-300"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-
-                  {/* Register Button */}
-                  <button
-                    onClick={() => handleRegister(event.id)}
-                    disabled={event.registered >= event.capacity}
-                    className={`mt-auto py-2 rounded-lg w-full font-semibold flex items-center justify-center gap-2 transition focus:ring-2
-                      ${event.registered >= event.capacity
-                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                        : 'bg-gradient-to-r from-indigo-600 to-blue-500 text-white hover:from-blue-700 hover:to-indigo-700'
-                      }`}
-                  >
-                    {event.registered >= event.capacity ? 'Event Full' : 'Register Now'}
-                    {event.registered < event.capacity && (
-                      <ArrowRight className="w-4 h-4" />
-                    )}
-                  </button>
                 </div>
               </div>
-            ))
-          )}
-        </div>
-
-        {/* Registration Info */}
-        <div
-          className={`mt-12 rounded-xl p-8 ${
-            isDark ? 'bg-slate-800/60 text-slate-300' : 'bg-blue-50 text-gray-900'
-          }`}
-          data-aos="fade-up"
-          data-aos-delay={700}
-        >
-          <h2 className="text-2xl font-bold mb-4">Event Registration Information</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <h3 className="text-lg font-semibold mb-2">How to Register</h3>
-              <ul className="space-y-1">
-                <li>• Click "Register Now" on any event</li>
-                <li>• Fill out the registration form</li>
-                <li>• Receive confirmation email</li>
-                <li>• Attend the event on time</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-2">Important Notes</h3>
-              <ul className="space-y-1">
-                <li>• All events are free for members</li>
-                <li>• Bring your student ID</li>
-                <li>• Laptops required for workshops</li>
-                <li>• Certificates will be provided</li>
-              </ul>
-            </div>
+            ) : (
+              <></> // Placeholder for your upcoming events map
+            )}
           </div>
-        </div>
+        </section>
       </div>
     </div>
   );

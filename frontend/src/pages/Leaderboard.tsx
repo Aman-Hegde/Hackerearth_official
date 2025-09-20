@@ -1,20 +1,77 @@
-import { useEffect, useState } from "react";
-import { Trophy, Crown } from "lucide-react";
-import { useTheme } from "../context/ThemeContext";
-import * as XLSX from "xlsx";
+"use client";
 
+import { useEffect, useState, useMemo } from "react";
+import { Trophy, Crown, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, X } from "lucide-react";
+import * as XLSX from "xlsx";
+import { useTheme } from "../context/ThemeContext"; // Assuming you have this context for dark mode
+
+// --- Type Definitions ---
+interface LeaderboardEntry {
+  id: number;
+  Name: string;
+  Score: number;
+  Time: string;
+  Email: string;
+}
+
+// --- The Leaderboard Component ---
 const Leaderboard = () => {
   const { isDark } = useTheme();
 
-  const [data, setData] = useState<{ Name: string; Score: number; Time: string; Email: string }[]>([]);
+  // --- State Management ---
+  const [initialData, setInitialData] = useState<LeaderboardEntry[]>([]);
   const [fileMissing, setFileMissing] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const filename = "weekly_contest_1_leaderboard.xlsx";
+  const [loading, setLoading] = useState(true);
 
-  function formatExcelTime(timeValue: any) {
-    if (typeof timeValue === "string" && timeValue.includes(":")) {
-      return timeValue;
-    }
+  // State for Table Features
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sortConfig, setSortConfig] = useState<{ key: keyof LeaderboardEntry; direction: "asc" | "desc" } | null>({ key: "Score", direction: "desc" });
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+  
+  // State for the Search Modal
+  const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
+  const [modalSearchValue, setModalSearchValue] = useState("");
+
+  const filename = "weekly_contest_1_leaderboard.xlsx"; // Ensure this file is in your /public folder
+
+  // --- Data Fetching and Formatting ---
+  useEffect(() => {
+    const fetchExcelData = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(`/${filename}`);
+        if (!response.ok) {
+          setFileMissing(true);
+          throw new Error("Leaderboard file not found.");
+        }
+        const arrayBuffer = await response.arrayBuffer();
+        const workbook = XLSX.read(arrayBuffer, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+        const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+        const formattedData = jsonData.map((row, index) => ({
+          id: index,
+          Name: row["Name"] || "N/A",
+          Email: row["Email"] || "",
+          Score: Number(row["Total Score 500.0"]) || 0,
+          Time: formatExcelTime(row["Time Taken"]),
+        }));
+
+        setInitialData(formattedData);
+        setFileMissing(false);
+      } catch (error) {
+        console.error("Error fetching leaderboard data:", error);
+        setInitialData([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchExcelData();
+  }, [filename]);
+
+  const formatExcelTime = (timeValue: any): string => {
     if (typeof timeValue === "number") {
       const totalSeconds = Math.round(timeValue * 24 * 3600);
       const hh = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
@@ -22,216 +79,193 @@ const Leaderboard = () => {
       const ss = String(totalSeconds % 60).padStart(2, "0");
       return `${hh}:${mm}:${ss}`;
     }
-    return "";
-  }
+    return typeof timeValue === 'string' && timeValue.includes(':') ? timeValue : "00:00:00";
+  };
 
-  function getTimeUntilNextSaturday() {
-    const now = new Date();
-    const dayOfWeek = now.getDay();
-    const daysUntilSaturday = (6 - dayOfWeek + 7) % 7 || 7;
-    const nextSaturday = new Date(now);
-    nextSaturday.setDate(now.getDate() + daysUntilSaturday);
-    nextSaturday.setHours(0, 0, 0, 0);
-    const msLeft = nextSaturday.getTime() - now.getTime();
-    const days = Math.floor(msLeft / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((msLeft / (1000 * 60 * 60)) % 24);
-    const minutes = Math.floor((msLeft / (1000 * 60)) % 60);
-    const seconds = Math.floor((msLeft / 1000) % 60);
-    return { days, hours, minutes, seconds };
-  }
+  // --- Core Table Logic (Filtering, Sorting, Pagination) ---
+  const processedData = useMemo(() => {
+    let dataView = [...initialData];
 
-  const [countdown, setCountdown] = useState(getTimeUntilNextSaturday());
+    // 1. Search Filter
+    if (searchQuery) {
+      dataView = dataView.filter(row =>
+        String(row.Name).toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setCountdown(getTimeUntilNextSaturday());
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+    // 2. Sorting
+    if (sortConfig) {
+      dataView.sort((a, b) => {
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
+        if (aValue < bValue) return sortConfig.direction === 'asc' ? -1 : 1;
+        if (aValue > bValue) return sortConfig.direction === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
 
-  useEffect(() => {
-    const fetchExcel = async () => {
-      if (!filename) {
-        setFileMissing(true);
-        setData([]);
-        setLoading(false);
-        return;
-      }
-      setFileMissing(false);
-      setLoading(true);
-      try {
-        const response = await fetch(`/${filename}`);
-        if (!response.ok) throw new Error("File not found");
-        const arrayBuffer = await response.arrayBuffer();
-        const workbook = XLSX.read(arrayBuffer, { type: "array" });
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
-        const filtered = jsonData
-          .map((row) => ({
-            Name: row["Name"] || "",
-            Email: row["Email"] || "",
-            Score: Number(row["Total Score 500.0"]) || 0,
-            Time: formatExcelTime(row["Time Taken"]),
-          }));
-        setData(filtered);
-      } catch (err) {
-        setData([]);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchExcel();
-    // eslint-disable-next-line
-  }, [filename]);
+    return dataView;
+  }, [initialData, searchQuery, sortConfig]);
 
+  const paginatedData = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return processedData.slice(startIndex, startIndex + pageSize);
+  }, [processedData, currentPage, pageSize]);
+
+  const totalPages = Math.ceil(processedData.length / pageSize);
+
+  // --- Event Handlers ---
+  const handleSort = (key: keyof LeaderboardEntry) => {
+    let direction: 'asc' | 'desc' = 'asc';
+    if (sortConfig?.key === key && sortConfig.direction === 'asc') {
+      direction = 'desc';
+    }
+    setSortConfig({ key, direction });
+  };
+  
+  const handleSearch = () => {
+    setSearchQuery(modalSearchValue);
+    setIsSearchModalOpen(false);
+  };
+
+  const clearSearch = () => {
+    setModalSearchValue("");
+    setSearchQuery("");
+    setIsSearchModalOpen(false);
+  };
+
+  // --- Render ---
   const crownColors = ["#FFD700", "#C0C0C0", "#CD7F32"];
+  const columns: { key: keyof LeaderboardEntry; label: string; sortable: boolean }[] = [
+    { key: "Name", label: "Name", sortable: true },
+    { key: "Score", label: "Score", sortable: true },
+    { key: "Time", label: "Time Taken", sortable: true },
+  ];
+
+  if (loading) {
+    return <div className={`flex justify-center items-center min-h-screen ${isDark ? "bg-gray-900 text-white" : ""}`}>Loading Leaderboard...</div>;
+  }
 
   return (
-    <div
-      className={`min-h-screen pt-24 pb-10 px-4 sm:px-8 lg:px-12 transition-colors duration-700 ${
-        isDark
-          ? "bg-gradient-to-br from-gray-900 via-black to-gray-800"
-          : "bg-gradient-to-br from-blue-50 via-indigo-100 to-purple-200"
-      }`}
-    >
-      <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div
-          className={`${
-            isDark
-              ? "bg-gradient-to-tr from-indigo-800 via-purple-900 to-blue-900 opacity-60"
-              : "bg-gradient-to-tr from-blue-400 via-indigo-500 to-purple-500 opacity-40"
-          } absolute top-0 left-0 w-full h-full blur-3xl`}
-        />
-      </div>
+    <div className={`min-h-screen pt-24 pb-10 px-4 sm:px-8 transition-colors duration-500 ${isDark ? "bg-black text-gray-200" : "bg-gray-50 text-gray-800"}`}>
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-8 px-2 sm:px-6 md:px-12">
-          <div
-            className={`inline-flex items-center space-x-3 backdrop-blur-xl border border-transparent rounded-full px-6 py-4 mt-4 shadow-lg ${
-              isDark ? "bg-indigo-900/60 text-indigo-300" : "bg-indigo-200/90 text-indigo-900"
-            }`}
-          >
-            <Trophy className="w-7 h-7 text-yellow-400 drop-shadow-xl" />
-            <span className="font-semibold text-xl tracking-wide select-none">
-              DSA Weekly Contest Leaderboard - This Week
-            </span>
-          </div>
-          <h1
-            className={`mt-2 text-5xl sm:text-6xl font-extrabold leading-tight ${
-              isDark ? "text-white" : "text-indigo-900"
-            }`}
-          >
-            <span className="bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500 bg-clip-text text-transparent">
-              Leaderboard
-            </span>
+        {/* Header */}
+        <div className="text-center mb-6">
+          <h1 className="text-5xl font-extrabold bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500 bg-clip-text text-transparent">
+            Weekly Leaderboard
           </h1>
         </div>
-        <div
-          className={`shadow-xl rounded-3xl bg-white dark:bg-gray-900 border ${
-            isDark ? "border-gray-600" : "border-gray-300"
-          } overflow-x-auto max-w-full`}
-          role="region"
-          aria-label="Weekly contest leaderboard"
-        >
-          <div className="max-h-[60vh] overflow-y-auto w-full">
-            <table className="min-w-full border-collapse border-spacing-0">
-              <thead className={`${isDark ? "bg-indigo-900" : "bg-indigo-200"} z-10`}>
-                <tr>
-                  {["Name",
-                  //  "Email",
-                    "Total Score (out of 500)", "Time Taken"].map((header) => (
-                    <th
-                      key={header}
-                      scope="col"
-                      className={`px-2 sm:px-6 py-2 sm:py-3 text-left font-semibold text-sm sm:text-lg border-b ${
-                        isDark ? "border-indigo-700 text-indigo-300" : "border-indigo-300 text-indigo-700"
-                      } select-none`}
-                    >
-                      {header}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {fileMissing ? (
-                  <tr>
-                    <td
-                      colSpan={3}
-                      className="py-6 sm:py-12 text-center text-sm sm:text-xl text-indigo-600 dark:text-indigo-400 select-none"
-                    >
-                      Weekly Contest yet to be conducted.
-                      <div className="mt-2 text-base text-indigo-400 dark:text-indigo-300 font-mono font-semibold">
-                        Next contest in{" "}
-                        <span className="font-bold">
-                          {countdown.days}d {countdown.hours}h {countdown.minutes}m {countdown.seconds}s
-                        </span>
-                      </div>
-                    </td>
-                  </tr>
-                ) : loading ? (
-                  <tr>
-                    <td
-                      colSpan={3}
-                      className="py-6 sm:py-12 text-center text-sm sm:text-xl text-indigo-600 dark:text-indigo-400 select-none"
-                    >
-                      Loading leaderboard...
-                    </td>
-                  </tr>
-                ) : data.length === 0 ? (
-                  <tr>
-                    <td
-                      colSpan={3}
-                      className="py-6 sm:py-12 text-center text-sm sm:text-xl text-indigo-600 dark:text-indigo-400 select-none"
-                    >
-                      No entries found.
-                    </td>
-                  </tr>
-                ) : (
-                  data.map((row, idx) => (
-                    <tr
-                      key={idx}
-                      className={`transition-transform transform hover:scale-[1.02] cursor-pointer rounded-lg shadow-sm select-none ${
-                        isDark
-                          ? idx % 2 === 0
-                            ? "bg-indigo-900"
-                            : "bg-indigo-800"
-                          : idx % 2 === 0
-                          ? "bg-indigo-50"
-                          : "bg-indigo-100"
-                      }`}
-                    >
-                      <td className="px-2 sm:px-6 py-2 sm:py-4 font-semibold text-sm sm:text-lg text-indigo-400 truncate max-w-xs flex items-center space-x-2 whitespace-nowrap">
-                        <span
-                          style={{
-                            width: 20,
-                            display: "inline-flex",
-                            justifyContent: "center",
-                            filter: "drop-shadow(0 0 4px rgba(255,255,255,0.7))",
-                          }}
-                        >
-                          {idx < 3 && (
-                            <Crown size={18} color={crownColors[idx]} className="drop-shadow-lg" />
-                          )}
-                        </span>
-                        <span>{idx + 1}. {row.Name}</span>
-                      </td>
-                      {/* <td className="px-2 sm:px-6 py-2 sm:py-4 text-indigo-400 text-sm sm:text-lg whitespace-nowrap">
-                        {row.Email}
-                      </td> */}
-                      <td className="px-2 sm:px-6 py-2 sm:py-4 font-bold text-yellow-400 text-sm sm:text-lg whitespace-nowrap">
-                        {row.Score}
-                      </td>
-                      <td className="px-2 sm:px-6 py-2 sm:py-4 text-indigo-300 text-sm sm:text-lg whitespace-nowrap">
-                        {row.Time}
-                      </td>
-                    </tr>
-                  ))
+
+        {/* Table Container */}
+        <div className={`rounded-xl border p-4 sm:p-6 shadow-lg ${isDark ? "bg-black border-gray-700" : "bg-white border-gray-200"}`}>
+          {fileMissing ? (
+            <div className="text-center py-12 text-red-500">Could not find leaderboard data file.</div>
+          ) : (
+            <div className="space-y-4">
+              {/* Search Control Area */}
+              <div className="flex justify-end items-center">
+                 {searchQuery && (
+                  <div className="flex items-center gap-2 text-sm mr-auto">
+                    <span className="text-gray-400">Searching for:</span>
+                    <span className="font-semibold px-2 py-1 rounded-md bg-blue-500/10 text-blue-400">{searchQuery}</span>
+                     <button onClick={clearSearch} className="p-1 rounded-full hover:bg-red-500/10 text-red-400"><X size={16}/></button>
+                  </div>
                 )}
-              </tbody>
-            </table>
-          </div>
+                <button
+                  onClick={() => setIsSearchModalOpen(true)}
+                  className={`flex items-center justify-center px-4 py-2 border rounded-md font-semibold transition ${isDark ? "bg-gray-800 border-gray-600 hover:bg-gray-700" : "bg-white border-gray-300 hover:bg-gray-100"}`}
+                >
+                  <Search className="mr-2 h-4 w-4" />
+                  <span>Search</span>
+                </button>
+              </div>
+
+              {/* The Table */}
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead>
+                    <tr className={`${isDark ? "border-b border-gray-700" : "border-b border-gray-200"}`}>
+                      {columns.map((col) => (
+                        <th key={col.key} className="p-4 font-semibold cursor-pointer select-none" onClick={() => handleSort(col.key)}>
+                          <div className="flex items-center gap-2">
+                            {col.label}
+                            {sortConfig?.key === col.key && (sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />)}
+                          </div>
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paginatedData.map((row, index) => (
+                      <tr key={row.id} className={`transition ${isDark ? "hover:bg-gray-900" : "hover:bg-gray-100"}`}>
+                        <td className="p-4">
+                          <div className="flex items-center gap-3 font-medium">
+                            <span className="w-6 text-center text-gray-500">{(currentPage - 1) * pageSize + index + 1}</span>
+                            {((currentPage - 1) * pageSize + index) < 3 && <Crown size={18} color={crownColors[(currentPage - 1) * pageSize + index]} />}
+                            <span>{row.Name}</span>
+                          </div>
+                        </td>
+                        <td className="p-4 font-semibold text-yellow-500">{row.Score}</td>
+                        <td className="p-4 text-gray-400">{row.Time}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              
+              {/* Pagination */}
+              <div className="flex items-center justify-between pt-4 flex-wrap gap-4">
+                <div className="flex items-center gap-2 text-sm">
+                  <span>Rows per page:</span>
+                  <select
+                    value={pageSize}
+                    onChange={e => setPageSize(Number(e.target.value))}
+                    className={`p-1 border rounded-md ${isDark ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300"}`}
+                  >
+                    {[10, 20, 50].map(size => <option key={size} value={size}>{size}</option>)}
+                  </select>
+                </div>
+                <div className="text-sm text-gray-500">
+                  Page {currentPage} of {totalPages}
+                </div>
+                <div className="flex items-center gap-2">
+                  <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="p-2 border rounded-md disabled:opacity-50"><ChevronsLeft className="h-4 w-4" /></button>
+                  <button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1} className="p-2 border rounded-md disabled:opacity-50"><ChevronLeft className="h-4 w-4" /></button>
+                  <button onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage === totalPages} className="p-2 border rounded-md disabled:opacity-50"><ChevronRight className="h-4 w-4" /></button>
+                  <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="p-2 border rounded-md disabled:opacity-50"><ChevronsRight className="h-4 w-4" /></button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
+      
+      {/* Search Modal */}
+      {isSearchModalOpen && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
+          <div className={`p-6 rounded-lg shadow-xl w-full max-w-sm ${isDark ? "bg-gray-900 border border-gray-700" : "bg-white"}`}>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold">Search by Name</h2>
+              <button onClick={() => setIsSearchModalOpen(false)}><X/></button>
+            </div>
+            
+            <div className="space-y-4">
+                <input
+                    type="text"
+                    placeholder="Enter a name..."
+                    value={modalSearchValue}
+                    onChange={(e) => setModalSearchValue(e.target.value)}
+                    className={`p-2 w-full border rounded-md transition ${isDark ? "bg-gray-800 border-gray-600 text-white" : "bg-white border-gray-300 text-black"}`}
+                />
+            </div>
+            
+            <div className="flex justify-end gap-4 mt-6">
+              <button onClick={clearSearch} className="px-4 py-2 rounded-md font-semibold hover:bg-gray-500/10">Clear Search</button>
+              <button onClick={handleSearch} className="px-4 py-2 rounded-md font-semibold bg-blue-600 text-white hover:bg-blue-700">Search</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

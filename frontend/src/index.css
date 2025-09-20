@@ -151,3 +151,12 @@ html.dark ::-webkit-scrollbar-thumb { /* Adjust thumb for dark mode if desired *
 html.dark ::-webkit-scrollbar-thumb:hover { /* Adjust thumb hover for dark mode if desired */
   background: linear-gradient(to bottom, #3b82f6, #6366f1);
 }
+/* src/index.css (or your main global stylesheet) */
+
+/* Add this rule to hide the default cursor only when our custom cursor is active */
+/* src/index.css */
+
+.custom-cursor-active,
+.custom-cursor-active * {
+  cursor: none !important;
+}

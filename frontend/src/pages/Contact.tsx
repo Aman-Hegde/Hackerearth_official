@@ -214,11 +214,7 @@ const Contact = () => {
           </div>
         </div>
 
-        {/* FAQ */}
-        <div className={`${isDark ? 'bg-slate-800/80 border-slate-700/50' : 'bg-white/80 border-gray-200/50'} backdrop-blur-sm border rounded-3xl p-12 shadow-xl`}>
-          <h2 className={`text-4xl font-bold mb-12 text-center ${isDark ? 'text-white' : 'text-gray-900'}`}>Frequently Asked Questions</h2>
-          {/* Map FAQs here, applying similar text/border conditional classes */}
-        </div>
+        
       </div>
     </div>
   );

@@ -1,23 +1,26 @@
+// src/App.tsx
+
 import { useState, useEffect } from "react";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
 import Navbar from "./components/Navbar";
-import Events from "./pages/Events";
+import PastEvents from "./pages/Events";
 import Team from "./pages/Team";
 import Domains from "./pages/Domains";
 import Leaderboard from "./pages/Leaderboard";
-// import Achievements from "./pages/Achievements";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
 import LoginPage from "./pages/Login";
 import { AuthProvider } from "./context/AuthContext";
-import { ThemeProvider } from "./context/ThemeContext";
+import { ThemeProvider, useTheme } from "./context/ThemeContext"; 
 import ScrollToTop from "./components/ScrollTop";
 import Sidebar from "./components/Sidebar";
+import SpotlightCursor from "./components/CustomCursor";
 
 function AppWrapper() {
   const location = useLocation();
+  const { isDark } = useTheme(); // <-- Get the theme state
   const isAuthPage = location.pathname === "/login";
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -25,23 +28,32 @@ function AppWrapper() {
     setSidebarOpen(false); // close sidebar on route change
   }, [location]);
 
+  // This effect adds/removes a class to the body to hide the default cursor
+  // useEffect(() => {
+  //   if (isDark) {
+  //     document.body.classList.add('dark-cursor');
+  //   } else {
+  //     document.body.classList.remove('dark-cursor');
+  //   }
+  // }, [isDark]);
+
   return (
     <div
       id="scroll-container"
       className="min-h-screen h-full w-full overflow-y-auto bg-slate-50 dark:bg-gray-950 transition-colors duration-300"
     >
+      <SpotlightCursor /> {/* <-- Add the cursor component here */}
+      
       {!isAuthPage && <Navbar onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />}
       {!isAuthPage && <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />}
 
-      {/* Main content */}
       <main className="pt-0 transition-all duration-300 ease-in-out">
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/events" element={<Events />} />
+          <Route path="/events" element={<PastEvents />} />
           <Route path="/team" element={<Team />} />
           <Route path="/domains" element={<Domains />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
-          {/* <Route path="/achievements" element={<Achievements />} /> */}
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<LoginPage />} />
@@ -53,7 +65,7 @@ function AppWrapper() {
   );
 }
 
-export default function App() {
+export default function App() { 
   return (
     <ThemeProvider>
       <AuthProvider>

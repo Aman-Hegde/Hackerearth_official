@@ -1,7 +1,7 @@
-// Sidebar.tsx
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, Calendar, Users, Code, Award, Info, Mail, X } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 
@@ -35,13 +35,28 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
       )}
 
       {/* Sidebar - Compact with rounded corners */}
-      <aside
-        className={`fixed top-56 left-4 h-[calc(59vh-2rem)] bg-white dark:bg-black border dark:border-gray-800 z-50 transition-all duration-300 ease-out rounded-2xl
+      <motion.aside
+        className={`fixed top-56 left-4 h-[calc(55vh-2rem)] bg-white dark:bg-black border dark:border-gray-800 z-50 transition-all duration-300 ease-out rounded-2xl
           ${isOpen ? 'w-48' : 'w-14'} ${isOpen ? '' : 'hidden md:block'}`}
         onMouseEnter={() => setIsOpen(true)}
         onMouseLeave={() => setIsOpen(false)}
+        animate={{
+          boxShadow: isDark 
+            ? ["0 0 10px rgba(59, 130, 246, 0.3)", "0 0 20px rgba(139, 92, 246, 0.4)", "0 0 10px rgba(59, 130, 246, 0.3)"]
+            : "none"
+        }}
+        transition={{
+          duration: 4,
+          repeat: Infinity,
+          ease: "easeInOut"
+        }}
       >
-        <div className="flex flex-col h-full p-2">
+        {/* Subtle glow effect container */}
+        {isDark && (
+          <div className="absolute inset-0 rounded-2xl bg-gradient-to-r from-blue-500/5 to-purple-500/5 pointer-events-none" />
+        )}
+        
+        <div className="flex flex-col h-full p-2 relative z-10">
           {/* Close button for mobile */}
           {isOpen && (
             <button 
@@ -60,32 +75,51 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
                   const Icon = item.icon;
                   const active = location.pathname === item.path;
                   return (
-                    <li key={item.name}>
+                    <motion.li 
+                      key={item.name}
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
                       <Link
                         to={item.path}
                         onClick={() => setIsOpen(false)}
-                        className={`group flex items-center rounded-xl p-3 transition-all duration-200
+                        className={`group flex items-center rounded-xl p-3 transition-all duration-200 relative
                           ${
                             active
                               ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
                               : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800'
                           } ${isOpen ? 'justify-start' : 'justify-center'}`}
                       >
-                        <Icon className="w-6 h-6" />
+                        {/* Active item glow effect */}
+                        {active && isDark && (
+                          <motion.div 
+                            className="absolute inset-0 rounded-xl bg-blue-500/10"
+                            animate={{
+                              opacity: [0.3, 0.6, 0.3],
+                            }}
+                            transition={{
+                              duration: 3,
+                              repeat: Infinity,
+                              ease: "easeInOut"
+                            }}
+                          />
+                        )}
+                        
+                        <Icon className="w-6 h-6 relative z-10" />
                         {isOpen && (
-                          <span className="ml-3 text-sm font-medium">
+                          <span className="ml-3 text-sm font-medium relative z-10">
                             {item.name}
                           </span>
                         )}
                       </Link>
-                    </li>
+                    </motion.li>
                   );
                 })}
               </ul>
             </nav>
           </div>
         </div>
-      </aside>
+      </motion.aside>
     </>
   );
 };
