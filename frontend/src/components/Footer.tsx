@@ -1,6 +1,7 @@
 import { Mail, Phone, MapPin, Github, Linkedin, Twitter, Instagram } from 'lucide-react';
-import logo from '../assets/image.png';
+import logo from '../assets/image.png'; // Ensure path is correct
 import { useTheme } from '../context/ThemeContext';
+import { Link } from 'react-router-dom'; // Use Link for internal navigation
 
 const Footer = () => {
   const { isDark } = useTheme();
@@ -12,21 +13,26 @@ const Footer = () => {
     { icon: Twitter, href: "https://x.com/NHackerearth", label: "Twitter" }
   ];
 
+  const quickLinks = ["Events", "Team", "Domains", "About", "Contact"];
+
   return (
-    <footer className={`relative overflow-hidden ${isDark ? "bg-black" : "bg-gray-50"}`}>
-      {/* Large HackerEarth Text Background */}
-      <div className={`absolute -bottom-24 -left-10 select-none pointer-events-none z-0 
+    <footer className={`relative overflow-hidden border-t ${isDark ? "bg-black/50 border-white/10" : "bg-gray-50 border-gray-200"}`}>
+      
+      {/* Background Text Element */}
+      <div className={`absolute -bottom-20 left-0 select-none pointer-events-none z-0 opacity-50 
         ${isDark ? "text-gray-900" : "text-gray-200"}`}
-        style={{ fontSize: 'clamp(6rem, 20vw, 16rem)', fontWeight: '900' }}
+        style={{ fontSize: 'clamp(9rem, 22vw, 15.5rem)', fontWeight: '1000' }}
       >
         HackerEarth
       </div>
 
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-10">
-          {/* Brand Section */}
-          <div className="col-span-1 md:col-span-2">
-            <div className="flex items-center space-x-4 mb-6">
+        {/* RESTRUCTURED GRID: 3 columns for Brand, Links, Contact */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 text-center md:text-left">
+          
+          {/* Column 1: Brand & Logo */}
+          <div className="flex flex-col items-center md:items-start">
+            <div className="flex items-center space-x-4 mb-4">
               <img 
                 src={logo} 
                 alt="HackerEarth Logo" 
@@ -36,131 +42,70 @@ const Footer = () => {
                 HackerEarth
               </span>
             </div>
-            <p className={`mb-6 leading-relaxed max-w-md 
-              ${isDark ? "text-gray-400" : "text-gray-600"}`}>
-              We are a Tech Club which is at service to strengthen your Coding
-              Skills and hence a medium to take leap into the field of Competitive
-              Programming.
+            <p className={`text-sm max-w-xs ${isDark ? "text-gray-400" : "text-gray-600"}`}>
+              The premier tech club of NMAMIT, under Department of Counselling and Welfare - Abhyuday Fostering innovation and competitive programming skills.
             </p>
-            <div className="flex space-x-3">
-              {socialLinks.map((social, index) => {
-                const Icon = social.icon;
-                return (
-                  <a
-                    key={index}
-                    href={social.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`p-2 rounded-lg transition-all duration-300
-                      ${isDark 
-                        ? "text-gray-400 hover:text-white hover:bg-gray-800" 
-                        : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-                      }`}
-                    aria-label={social.label}
-                  >
-                    <Icon className="w-5 h-5" />
-                  </a>
-                );
-              })}
-            </div>
           </div>
 
-          {/* Quick Links */}
-          <div>
-            <h3 className={`text-lg font-semibold mb-4
-              ${isDark ? "text-white" : "text-gray-900"}`}>
+          {/* Column 2: Quick Links (Centered on all screen sizes) */}
+          <div className="flex flex-col items-center">
+            <h3 className={`text-lg font-semibold mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>
               Quick Links
             </h3>
             <ul className="space-y-2">
-              {["Events", "Team", "Domains", "Achievements"].map((link, index) => (
-                <li key={index}>
-                  <a
-                    href={`/${link.toLowerCase()}`}
-                    className={`transition-colors duration-300
-                      ${isDark 
-                        ? "text-gray-400 hover:text-blue-400" 
-                        : "text-gray-600 hover:text-blue-600"
-                      }`}
+              {quickLinks.map((link) => (
+                <li key={link}>
+                  <Link
+                    to={`/${link.toLowerCase()}`}
+                    className={`transition-colors duration-300 text-sm ${isDark ? "text-gray-400 hover:text-blue-400" : "text-gray-600 hover:text-blue-600"}`}
                   >
                     {link}
-                  </a>
+                  </Link>
                 </li>
               ))}
             </ul>
           </div>
 
-          {/* Contact Info */}
-          <div>
-            <h3 className={`text-lg font-semibold mb-4
-              ${isDark ? "text-white" : "text-gray-900"}`}>
+          {/* Column 3: Contact Info */}
+          <div className="flex flex-col items-center md:items-start">
+            <h3 className={`text-lg font-semibold mb-4 ${isDark ? "text-white" : "text-gray-900"}`}>
               Contact Info
             </h3>
-            <div className="space-y-4">
-              <div className="flex items-start space-x-3">
-                <Mail className={`w-5 h-5 mt-1 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-                <div>
-                  <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>Email</p>
-                  <a
-                    href="mailto:Hackerearth.Nmamit@Nitte.edu.in"
-                    className={`font-medium hover:underline ${isDark ? "text-white" : "text-gray-900"}`}
-                  >
-                    hackerearth@nmamit.in
-                  </a>
-                </div>
-              </div>
-              
-              <div className="flex items-start space-x-3">
-                <Phone className={`w-5 h-5 mt-1 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-                <div>
-                  <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>Phone</p>
-                  <a
-                    href="tel:+917619545988"
-                    className={`font-medium hover:underline ${isDark ? "text-white" : "text-gray-900"}`}
-                  >
-                    +91 76195 45988
-                  </a>
-                </div>
-              </div>
-              
-              <div className="flex items-start space-x-3">
-                <MapPin className={`w-5 h-5 mt-1 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
-                <div>
-                  <p className={`text-sm ${isDark ? "text-gray-400" : "text-gray-500"}`}>Location</p>
-                  <a
-                    href="https://www.google.com/maps/place/Nitte+Mahalinga+Adyantaya+Memorial+Institute+of+Technology"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`font-medium hover:underline ${isDark ? "text-white" : "text-gray-900"}`}
-                  >
-                    NMAMIT, Nitte College
-                  </a>
-                </div>
-              </div>
+            <div className="space-y-4 text-sm">
+              <a href="mailto:Hackerearth.Nmamit@Nitte.edu.in" className="flex items-center gap-3 group">
+                <Mail className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
+                <span className={`group-hover:underline ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                  hackerearth@nmamit.in
+                </span>
+              </a>
+              <a href="https://www.google.com/maps/place/Nitte+Mahalinga+Adyantaya+Memorial+Institute+of+Technology" target="_blank" rel="noopener noreferrer" className="flex items-center gap-3 group">
+                <MapPin className={`w-4 h-4 ${isDark ? "text-blue-400" : "text-blue-600"}`} />
+                <span className={`group-hover:underline ${isDark ? "text-gray-300" : "text-gray-700"}`}>
+                  NMAMIT, Nitte College
+                </span>
+              </a>
             </div>
           </div>
         </div>
 
-        {/* Bottom Section */}
-        <div className={`border-t mt-12 pt-8 flex flex-col md:flex-row justify-between items-center
-          ${isDark ? "border-gray-800" : "border-gray-200"}`}>
+        {/* Bottom Section (Centered Copyright & Socials) */}
+        <div className={`mt-16 pt-8 ${isDark ? "border-gray-800" : "border-gray-200"} flex flex-col sm:flex-row justify-between items-center gap-4`}>
           <p className={`text-sm ${isDark ? "text-gray-500" : "text-gray-600"}`}>
-            © 2025 HackerEarth Club, NMAMIT. All rights reserved.
+            © {new Date().getFullYear()} HackerEarth Club, NMAMIT. All rights reserved.
           </p>
-          <div className="flex space-x-6 mt-4 md:mt-0">
-            <a 
-              href="https://www.hackerearth.com/privacy" 
-              className={`text-sm transition-colors hover:underline
-                ${isDark ? "text-gray-500 hover:text-blue-400" : "text-gray-600 hover:text-blue-600"}`}
-            >
-              Privacy Policy
-            </a>
-            <a 
-              href="https://www.hackerearth.com/terms-of-service" 
-              className={`text-sm transition-colors hover:underline
-                ${isDark ? "text-gray-500 hover:text-blue-400" : "text-gray-600 hover:text-blue-600"}`}
-            >
-              Terms of Service
-            </a>
+          <div className="flex space-x-3">
+            {socialLinks.map((social) => (
+              <a
+                key={social.label}
+                href={social.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`p-2 rounded-lg transition-all duration-300 ${isDark ? "text-gray-400 hover:text-white hover:bg-gray-800" : "text-gray-600 hover:text-gray-900 hover:bg-gray-100"}`}
+                aria-label={social.label}
+              >
+                <social.icon className="w-5 h-5" />
+              </a>
+            ))}
           </div>
         </div>
       </div>
