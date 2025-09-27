@@ -151,7 +151,7 @@ const Leaderboard = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-6">
-          <h1 className="text-5xl font-extrabold bg-gradient-to-r from-yellow-400 via-red-500 to-pink-500 bg-clip-text text-transparent">
+          <h1 className="text-5xl font-extrabold bg-gradient-to-r from-black via-gray-500 to-brown-700 bg-clip-text text-transparent">
             Weekly Leaderboard
           </h1>
         </div>
