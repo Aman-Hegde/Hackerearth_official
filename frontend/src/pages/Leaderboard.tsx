@@ -33,7 +33,7 @@ const Leaderboard = () => {
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [modalSearchValue, setModalSearchValue] = useState("");
 
-  const filename = "weekly_contest_1_leaderboard.xlsx"; // Ensure this file is in your /public folder
+  const filename = "Weekly_contest_2_leaderboard.xlsx"; // Ensure this file is in your /public folder
 
   // --- Data Fetching and Formatting ---
   useEffect(() => {
