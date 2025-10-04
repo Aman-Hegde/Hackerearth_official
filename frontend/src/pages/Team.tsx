@@ -422,9 +422,7 @@ const Team = () => {
               : "bg-gradient-to-r from-gray-800 via-black to-gray-800"
               } bg-clip-text text-transparent`}
           >
-                      <h1 className="text-5xl font-extrabold bg-gradient-to-r from-black via-gray-300 to-brown-700 bg-clip-text text-transparent">
-              Meet Our Team
-          </h1>
+            Meet Our Team
           </motion.h1>
           <motion.p
             variants={fadeInUp}
