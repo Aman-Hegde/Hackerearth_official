@@ -651,7 +651,7 @@ const Home = () => {
           <div className="pt-8">
             <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
               <Link
-                to="/domains"
+                to="/"
                 className="group relative px-6 py-3 bg-gray-800 text-white rounded-lg font-medium text-base hover:bg-gray-700 transition-all duration-300 transform hover:scale-105 border border-gray-700"
               >
                 <span className="flex items-center space-x-2">
