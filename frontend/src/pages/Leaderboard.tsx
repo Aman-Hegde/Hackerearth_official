@@ -143,7 +143,6 @@ const Leaderboard = () => {
   ];
 
   if (loading) {
-    return <div className={`flex justify-center items-center min-h-screen ${isDark ? "bg-gray-900 text-white" : ""}`}>Loading Leaderboard...</div>;
   }
 
   return (
@@ -151,9 +150,7 @@ const Leaderboard = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-6">
-          <h1 className="text-5xl font-extrabold bg-gradient-to-r from-black via-gray-500 to-brown-700 bg-clip-text text-transparent">
-            Weekly Leaderboard
-          </h1>
+          <h1 className={`text-4xl font-semibold tracking-tighter md:text-[54px] md:leading-[60px] pb-2 ${isDark ? "bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-clip-text text-transparent" : "text-gray-900"}`}>Weekly Leaderboard</h1>
         </div>
 
         {/* Table Container */}

@@ -148,15 +148,37 @@ html.dark ::-webkit-scrollbar-thumb { /* Adjust thumb for dark mode if desired *
 ::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(to bottom, #2563eb, #4f46e5);
 }
-html.dark ::-webkit-scrollbar-thumb:hover { /* Adjust thumb hover for dark mode if desired */
-  background: linear-gradient(to bottom, #3b82f6, #6366f1);
-}
-/* src/index.css (or your main global stylesheet) */
-
 /* Add this rule to hide the default cursor only when our custom cursor is active */
 /* src/index.css */
 
 .custom-cursor-active,
 .custom-cursor-active * {
   cursor: none !important;
+}
+
+/* Marquee animations */
+@keyframes marquee {
+  from {
+    transform: translateX(0%);
+  }
+  to {
+    transform: translateX(-100%);
+  }
+}
+
+@keyframes marquee-vertical {
+  from {
+    transform: translateY(0%);
+  }
+  to {
+    transform: translateY(-100%);
+  }
+}
+
+.animate-marquee {
+  animation: marquee var(--duration, 40s) linear infinite;
+}
+
+.animate-marquee-vertical {
+  animation: marquee-vertical var(--duration, 40s) linear infinite;
 }
