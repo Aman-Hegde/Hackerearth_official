@@ -54,9 +54,9 @@ const Contact = () => {
           }`}>
             Get in Touch
           </h1>
-          <div className={`text-xl max-w-3xl mx-auto leading-relaxed h-8 ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>
-            <TypingAnime text="We're here to help. Let's connect." speed={50} />
-          </div>
+            {/* <div className={`text-xl max-w-3xl mx-auto leading-relaxed h-8 ${isDark ? 'text-slate-400' : 'text-gray-600'}`}>
+              <TypingAnime text="We're here to help. Let's connect." speed={50} />
+            </div> */}
         </motion.div>
         {/* Contact Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-24">
