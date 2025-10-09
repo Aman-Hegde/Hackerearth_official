@@ -8,6 +8,7 @@ import Navbar from "./components/Navbar";
 import PastEvents from "./pages/Events";
 import Team from "./pages/Team";
 import Domains from "./pages/Domains";
+import BlogPostPage from "./pages/BlogPostPage";
 import Leaderboard from "./pages/Leaderboard";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
@@ -22,6 +23,7 @@ function AppWrapper() {
   const location = useLocation();
   const { isDark } = useTheme(); // <-- Get the theme state
   const isAuthPage = location.pathname === "/login";
+  const isDomainPage = location.pathname.startsWith("/domains");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
@@ -53,6 +55,7 @@ function AppWrapper() {
           <Route path="/events" element={<PastEvents />} />
           <Route path="/team" element={<Team />} />
           <Route path="/domains" element={<Domains />} />
+          <Route path="/domains/:slug" element={<BlogPostPage />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
           <Route path="/about" element={<About />} />
           <Route path="/contact" element={<Contact />} />
@@ -60,7 +63,7 @@ function AppWrapper() {
         </Routes>
       </main>
 
-      {!isAuthPage && <Footer />}
+      {!isAuthPage && !isDomainPage && <Footer />}
     </div>
   );
 }

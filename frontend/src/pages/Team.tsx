@@ -1,9 +1,10 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion, Variants  } from "framer-motion";
 import { Github, Linkedin, Mail } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
+import Loader from "../components/Loader";
 
 // --- Animation Variants ---
 const fadeInUp: Variants = {
@@ -401,6 +402,25 @@ const TeamMemberCard = ({ member, isDark }: { member: any; isDark: boolean }) =>
 // --- Main Team Page Component ---
 const Team = () => {
   const { isDark } = useTheme();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading time for better UX
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  if (loading) {
+    return (
+      <div className={`flex flex-col justify-center items-center min-h-screen ${isDark ? "bg-black text-white" : "bg-slate-50 text-gray-900"}`}>
+        <Loader size={80} />
+        <p className="mt-4 text-lg font-medium">Loading Team...</p>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -417,10 +437,11 @@ const Team = () => {
         >
           <motion.h1
             variants={fadeInUp}
-            className={`text-5xl md:text-6xl font-bold tracking-tighter ${isDark
-              ? "bg-gradient-to-r from-gray-200 via-white to-gray-200"
-              : "bg-gradient-to-r from-gray-800 via-black to-gray-800"
-              } bg-clip-text text-transparent`}
+            className={`text-4xl font-bold tracking-tighter md:text-[54px] md:leading-[60px] pb-2 ${
+              isDark 
+                ? "bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-clip-text text-transparent" 
+                : "text-gray-900"
+            }`}
           >
             Meet Our Team
           </motion.h1>

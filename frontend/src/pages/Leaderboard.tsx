@@ -4,6 +4,7 @@ import { useEffect, useState, useMemo } from "react";
 import { Trophy, Crown, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, X } from "lucide-react";
 import * as XLSX from "xlsx";
 import { useTheme } from "../context/ThemeContext"; // Assuming you have this context for dark mode
+import Loader from "../components/Loader";
 
 // --- Type Definitions ---
 interface LeaderboardEntry {
@@ -143,7 +144,12 @@ const Leaderboard = () => {
   ];
 
   if (loading) {
-    return <div className={`flex justify-center items-center min-h-screen ${isDark ? "bg-gray-900 text-white" : ""}`}>Loading Leaderboard...</div>;
+    return (
+      <div className={`flex flex-col justify-center items-center min-h-screen ${isDark ? "bg-black text-white" : "bg-gray-50 text-gray-900"}`}>
+        <Loader size={80} />
+        <p className="mt-4 text-lg font-medium">Loading Leaderboard...</p>
+      </div>
+    );
   }
 
   return (
@@ -151,9 +157,7 @@ const Leaderboard = () => {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="text-center mb-6">
-          <h1 className="text-5xl font-extrabold bg-gradient-to-r from-black via-gray-500 to-brown-700 bg-clip-text text-transparent">
-            Weekly Leaderboard
-          </h1>
+          <h1 className={`text-4xl font-semibold tracking-tighter md:text-[54px] md:leading-[60px] pb-2 ${isDark ? "bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-clip-text text-transparent" : "text-gray-900"}`}>Weekly Leaderboard</h1>
         </div>
 
         {/* Table Container */}
@@ -239,20 +243,24 @@ const Leaderboard = () => {
           )}
         </div>
       </div>
-      
       {/* Search Modal */}
       {isSearchModalOpen && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
           <div className={`p-6 rounded-lg shadow-xl w-full max-w-sm ${isDark ? "bg-gray-900 border border-gray-700" : "bg-white"}`}>
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Search by Name</h2>
-              <button onClick={() => setIsSearchModalOpen(false)}><X/></button>
-            </div>
+            {loading ? (
+              <div className="flex flex-col justify-center items-center">
+                <Loader size={80} />
+                <p className="mt-4 text-lg font-medium">Loading Leaderboard...</p>
+              </div>
+            ) : (
+              <div>
+                <button onClick={() => setIsSearchModalOpen(false)}><X/></button>
+              </div>
+            )}
             
             <div className="space-y-4">
                 <input
                     type="text"
-                    placeholder="Enter a name..."
                     value={modalSearchValue}
                     onChange={(e) => setModalSearchValue(e.target.value)}
                     className={`p-2 w-full border rounded-md transition ${isDark ? "bg-gray-800 border-gray-600 text-white" : "bg-white border-gray-300 text-black"}`}

@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 // FIX: Removed unused icons (MapPin, Clock, Users)
-import { Calendar, ArrowRight } from 'lucide-react'; 
+import { Calendar, ArrowRight } from 'lucide-react';
 // FIX: Reinstated useTheme to work with your existing theme toggle
-import { useTheme } from '../context/ThemeContext'; 
+import { useTheme } from '../context/ThemeContext';
 import { motion } from 'framer-motion';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
+import Loader from '../components/Loader';
 
 // --- Data for Past Events ---
 const pastEvents = [
@@ -91,10 +92,29 @@ const EventCard = ({ event, index, isDark }) => {
 const Events = () => {
   // FIX: Using the useTheme hook as intended by your project setup.
   const { isDark } = useTheme();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Simulate loading time for better UX
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     AOS.init({ duration: 600, once: true });
   }, []);
+
+  if (loading) {
+    return (
+      <div className={`flex flex-col justify-center items-center min-h-screen ${isDark ? "bg-black text-white" : "bg-slate-50 text-gray-900"}`}>
+        <Loader size={80} />
+        <p className="mt-4 text-lg font-medium">Loading Events...</p>
+      </div>
+    );
+  }
 
   const events = []; // Upcoming events data
 

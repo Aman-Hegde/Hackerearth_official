@@ -1,12 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useNavigate, useLocation  } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Sun, Moon, User, LogOut, Monitor } from 'lucide-react';
+import { Menu, X, Sun, Moon, User, LogOut, PanelLeftOpen } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import logo from '../assets/image.png';
 
-const Navbar: React.FC = () => {
+interface NavbarProps {
+  onToggleSidebar: () => void;
+}
+
+const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
   const [scrolled, setScrolled] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
@@ -93,6 +97,17 @@ const Navbar: React.FC = () => {
 
           {/* Desktop actions */}
           <div className="hidden md:flex items-center space-x-4">
+            {/* Sidebar Toggle */}
+            <button
+              onClick={onToggleSidebar}
+              aria-label="Toggle Sidebar"
+              className={`p-2 rounded-lg transition-all duration-300 hover:scale-105 ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'
+                }`}
+              type="button"
+            >
+              <PanelLeftOpen className="w-5 h-5" />
+            </button>
+
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
