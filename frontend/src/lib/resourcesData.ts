@@ -4,7 +4,7 @@ export interface BlogPost {
     description: string;
     date: string;
     tags: string[];
-    category: 'web' | 'dsa' | 'aptitude' | 'system-design' | 'general';
+    category: 'web' | 'dsa' | 'aptitude' | 'general';
     level: 'beginner' | 'intermediate' | 'advanced';
     type: 'youtube' | 'article' | 'documentation';
     author: {
@@ -23,10 +23,10 @@ export interface BlogPost {
   export const blogPosts: BlogPost[] = [
     {
       id: '1',
-      title: 'Complete React Tutorial - Learn Modern React Development',
-      description: 'Master React fundamentals with hooks, context API, and modern best practices through hands-on projects and real-world examples.',
-      date: '2024-01-15',
-      tags: ['React', 'JavaScript', 'Frontend', 'Web Development'],
+      title: 'HTML Forms, HTML5 Semantics, Forms & Flexbox',
+      description: 'Learn to build a modern navbar that adapts for both desktop & mobile.Get hands-on with media queries for responsiveness and menu toggling.',
+      date: '2025-08-25',
+      tags: ['HTML5 tags','flexbox', 'CSS', 'Frontend', 'Web Development'],
       category: 'web',
       level: 'beginner',
       type: 'youtube',
@@ -65,31 +65,10 @@ export interface BlogPost {
     },
     {
       id: '3',
-      title: 'System Design Fundamentals - Scalable Architecture Patterns',
-      description: 'Learn to design scalable systems with real-world examples, best practices, and common architectural patterns used in tech companies.',
-      date: '2024-01-10',
-      tags: ['Architecture', 'Scalability', 'Design Patterns', 'Backend'],
-      category: 'system-design',
-      level: 'advanced',
-      type: 'documentation',
-      author: {
-        name: 'System Design Primer',
-        avatar: '/avatars/system-design.jpg'
-      },
-      readTime: '20 min',
-      image: '/blog/system-design.jpg',
-      content: 'Full content here...',
-      slug: 'system-design-fundamentals',
-      week: 3,
-      link: 'https://github.com/donnemartin/system-design-primer',
-      source: 'GitHub'
-    },
-    {
-      id: '4',
-      title: 'JavaScript Array Methods - Complete Masterclass',
+      title: 'Advance CSS, flexbox, grid, responsive design, js basics ',
       description: 'Deep dive into JavaScript array methods with practical examples, performance considerations, and real-world use cases.',
-      date: '2024-01-08',
-      tags: ['JavaScript', 'Arrays', 'Methods', 'Web Development'],
+      date: '2025-08-31',
+      tags: ['CSS', 'JS Arrays', 'Methods', 'Web Development'],
       category: 'web',
       level: 'intermediate',
       type: 'article',
@@ -101,12 +80,12 @@ export interface BlogPost {
       image: '/blog/js-arrays.jpg',
       content: 'Full content here...',
       slug: 'javascript-array-methods',
-      week: 1,
+      week: 2,
       link: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array',
       source: 'MDN Web Docs'
     },
     {
-      id: '5',
+      id: '4',
       title: 'Quantitative Aptitude Masterclass for Placements',
       description: 'Complete quantitative aptitude and logical reasoning course with shortcuts, practice problems, and placement exam strategies.',
       date: '2024-01-05',
@@ -127,7 +106,7 @@ export interface BlogPost {
       source: 'YouTube'
     },
     {
-      id: '6',
+      id: '5',
       title: 'Dynamic Programming Patterns for Coding Interviews',
       description: 'Master dynamic programming with common patterns, optimization techniques, and solutions to frequently asked interview problems.',
       date: '2024-01-03',
@@ -146,7 +125,28 @@ export interface BlogPost {
       week: 4,
       link: 'https://neetcode.io/practice',
       source: 'NeetCode'
-    }
+    },
+        {
+      id: '6',
+      title: 'JavaScript Fundamentals, Objects, Functions, Classes, Inheritance ',
+      description: 'Deep dive into JavaScript array methods with practical examples, performance considerations, and real-world use cases.',
+      date: '2025-09-07',
+      tags: ['Objects', 'JS Arrays', 'Methods', 'Web Development'],
+      category: 'web',
+      level: 'intermediate',
+      type: 'article',
+      author: {
+        name: 'MDN Web Docs',
+        avatar: '/avatars/mdn.jpg'
+      },
+      readTime: '12 min',
+      image: '/blog/js-arrays.jpg',
+      content: 'Full content here...',
+      slug: 'javascript-array-methods',
+      week: 3,
+      link: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array',
+      source: 'MDN Web Docs'
+    },
   ];
   
   export const categories = [
@@ -154,7 +154,6 @@ export interface BlogPost {
     { id: 'web', name: 'Web Development', count: blogPosts.filter(post => post.category === 'web').length },
     { id: 'dsa', name: 'Data Structures & Algorithms', count: blogPosts.filter(post => post.category === 'dsa').length },
     { id: 'aptitude', name: 'Aptitude & Logical', count: blogPosts.filter(post => post.category === 'aptitude').length },
-    { id: 'system-design', name: 'System Design', count: blogPosts.filter(post => post.category === 'system-design').length },
   ];
   
   export const weeks = [1, 2, 3, 4];
