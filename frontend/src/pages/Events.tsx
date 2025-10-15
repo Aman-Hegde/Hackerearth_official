@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 // FIX: Removed unused icons (MapPin, Clock, Users)
 import { Calendar, ArrowRight } from 'lucide-react';
 // FIX: Reinstated useTheme to work with your existing theme toggle
+import { Link } from 'react-router-dom';
 import { useTheme } from '../context/ThemeContext';
 import { motion } from 'framer-motion';
 import AOS from 'aos';
@@ -12,20 +13,22 @@ import Loader from '../components/Loader';
 const pastEvents = [
   {
     id: 1,
+    title: "MindMesh 2025",
+    date: "2025-10-11",
+    tags: ['Aptitude', 'Pattern recognition', 'Problem solving', 'DSA'],
+    image: "/images/MindMesh.jpeg",
+    gradient: "from-green-500 to-teal-500",
+    link:"",
+  },
+  {
+    id: 2,
     title: "Git & Github Workshop",
     date: "2025-09-06",
     tags: ['Git', 'Github'],
-    image: "/images/workshop1.jpg", // Ensure this image exists at /public/images/workshop1.jpg
+    image: "/images/workshop1.jpg", // Inside public/images folder
     gradient: "from-purple-200 to-purple-500",
+    link:"https://drive.google.com/drive/folders/1cKVk40LXLwJVtkqSQy5FfbbPWqI8zG7n",
   },
-  // {
-  //   id: 2,
-  //   title: "InnovateAI Hackathon '23",
-  //   date: "2023-10-20",
-  //   tags: ['AI', 'Machine Learning', 'Python'],
-  //   image: "https://images.unsplash.com/photo-1518770660439-4636190af475?auto=format&fit=crop&w=1470&q=80",
-  //   gradient: "from-green-500 to-teal-500",
-  // },
 ];
 
 // --- Framer Motion Variants for the card reveal animation ---
@@ -75,9 +78,9 @@ const EventCard = ({ event, index, isDark }) => {
               ))}
             </div>
             <button className="group/button relative inline-flex items-center gap-2 text-base font-semibold">
-              <span className={`bg-gradient-to-r ${event.gradient} bg-clip-text text-transparent`}>
+              <Link to={event.link} className={`bg-gradient-to-r ${event.gradient} bg-clip-text text-transparent`}>
                 View Highlights
-              </span>
+              </Link>
               <ArrowRight className={`w-4 h-4 bg-gradient-to-r ${event.gradient} bg-clip-text text-transparent transition-transform group-hover/button:translate-x-1`} />
               <span className={`absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r ${event.gradient} transition-all duration-300 group-hover/button:w-full`} />
             </button>
@@ -145,9 +148,6 @@ const Events = () => {
               <h2 className={`mt-7 text-center text-4xl font-semibold tracking-tighter md:text-[58px] md:leading-[60px] ${ isDark ? "bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-clip-text text-transparent" : "text-gray-900" }`}>
                 Recent Events
               </h2> 
-              <p className={`text-xl max-w-3xl mx-auto leading-relaxed mt-2 ${isDark ? 'text-gray-400' : 'text-gray-700'}`}>
-                Discover our past events that brought the community together to learn, collaborate, and innovate.
-              </p>
             </motion.div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
