@@ -29,7 +29,7 @@ const CONTEST_FILES: { viewKey: string; filename: string }[] = [
 
 const VIEW_OPTIONS = ["Cumulative", ...CONTEST_FILES.map(f => f.viewKey)];
 const DEFAULT_VIEW = "Cumulative";
-const NAME_HEADER_KEYS = ["Name", "Participant Name", "User Name", "name", "participant name"];
+const NAME_HEADER_KEY = "Name"; 
 const SCORE_HEADER_KEY = "Total Score 500.0";
 
 // --- Helper Functions ---
@@ -98,14 +98,8 @@ const Leaderboard = () => {
             const individualWeekData: LeaderboardEntry[] = [];
 
             jsonData.forEach((row) => {
-                // Robust Name retrieval to fix missing week data issue
-                let name = "N/A";
-                for (const key of NAME_HEADER_KEYS) {
-                    if (row.hasOwnProperty(key) && String(row[key]).trim()) {
-                        name = String(row[key]).trim();
-                        break; 
-                    }
-                }
+                const rawName = row[NAME_HEADER_KEY];
+                const name = String(rawName || "").trim(); 
                 
                 const email = String(row["Email"] || "").trim();
                 const score = Number(row[SCORE_HEADER_KEY]) || 0;
