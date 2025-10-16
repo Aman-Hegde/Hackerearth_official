@@ -78,16 +78,16 @@ const Leaderboard = () => {
     const contestMap: ContestDataMap = {};
     const masterCumulativeData: { [key: string]: LeaderboardEntry } = {};
     
-    for (const contest of CONTEST_FILES) {
+  for (const contest of CONTEST_FILES) {
         const { viewKey, filename } = contest;
-        
         try {
-            const response = await fetch(`/${filename}`);
+            const response = await fetch(`/${filename}`, {
+                cache: 'no-store', 
+            });
             if (!response.ok) {
                 contestMap[viewKey] = [];
                 continue;
             }
-
             const arrayBuffer = await response.arrayBuffer();
             const workbook = XLSX.read(arrayBuffer, { type: "array" });
             const sheetName = workbook.SheetNames[0];
