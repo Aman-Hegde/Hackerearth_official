@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate, useLocation  } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Sun, Moon, User, LogOut, PanelLeftOpen } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
@@ -24,10 +24,10 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      
+
       // Set scrolled state for background change
       setScrolled(currentScrollY > 10);
-      
+
       // Hide/show navbar logic
       if (currentScrollY > lastScrollY && currentScrollY > 100) {
         // Scrolling down - hide navbar
@@ -36,7 +36,7 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
         // Scrolling up - show navbar
         setHidden(false);
       }
-      
+
       setLastScrollY(currentScrollY);
     };
 
@@ -66,36 +66,59 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
     <motion.nav
       ref={navRef}
       className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${scrolled
-          ? isDark
-            ? "bg-black/90 backdrop-blur-md border-gray-800/50"
-            : "bg-white/90 backdrop-blur-md border-gray-200/50"
-          : isDark
-            ? "bg-black/80 backdrop-blur-sm"
-            : "bg-white/80 backdrop-blur-sm"
+        ? isDark
+          ? "bg-black/90 backdrop-blur-md border-gray-800/50"
+          : "bg-white/90 backdrop-blur-md border-gray-200/50"
+        : isDark
+          ? "bg-black/80 backdrop-blur-sm"
+          : "bg-white/80 backdrop-blur-sm"
         }`}
       initial={{ y: 0 }}
       animate={{ y: hidden ? -100 : 0 }}
       transition={{ duration: 0.3, ease: "easeInOut" }}
       style={{ transform: hidden ? 'translateY(-100%)' : 'translateY(0)' }}
     >
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="max-w-5xl my-1 mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2" aria-label="Home">
+          <Link
+            to="/"
+            className="flex items-center space-x-2"
+            aria-label="Home"
+          >
             <img
               src={logo}
               alt="HackerEarth Logo"
-              width={100}
-              height={100}
-              className="mt-2 mb-2 w-20 h-14 rounded-full object-cover drop-shadow-xl border"
+              className="
+          w-10 h-10 
+          sm:w-12 sm:h-12 
+          md:w-14 md:h-14 
+          lg:w-16 lg:h-16 
+          rounded-full object-cover 
+          drop-shadow-xl border
+          transition-transform duration-300 
+          hover:scale-105
+        "
             />
-
-            <div className="hidden sm:flex items-center space-x-1 p-1 bg-white rounded-md shadow-md h-8 dark:bg-black">
-              <span className="text-gray-800 text-xs font-semibold whitespace-nowrap dark:text-white">HackerEarth Hub-nmamit</span>
+            <div
+              className="
+          hidden xs:flex sm:flex items-center space-x-1 px-2 py-1 
+          bg-white dark:bg-black rounded-md shadow-md 
+          transition-colors duration-300
+        "
+            >
+              <span
+                className="
+            text-gray-800 dark:text-white 
+            text-[0.7rem] sm:text-xs md:text-sm 
+            font-semibold whitespace-nowrap
+          "
+              >
+                HackerEarth Hub-NMAMIT
+              </span>
             </div>
           </Link>
 
-          {/* Desktop actions */}
           <div className="hidden md:flex items-center space-x-4">
             {/* Sidebar Toggle */}
             <button
@@ -138,8 +161,8 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                 <button
                   onClick={handleLogout}
                   className={`flex items-center space-x-1 px-3 py-2 rounded-lg ${isDark
-                      ? 'text-gray-300 hover:text-red-400 hover:bg-gray-800/50'
-                      : 'text-gray-700 hover:text-red-600 hover:bg-gray-100/50'
+                    ? 'text-gray-300 hover:text-red-400 hover:bg-gray-800/50'
+                    : 'text-gray-700 hover:text-red-600 hover:bg-gray-100/50'
                     }`}
                 >
                   <LogOut className="w-4 h-4" /> <span>Logout</span>
@@ -184,11 +207,10 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            className={`md:hidden absolute top-full left-0 right-0 backdrop-blur-md border-b ${
-              isDark
+            className={`md:hidden absolute top-full left-0 right-0 backdrop-blur-md border-b ${isDark
                 ? "bg-black/95 border-gray-800"
                 : "bg-white/95 border-gray-200"
-            }`}
+              }`}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
@@ -197,11 +219,10 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
             <div className="px-4 py-6 space-y-4">
               {isAuthenticated ? (
                 <>
-                  <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${
-                    isDark
+                  <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${isDark
                       ? 'bg-gray-800/50'
                       : 'bg-gray-100/70 border border-gray-200'
-                  }`}>
+                    }`}>
                     <User className={`w-4 h-4 ${isDark ? 'text-white' : 'text-gray-700'}`} />
                     <span className={`text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
                       {user?.name || user?.email?.split('@')[0]}
@@ -209,11 +230,10 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                   </div>
                   <button
                     onClick={handleLogout}
-                    className={`w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${
-                      isDark
+                    className={`w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${isDark
                         ? 'text-gray-300 hover:text-red-400 hover:bg-gray-800/50'
                         : 'text-gray-700 hover:text-red-600 hover:bg-gray-100/50'
-                    }`}
+                      }`}
                   >
                     <LogOut className="w-5 h-5" /> <span>Logout</span>
                   </button>
@@ -233,13 +253,12 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                   key={item.name}
                   to={item.href}
                   onClick={handleMobileLinkClick}
-                  className={`flex items-center space-x-2 text-base font-medium transition-colors duration-200 ${
-                    pathname === item.href
+                  className={`flex items-center space-x-2 text-base font-medium transition-colors duration-200 ${pathname === item.href
                       ? 'text-blue-500 dark:text-blue-400'
                       : isDark
                         ? 'text-gray-300 hover:text-white'
                         : 'text-gray-700 hover:text-gray-900'
-                  }`}
+                    }`}
                 >
                   <span>{item.name}</span>
                 </Link>
@@ -249,11 +268,10 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
                 <button
                   onClick={toggleTheme}
                   aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                  className={`w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-300 ${
-                    isDark
+                  className={`w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-300 ${isDark
                       ? 'text-gray-300 hover:text-white hover:bg-gray-800/50'
                       : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100/50'
-                  }`}
+                    }`}
                   type="button"
                 >
                   {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}

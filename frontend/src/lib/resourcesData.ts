@@ -127,11 +127,11 @@ export interface BlogPost {
       source: 'NeetCode'
     },
         {
-      id: '6',
-      title: 'JavaScript Fundamentals, Objects, Functions, Classes, Inheritance ',
-      description: 'Deep dive into JavaScript array methods with practical examples, performance considerations, and real-world use cases.',
-      date: '2025-09-07',
-      tags: ['Objects', 'JS Arrays', 'Methods', 'Web Development'],
+      id: '7',
+      title: 'JavaScript DOM Manipulation & Events ',
+      description: 'This section covers the JavaScript Document Object Model (DOM) and shows you how to manipulate DOM elements effectively.',
+      date: '2025-09-21',
+      tags: ['JS DOM', 'JS Manipulation functions', 'Web Development'],
       category: 'web',
       level: 'intermediate',
       type: 'article',
@@ -139,12 +139,12 @@ export interface BlogPost {
         name: 'MDN Web Docs',
         avatar: '/avatars/mdn.jpg'
       },
-      readTime: '12 min',
+      readTime: '5min',
       image: '/blog/js-arrays.jpg',
       content: 'Full content here...',
       slug: 'javascript-array-methods',
-      week: 3,
-      link: 'https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array',
+      week: 4,
+      link: 'https://javascripttutorial.net/javascript-dom/',
       source: 'MDN Web Docs'
     },
   ];
