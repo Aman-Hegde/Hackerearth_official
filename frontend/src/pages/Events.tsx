@@ -13,7 +13,7 @@ const pastEvents = [
     title: "MindMesh 2025",
     date: "2025-10-11",
     image: "/images/MindMesh.jpeg",
-    gradient: "from-green-500 to-teal-500",
+    gradient: "from-gray-500 to-gray-100",
     link: "",
   },
   {
@@ -98,6 +98,7 @@ const EventCard = ({ event, index, isDark }) => {
     </motion.div>
   );
 };
+
 const Events = () => {
   const { isDark } = useTheme();
   const [loading, setLoading] = useState(true);
@@ -132,7 +133,7 @@ const Events = () => {
             viewport={{ once: true }}
           >
             <div className="flex justify-center">
-              <button
+              {/* <button
                 type="button"
                 className="group relative z-[60] mx-auto rounded-full border px-7 py-2 text-xl backdrop-blur transition-all duration-300 hover:shadow-xl md:text-sm"
                 style={{
@@ -141,10 +142,10 @@ const Events = () => {
                 }}
               >
                 <span className={`relative ${isDark ? "text-white" : "text-gray-900"}`}>Past Events</span>
-              </button>
+              </button> */}
             </div>
-            <h2 className={`mt-7 text-4xl text-center font-semibold tracking-tight md:text-[56px] ${isDark ? "bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-clip-text text-transparent" : "text-gray-900"}`}>
-              Recent Events
+            <h2 className={`mt-7 p-2 text-4xl text-center font-semibold tracking-tight md:text-[56px] ${isDark ? "bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-clip-text text-transparent" : "text-gray-900"}`}>
+              EVENTS
             </h2>
           </motion.div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
