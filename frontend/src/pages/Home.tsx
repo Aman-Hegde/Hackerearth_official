@@ -147,7 +147,7 @@ const TestimonialCard = ({
   const { isDark } = useTheme();
   
   return (
-    <div className={`relative w-full max-w-xs overflow-hidden rounded-3xl border p-8 ${
+    <div className={`relative w-full max-w-md overflow-hidden rounded-3xl border p-8 ${
       isDark 
         ? "border-white/10 bg-gradient-to-b from-white/5 to-white/[0.02] shadow-[0px_2px_0px_0px_rgba(255,255,255,0.1)_inset]" 
         : "border-gray-200 bg-gradient-to-b from-gray-50 to-white shadow-lg"
@@ -180,41 +180,41 @@ const TestimonialCard = ({
 // Testimonials Data
 const testimonials = [
   {
-    name: "Arjun Mehta",
-    username: "@arjdev",
-    body: "HackerEarth completely changed the way I learn coding. The hands-on projects and community support are incredible.",
-    img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+    name: "Vedant Suresh Mahalle ",
+    username: "@vedantmahalle45",
+    body: "Being selected as the Co-Documentation Head through HackerEarth has been an incredible opportunity to combine my technical and creative skills. From working on web, aptitude, and DSA content to collaborating on documentation and project organization, this experience has strengthened my ability to communicate ideas clearly and contribute effectively to a team. It has truly been a rewarding journey of learning, leadership, and growth.",
+    img: "/testimonials_images/vedanthSM_testimonials.jpg",
   },
   {
-    name: "Sara Lin",
-    username: "@sara.codes",
-    body: "The DSA learning path helped me crack my dream company's coding interview. The practice problems are perfectly curated.",
-    img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop&crop=face",
+    name: "K Vinayaka Madhava Sharma",
+    username: "vinayaka_09_2004",
+    body: "The main aim helped me to join the club was for the communication and other soft skill development. Which helped alot and assuring team spirit great. The team also assure the aptitude training required for the prior clearance stage of placement drives. Thank you so much for providing me an opportunity to be an integral part of it.",
+    img: "/testimonials_images/Kvinayak.jpg",
   },
   {
-    name: "Devon Carter",
-    username: "@devninja",
-    body: "Our team built a full-stack project in 2 weeks using the web development resources. Saved so much learning time.",
-    img: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h-150&fit=crop&crop=face",
+    name: "Pratham S Salian",
+    username: "pratham_.s._salian",
+    body: "Being part of the HackerEarth Club has been an amazing experience. The coding challenges and hackathons helped me strengthen my problem-solving skills and apply concepts in real-world scenarios. Collaborating with peers also improved my teamwork and logical thinking abilities.",
+    img: "testimonials_images/pratham.jpg",
   },
   {
-    name: "Priya Shah",
-    username: "@priyacodes",
-    body: "The aptitude training helped me improve my logical thinking and problem-solving skills significantly.",
-    img: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=face",
+    name: "Gautham Tendulkar ",
+    username: "@gauthamtendulkarr",
+    body: "Great vibes, amazing people, and lots of memories that’s all that matters!",
+    img: "testimonials_images/gautham.jpg",
   },
-  {
-    name: "Leo Martin",
-    username: "@leobuilds",
-    body: "Found my perfect study group here. The community events and hackathons are game changers for networking.",
-    img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-  },
-  {
-    name: "Chloe Winters",
-    username: "@chloewinters",
-    body: "The leaderboard system keeps me motivated to practice daily. Climbing ranks never felt so rewarding!",
-    img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w-150&h=150&fit=crop&crop=face",
-  },
+  // {
+  //   name: "Leo Martin",
+  //   username: "@leobuilds",
+  //   body: "Found my perfect study group here. The community events and hackathons are game changers for networking.",
+  //   img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+  // },
+  // {
+  //   name: "Chloe Winters",
+  //   username: "@chloewinters",
+  //   body: "The leaderboard system keeps me motivated to practice daily. Climbing ranks never felt so rewarding!",
+  //   img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w-150&h=150&fit=crop&crop=face",
+  // },
 ];
 
 const firstColumn = testimonials.slice(0, 2);

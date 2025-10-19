@@ -52,13 +52,13 @@ const TestimonialCard = ({
 // Testimonials Data Array
 const testimonials = [
   {
-    name: "Arjun Mehta",
-    username: "@arjdev",
-    body: "HackerEarth completely changed the way I learn coding. The hands-on projects and community support are incredible.",
+    name: "Vedant Suresh Mahalle ",
+    username: "@vedantmahalle45",
+    body: "Being selected as the Co-Documentation Head through HackerEarth has been an incredible opportunity to combine my technical and creative skills. From working on web, aptitude, and DSA content to collaborating on documentation and project organization, this experience has strengthened my ability to communicate ideas clearly and contribute effectively to a team. It has truly been a rewarding journey of learning, leadership, and growth.",
     img: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
   },
   {
-    name: "Sara Lin",
+    name: "Hello",
     username: "@sara.codes",
     body: "The DSA learning path helped me crack my dream company's coding interview. The practice problems are perfectly curated.",
     img: "https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&h=150&fit=crop&crop=face",

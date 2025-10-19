@@ -1,11 +1,9 @@
-"use client" // This component uses client-side hooks and animations
-
+"use client"
 import { useState } from 'react';
 import { Mail, Phone, MapPin } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTheme } from '../context/ThemeContext';
-import { TypingAnime } from '../components/TypingAnime'; // Assuming you have this component
-import { ContactForm } from './ContactForm'; // Assuming this is in a separate file
+import { ContactForm } from './ContactForm';
 import logo from '../assets/image.png';
 
 const Contact = () => {
