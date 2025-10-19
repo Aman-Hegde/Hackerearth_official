@@ -203,23 +203,29 @@ const testimonials = [
     body: "Great vibes, amazing people, and lots of memories that’s all that matters!",
     img: "testimonials_images/gautham.jpg",
   },
-  // {
-  //   name: "Leo Martin",
-  //   username: "@leobuilds",
-  //   body: "Found my perfect study group here. The community events and hackathons are game changers for networking.",
-  //   img: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-  // },
-  // {
-  //   name: "Chloe Winters",
-  //   username: "@chloewinters",
-  //   body: "The leaderboard system keeps me motivated to practice daily. Climbing ranks never felt so rewarding!",
-  //   img: "https://images.unsplash.com/photo-1580489944761-15a19d654956?w-150&h=150&fit=crop&crop=face",
-  // },
+  {
+    name: "Bhoomika Shenoy ",
+    username: "@bhoomikashenoyy",
+    body: "Being part of this club isn’t just about tech—it’s about connecting, creating, and making an impact. I’ve loved every contest, every brainstorm, and every moment.",
+    img: "https://media.istockphoto.com/id/2220866251/photo/isolated-generic-gray-human-figure-placeholder.webp?a=1&b=1&s=612x612&w=0&k=20&c=vkqNIInBzzIYcuk-wV5KC28xiXfFfYZmAgVOaYebNEA=",
+  },
+  {
+    name: "Pallavi Pai",
+    username: "pallavipai_",
+    body: "Being a part of HackerEarth Hub has helped me strengthen my aptitude and foundations in data structures. Participating in programs like the SAP HackFest gave me exposure to what industries expect — the business models, the process of ideating, and pitching your product. The EmpowHer quiz was a great way to learn more about women in tech. My personal interests include Machine learning and App development .Always keen on learning, exploring, and building new things.",
+    img: "https://media.istockphoto.com/id/2220866251/photo/isolated-generic-gray-human-figure-placeholder.webp?a=1&b=1&s=612x612&w=0&k=20&c=vkqNIInBzzIYcuk-wV5KC28xiXfFfYZmAgVOaYebNEA=",
+  },
+  {
+    name: "Manvith",
+    username: "@manvithhhhhh",
+    body: "Being part of this club has been a valuable experience. I learned new skills, and improved my overall confidence and teamwork abilities.",
+    img: "https://media.istockphoto.com/id/2220866251/photo/isolated-generic-gray-human-figure-placeholder.webp?a=1&b=1&s=612x612&w=0&k=20&c=vkqNIInBzzIYcuk-wV5KC28xiXfFfYZmAgVOaYebNEA=",
+  },
 ];
 
 const firstColumn = testimonials.slice(0, 2);
 const secondColumn = testimonials.slice(2, 4);
-const thirdColumn = testimonials.slice(4, 6);
+const thirdColumn = testimonials.slice(4, 7);
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
