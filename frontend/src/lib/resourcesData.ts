@@ -39,6 +39,31 @@ export interface BlogPost {
 }
 
 // Helper function to create consistent content sections with glassmorphism
+const aptitudeCreateContentSection = (title: string, content: string) => `
+  <div class="bg-blue-50 bg-opacity-60 dark:bg-blue-900 dark:bg-opacity-40 p-6 rounded-xl border border-blue-300 dark:border-blue-700 shadow-md mb-8">
+    <h3 class="text-2xl font-bold text-blue-700 dark:text-blue-300 mb-5 flex items-center gap-3">
+      <img src="/icons/aptitude.svg" alt="Aptitude Icon" class="w-6 h-6" />
+      ${title}
+    </h3>
+    <div class="text-gray-700 dark:text-gray-300 leading-relaxed">
+      ${content}
+    </div>
+  </div>
+`;
+
+const aptitudeCreateFeatureList = (items: string[]) => `
+  <div class="grid gap-4 mb-8">
+    ${items.map(item => `
+      <div class="bg-blue-100 dark:bg-blue-800 p-4 rounded-lg border border-blue-300 dark:border-blue-700 shadow hover:shadow-lg transition-shadow duration-300">
+        <span class="inline-flex items-center gap-2 text-blue-800 dark:text-blue-300 font-semibold">
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>${item}
+        </span>
+      </div>
+    `).join('')}
+  </div>
+`;
+
+
 const createContentSection = (title: string, content: string) => `
   <div class="bg-white/60 dark:bg-gray-800/60 backdrop-blur-md p-6 rounded-xl border border-white/20 dark:border-gray-700/30 shadow-lg mb-6">
     <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">${title}</h3>
@@ -1788,7 +1813,7 @@ console.log(queue.peek()); // 20`, 'javascript')}
       }
     ]
   },
-  {
+    {
     id: 'apt-001',
     title: 'Time and Work & Pipes & Cisterns Masterclass',
     description: 'Sharpen your skills with curated tutorials and quizzes covering Time & Work and Pipes & Cisterns topics.',
@@ -1804,16 +1829,16 @@ console.log(queue.peek()); // 20`, 'javascript')}
     readTime: '15 min',
     image: '/blog/aptitude-time-work-pipes.jpg',
     content: `
-      ${createContentSection('Introduction', 'Focus on Time & Work concepts and Pipes & Cisterns with video tutorials and quizzes to boost your placement readiness.')}
-      ${createContentSection('Reference Videos', 'Watch these helpful videos for Week 1:')}
-      ${createFeatureList([
+      ${aptitudeCreateContentSection('Introduction', 'Focus on Time & Work concepts and Pipes & Cisterns with video tutorials and quizzes to boost your placement readiness.')}
+      ${aptitudeCreateContentSection('Reference Videos', 'Watch these helpful videos for Week 1:')}
+      ${aptitudeCreateFeatureList([
         '<a href="https://youtu.be/o7pY9hCqDZk?si=Ct9doBmx9gp0kgyu" target="_blank">Time and Work Video 1</a>',
         '<a href="https://youtu.be/KE7tQf9spPg?si=6JKYxXiCadgQEyn2v" target="_blank">Time and Work Video 2</a>',
         '<a href="https://youtu.be/j6vo6d6H6Ho?si=PvxM4WEf96exQXxS" target="_blank">Pipes and Cisterns Video 1</a>',
         '<a href="https://youtu.be/mBtBD1N7ywQ?si=Z6EB23_x48NmFQrw" target="_blank">Pipes and Cisterns Video 2</a>'
       ])}
-      ${createContentSection('Quizzes', 'Test your knowledge with these quizzes:')}
-      ${createFeatureList([
+      ${aptitudeCreateContentSection('Quizzes', 'Test your knowledge with these quizzes:')}
+      ${aptitudeCreateFeatureList([
         '<a href="https://forms.gle/PNCdykamhUVdBoD97" target="_blank">Time and Work Quiz</a>',
         '<a href="https://forms.gle/8hS9ffhyThsk1PkB7" target="_blank">Pipes and Cisterns Quiz</a>'
       ])}
@@ -1839,16 +1864,16 @@ console.log(queue.peek()); // 20`, 'javascript')}
     readTime: '15 min',
     image: '/blog/aptitude-speed-distance.jpg',
     content: `
-      ${createContentSection('Introduction', 'Master speed, distance and trains concepts with video lectures and practice quizzes.')}
-      ${createContentSection('Reference Videos', 'Key videos for Week 2:')}
-      ${createFeatureList([
+      ${aptitudeCreateContentSection('Introduction', 'Master speed, distance and trains concepts with video lectures and practice quizzes.')}
+      ${aptitudeCreateContentSection('Reference Videos', 'Key videos for Week 2:')}
+      ${aptitudeCreateFeatureList([
         '<a href="https://youtu.be/jzNxXm5twx4?si=RzHpg-5Zg0KWpr-t" target="_blank">Speed and Distance Video 1</a>',
         '<a href="https://youtu.be/DaNnu8BqzCM?si=Hfp6ApalfgKe9fYn" target="_blank">Speed and Distance Video 2</a>',
         '<a href="https://youtu.be/qHJ9UkIKji8?si=DM9CgNILrxyPTLly" target="_blank">Problems on Trains Video 1</a>',
         '<a href="https://youtu.be/nYuSAh-W9g?si=in2ZgweVdhbDnurh" target="_blank">Problems on Trains Video 2</a>'
       ])}
-      ${createContentSection('Quizzes', 'Practice these quizzes:')}
-      ${createFeatureList([
+      ${aptitudeCreateContentSection('Quizzes', 'Practice these quizzes:')}
+      ${aptitudeCreateFeatureList([
         '<a href="https://forms.gle/81PTcVpvJt9k1uoR7" target="_blank">Speed and Distance Quiz</a>'
       ])}
     `,
@@ -1873,16 +1898,16 @@ console.log(queue.peek()); // 20`, 'javascript')}
     readTime: '15 min',
     image: '/blog/aptitude-boats-streams.jpg',
     content: `
-      ${createContentSection('Introduction', 'Detailed study on Boats and Streams, and Ages problems with practice quizzes provided.')}
-      ${createContentSection('Reference Videos', 'Week 3 video resources:')}
-      ${createFeatureList([
+      ${aptitudeCreateContentSection('Introduction', 'Detailed study on Boats and Streams, and Ages problems with practice quizzes provided.')}
+      ${aptitudeCreateContentSection('Reference Videos', 'Week 3 video resources:')}
+      ${aptitudeCreateFeatureList([
         '<a href="https://youtu.be/-EdJ4kAW-j4" target="_blank">Boats and Streams Video 1</a>',
         '<a href="https://youtu.be/HUMISdejRmwY" target="_blank">Boats and Streams Video 2</a>',
         '<a href="https://youtu.be/HYyPAxHAJyk" target="_blank">Ages Video 1</a>',
         '<a href="https://youtu.be/tJHl73PBnwY" target="_blank">Ages Video 2</a>'
       ])}
-      ${createContentSection('Quizzes', 'Check your skills with:')}
-      ${createFeatureList([
+      ${aptitudeCreateContentSection('Quizzes', 'Check your skills with:')}
+      ${aptitudeCreateFeatureList([
         '<a href="https://forms.gle/TpJwqUymjAcvQ6qx5" target="_blank">Boats and Streams Quiz</a>',
         '<a href="https://forms.gle/E1gmeSEeD369eFsBA" target="_blank">Ages Quiz</a>'
       ])}
@@ -1908,14 +1933,14 @@ console.log(queue.peek()); // 20`, 'javascript')}
     readTime: '15 min',
     image: '/blog/aptitude-ratio-proportion.jpg',
     content: `
-      ${createContentSection('Introduction', 'Master Ratio, Proportion, and Partnership problems to ace aptitude tests.')}
-      ${createContentSection('Reference Videos', 'Week 4 learning content:')}
-      ${createFeatureList([
+      ${aptitudeCreateContentSection('Introduction', 'Master Ratio, Proportion, and Partnership problems to ace aptitude tests.')}
+      ${aptitudeCreateContentSection('Reference Videos', 'Week 4 learning content:')}
+      ${aptitudeCreateFeatureList([
         '<a href="https://youtu.be/jfoJBivWlnQ" target="_blank">Ratio and Proportion Video 1</a>',
         '<a href="https://youtu.be/dswJYy6XeD0" target="_blank">Partnership Video 1</a>'
       ])}
-      ${createContentSection('Quizzes', 'Challenge yourself with:')}
-      ${createFeatureList([
+      ${aptitudeCreateContentSection('Quizzes', 'Challenge yourself with:')}
+      ${aptitudeCreateFeatureList([
         '<a href="https://forms.gle/8PvPe3Kf4nqS81y88" target="_blank">Ratio and Proportion Quiz</a>',
         '<a href="https://forms.gle/xRK68TmgK9FNMsjp7" target="_blank">Partnership Quiz</a>'
       ])}
@@ -1941,14 +1966,14 @@ console.log(queue.peek()); // 20`, 'javascript')}
     readTime: '15 min',
     image: '/blog/aptitude-interest.jpg',
     content: `
-      ${createContentSection('Introduction', 'Understand Simple and Compound Interest formulas and application through videos and quizzes.')}
-      ${createContentSection('Reference Videos', 'Week 5 tutorials:')}
-      ${createFeatureList([
+      ${aptitudeCreateContentSection('Introduction', 'Understand Simple and Compound Interest formulas and application through videos and quizzes.')}
+      ${aptitudeCreateContentSection('Reference Videos', 'Week 5 tutorials:')}
+      ${aptitudeCreateFeatureList([
         '<a href="https://youtu.be/e2DPVTHC8so" target="_blank">Simple Interest Video</a>',
         '<a href="https://youtu.be/kD0Qi-mTokc" target="_blank">Compound Interest Video</a>'
       ])}
-      ${createContentSection('Quizzes', 'Practice quizzes:')}
-      ${createFeatureList([
+      ${aptitudeCreateContentSection('Quizzes', 'Practice quizzes:')}
+      ${aptitudeCreateFeatureList([
         '<a href="https://forms.gle/V7yGHEpCoBUzZmxKA" target="_blank">Simple Interest Quiz</a>',
         '<a href="https://forms.gle/xU1RjeiSsz3G5DJ76" target="_blank">Compound Interest Quiz</a>'
       ])}
@@ -1974,14 +1999,14 @@ console.log(queue.peek()); // 20`, 'javascript')}
     readTime: '15 min',
     image: '/blog/aptitude-permutations-probability.jpg',
     content: `
-      ${createContentSection('Introduction', 'Learn Permutations, Combinations, and Probability fundamentals vital for aptitude exams.')}
-      ${createContentSection('Reference Videos', 'Week 6 videos:')}
-      ${createFeatureList([
+      ${aptitudeCreateContentSection('Introduction', 'Learn Permutations, Combinations, and Probability fundamentals vital for aptitude exams.')}
+      ${aptitudeCreateContentSection('Reference Videos', 'Week 6 videos:')}
+      ${aptitudeCreateFeatureList([
         '<a href="https://youtu.be/gTriJtb1xg" target="_blank">Permutations and Combinations Video</a>',
         '<a href="https://youtu.be/bDA1uAPDjk" target="_blank">Probability Video</a>'
       ])}
-      ${createContentSection('Quizzes', 'Test your knowledge:')}
-      ${createFeatureList([
+      ${aptitudeCreateContentSection('Quizzes', 'Test your knowledge:')}
+      ${aptitudeCreateFeatureList([
         '<a href="https://forms.gle/uVci5pVfgEJcnRZa6" target="_blank">Permutations and Combinations Quiz</a>',
         '<a href="https://forms.gle/QBJHDp2Rk5NpppZz9" target="_blank">Probability Quiz</a>'
       ])}
@@ -2007,14 +2032,14 @@ console.log(queue.peek()); // 20`, 'javascript')}
     readTime: '15 min',
     image: '/blog/aptitude-numbers-algebra.jpg',
     content: `
-      ${createContentSection('Introduction', 'Intensive coverage of Number Systems and Algebra with curated exercises for placements.')}
-      ${createContentSection('Reference Videos', 'Week 7 video resources:')}
-      ${createFeatureList([
+      ${aptitudeCreateContentSection('Introduction', 'Intensive coverage of Number Systems and Algebra with curated exercises for placements.')}
+      ${aptitudeCreateContentSection('Reference Videos', 'Week 7 video resources:')}
+      ${aptitudeCreateFeatureList([
         '<a href="https://www.youtube.com/watch?v=bJCdFBfSR5Q" target="_blank">Number Systems Video</a>',
         '<a href="https://www.youtube.com/watch?v=TV9rQm15sWo" target="_blank">Algebra Video</a>'
       ])}
-      ${createContentSection('Quizzes', 'Try these quizzes based on Number Systems and Algebra:')}
-      ${createFeatureList([
+      ${aptitudeCreateContentSection('Quizzes', 'Try these quizzes based on Number Systems and Algebra:')}
+      ${aptitudeCreateFeatureList([
         '<a href="https://forms.gle/4vFCtgkxzwD6kJHB7" target="_blank">Number Systems Quiz</a>',
         '<a href="https://forms.gle/rspGJ5qTMLyVr9zE9" target="_blank">Algebra Quiz</a>'
       ])}
