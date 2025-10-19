@@ -38,32 +38,6 @@ export interface BlogPost {
   resourceSections?: ResourceSection[];
 }
 
-// Helper function to create consistent content sections with glassmorphism
-const aptitudeCreateContentSection = (title: string, content: string) => `
-  <div class="bg-blue-50 bg-opacity-60 dark:bg-blue-900 dark:bg-opacity-40 p-6 rounded-xl border border-blue-300 dark:border-blue-700 shadow-md mb-8">
-    <h3 class="text-2xl font-bold text-blue-700 dark:text-blue-300 mb-5 flex items-center gap-3">
-      <img src="/icons/aptitude.svg" alt="Aptitude Icon" class="w-6 h-6" />
-      ${title}
-    </h3>
-    <div class="text-gray-700 dark:text-gray-300 leading-relaxed">
-      ${content}
-    </div>
-  </div>
-`;
-
-const aptitudeCreateFeatureList = (items: string[]) => `
-  <div class="grid gap-4 mb-8">
-    ${items.map(item => `
-      <div class="bg-blue-100 dark:bg-blue-800 p-4 rounded-lg border border-blue-300 dark:border-blue-700 shadow hover:shadow-lg transition-shadow duration-300">
-        <span class="inline-flex items-center gap-2 text-blue-800 dark:text-blue-300 font-semibold">
-          <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>${item}
-        </span>
-      </div>
-    `).join('')}
-  </div>
-`;
-
-
 const createContentSection = (title: string, content: string) => `
   <div class="bg-white/60 dark:bg-gray-800/60 backdrop-blur-md p-6 rounded-xl border border-white/20 dark:border-gray-700/30 shadow-lg mb-6">
     <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">${title}</h3>
@@ -361,21 +335,41 @@ export const htmlCssResources: ResourceSection[] = [
 // Week 2 - Advanced CSS Resources
 export const advancedCssResources: ResourceSection[] = [
   {
-    title: "🎥 Video Courses",
+    title: "📚 Core Concepts",
     description: "Master advanced CSS techniques with video tutorials",
-    sectionType: "video-courses",
-    icon: "🎥",
+    sectionType: "core-tutorials",
+    icon: "📚",
     resources: [
       {
         title: "CSS Grid vs Flexbox - When to Use What",
         link: "https://www.youtube.com/watch?v=RSIclWvNTdQ",
         type: "Comparison Guide • Practical",
-        emoji: "🎥"
+        emoji: "📚"
       },
       {
         title: "Advanced CSS Layouts Masterclass",
         link: "https://www.youtube.com/watch?v=qx1H38X0wq8",
         type: "Deep Dive • 2 hours",
+        emoji: "📚"
+      }
+    ]
+  },
+  {
+    title: "🎥 Video Tutorials",
+    description: "Comprehensive video courses for advanced CSS",
+    sectionType: "video-courses",
+    icon: "🎥",
+    resources: [
+      {
+        title: "CSS Grid Layout Tutorial",
+        link: "https://www.youtube.com/watch?v=jV8B24rSN5o",
+        type: "Video Tutorial • Grid Layouts",
+        emoji: "🎥"
+      },
+      {
+        title: "Advanced CSS Animations",
+        link: "https://www.youtube.com/watch?v=9GGfNskQdKs",
+        type: "Video Tutorial • Animations & Transitions",
         emoji: "🎥"
       }
     ]
@@ -396,6 +390,12 @@ export const advancedCssResources: ResourceSection[] = [
         title: "Responsive Design Patterns",
         link: "https://web.dev/patterns/layout/",
         type: "Modern Patterns • Examples",
+        emoji: "📖"
+      },
+      {
+        title: "CSS-Tricks Complete Guide",
+        link: "https://css-tricks.com/complete-guide-grid/",
+        type: "In-depth Guide • Grid Layouts",
         emoji: "📖"
       }
     ]
@@ -1829,24 +1829,74 @@ console.log(queue.peek()); // 20`, 'javascript')}
     readTime: '15 min',
     image: '/blog/aptitude-time-work-pipes.jpg',
     content: `
-      ${aptitudeCreateContentSection('Introduction', 'Focus on Time & Work concepts and Pipes & Cisterns with video tutorials and quizzes to boost your placement readiness.')}
-      ${aptitudeCreateContentSection('Reference Videos', 'Watch these helpful videos for Week 1:')}
-      ${aptitudeCreateFeatureList([
-        '<a href="https://youtu.be/o7pY9hCqDZk?si=Ct9doBmx9gp0kgyu" target="_blank">Time and Work Video 1</a>',
-        '<a href="https://youtu.be/KE7tQf9spPg?si=6JKYxXiCadgQEyn2v" target="_blank">Time and Work Video 2</a>',
-        '<a href="https://youtu.be/j6vo6d6H6Ho?si=PvxM4WEf96exQXxS" target="_blank">Pipes and Cisterns Video 1</a>',
-        '<a href="https://youtu.be/mBtBD1N7ywQ?si=Z6EB23_x48NmFQrw" target="_blank">Pipes and Cisterns Video 2</a>'
-      ])}
-      ${aptitudeCreateContentSection('Quizzes', 'Test your knowledge with these quizzes:')}
-      ${aptitudeCreateFeatureList([
-        '<a href="https://forms.gle/PNCdykamhUVdBoD97" target="_blank">Time and Work Quiz</a>',
-        '<a href="https://forms.gle/8hS9ffhyThsk1PkB7" target="_blank">Pipes and Cisterns Quiz</a>'
-      ])}
+      ${createContentSection('Introduction', 'Focus on Time & Work concepts and Pipes & Cisterns with video tutorials and quizzes to boost your placement readiness.')}
     `,
     slug: 'time-work-pipes-aptitude-masterclass',
     week: 1,
     link: 'https://www.youtube.com/playlist?list=PLH9e0t9UpsHiLx8qph9f_R_jcYyCrSDct',
-    source: 'HackerEarth Aptitude Group'
+    source: 'HackerEarth Aptitude Group',
+    resourceSections: [
+      {
+        title: '📚 Core Concepts',
+        description: 'Master Time & Work and Pipes & Cisterns fundamentals',
+        sectionType: 'core-tutorials',
+        icon: '📚',
+        resources: [
+          {
+            title: 'Time and Work Problems',
+            link: 'https://www.youtube.com/watch?v=o7pY9hCqDZk',
+            type: 'Video Tutorial • Time & Work',
+            emoji: '📚'
+          },
+          {
+            title: 'Pipes and Cisterns Problems',
+            link: 'https://www.youtube.com/watch?v=j6vo6d6H6Ho',
+            type: 'Video Tutorial • Pipes & Cisterns',
+            emoji: '📚'
+          }
+        ]
+      },
+      {
+        title: '🎥 Video Tutorials',
+        description: 'Comprehensive video courses for aptitude topics',
+        sectionType: 'video-courses',
+        icon: '🎥',
+        resources: [
+          {
+            title: 'Advanced Time & Work Concepts',
+            link: 'https://www.youtube.com/watch?v=KE7tQf9spPg',
+            type: 'Video Tutorial • Advanced Concepts',
+            emoji: '🎥'
+          },
+          {
+            title: 'Pipes & Cisterns Deep Dive',
+            link: 'https://www.youtube.com/watch?v=mBtBD1N7ywQ',
+            type: 'Video Tutorial • Detailed Examples',
+            emoji: '🎥'
+          }
+        ]
+      },
+      {
+        title: '📖 Reading Materials',
+        description: 'Study materials and reference guides',
+        sectionType: 'docs',
+        icon: '📖',
+        resources: [
+          {
+            title: 'Time and Work Formula Sheet',
+            link: 'https://www.indiabix.com/aptitude/time-and-work/',
+            type: 'Formula Reference • Practice Problems',
+            emoji: '📖'
+          },
+          {
+            title: 'Pipes and Cisterns Guide',
+            link: 'https://www.geeksforgeeks.org/pipes-and-cisterns/',
+            type: 'Comprehensive Guide • Solved Examples',
+            emoji: '📖'
+          }
+        ]
+      }
+    ]
   },
   {
     id: 'apt-002',
@@ -1864,23 +1914,74 @@ console.log(queue.peek()); // 20`, 'javascript')}
     readTime: '15 min',
     image: '/blog/aptitude-speed-distance.jpg',
     content: `
-      ${aptitudeCreateContentSection('Introduction', 'Master speed, distance and trains concepts with video lectures and practice quizzes.')}
-      ${aptitudeCreateContentSection('Reference Videos', 'Key videos for Week 2:')}
-      ${aptitudeCreateFeatureList([
-        '<a href="https://youtu.be/jzNxXm5twx4?si=RzHpg-5Zg0KWpr-t" target="_blank">Speed and Distance Video 1</a>',
-        '<a href="https://youtu.be/DaNnu8BqzCM?si=Hfp6ApalfgKe9fYn" target="_blank">Speed and Distance Video 2</a>',
-        '<a href="https://youtu.be/qHJ9UkIKji8?si=DM9CgNILrxyPTLly" target="_blank">Problems on Trains Video 1</a>',
-        '<a href="https://youtu.be/nYuSAh-W9g?si=in2ZgweVdhbDnurh" target="_blank">Problems on Trains Video 2</a>'
-      ])}
-      ${aptitudeCreateContentSection('Quizzes', 'Practice these quizzes:')}
-      ${aptitudeCreateFeatureList([
-        '<a href="https://forms.gle/81PTcVpvJt9k1uoR7" target="_blank">Speed and Distance Quiz</a>'
-      ])}
+      ${createContentSection('Introduction', 'Master speed, distance and trains concepts with video lectures and practice quizzes.')}
     `,
     slug: 'speed-distance-trains-masterclass',
     week: 2,
     link: 'https://www.youtube.com/playlist?list=PLH9e0t9UpsHiLx8qph9f_R_jcYyCrSDct',
-    source: 'HackerEarth Aptitude Group'
+    source: 'HackerEarth Aptitude Group',
+    resourceSections: [
+      {
+        title: '📚 Core Concepts',
+        description: 'Master Speed, Distance and Trains fundamentals',
+        sectionType: 'core-tutorials',
+        icon: '📚',
+        resources: [
+          {
+            title: 'Speed and Distance Problems',
+            link: 'https://www.youtube.com/watch?v=jzNxXm5twx4',
+            type: 'Video Tutorial • Speed & Distance',
+            emoji: '📚'
+          },
+          {
+            title: 'Problems on Trains',
+            link: 'https://www.youtube.com/watch?v=qHJ9UkIKji8',
+            type: 'Video Tutorial • Train Problems',
+            emoji: '📚'
+          }
+        ]
+      },
+      {
+        title: '🎥 Video Tutorials',
+        description: 'Comprehensive video courses for aptitude topics',
+        sectionType: 'video-courses',
+        icon: '🎥',
+        resources: [
+          {
+            title: 'Advanced Speed Problems',
+            link: 'https://www.youtube.com/watch?v=DaNnu8BqzCM',
+            type: 'Video Tutorial • Complex Scenarios',
+            emoji: '🎥'
+          },
+          {
+            title: 'Relative Speed Concepts',
+            link: 'https://www.youtube.com/watch?v=nYuSAh-W9g',
+            type: 'Video Tutorial • Relative Motion',
+            emoji: '🎥'
+          }
+        ]
+      },
+      {
+        title: '📖 Reading Materials',
+        description: 'Study materials and reference guides',
+        sectionType: 'docs',
+        icon: '📖',
+        resources: [
+          {
+            title: 'Speed Distance Time Guide',
+            link: 'https://www.indiabix.com/aptitude/speed-time-and-distance/',
+            type: 'Formula Reference • Practice Problems',
+            emoji: '📖'
+          },
+          {
+            title: 'Trains Problems Handbook',
+            link: 'https://www.geeksforgeeks.org/trains-aptitude-questions/',
+            type: 'Comprehensive Guide • Solved Examples',
+            emoji: '📖'
+          }
+        ]
+      }
+    ]
   },
   {
     id: 'apt-003',
@@ -1898,24 +1999,74 @@ console.log(queue.peek()); // 20`, 'javascript')}
     readTime: '15 min',
     image: '/blog/aptitude-boats-streams.jpg',
     content: `
-      ${aptitudeCreateContentSection('Introduction', 'Detailed study on Boats and Streams, and Ages problems with practice quizzes provided.')}
-      ${aptitudeCreateContentSection('Reference Videos', 'Week 3 video resources:')}
-      ${aptitudeCreateFeatureList([
-        '<a href="https://youtu.be/-EdJ4kAW-j4" target="_blank">Boats and Streams Video 1</a>',
-        '<a href="https://youtu.be/HUMISdejRmwY" target="_blank">Boats and Streams Video 2</a>',
-        '<a href="https://youtu.be/HYyPAxHAJyk" target="_blank">Ages Video 1</a>',
-        '<a href="https://youtu.be/tJHl73PBnwY" target="_blank">Ages Video 2</a>'
-      ])}
-      ${aptitudeCreateContentSection('Quizzes', 'Check your skills with:')}
-      ${aptitudeCreateFeatureList([
-        '<a href="https://forms.gle/TpJwqUymjAcvQ6qx5" target="_blank">Boats and Streams Quiz</a>',
-        '<a href="https://forms.gle/E1gmeSEeD369eFsBA" target="_blank">Ages Quiz</a>'
-      ])}
+      ${createContentSection('Introduction', 'Detailed study on Boats and Streams, and Ages problems with practice quizzes provided.')}
     `,
     slug: 'boats-streams-ages-masterclass',
     week: 3,
     link: 'https://www.youtube.com/playlist?list=PLH9e0t9UpsHiLx8qph9f_R_jcYyCrSDct',
-    source: 'HackerEarth Aptitude Group'
+    source: 'HackerEarth Aptitude Group',
+    resourceSections: [
+      {
+        title: '📚 Core Concepts',
+        description: 'Master Boats & Streams and Ages fundamentals',
+        sectionType: 'core-tutorials',
+        icon: '📚',
+        resources: [
+          {
+            title: 'Boats and Streams Problems',
+            link: 'https://www.youtube.com/watch?v=-EdJ4kAW-j4',
+            type: 'Video Tutorial • Boats & Streams',
+            emoji: '📚'
+          },
+          {
+            title: 'Problems on Ages',
+            link: 'https://www.youtube.com/watch?v=HYyPAxHAJyk',
+            type: 'Video Tutorial • Age Problems',
+            emoji: '📚'
+          }
+        ]
+      },
+      {
+        title: '🎥 Video Tutorials',
+        description: 'Comprehensive video courses for aptitude topics',
+        sectionType: 'video-courses',
+        icon: '🎥',
+        resources: [
+          {
+            title: 'Advanced Boats & Streams',
+            link: 'https://www.youtube.com/watch?v=HUMISdejRmwY',
+            type: 'Video Tutorial • Complex Scenarios',
+            emoji: '🎥'
+          },
+          {
+            title: 'Age Problems Deep Dive',
+            link: 'https://www.youtube.com/watch?v=tJHl73PBnwY',
+            type: 'Video Tutorial • Detailed Examples',
+            emoji: '🎥'
+          }
+        ]
+      },
+      {
+        title: '📖 Reading Materials',
+        description: 'Study materials and reference guides',
+        sectionType: 'docs',
+        icon: '📖',
+        resources: [
+          {
+            title: 'Boats and Streams Guide',
+            link: 'https://www.indiabix.com/aptitude/boats-and-streams/',
+            type: 'Formula Reference • Practice Problems',
+            emoji: '📖'
+          },
+          {
+            title: 'Problems on Ages Handbook',
+            link: 'https://www.geeksforgeeks.org/problems-on-ages/',
+            type: 'Comprehensive Guide • Solved Examples',
+            emoji: '📖'
+          }
+        ]
+      }
+    ]
   },
   {
     id: 'apt-004',
@@ -1933,22 +2084,74 @@ console.log(queue.peek()); // 20`, 'javascript')}
     readTime: '15 min',
     image: '/blog/aptitude-ratio-proportion.jpg',
     content: `
-      ${aptitudeCreateContentSection('Introduction', 'Master Ratio, Proportion, and Partnership problems to ace aptitude tests.')}
-      ${aptitudeCreateContentSection('Reference Videos', 'Week 4 learning content:')}
-      ${aptitudeCreateFeatureList([
-        '<a href="https://youtu.be/jfoJBivWlnQ" target="_blank">Ratio and Proportion Video 1</a>',
-        '<a href="https://youtu.be/dswJYy6XeD0" target="_blank">Partnership Video 1</a>'
-      ])}
-      ${aptitudeCreateContentSection('Quizzes', 'Challenge yourself with:')}
-      ${aptitudeCreateFeatureList([
-        '<a href="https://forms.gle/8PvPe3Kf4nqS81y88" target="_blank">Ratio and Proportion Quiz</a>',
-        '<a href="https://forms.gle/xRK68TmgK9FNMsjp7" target="_blank">Partnership Quiz</a>'
-      ])}
+      ${createContentSection('Introduction', 'Master Ratio, Proportion, and Partnership problems to ace aptitude tests.')}
     `,
     slug: 'ratio-proportion-partnership-masterclass',
     week: 4,
     link: 'https://www.youtube.com/playlist?list=PLH9e0t9UpsHiLx8qph9f_R_jcYyCrSDct',
-    source: 'HackerEarth Aptitude Group'
+    source: 'HackerEarth Aptitude Group',
+    resourceSections: [
+      {
+        title: '📚 Core Concepts',
+        description: 'Master Ratio, Proportion and Partnership fundamentals',
+        sectionType: 'core-tutorials',
+        icon: '📚',
+        resources: [
+          {
+            title: 'Ratio and Proportion Problems',
+            link: 'https://www.youtube.com/watch?v=jfoJBivWlnQ',
+            type: 'Video Tutorial • Ratio & Proportion',
+            emoji: '📚'
+          },
+          {
+            title: 'Partnership Problems',
+            link: 'https://www.youtube.com/watch?v=dswJYy6XeD0',
+            type: 'Video Tutorial • Partnership',
+            emoji: '📚'
+          }
+        ]
+      },
+      {
+        title: '🎥 Video Tutorials',
+        description: 'Comprehensive video courses for aptitude topics',
+        sectionType: 'video-courses',
+        icon: '🎥',
+        resources: [
+          {
+            title: 'Advanced Ratio Concepts',
+            link: 'https://www.youtube.com/watch?v=advanced-ratio',
+            type: 'Video Tutorial • Complex Ratios',
+            emoji: '🎥'
+          },
+          {
+            title: 'Partnership Deep Dive',
+            link: 'https://www.youtube.com/watch?v=partnership-advanced',
+            type: 'Video Tutorial • Advanced Partnerships',
+            emoji: '🎥'
+          }
+        ]
+      },
+      {
+        title: '📖 Reading Materials',
+        description: 'Study materials and reference guides',
+        sectionType: 'docs',
+        icon: '📖',
+        resources: [
+          {
+            title: 'Ratio and Proportion Guide',
+            link: 'https://www.indiabix.com/aptitude/ratio-and-proportion/',
+            type: 'Formula Reference • Practice Problems',
+            emoji: '📖'
+          },
+          {
+            title: 'Partnership Problems Handbook',
+            link: 'https://www.geeksforgeeks.org/partnership/',
+            type: 'Comprehensive Guide • Solved Examples',
+            emoji: '📖'
+          }
+        ]
+      }
+    ]
   },
   {
     id: 'apt-005',
@@ -1966,22 +2169,74 @@ console.log(queue.peek()); // 20`, 'javascript')}
     readTime: '15 min',
     image: '/blog/aptitude-interest.jpg',
     content: `
-      ${aptitudeCreateContentSection('Introduction', 'Understand Simple and Compound Interest formulas and application through videos and quizzes.')}
-      ${aptitudeCreateContentSection('Reference Videos', 'Week 5 tutorials:')}
-      ${aptitudeCreateFeatureList([
-        '<a href="https://youtu.be/e2DPVTHC8so" target="_blank">Simple Interest Video</a>',
-        '<a href="https://youtu.be/kD0Qi-mTokc" target="_blank">Compound Interest Video</a>'
-      ])}
-      ${aptitudeCreateContentSection('Quizzes', 'Practice quizzes:')}
-      ${aptitudeCreateFeatureList([
-        '<a href="https://forms.gle/V7yGHEpCoBUzZmxKA" target="_blank">Simple Interest Quiz</a>',
-        '<a href="https://forms.gle/xU1RjeiSsz3G5DJ76" target="_blank">Compound Interest Quiz</a>'
-      ])}
+      ${createContentSection('Introduction', 'Understand Simple and Compound Interest formulas and application through videos and quizzes.')}
     `,
     slug: 'simple-compound-interest-masterclass',
     week: 5,
     link: 'https://www.youtube.com/playlist?list=PLH9e0t9UpsHiLx8qph9f_R_jcYyCrSDct',
-    source: 'HackerEarth Aptitude Group'
+    source: 'HackerEarth Aptitude Group',
+    resourceSections: [
+      {
+        title: '📚 Core Concepts',
+        description: 'Master Simple and Compound Interest fundamentals',
+        sectionType: 'core-tutorials',
+        icon: '📚',
+        resources: [
+          {
+            title: 'Simple Interest Problems',
+            link: 'https://www.youtube.com/watch?v=e2DPVTHC8so',
+            type: 'Video Tutorial • Simple Interest',
+            emoji: '📚'
+          },
+          {
+            title: 'Compound Interest Problems',
+            link: 'https://www.youtube.com/watch?v=kD0Qi-mTokc',
+            type: 'Video Tutorial • Compound Interest',
+            emoji: '📚'
+          }
+        ]
+      },
+      {
+        title: '🎥 Video Tutorials',
+        description: 'Comprehensive video courses for aptitude topics',
+        sectionType: 'video-courses',
+        icon: '🎥',
+        resources: [
+          {
+            title: 'Advanced Interest Calculations',
+            link: 'https://www.youtube.com/watch?v=interest-advanced',
+            type: 'Video Tutorial • Complex Interest',
+            emoji: '🎥'
+          },
+          {
+            title: 'Interest Rate Problems',
+            link: 'https://www.youtube.com/watch?v=rate-problems',
+            type: 'Video Tutorial • Rate Calculations',
+            emoji: '🎥'
+          }
+        ]
+      },
+      {
+        title: '📖 Reading Materials',
+        description: 'Study materials and reference guides',
+        sectionType: 'docs',
+        icon: '📖',
+        resources: [
+          {
+            title: 'Simple Interest Guide',
+            link: 'https://www.indiabix.com/aptitude/simple-interest/',
+            type: 'Formula Reference • Practice Problems',
+            emoji: '📖'
+          },
+          {
+            title: 'Compound Interest Handbook',
+            link: 'https://www.geeksforgeeks.org/compound-interest/',
+            type: 'Comprehensive Guide • Solved Examples',
+            emoji: '📖'
+          }
+        ]
+      }
+    ]
   },
   {
     id: 'apt-006',
@@ -1999,22 +2254,74 @@ console.log(queue.peek()); // 20`, 'javascript')}
     readTime: '15 min',
     image: '/blog/aptitude-permutations-probability.jpg',
     content: `
-      ${aptitudeCreateContentSection('Introduction', 'Learn Permutations, Combinations, and Probability fundamentals vital for aptitude exams.')}
-      ${aptitudeCreateContentSection('Reference Videos', 'Week 6 videos:')}
-      ${aptitudeCreateFeatureList([
-        '<a href="https://youtu.be/gTriJtb1xg" target="_blank">Permutations and Combinations Video</a>',
-        '<a href="https://youtu.be/bDA1uAPDjk" target="_blank">Probability Video</a>'
-      ])}
-      ${aptitudeCreateContentSection('Quizzes', 'Test your knowledge:')}
-      ${aptitudeCreateFeatureList([
-        '<a href="https://forms.gle/uVci5pVfgEJcnRZa6" target="_blank">Permutations and Combinations Quiz</a>',
-        '<a href="https://forms.gle/QBJHDp2Rk5NpppZz9" target="_blank">Probability Quiz</a>'
-      ])}
+      ${createContentSection('Introduction', 'Learn Permutations, Combinations, and Probability fundamentals vital for aptitude exams.')}
     `,
     slug: 'permutations-combinations-probability-masterclass',
     week: 6,
     link: 'https://www.youtube.com/playlist?list=PLH9e0t9UpsHiLx8qph9f_R_jcYyCrSDct',
-    source: 'HackerEarth Aptitude Group'
+    source: 'HackerEarth Aptitude Group',
+    resourceSections: [
+      {
+        title: '📚 Core Concepts',
+        description: 'Master Permutations, Combinations and Probability fundamentals',
+        sectionType: 'core-tutorials',
+        icon: '📚',
+        resources: [
+          {
+            title: 'Permutations and Combinations',
+            link: 'https://www.youtube.com/watch?v=gTriJtb1xg',
+            type: 'Video Tutorial • P&C',
+            emoji: '📚'
+          },
+          {
+            title: 'Probability Problems',
+            link: 'https://www.youtube.com/watch?v=bDA1uAPDjk',
+            type: 'Video Tutorial • Probability',
+            emoji: '📚'
+          }
+        ]
+      },
+      {
+        title: '🎥 Video Tutorials',
+        description: 'Comprehensive video courses for aptitude topics',
+        sectionType: 'video-courses',
+        icon: '🎥',
+        resources: [
+          {
+            title: 'Advanced Permutations',
+            link: 'https://www.youtube.com/watch?v=advanced-permutations',
+            type: 'Video Tutorial • Complex Permutations',
+            emoji: '🎥'
+          },
+          {
+            title: 'Probability Deep Dive',
+            link: 'https://www.youtube.com/watch?v=probability-advanced',
+            type: 'Video Tutorial • Advanced Probability',
+            emoji: '🎥'
+          }
+        ]
+      },
+      {
+        title: '📖 Reading Materials',
+        description: 'Study materials and reference guides',
+        sectionType: 'docs',
+        icon: '📖',
+        resources: [
+          {
+            title: 'Permutations & Combinations Guide',
+            link: 'https://www.indiabix.com/aptitude/permutation-and-combination/',
+            type: 'Formula Reference • Practice Problems',
+            emoji: '📖'
+          },
+          {
+            title: 'Probability Handbook',
+            link: 'https://www.geeksforgeeks.org/probability/',
+            type: 'Comprehensive Guide • Solved Examples',
+            emoji: '📖'
+          }
+        ]
+      }
+    ]
   },
   {
     id: 'apt-007',
@@ -2032,22 +2339,74 @@ console.log(queue.peek()); // 20`, 'javascript')}
     readTime: '15 min',
     image: '/blog/aptitude-numbers-algebra.jpg',
     content: `
-      ${aptitudeCreateContentSection('Introduction', 'Intensive coverage of Number Systems and Algebra with curated exercises for placements.')}
-      ${aptitudeCreateContentSection('Reference Videos', 'Week 7 video resources:')}
-      ${aptitudeCreateFeatureList([
-        '<a href="https://www.youtube.com/watch?v=bJCdFBfSR5Q" target="_blank">Number Systems Video</a>',
-        '<a href="https://www.youtube.com/watch?v=TV9rQm15sWo" target="_blank">Algebra Video</a>'
-      ])}
-      ${aptitudeCreateContentSection('Quizzes', 'Try these quizzes based on Number Systems and Algebra:')}
-      ${aptitudeCreateFeatureList([
-        '<a href="https://forms.gle/4vFCtgkxzwD6kJHB7" target="_blank">Number Systems Quiz</a>',
-        '<a href="https://forms.gle/rspGJ5qTMLyVr9zE9" target="_blank">Algebra Quiz</a>'
-      ])}
+      ${createContentSection('Introduction', 'Intensive coverage of Number Systems and Algebra with curated exercises for placements.')}
     `,
     slug: 'number-systems-algebra-masterclass',
     week: 7,
     link: 'https://www.youtube.com/playlist?list=PLH9e0t9UpsHiLx8qph9f_R_jcYyCrSDct',
-    source: 'HackerEarth Aptitude Group'
+    source: 'HackerEarth Aptitude Group',
+    resourceSections: [
+      {
+        title: '📚 Core Concepts',
+        description: 'Master Number Systems and Algebra fundamentals',
+        sectionType: 'core-tutorials',
+        icon: '📚',
+        resources: [
+          {
+            title: 'Number Systems Problems',
+            link: 'https://www.youtube.com/watch?v=bJCdFBfSR5Q',
+            type: 'Video Tutorial • Number Systems',
+            emoji: '📚'
+          },
+          {
+            title: 'Algebra Problems',
+            link: 'https://www.youtube.com/watch?v=TV9rQm15sWo',
+            type: 'Video Tutorial • Algebra',
+            emoji: '📚'
+          }
+        ]
+      },
+      {
+        title: '🎥 Video Tutorials',
+        description: 'Comprehensive video courses for aptitude topics',
+        sectionType: 'video-courses',
+        icon: '🎥',
+        resources: [
+          {
+            title: 'Advanced Number Systems',
+            link: 'https://www.youtube.com/watch?v=number-systems-advanced',
+            type: 'Video Tutorial • Complex Number Systems',
+            emoji: '🎥'
+          },
+          {
+            title: 'Algebra Deep Dive',
+            link: 'https://www.youtube.com/watch?v=algebra-advanced',
+            type: 'Video Tutorial • Advanced Algebra',
+            emoji: '🎥'
+          }
+        ]
+      },
+      {
+        title: '📖 Reading Materials',
+        description: 'Study materials and reference guides',
+        sectionType: 'docs',
+        icon: '📖',
+        resources: [
+          {
+            title: 'Number Systems Guide',
+            link: 'https://www.indiabix.com/aptitude/numbers/',
+            type: 'Formula Reference • Practice Problems',
+            emoji: '📖'
+          },
+          {
+            title: 'Algebra Handbook',
+            link: 'https://www.geeksforgeeks.org/algebra/',
+            type: 'Comprehensive Guide • Solved Examples',
+            emoji: '📖'
+          }
+        ]
+      }
+    ]
   }
 ];
 
