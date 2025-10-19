@@ -914,7 +914,7 @@ export const blogPosts: BlogPost[] = [
     id: '8',
     title: 'Data Structures & Algorithms Crash Course',
     description: 'Essential DSA concepts every developer should know with implementations and interview preparation tips.',
-    date: '2024-01-12',
+    date: '2024-08-11',
     tags: ['Algorithms', 'Data Structures', 'Interview'],
     category: 'dsa',
     level: 'intermediate',
@@ -943,45 +943,12 @@ export const blogPosts: BlogPost[] = [
     source: 'GeeksforGeeks',
     resourceSections: dsaResources
   },
-  {
-    id: '9',
-    title: 'Quantitative Aptitude Masterclass',
-    description: 'Complete quantitative aptitude and logical reasoning course with shortcuts and placement strategies.',
-    date: '2024-01-05',
-    tags: ['Quantitative', 'Reasoning', 'Math', 'Placements'],
-    category: 'aptitude',
-    level: 'beginner',
-    type: 'youtube',
-    author: {
-      name: 'CareerRide',
-      avatar: '/avatars/careerride.jpg'
-    },
-    readTime: '20 min',
-    image: '/blog/aptitude-masterclass.jpg',
-    content: `
-      ${createContentSection('Introduction', 'Quantitative aptitude and logical reasoning are crucial skills for placement exams and competitive programming. Master mathematical concepts and problem-solving strategies.')}
-      
-      ${createContentSection('Key Topics Covered', 'Essential aptitude concepts for success:')}
-      ${createFeatureList([
-        '<strong>Number Systems</strong> - Properties, divisibility, prime numbers',
-        '<strong>Algebra & Equations</strong> - Linear, quadratic, inequalities',
-        '<strong>Time & Work</strong> - Work rate problems and efficiency',
-        '<strong>Profit & Loss</strong> - Business mathematics and percentages',
-        '<strong>Logical Reasoning</strong> - Patterns, analogies, series completion'
-      ])}
-    `,
-    slug: 'quantitative-aptitude',
-    week: 1,
-    link: 'https://www.youtube.com/watch?v=aptitude-example',
-    source: 'YouTube',
-    resourceSections: aptitudeResources
-  },
   // ========== NEW DSA RESOURCES FOR WEEK 2 ==========
   {
     id: '10',
     title: 'Arrays in Programming Languages - Complete Guide',
     description: 'Master array data structures across C, C++, Java, and Python with comprehensive video tutorials and practical examples.',
-    date: '2025-01-15',
+    date: '2025-08-21',
     tags: ['Arrays', 'C', 'C++', 'Java', 'Python', 'DSA'],
     category: 'dsa',
     level: 'beginner',
@@ -1066,7 +1033,7 @@ console.log(found);`, 'javascript')}
     id: '11',
     title: 'Decision Making & Control Flow in Programming',
     description: 'Master conditional statements and control flow across C, C++, Java, and Python with syntax examples and practical applications.',
-    date: '2025-01-16',
+    date: '2025-08-21',
     tags: ['Decision Making', 'Control Flow', 'C', 'C++', 'Java', 'Python', 'DSA'],
     category: 'dsa',
     level: 'beginner',
@@ -1148,7 +1115,7 @@ console.log(checkEligibility(16, false)); // "You are too young to drive."`, 'ja
     id: '12',
     title: 'Loops & Iteration in Programming Languages',
     description: 'Master loop constructs and iteration patterns across C, C++, Java, and Python with syntax examples and practical applications.',
-    date: '2025-01-17',
+    date: '2025-08-28',
     tags: ['Loops', 'Iteration', 'C', 'C++', 'Java', 'Python', 'DSA'],
     category: 'dsa',
     level: 'beginner',
@@ -1234,7 +1201,7 @@ for (const number of numbers) {
     id: '13',
     title: 'Programming Pattern Problems & Practice',
     description: 'Apply your programming fundamentals with pattern printing problems and algorithmic challenges across multiple languages.',
-    date: '2025-01-18',
+    date: '2025-09-7',
     tags: ['Pattern Problems', 'Programming Practice', 'C', 'C++', 'Java', 'Python', 'DSA'],
     category: 'dsa',
     level: 'beginner',
@@ -1322,7 +1289,7 @@ printStarPattern(5);
     id: '14',
     title: 'String Manipulation Techniques - Advanced Guide',
     description: 'Master advanced string manipulation techniques including permutations, punctuation removal, and substring replacement across programming languages.',
-    date: '2025-01-25',
+    date: '2025-09-14',
     tags: ['String Manipulation', 'Permutations', 'Algorithms', 'DSA'],
     category: 'dsa',
     level: 'intermediate',
@@ -1412,7 +1379,7 @@ console.log(generatePermutations('abc'));
     id: '15',
     title: 'Pointers & Two Pointers Technique - Complete Guide',
     description: 'Master pointer concepts and the efficient two-pointer algorithm technique for solving array and string problems.',
-    date: '2025-02-01',
+    date: '2025-09-21',
     tags: ['Pointers', 'Two Pointers', 'Algorithms', 'DSA'],
     category: 'dsa',
     level: 'intermediate',
@@ -1495,7 +1462,7 @@ console.log(findPairsWithSum([1, 2, 3, 4, 5, 6], 7));
     id: '16',
     title: 'Matrix Operations & Transformations',
     description: 'Master matrix operations including rotation, inversion, 2D to 1D conversion, and symmetry checking with practical algorithms.',
-    date: '2025-02-08',
+    date: '2025-09-28',
     tags: ['Matrix', '2D Arrays', 'Rotation', 'Inversion', 'DSA'],
     category: 'dsa',
     level: 'intermediate',
@@ -1595,7 +1562,7 @@ console.log(rotateMatrix90(matrix));
     id: '17',
     title: 'Stack Data Structure - Complete Tutorial',
     description: 'Master stack implementation, operations, and applications with comprehensive examples and practical use cases.',
-    date: '2025-02-15',
+    date: '2025-10-04',
     tags: ['Stack', 'Data Structure', 'LIFO', 'DSA'],
     category: 'dsa',
     level: 'beginner',
@@ -1690,7 +1657,7 @@ console.log(stack.peek()); // 20`, 'javascript')}
     id: '18',
     title: 'Queue Data Structure - Complete Guide',
     description: 'Master queue implementation, operations, and variants including circular queues, priority queues, and deque with practical examples.',
-    date: '2025-02-22',
+    date: '2025-10-11',
     tags: ['Queue', 'Data Structure', 'FIFO', 'Circular Queue', 'Priority Queue', 'DSA'],
     category: 'dsa',
     level: 'intermediate',
@@ -1820,6 +1787,242 @@ console.log(queue.peek()); // 20`, 'javascript')}
         ]
       }
     ]
+  },
+  {
+    id: 'apt-001',
+    title: 'Time and Work & Pipes & Cisterns Masterclass',
+    description: 'Sharpen your skills with curated tutorials and quizzes covering Time & Work and Pipes & Cisterns topics.',
+    date: '2025-08-21',
+    tags: ['Time & Work', 'Pipes & Cisterns', 'Aptitude', 'Placement'],
+    category: 'aptitude',
+    level: 'beginner',
+    type: 'youtube',
+    author: {
+      name: 'HackerEarth Aptitude Group',
+      avatar: '/avatars/hackerearth-aptitude.jpg'
+    },
+    readTime: '15 min',
+    image: '/blog/aptitude-time-work-pipes.jpg',
+    content: `
+      ${createContentSection('Introduction', 'Focus on Time & Work concepts and Pipes & Cisterns with video tutorials and quizzes to boost your placement readiness.')}
+      ${createContentSection('Reference Videos', 'Watch these helpful videos for Week 1:')}
+      ${createFeatureList([
+        '<a href="https://youtu.be/o7pY9hCqDZk?si=Ct9doBmx9gp0kgyu" target="_blank">Time and Work Video 1</a>',
+        '<a href="https://youtu.be/KE7tQf9spPg?si=6JKYxXiCadgQEyn2v" target="_blank">Time and Work Video 2</a>',
+        '<a href="https://youtu.be/j6vo6d6H6Ho?si=PvxM4WEf96exQXxS" target="_blank">Pipes and Cisterns Video 1</a>',
+        '<a href="https://youtu.be/mBtBD1N7ywQ?si=Z6EB23_x48NmFQrw" target="_blank">Pipes and Cisterns Video 2</a>'
+      ])}
+      ${createContentSection('Quizzes', 'Test your knowledge with these quizzes:')}
+      ${createFeatureList([
+        '<a href="https://forms.gle/PNCdykamhUVdBoD97" target="_blank">Time and Work Quiz</a>',
+        '<a href="https://forms.gle/8hS9ffhyThsk1PkB7" target="_blank">Pipes and Cisterns Quiz</a>'
+      ])}
+    `,
+    slug: 'time-work-pipes-aptitude-masterclass',
+    week: 1,
+    link: 'https://www.youtube.com/playlist?list=PLH9e0t9UpsHiLx8qph9f_R_jcYyCrSDct',
+    source: 'HackerEarth Aptitude Group'
+  },
+  {
+    id: 'apt-002',
+    title: 'Speed, Distance & Trains Masterclass',
+    description: 'Deep dive into Speed, Distance and Trains problems to sharpen problem-solving skills.',
+    date: '2025-08-31',
+    tags: ['Speed', 'Distance', 'Trains', 'Aptitude'],
+    category: 'aptitude',
+    level: 'beginner',
+    type: 'youtube',
+    author: {
+      name: 'HackerEarth Aptitude Group',
+      avatar: '/avatars/hackerearth-aptitude.jpg'
+    },
+    readTime: '15 min',
+    image: '/blog/aptitude-speed-distance.jpg',
+    content: `
+      ${createContentSection('Introduction', 'Master speed, distance and trains concepts with video lectures and practice quizzes.')}
+      ${createContentSection('Reference Videos', 'Key videos for Week 2:')}
+      ${createFeatureList([
+        '<a href="https://youtu.be/jzNxXm5twx4?si=RzHpg-5Zg0KWpr-t" target="_blank">Speed and Distance Video 1</a>',
+        '<a href="https://youtu.be/DaNnu8BqzCM?si=Hfp6ApalfgKe9fYn" target="_blank">Speed and Distance Video 2</a>',
+        '<a href="https://youtu.be/qHJ9UkIKji8?si=DM9CgNILrxyPTLly" target="_blank">Problems on Trains Video 1</a>',
+        '<a href="https://youtu.be/nYuSAh-W9g?si=in2ZgweVdhbDnurh" target="_blank">Problems on Trains Video 2</a>'
+      ])}
+      ${createContentSection('Quizzes', 'Practice these quizzes:')}
+      ${createFeatureList([
+        '<a href="https://forms.gle/81PTcVpvJt9k1uoR7" target="_blank">Speed and Distance Quiz</a>'
+      ])}
+    `,
+    slug: 'speed-distance-trains-masterclass',
+    week: 2,
+    link: 'https://www.youtube.com/playlist?list=PLH9e0t9UpsHiLx8qph9f_R_jcYyCrSDct',
+    source: 'HackerEarth Aptitude Group'
+  },
+  {
+    id: 'apt-003',
+    title: 'Boats and Streams & Ages Masterclass',
+    description: 'Learn Boats and Streams and Ages concepts with detailed videos and quizzes.',
+    date: '2025-09-10',
+    tags: ['Boats and Streams', 'Ages', 'Aptitude'],
+    category: 'aptitude',
+    level: 'beginner',
+    type: 'youtube',
+    author: {
+      name: 'HackerEarth Aptitude Group',
+      avatar: '/avatars/hackerearth-aptitude.jpg'
+    },
+    readTime: '15 min',
+    image: '/blog/aptitude-boats-streams.jpg',
+    content: `
+      ${createContentSection('Introduction', 'Detailed study on Boats and Streams, and Ages problems with practice quizzes provided.')}
+      ${createContentSection('Reference Videos', 'Week 3 video resources:')}
+      ${createFeatureList([
+        '<a href="https://youtu.be/-EdJ4kAW-j4" target="_blank">Boats and Streams Video 1</a>',
+        '<a href="https://youtu.be/HUMISdejRmwY" target="_blank">Boats and Streams Video 2</a>',
+        '<a href="https://youtu.be/HYyPAxHAJyk" target="_blank">Ages Video 1</a>',
+        '<a href="https://youtu.be/tJHl73PBnwY" target="_blank">Ages Video 2</a>'
+      ])}
+      ${createContentSection('Quizzes', 'Check your skills with:')}
+      ${createFeatureList([
+        '<a href="https://forms.gle/TpJwqUymjAcvQ6qx5" target="_blank">Boats and Streams Quiz</a>',
+        '<a href="https://forms.gle/E1gmeSEeD369eFsBA" target="_blank">Ages Quiz</a>'
+      ])}
+    `,
+    slug: 'boats-streams-ages-masterclass',
+    week: 3,
+    link: 'https://www.youtube.com/playlist?list=PLH9e0t9UpsHiLx8qph9f_R_jcYyCrSDct',
+    source: 'HackerEarth Aptitude Group'
+  },
+  {
+    id: 'apt-004',
+    title: 'Ratio, Proportion & Partnership Masterclass',
+    description: 'Practice Ratio, Proportion, and Partnership problems with videos and interactive quizzes.',
+    date: '2025-09-20',
+    tags: ['Ratio', 'Proportion', 'Partnership', 'Aptitude'],
+    category: 'aptitude',
+    level: 'beginner',
+    type: 'youtube',
+    author: {
+      name: 'HackerEarth Aptitude Group',
+      avatar: '/avatars/hackerearth-aptitude.jpg'
+    },
+    readTime: '15 min',
+    image: '/blog/aptitude-ratio-proportion.jpg',
+    content: `
+      ${createContentSection('Introduction', 'Master Ratio, Proportion, and Partnership problems to ace aptitude tests.')}
+      ${createContentSection('Reference Videos', 'Week 4 learning content:')}
+      ${createFeatureList([
+        '<a href="https://youtu.be/jfoJBivWlnQ" target="_blank">Ratio and Proportion Video 1</a>',
+        '<a href="https://youtu.be/dswJYy6XeD0" target="_blank">Partnership Video 1</a>'
+      ])}
+      ${createContentSection('Quizzes', 'Challenge yourself with:')}
+      ${createFeatureList([
+        '<a href="https://forms.gle/8PvPe3Kf4nqS81y88" target="_blank">Ratio and Proportion Quiz</a>',
+        '<a href="https://forms.gle/xRK68TmgK9FNMsjp7" target="_blank">Partnership Quiz</a>'
+      ])}
+    `,
+    slug: 'ratio-proportion-partnership-masterclass',
+    week: 4,
+    link: 'https://www.youtube.com/playlist?list=PLH9e0t9UpsHiLx8qph9f_R_jcYyCrSDct',
+    source: 'HackerEarth Aptitude Group'
+  },
+  {
+    id: 'apt-005',
+    title: 'Simple and Compound Interest Masterclass',
+    description: 'Explore the concepts of Simple and Compound Interest with exercises and quizzes.',
+    date: '2025-10-01',
+    tags: ['Interest', 'Simple Interest', 'Compound Interest', 'Aptitude'],
+    category: 'aptitude',
+    level: 'beginner',
+    type: 'youtube',
+    author: {
+      name: 'HackerEarth Aptitude Group',
+      avatar: '/avatars/hackerearth-aptitude.jpg'
+    },
+    readTime: '15 min',
+    image: '/blog/aptitude-interest.jpg',
+    content: `
+      ${createContentSection('Introduction', 'Understand Simple and Compound Interest formulas and application through videos and quizzes.')}
+      ${createContentSection('Reference Videos', 'Week 5 tutorials:')}
+      ${createFeatureList([
+        '<a href="https://youtu.be/e2DPVTHC8so" target="_blank">Simple Interest Video</a>',
+        '<a href="https://youtu.be/kD0Qi-mTokc" target="_blank">Compound Interest Video</a>'
+      ])}
+      ${createContentSection('Quizzes', 'Practice quizzes:')}
+      ${createFeatureList([
+        '<a href="https://forms.gle/V7yGHEpCoBUzZmxKA" target="_blank">Simple Interest Quiz</a>',
+        '<a href="https://forms.gle/xU1RjeiSsz3G5DJ76" target="_blank">Compound Interest Quiz</a>'
+      ])}
+    `,
+    slug: 'simple-compound-interest-masterclass',
+    week: 5,
+    link: 'https://www.youtube.com/playlist?list=PLH9e0t9UpsHiLx8qph9f_R_jcYyCrSDct',
+    source: 'HackerEarth Aptitude Group'
+  },
+  {
+    id: 'apt-006',
+    title: 'Permutations, Combinations & Probability Masterclass',
+    description: 'Master Permutations, Combinations, and Probability through video lectures and quizzes.',
+    date: '2025-10-07',
+    tags: ['Permutations', 'Combinations', 'Probability', 'Aptitude'],
+    category: 'aptitude',
+    level: 'beginner',
+    type: 'youtube',
+    author: {
+      name: 'HackerEarth Aptitude Group',
+      avatar: '/avatars/hackerearth-aptitude.jpg'
+    },
+    readTime: '15 min',
+    image: '/blog/aptitude-permutations-probability.jpg',
+    content: `
+      ${createContentSection('Introduction', 'Learn Permutations, Combinations, and Probability fundamentals vital for aptitude exams.')}
+      ${createContentSection('Reference Videos', 'Week 6 videos:')}
+      ${createFeatureList([
+        '<a href="https://youtu.be/gTriJtb1xg" target="_blank">Permutations and Combinations Video</a>',
+        '<a href="https://youtu.be/bDA1uAPDjk" target="_blank">Probability Video</a>'
+      ])}
+      ${createContentSection('Quizzes', 'Test your knowledge:')}
+      ${createFeatureList([
+        '<a href="https://forms.gle/uVci5pVfgEJcnRZa6" target="_blank">Permutations and Combinations Quiz</a>',
+        '<a href="https://forms.gle/QBJHDp2Rk5NpppZz9" target="_blank">Probability Quiz</a>'
+      ])}
+    `,
+    slug: 'permutations-combinations-probability-masterclass',
+    week: 6,
+    link: 'https://www.youtube.com/playlist?list=PLH9e0t9UpsHiLx8qph9f_R_jcYyCrSDct',
+    source: 'HackerEarth Aptitude Group'
+  },
+  {
+    id: 'apt-007',
+    title: 'Number Systems & Algebra Masterclass',
+    description: 'Cover Number Systems and Algebra topics with video tutorials, quizzes, and practice questions.',
+    date: '2025-10-13',
+    tags: ['Number Systems', 'Algebra', 'Aptitude'],
+    category: 'aptitude',
+    level: 'beginner',
+    type: 'youtube',
+    author: {
+      name: 'HackerEarth Aptitude Group',
+      avatar: '/avatars/hackerearth-aptitude.jpg'
+    },
+    readTime: '15 min',
+    image: '/blog/aptitude-numbers-algebra.jpg',
+    content: `
+      ${createContentSection('Introduction', 'Intensive coverage of Number Systems and Algebra with curated exercises for placements.')}
+      ${createContentSection('Reference Videos', 'Week 7 video resources:')}
+      ${createFeatureList([
+        '<a href="https://www.youtube.com/watch?v=bJCdFBfSR5Q" target="_blank">Number Systems Video</a>',
+        '<a href="https://www.youtube.com/watch?v=TV9rQm15sWo" target="_blank">Algebra Video</a>'
+      ])}
+      ${createContentSection('Quizzes', 'Try these quizzes based on Number Systems and Algebra:')}
+      ${createFeatureList([
+        '<a href="https://forms.gle/4vFCtgkxzwD6kJHB7" target="_blank">Number Systems Quiz</a>',
+        '<a href="https://forms.gle/rspGJ5qTMLyVr9zE9" target="_blank">Algebra Quiz</a>'
+      ])}
+    `,
+    slug: 'number-systems-algebra-masterclass',
+    week: 7,
+    link: 'https://www.youtube.com/playlist?list=PLH9e0t9UpsHiLx8qph9f_R_jcYyCrSDct',
+    source: 'HackerEarth Aptitude Group'
   }
 ];
 
