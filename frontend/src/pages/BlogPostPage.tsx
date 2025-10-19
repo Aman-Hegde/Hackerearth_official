@@ -2,6 +2,7 @@ import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { blogPosts } from '../lib/resourcesData';
 import { useTheme } from '../context/ThemeContext';
+import ResourceDisplay from '../components/ResourceDisplay';
 
 const BlogPostPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -32,7 +33,7 @@ const BlogPostPage: React.FC = () => {
     <div className={`min-h-screen transition-colors duration-500 ${
       isDark ? "bg-black" : "bg-white"
     }`}>
-      <div className="max-w-3xl px-4 mx-auto sm:px-6 xl:max-w-5xl xl:px-0">
+      <div className="max-w-4xl px-4 mx-auto sm:px-6 xl:px-0">
         {/* Back to blog */}
         <div className="pt-6 pb-8 space-y-2 md:space-y-5">
           <Link 
@@ -120,6 +121,13 @@ const BlogPostPage: React.FC = () => {
                 }`}>
                   {/* Render the rich HTML content from the content field */}
                   <div dangerouslySetInnerHTML={{ __html: post.content }} />
+                  
+                  {/* Resource Display Section */}
+                  {post.resourceSections && (
+                    <div className="mt-12">
+                      <ResourceDisplay resourceSections={post.resourceSections} />
+                    </div>
+                  )}
                 </div>
 
                 {/* Tags */}
@@ -144,7 +152,6 @@ const BlogPostPage: React.FC = () => {
                     ))}
                   </div>
                 </div>
-
               </div>
             </div>
           </div>
