@@ -20,7 +20,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
     { name: 'Team', path: '/team', icon: Users },
     { name: 'Domains', path: '/domains', icon: Code },
     { name: 'Leaderboard', path: '/leaderboard', icon: Award },
-    { name: 'About', path: '/about', icon: Info },
+    // { name: 'About', path: '/about', icon: Info },
     { name: 'Contact', path: '/contact', icon: Mail },
   ];
 
@@ -36,7 +36,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
 
       {/* Sidebar - Compact with rounded corners */}
       <motion.aside
-        className={`fixed top-56 left-4 h-[calc(59vh-2rem)] bg-white dark:bg-black border dark:border-gray-800 z-50 transition-all duration-300 ease-out rounded-2xl
+        className={`fixed top-56 left-4 h-[calc(50vh-2rem)] bg-white dark:bg-black border dark:border-gray-800 z-50 transition-all duration-300 ease-out rounded-2xl
           ${isOpen ? 'w-48' : 'w-14'} ${isOpen ? '' : 'hidden md:block'}`}
         onMouseEnter={() => setIsOpen(true)}
         onMouseLeave={() => setIsOpen(false)}

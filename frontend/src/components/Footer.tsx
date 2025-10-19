@@ -13,7 +13,7 @@ const Footer = () => {
     { icon: Twitter, href: "https://x.com/NHackerearth", label: "Twitter" }
   ];
 
-  const quickLinks = ["Events", "Team", "Domains", "About", "Contact"];
+  const quickLinks = ["Events", "Team", "Domains", "Contact"];
 
   return (
     <footer className={`relative overflow-hidden border-t ${isDark ? "bg-black/50 border-white/10" : "bg-gray-50 border-gray-200"}`}>

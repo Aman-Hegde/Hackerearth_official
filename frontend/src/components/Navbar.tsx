@@ -48,7 +48,8 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
     { name: "Events", href: "/events" },
     { name: "Leaderboard", href: "/leaderboard" },
     { name: "Team", href: "/team" },
-    { name: "About us", href: "/about" },
+    { name: "Domains", href: "/domains" },
+    // { name: "About us", href: "/about" },
     { name: "Contact", href: "/contact" },
   ];
 
