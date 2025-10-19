@@ -33,13 +33,27 @@ const TestimonialCard = ({
       <div className={`leading-relaxed ${isDark ? "text-gray-200" : "text-gray-700"}`}>{body}</div>
 
       <div className="mt-6 flex items-center gap-3">
-        <img
-          src={img}
-          alt={name}
-          height="48"
-          width="48"
-          className="h-12 w-12 rounded-full border-2 border-white/20"
-        />
+        <div className="relative">
+          <div
+            className={`h-12 w-12 rounded-full transition-transform duration-200 hover:scale-105 ${
+              isDark
+                ? "border-2 border-white/30 shadow-lg shadow-white/10"
+                : "border-2 border-gray-200/50 shadow-md"
+            }`}
+            style={{
+              backgroundImage: `url(${img})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center 20%',
+              backgroundRepeat: 'no-repeat',
+              backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+            }}
+          />
+          <img
+            src={img}
+            alt={`${name}'s profile picture`}
+            className="sr-only"
+          />
+        </div>
         <div className="flex flex-col">
           <div className={`leading-5 font-medium ${isDark ? "text-white" : "text-gray-900"}`}>{name}</div>
           <div className={`leading-5 ${isDark ? "text-gray-400" : "text-gray-500"}`}>{username}</div>
