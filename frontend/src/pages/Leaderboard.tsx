@@ -25,6 +25,7 @@ const CONTEST_FILES: { viewKey: string; filename: string }[] = [
   { viewKey: "Week 1", filename: "weekly_contest_1_leaderboard.xlsx" },
   { viewKey: "Week 2", filename: "weekly_contest_2_leaderboard_v2.xlsx" },
   { viewKey: "Week 3", filename: "weekly_contest_3_leaderboard.xlsx" },
+  { viewKey: "Week 4", filename: "weekly_contest_4_leaderboard.xlsx" },
 ];
 
 const VIEW_OPTIONS = ["Cumulative", ...CONTEST_FILES.map(f => f.viewKey)];
