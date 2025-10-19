@@ -621,7 +621,7 @@ const Home = () => {
   };
 
   const handleExploreDomainClick = () => {
-    if (isAuthenticated) {
+    if (!isAuthenticated) {
       navigate('/domains');
     } else {
       navigate('/login');
