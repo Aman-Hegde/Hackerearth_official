@@ -269,7 +269,7 @@ const LoginPage: React.FC = () => {
 
             {/* Buttons with glass effect */}
             <div className="flex items-center gap-4 flex-wrap">
-              <div 
+              {/* <div 
                 className="px-8 py-3 rounded-full bg-transparent border border-white/30 text-white font-normal text-sm transition-all duration-200 hover:bg-white/10 hover:border-white/50 cursor-pointer backdrop-blur-sm"
                 style={{ filter: "url(#glass-effect)" }}
               >
@@ -280,7 +280,7 @@ const LoginPage: React.FC = () => {
                 style={{ filter: "url(#glass-effect)" }}
               >
                 Join Community
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

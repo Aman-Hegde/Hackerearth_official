@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
-import { ArrowRight, Users, Trophy, Calendar, Rocket, ChevronRight,FolderOpen, Quote } from "lucide-react";
+import { ArrowRight, Users, Trophy, Calendar, Rocket, ChevronRight, FolderOpen, Quote } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import TypingHero from "../components/TypingHero";
 import { Code, Brain, Lightbulb, Puzzle, Calculator, TrendingUp, Menu, Share2, Shuffle } from "lucide-react";
@@ -17,7 +17,7 @@ const EventCard = ({ event, index }: { event: any; index: number }) => {
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: index * 0.1 }}
         viewport={{ once: true, amount: 0.3 }}
-className="group relative aspect-[3/4] w-full overflow-hidden rounded-3xl border border-white/10 shadow-lg cursor-pointer"
+        className="group relative aspect-[3/4] w-full overflow-hidden rounded-3xl border border-white/10 shadow-lg cursor-pointer"
       >
         {/* Background Image with Hover Zoom Effect */}
         <img
@@ -71,7 +71,7 @@ const events = [
     date: "March 22, 2025",
     description: "A thrilling 3 rounds of debugging and finding clues, with a prize pool of 15k, open to all participants.",
     tags: ["Hackathon", "Competition", "Prize Pool"],
-    image: "/images/techtriad.jpg", 
+    image: "/images/techtriad.jpg",
   },
   {
     id: 2,
@@ -89,14 +89,14 @@ const events = [
     tags: ["Coding", "Beginners", "On-site"],
     image: "/images/mazeofcodes.jpg",
   },
-{
+  {
     id: 4,
-    title : "CodeClash",
+    title: "CodeClash",
     date: "October 05, 2024",
-    description : "A coding competition with a 3k prize pool, open to all skill levels.",
+    description: "A coding competition with a 3k prize pool, open to all skill levels.",
     tags: ["Coding", "Beginners"],
     image: "/images/codeclash.jpg",
-},
+  },
 ];
 
 // Marquee Component
@@ -119,11 +119,10 @@ function Marquee({
         .map((_, i) => (
           <div
             key={i}
-            className={`flex shrink-0 justify-around [gap:var(--gap)] ${
-              vertical
+            className={`flex shrink-0 justify-around [gap:var(--gap)] ${vertical
                 ? `animate-marquee-vertical flex-col ${reverse ? "[animation-direction:reverse]" : ""}`
                 : `animate-marquee flex-row ${reverse ? "[animation-direction:reverse]" : ""}`
-            } ${pauseOnHover ? "group-hover:[animation-play-state:paused]" : ""}`}
+              } ${pauseOnHover ? "group-hover:[animation-play-state:paused]" : ""}`}
           >
             {children}
           </div>
@@ -147,11 +146,10 @@ const TestimonialCard = ({
   const { isDark } = useTheme();
 
   return (
-    <div className={`relative w-full max-w-md overflow-hidden rounded-3xl border p-8 ${
-      isDark
+    <div className={`relative w-full max-w-md overflow-hidden rounded-3xl border p-8 ${isDark
         ? "border-white/10 bg-gradient-to-b from-white/5 to-white/[0.02] shadow-[0px_2px_0px_0px_rgba(255,255,255,0.1)_inset]"
         : "border-gray-200 bg-gradient-to-b from-gray-50 to-white shadow-lg"
-    }`}>
+      }`}>
       {isDark && (
         <div className="absolute -top-5 -left-5 -z-10 h-40 w-40 rounded-full bg-gradient-to-b from-blue-500/10 to-transparent blur-md"></div>
       )}
@@ -163,11 +161,10 @@ const TestimonialCard = ({
       <div className="mt-6 flex items-center gap-3">
         <div className="relative">
           <div
-            className={`h-12 w-12 rounded-full transition-transform duration-200 hover:scale-105 ${
-              isDark
+            className={`h-12 w-12 rounded-full transition-transform duration-200 hover:scale-105 ${isDark
                 ? "border-2 border-white/30 shadow-lg shadow-white/10"
                 : "border-2 border-gray-200/50 shadow-md"
-            }`}
+              }`}
             style={{
               backgroundImage: `url(${img})`,
               backgroundSize: 'cover',
@@ -269,7 +266,7 @@ function ServiceUIGraphic({ feature, isDark }: { feature: any; isDark: boolean }
         animate={{ scale: [1, 1.05, 1] }}
         transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
       />
-      
+
       {/* The graphics are rendered directly for an open, integrated feel */}
       <div className="relative flex items-center justify-center h-full min-h-[340px]">
         {feature.title === "Web Development" && (
@@ -349,7 +346,7 @@ function DSAGraphic({ isDark }: { isDark: boolean }) {
     { title: "Sorting Algorithm", component: <SortingViz isDark={isDark} /> },
     { title: "Graph Traversal", component: <GraphTraversalViz isDark={isDark} /> },
   ];
-  
+
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -449,7 +446,7 @@ function AptitudeGraphic({ isDark }: { isDark: boolean }) {
       </h3> */}
       <div className="relative w-56 h-56">
         <div className="absolute inset-0 flex items-center justify-center">
-            <div className={`w-48 h-48 rounded-full ${isDark ? "bg-purple-500/5" : "bg-purple-500/10"} blur-xl`}></div>
+          <div className={`w-48 h-48 rounded-full ${isDark ? "bg-purple-500/5" : "bg-purple-500/10"} blur-xl`}></div>
         </div>
 
         <motion.div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
@@ -717,62 +714,60 @@ const Home = () => {
         </div>
       </section>
 
-    <section className="relative overflow-x-clip z-10 max-w-7xl mx-auto px-4 sm:px-6">
-  <motion.div
-    className="text-center mb-16"
-    initial={{ opacity: 0, y: 20 }}
-    whileInView={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.6 }}
-  >
-    <div className="flex justify-center">
-      <button
-        type="button"
-        className="group relative z-[60] mx-auto rounded-full border mt-7 px-6 py-1 text-xs backdrop-blur transition-all duration-300 active:scale-100 md:text-sm"
-        style={{
-          borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
-          backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'
-        }}
-      >
-        <div className="absolute inset-x-0 -top-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:w-3/4"></div>
-        <div className="absolute inset-x-0 -bottom-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:h-px"></div>
-        <span className={`relative ${isDark ? "text-white" : "text-gray-900"}`}>Learning Paths</span>
-      </button>
-    </div>
+      <section className="relative overflow-x-clip z-10 max-w-7xl mx-auto px-4 sm:px-6">
+        <motion.div
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="flex justify-center">
+            <button
+              type="button"
+              className="group relative z-[60] mx-auto rounded-full border mt-7 px-6 py-1 text-xs backdrop-blur transition-all duration-300 active:scale-100 md:text-sm"
+              style={{
+                borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
+                backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'
+              }}
+            >
+              <div className="absolute inset-x-0 -top-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:w-3/4"></div>
+              <div className="absolute inset-x-0 -bottom-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:h-px"></div>
+              <span className={`relative ${isDark ? "text-white" : "text-gray-900"}`}>Learning Paths</span>
+            </button>
+          </div>
 
-    <h2 className={`mt-5 text-center text-4xl font-bold tracking-tighter md:text-[54px] md:leading-[60px] ${
-      isDark 
-        ? "bg-gradient-to-r from-gray-300 via-white to-gray-300 bg-clip-text text-transparent" 
-        : "bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 bg-clip-text text-transparent"
-    }`}>
-      Our Different <span className="font-light italic bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">Technical Domains</span>
-    </h2>
+          <h2 className={`mt-5 text-center text-4xl font-bold tracking-tighter md:text-[54px] md:leading-[60px] ${isDark
+              ? "bg-gradient-to-r from-gray-300 via-white to-gray-300 bg-clip-text text-transparent"
+              : "bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 bg-clip-text text-transparent"
+            }`}>
+            Our Different <span className="font-light italic bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">Technical Domains</span>
+          </h2>
 
-    <p className={`text-xl max-w-3xl mx-auto leading-relaxed mt-6 ${
-      isDark ? "text-gray-300" : "text-gray-700"
-    }`}>
-      Comprehensive learning paths designed to accelerate career growth and technical transformation.
-    </p>
-  </motion.div>
+          <p className={`text-xl max-w-3xl mx-auto leading-relaxed mt-6 ${isDark ? "text-gray-300" : "text-gray-700"
+            }`}>
+            Comprehensive learning paths designed to accelerate career growth and technical transformation.
+          </p>
+        </motion.div>
 
-  <div className="space-y-32 relative">
-    {features.map((feature, idx) => (
-      <motion.div
-        key={feature.title}
-        ref={(el) => (featureRefs.current[idx] = el)}
-        initial={{ opacity: 0, y: 50 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, delay: idx * 0.08 }}
-        className="min-h-[80vh] flex items-center"
-      >
-        <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-          <motion.div
-            className={`space-y-8 ${idx % 2 === 1 ? "lg:order-2" : ""}`}
-            initial={{ opacity: 0, x: idx % 2 === 1 ? 50 : -50 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            {/* REPLACED: Gradient badge with testimonials-style button */}
-                       {/* <div className="flex justify-center">
+        <div className="space-y-32 relative">
+          {features.map((feature, idx) => (
+            <motion.div
+              key={feature.title}
+              ref={(el) => (featureRefs.current[idx] = el)}
+              initial={{ opacity: 0, y: 50 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.8, delay: idx * 0.08 }}
+              className="min-h-[80vh] flex items-center"
+            >
+              <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <motion.div
+                  className={`space-y-8 ${idx % 2 === 1 ? "lg:order-2" : ""}`}
+                  initial={{ opacity: 0, x: idx % 2 === 1 ? 50 : -50 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.8 }}
+                >
+                  {/* REPLACED: Gradient badge with testimonials-style button */}
+                  {/* <div className="flex justify-center">
               <button
                 type="button"
                 className="group relative z-[60] mx-auto rounded-full border px-6 py-1 text-xs backdrop-blur transition-all duration-300 hover:scale-105 hover:shadow-xl active:scale-100 md:text-sm"
@@ -788,105 +783,102 @@ const Home = () => {
             </div> */}
 
 
-            <h3 className="text-4xl sm:text-5xl font-bold text-black mb-4 leading-tight dark:text-white">{feature.title}</h3>
-            <p className="text-lg text-gray-900 dark:text-gray-300 leading-relaxed mb-8">{feature.description}</p>
-            
-            <div className="flex flex-wrap gap-2 mb-4">
-              {feature.technologies.map((tech) => (
-                <span
-                  key={tech}
-                  className={`px-3 py-1 rounded-full border font-semibold text-xs bg-gradient-to-r ${feature.bgGradient} ${feature.accentColor} border-white/20`}
+                  <h3 className="text-4xl sm:text-5xl font-bold text-black mb-4 leading-tight dark:text-white">{feature.title}</h3>
+                  <p className="text-lg text-gray-900 dark:text-gray-300 leading-relaxed mb-8">{feature.description}</p>
+
+                  <div className="flex flex-wrap gap-2 mb-4">
+                    {feature.technologies.map((tech) => (
+                      <span
+                        key={tech}
+                        className={`px-3 py-1 rounded-full border font-semibold text-xs bg-gradient-to-r ${feature.bgGradient} ${feature.accentColor} border-white/20`}
+                      >
+                        {tech}
+                      </span>
+                    ))}
+                  </div>
+
+                  <button
+                    onClick={handleExploreDomainClick}
+                    className={`inline-flex items-center font-medium transition-colors group px-4 py-2 rounded-lg border ${idx === activeFeature
+                        ? isDark
+                          ? "text-white border-white/20 bg-white/10 hover:bg-white/20"
+                          : "text-gray-900 border-gray-300 bg-gray-50 hover:bg-gray-100"
+                        : isDark
+                          ? "text-blue-400 hover:text-blue-300 border-blue-400/30 bg-blue-400/10 hover:bg-blue-400/20"
+                          : "text-gray-700 hover:text-gray-900 border-gray-400 bg-gray-50 hover:bg-gray-100"
+                      }`}
+                  >
+                    <span>Explore Domain</span>
+                    <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                </motion.div>
+
+                <motion.div
+                  className={`${idx % 2 === 1 ? "lg:order-1" : ""}`}
+                  initial={{ opacity: 0, scale: 0.85 }}
+                  whileInView={{ opacity: 1, scale: 1 }}
+                  transition={{ duration: 0.8 }}
                 >
-                  {tech}
-                </span>
-              ))}
-            </div>
-            
-     <button
-  onClick={handleExploreDomainClick}
-  className={`inline-flex items-center font-medium transition-colors group px-4 py-2 rounded-lg border ${
-    idx === activeFeature
-      ? isDark
-        ? "text-white border-white/20 bg-white/10 hover:bg-white/20"
-        : "text-gray-900 border-gray-300 bg-gray-50 hover:bg-gray-100"
-      : isDark
-        ? "text-blue-400 hover:text-blue-300 border-blue-400/30 bg-blue-400/10 hover:bg-blue-400/20"
-        : "text-gray-700 hover:text-gray-900 border-gray-400 bg-gray-50 hover:bg-gray-100"
-  }`}
->
-  <span>Explore Domain</span>
-  <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-</button>
-          </motion.div>
-          
-          <motion.div
-            className={`${idx % 2 === 1 ? "lg:order-1" : ""}`}
-            initial={{ opacity: 0, scale: 0.85 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8 }}
-          >
-            <ServiceUIGraphic feature={feature} isDark={isDark} />
-          </motion.div>
+                  <ServiceUIGraphic feature={feature} isDark={isDark} />
+                </motion.div>
+              </div>
+            </motion.div>
+          ))}
         </div>
-      </motion.div>
-    ))}
-  </div>
-</section>
+      </section>
 
       <StatsSection />
-          
-          {/* events */}
+
+      {/* events */}
       <section className={`relative z-10 py-24 ${isDark ? "bg-black" : "bg-slate-50"}`}>
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    {/* Section Header */}
-    <motion.div
-      className="text-center mb-16"
-      initial={{ opacity: 0, y: 20 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.6 }}
-      viewport={{ once: true }}
-    >
-      <div className="flex justify-center">
-        <button
-          type="button"
-          className="group relative z-[60] mx-auto rounded-full border px-7 py-2 text-xl backdrop-blur transition-all duration-300 hover:shadow-xl active:scale-100 md:text-sm"
-          style={{
-            borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
-            backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'
-          }}
-        >
-          <div className="absolute inset-x-0 -top-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:w-3/4"></div>
-          <div className="absolute inset-x-0 -bottom-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:h-px"></div>
-          <span className={`relative ${isDark ? "text-white" : "text-gray-900"}`}>Community Events</span>
-        </button>
-      </div>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* Section Header */}
+          <motion.div
+            className="text-center mb-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            viewport={{ once: true }}
+          >
+            <div className="flex justify-center">
+              <button
+                type="button"
+                className="group relative z-[60] mx-auto rounded-full border px-7 py-2 text-xl backdrop-blur transition-all duration-300 hover:shadow-xl active:scale-100 md:text-sm"
+                style={{
+                  borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
+                  backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'
+                }}
+              >
+                <div className="absolute inset-x-0 -top-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:w-3/4"></div>
+                <div className="absolute inset-x-0 -bottom-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:h-px"></div>
+                <span className={`relative ${isDark ? "text-white" : "text-gray-900"}`}>Community Events</span>
+              </button>
+            </div>
 
-      <h2 className={`mt-7 text-center text-4xl font-semibold tracking-tighter md:text-[58px] md:leading-[60px] ${
-        isDark 
-          ? "bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-clip-text text-transparent" 
-          : "text-gray-900"
-      }`}>
-        Explore our Past Events
-      </h2> 
+            <h2 className={`mt-7 text-center text-4xl font-semibold tracking-tighter md:text-[58px] md:leading-[60px] ${isDark
+                ? "bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-clip-text text-transparent"
+                : "text-gray-900"
+              }`}>
+              Explore our Past Events
+            </h2>
 
-      <p className={`text-xl max-w-3xl mx-auto leading-relaxed mt-2 ${
-        isDark ? "text-gray-400" : "text-gray-700"
-      }`}>
-Take a look at some of our past events and initiatives      </p>
-    </motion.div>
+            <p className={`text-xl max-w-3xl mx-auto leading-relaxed mt-2 ${isDark ? "text-gray-400" : "text-gray-700"
+              }`}>
+              Take a look at some of our past events and initiatives      </p>
+          </motion.div>
 
-    {/* Events Grid - Using the EventCard component */}
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-      {events.map((event, index) => (
-        <EventCard key={event.id} event={event} index={index} />
-      ))}
+          {/* Events Grid - Using the EventCard component */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {events.map((event, index) => (
+              <EventCard key={event.id} event={event} index={index} />
+            ))}
 
-      
-    </div>
-  </div>
-</section>
 
-           {/* Testimonials Section */}
+          </div>
+        </div>
+      </section>
+
+      {/* Testimonials Section */}
       <section className={`relative z-10 py-24 ${isDark ? "bg-black" : "bg-gray-50"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-[540px] text-center mb-16">
@@ -904,54 +896,62 @@ Take a look at some of our past events and initiatives      </p>
                 <span className={`relative ${isDark ? "text-white" : "text-gray-900"}`}>Testimonials</span>
               </button>
             </div>
-           
-            <h2 className={`mt-5 text-center text-4xl font-semibold tracking-tighter md:text-[54px] md:leading-[60px] ${
-              isDark 
-                ? "bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-clip-text text-transparent" 
+
+            <h2 className={`mt-5 text-center text-4xl font-semibold tracking-tighter md:text-[54px] md:leading-[60px] ${isDark
+                ? "bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-clip-text text-transparent"
                 : "text-gray-900"
-            }`}>
+              }`}>
               What our members say
             </h2>
 
-            <p className={`mt-5 text-center text-lg ${
-              isDark ? "text-gray-400" : "text-gray-600"
-            }`}>
+            <p className={`mt-5 text-center text-lg ${isDark ? "text-gray-400" : "text-gray-600"
+              }`}>
               Voices from our community, hear what our members have to say about their journey..
             </p>
           </div>
 
           <div className="my-16 flex max-h-[738px] justify-center gap-6 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_25%,black_75%,transparent)]">
-            <div>
-              <Marquee pauseOnHover vertical className="[--duration:20s]">
-                {firstColumn.map((testimonial) => (
+            {/* Mobile: single column */}
+            <div className="flex flex-col md:hidden">
+              <Marquee pauseOnHover vertical className="[--duration:25s]">
+                {testimonials.map((testimonial) => (
                   <TestimonialCard key={testimonial.username} {...testimonial} />
                 ))}
               </Marquee>
             </div>
 
-            <div className="hidden md:block">
-              <Marquee reverse pauseOnHover vertical className="[--duration:25s]">
-                {secondColumn.map((testimonial) => (
-                  <TestimonialCard key={testimonial.username} {...testimonial} />
-                ))}
-              </Marquee>
-            </div>
+            <div className="hidden md:flex gap-6 w-full justify-center">
+              <div>
+                <Marquee pauseOnHover vertical className="[--duration:20s]">
+                  {firstColumn.map((testimonial) => (
+                    <TestimonialCard key={testimonial.username} {...testimonial} />
+                  ))}
+                </Marquee>
+              </div>
 
-            <div className="hidden lg:block">
-              <Marquee pauseOnHover vertical className="[--duration:30s]">
-                {thirdColumn.map((testimonial) => (
-                  <TestimonialCard key={testimonial.username} {...testimonial} />
-                ))}
-              </Marquee>
+              <div className="hidden lg:block">
+                <Marquee reverse pauseOnHover vertical className="[--duration:25s]">
+                  {secondColumn.map((testimonial) => (
+                    <TestimonialCard key={testimonial.username} {...testimonial} />
+                  ))}
+                </Marquee>
+              </div>
+
+              <div className="hidden xl:block">
+                <Marquee pauseOnHover vertical className="[--duration:30s]">
+                  {thirdColumn.map((testimonial) => (
+                    <TestimonialCard key={testimonial.username} {...testimonial} />
+                  ))}
+                </Marquee>
+              </div>
             </div>
           </div>
 
           <div className="-mt-8 flex justify-center">
-            <button className={`group relative inline-flex items-center gap-2 rounded-full border px-6 py-3 text-sm font-medium transition-all hover:bg-blue-500/10 active:scale-95 ${
-              isDark 
-                ? "border-blue-500/30 bg-black/50 text-white hover:border-blue-500/60" 
+            <button className={`group relative inline-flex items-center gap-2 rounded-full border px-6 py-3 text-sm font-medium transition-all hover:bg-blue-500/10 active:scale-95 ${isDark
+                ? "border-blue-500/30 bg-black/50 text-white hover:border-blue-500/60"
                 : "border-blue-400/30 bg-white text-gray-900 hover:border-blue-400/60"
-            }`}>
+              }`}>
               <div className="absolute inset-x-0 -top-px mx-auto h-px w-3/4 bg-gradient-to-r from-transparent via-blue-500/40 to-transparent"></div>
               <div className="absolute inset-x-0 -bottom-px mx-auto h-px w-3/4 bg-gradient-to-r from-transparent via-blue-500/40 to-transparent"></div>
               Share your experience
@@ -960,16 +960,15 @@ Take a look at some of our past events and initiatives      </p>
         </div>
       </section>
 
-    <section className={`relative z-10 py-24 transition-colors duration-500 ${isDark ? "bg-black" : "bg-white"}`}>
+      <section className={`relative z-10 py-24 transition-colors duration-500 ${isDark ? "bg-black" : "bg-white"}`}>
         <div className="mx-auto max-w-4xl rounded-[40px] border border-black/5 dark:border-white/20 p-2 shadow-sm">
-          <div className={`relative mx-auto overflow-hidden rounded-[38px] border border-black/5 dark:border-white/20 p-2 shadow-sm ${
-            isDark ? "bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900" : "bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-500"
-          }`}>
+          <div className={`relative mx-auto overflow-hidden rounded-[38px] border border-black/5 dark:border-white/20 p-2 shadow-sm ${isDark ? "bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900" : "bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-500"
+            }`}>
             {/* Background effects */}
             <div
               className="absolute inset-0 z-0"
               style={{
-                background: isDark 
+                background: isDark
                   ? "radial-gradient(ellipse 60% 40% at 50% 50%, rgba(59, 130, 246, 0.15), transparent 70%)"
                   : "radial-gradient(ellipse 60% 40% at 50% 50%, rgba(255, 255, 255, 0.2), transparent 70%)",
               }}
@@ -985,18 +984,16 @@ Take a look at some of our past events and initiatives      </p>
             <div className="relative z-10 p-12">
               <div className="text-center">
                 {/* Main heading */}
-             <h2 className={`text-4xl font-bold mb-6 tracking-tighter ${
-  isDark 
-    ? "bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-clip-text text-transparent" 
-    : "text-white"
-}`}>
-  Ready to Begin Your Journey?
-</h2>
-                
+                <h2 className={`text-4xl font-bold mb-6 tracking-tighter ${isDark
+                    ? "bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-clip-text text-transparent"
+                    : "text-white"
+                  }`}>
+                  Ready to Begin Your Journey?
+                </h2>
+
                 {/* Subtitle */}
-                <p className={`text-lg mb-8 max-w-2xl mx-auto ${
-                  isDark ? "text-blue-200" : "text-blue-100"
-                }`}>
+                <p className={`text-lg mb-8 max-w-2xl mx-auto ${isDark ? "text-blue-200" : "text-blue-100"
+                  }`}>
                   Join a community of innovators, builders, and leaders. Start your path to technical excellence today.
                 </p>
 

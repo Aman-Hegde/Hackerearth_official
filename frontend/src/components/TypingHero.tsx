@@ -80,29 +80,28 @@ function TypingHero() {
   const minWidthEm = maxPhraseLength * 0.65;
 
   return (
-    <h1 className="text-2xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold tracking-tighter font-sans">
+    <h1 className="tracking-tighter font-sans text-center">
       <div className="flex flex-wrap justify-center">
         <div className="relative">
-          <span className={baseTextColor}>{baseText}</span>
+          {/* Base Text */}
+          <span className={`${baseTextColor} text-4xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold`}>
+            {baseText}
+          </span>
 
           {/* Typing phrase */}
           <span
-            className={`${phraseColors} inline-block whitespace-nowrap relative`}
+            className={`${phraseColors} inline-block whitespace-nowrap relative text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold`}
             style={{ minWidth: `${minWidthEm}em` }}
           >
             {displayText.split("").map((char, i) => (
               <span
                 key={i}
-                className={`inline-block ${
-                  i === displayText.length - 1 && !isDeleting
-                    ? "animate-fadeInUp"
-                    : ""
-                }`}
+                className={`inline-block ${i === displayText.length - 1 && !isDeleting ? "animate-fadeInUp" : ""
+                  }`}
               >
                 {char}
               </span>
             ))}
-            {/* Blinking cursor */}
             <span
               className={`inline-block w-1.5 ml-1 ${cursorColor} animate-pulse align-middle rounded-sm`}
               style={{ height: "0.95em" }}
@@ -110,18 +109,8 @@ function TypingHero() {
           </span>
         </div>
       </div>
-
-      {/* keyframes */}
-      <style>{`
-        @keyframes fadeInUp {
-          0% { opacity: 0; transform: translateY(6px); }
-          100% { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeInUp {
-          animation: fadeInUp 0.25s ease-out forwards;
-        }
-      `}</style>
     </h1>
+
   );
 }
 
