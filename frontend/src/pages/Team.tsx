@@ -8,7 +8,7 @@ import Loader from "../components/Loader";
 
 // --- Animation Variants ---
 const fadeInUp: Variants = {
-  initial: { opacity: 0, y: 40 },
+  initial: { opacity: 0, y: 50 },
   animate: {
     opacity: 1,
     y: 0,
@@ -290,75 +290,52 @@ const graphicsTeam = [
 ];
 
 // --- Reusable Team Member Card Component ---
-const TeamMemberCard = ({ member, isDark }: { member: any; isDark: boolean }) => {
+const TeamMemberCard = ({ member }: { member: any }) => {
   return (
     <motion.div
       variants={fadeInUp}
       className="w-full max-w-xs mx-auto flex flex-col items-center"
     >
-      {/* 3D Flipping Card Scene */}
-      <div className="group w-full aspect-[4/5] [perspective:1000px]">
-        <div className="relative h-full w-full rounded-2xl shadow-xl transition-all duration-700 [transform-style:preserve-3d] group-hover:[transform:rotateY(180deg)]">
-          {/* Front Face: Image with Name and Position */}
-          <div className="absolute inset-0 [backface-visibility:hidden]">
-            <img
-              src={member.image}
-              alt={member.name}
-              className="h-full w-full rounded-2xl object-cover"
-            />
-            {/* Overlay for text readability */}
-            <div className="absolute inset-0 w-full h-full flex flex-col justify-end p-4 rounded-2xl bg-gradient-to-t from-black/80 via-black/40 to-transparent">
-              <h3 className="text-xl font-bold text-white tracking-tight">
-                {member.name}
-              </h3>
-              <p
-                className={`text-sm font-semibold bg-gradient-to-r ${member.gradient || "from-gray-400 to-gray-200"
-                  } bg-clip-text text-transparent`}
-              >
-                {member.position}
-              </p>
-            </div>
-          </div>
-          {/* Back Face: Slogan, Skills, and Links */}
-          <div
-            className={`absolute inset-0 h-full w-full rounded-2xl [transform:rotateY(180deg)] [backface-visibility:hidden] border ${isDark ? "bg-black/40 border-white/10" : "bg-white/60 border-gray-200"
-              } backdrop-blur-lg flex flex-col items-center justify-center p-3 text-center`}
-          >
+      {/* Slightly Smaller Card with More Spacing */}
+      <div className="group w-full h-[420px] relative">
+        <div className="card w-full h-full rounded-2xl shadow-xl overflow-hidden relative">
+          {/* Image */}
+          <img
+            src={member.image}
+            alt={member.name}
+            className="h-full w-full object-cover"
+          />
+
+          {/* Text Overlay (always visible) */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent flex flex-col justify-end p-5">
+            <h3 className="text-xl font-bold text-white tracking-tight mb-1">
+              {member.name}
+            </h3>
+            <p
+              className={`text-sm font-semibold bg-gradient-to-r ${member.gradient || "from-gray-400 to-gray-200"
+                } bg-clip-text text-transparent mb-2`}
+            >
+              {member.position}
+            </p>
             {member.slogan && (
-              <p
-                className={`italic text-base mb-3 ${isDark ? "text-gray-300" : "text-gray-700"}`}
-              >
+              <p className="text-sm text-white/80 italic leading-tight">
                 "{member.slogan}"
               </p>
             )}
-            <div className="flex flex-wrap gap-2 justify-center mb-4">
-              {member.skills.length > 0 ? (
-                member.skills.map((skill: string) => (
-                  <span
-                    key={skill}
-                    className={`px-2.5 py-1 text-xs font-semibold rounded-full ${isDark ? "bg-white/10 text-cyan-300" : "bg-blue-100 text-blue-800"
-                      }`}
-                  >
-                    {skill}
-                  </span>
-                ))
-              ) : (
-                <span
-                  className={`italic text-sm ${isDark ? "text-gray-400" : "text-gray-600"}`}
-                >
-                  Skills to be updated!
-                </span>
-              )}
-            </div>
-            <div className="flex space-x-5">
+          </div>
+
+          {/* Hover Overlay with Social Links */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-center items-center p-6">
+            {/* Social Links */}
+            <div className="flex space-x-6 mb-4">
               {member.github && (
                 <a
                   href={member.github}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="transition-transform hover:scale-125"
+                  className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all duration-300"
                 >
-                  <Github size={20} className={isDark ? "text-white" : "text-black"} />
+                  <Github size={20} />
                 </a>
               )}
               {member.linkedin && (
@@ -366,21 +343,36 @@ const TeamMemberCard = ({ member, isDark }: { member: any; isDark: boolean }) =>
                   href={member.linkedin}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="transition-transform hover:scale-125"
+                  className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all duration-300"
                 >
-                  <Linkedin size={20} className={isDark ? "text-white" : "text-black"} />
+                  <Linkedin size={20} />
                 </a>
               )}
               {member.email && (
                 <a
                   href={`mailto:${member.email}`}
-                  className="transition-transform hover:scale-125"
+                  className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all duration-300"
                 >
-                  <Mail size={20} className={isDark ? "text-white" : "text-black"} />
+                  <Mail size={20} />
                 </a>
               )}
             </div>
 
+            {/* Skills */}
+            <div className="flex flex-wrap gap-2 justify-center">
+              {member.skills.length > 0 ? (
+                member.skills.slice(0, 3).map((skill: string) => (
+                  <span
+                    key={skill}
+                    className="px-3 py-1 text-xs font-semibold rounded-full bg-white/20 text-white backdrop-blur-sm"
+                  >
+                    {skill}
+                  </span>
+                ))
+              ) : (
+                <span className="text-white/70 text-sm italic">Skills to be updated</span>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -416,6 +408,42 @@ const Team = () => {
       className={`min-h-screen pt-24 pb-20 overflow-hidden ${isDark ? "bg-black" : "bg-slate-50"
         }`}
     >
+      <style jsx>{`
+        @keyframes fadeInUp {
+          0% {
+            opacity: 0;
+            transform: translateY(50px);
+          }
+          100% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .card {
+          background: linear-gradient(
+            45deg,
+            rgba(100, 207, 226, 0.15) 40%,
+            rgba(6, 100, 252, 0.15),
+            rgba(6, 100, 252, 0.1) 60%,
+            transparent
+          );
+          opacity: 1;
+          background-size: 200% 200%;
+          background-position: 100% 0;
+          transition: all 0.4s ease-in-out;
+        }
+
+        .card.animate-in {
+          animation: fadeInUp 0.6s forwards;
+        }
+
+        .card:hover {
+          background-position: 0% 100%;
+          transform: translateY(-5px);
+          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+        }
+      `}</style>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
         <motion.div
@@ -426,7 +454,7 @@ const Team = () => {
         >
           <motion.h1
             variants={fadeInUp}
-            className={`text-4xl font-bold tracking-tighter md:text-[54px] md:leading-[60px] pb-2 ${
+            className={`text-5xl font-bold tracking-tighter md:text-[72px] md:leading-[80px] pb-2 ${
               isDark 
                 ? "bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-clip-text text-transparent" 
                 : "text-gray-900"
@@ -438,7 +466,6 @@ const Team = () => {
             variants={fadeInUp}
             className="text-lg md:text-xl max-w-3xl mx-auto mt-4 text-gray-400"
           >
-            The passionate individuals driving innovation and fostering our collaborative community.
           </motion.p>
         </motion.div>
 
@@ -457,27 +484,102 @@ const Team = () => {
               initial={{ opacity: 0 }}
               whileInView={{ opacity: 1 }}
               viewport={{ once: true }}
-              className="text-3xl font-bold mb-12 text-center bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent"
+              className={`mt-5 mb-20 pb-2 text-center text-4xl font-semibold italic tracking-tighter md:text-[54px] md:leading-[60px] ${isDark ? "text-gray-300" : "text-gray-800"}`}
             >
-              {section.title}
+              {section.title.includes('Core Committee') ? (
+                <>
+                  <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Core</span>
+                  {' Committee'}
+                </>
+              ) : section.title.includes('Web Team') ? (
+                <>
+                  <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Web</span>
+                  {' Team'}
+                </>
+              ) : section.title.includes('Tech Leads') ? (
+                <>
+                  <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Tech</span>
+                  {' Leads'}
+                </>
+              ) : section.title.includes('Documentation Team') ? (
+                <>
+                  <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Documentation</span>
+                  {' Team'}
+                </>
+              ) : section.title.includes('Publicity Team') ? (
+                <>
+                  <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Publicity</span>
+                  {' Team'}
+                </>
+              ) : section.title.includes('Social Media Team') ? (
+                <>
+                  <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Social</span>
+                  {' Media Team'}
+                </>
+              ) : section.title.includes('Graphics Team') ? (
+                <>
+                  <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Graphics</span>
+                  {' Team'}
+                </>
+              ) : (
+                section.title
+              )}
             </motion.h2>
             <motion.div
               initial="initial"
               whileInView="animate"
               variants={staggerContainer}
               viewport={{ once: true, amount: 0.2 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-16 gap-x-8"
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-16 gap-x-12"
             >
               {section.data.map((member: any) => (
                 <TeamMemberCard
                   key={member.name}
                   member={member}
-                  isDark={isDark}
                 />
               ))}
             </motion.div>
           </div>
         ))}
+
+        {/* Intersection Observer for Card Animations */}
+        <script dangerouslySetInnerHTML={{
+          __html: `
+            document.addEventListener('DOMContentLoaded', function() {
+              const cards = document.querySelectorAll('.card');
+
+              // Fallback: animate all cards in after a short delay
+              setTimeout(() => {
+                cards.forEach((card, index) => {
+                  if (!card.classList.contains('animate-in')) {
+                    setTimeout(() => {
+                      card.classList.add('animate-in');
+                    }, index * 100);
+                  }
+                });
+              }, 500);
+
+              const observer = new IntersectionObserver(
+                (entries) => {
+                  entries.forEach((entry, index) => {
+                    if (entry.isIntersecting) {
+                      setTimeout(() => {
+                        entry.target.classList.add('animate-in');
+                      }, index * 100);
+                    }
+                  });
+                },
+                {
+                  threshold: 0.1,
+                },
+              );
+
+              cards.forEach((card) => {
+                observer.observe(card);
+              });
+            });
+          `
+        }} />
       </div>
     </div>
   );

@@ -145,29 +145,43 @@ const TestimonialCard = ({
   body: string;
 }) => {
   const { isDark } = useTheme();
-  
+
   return (
     <div className={`relative w-full max-w-md overflow-hidden rounded-3xl border p-8 ${
-      isDark 
-        ? "border-white/10 bg-gradient-to-b from-white/5 to-white/[0.02] shadow-[0px_2px_0px_0px_rgba(255,255,255,0.1)_inset]" 
+      isDark
+        ? "border-white/10 bg-gradient-to-b from-white/5 to-white/[0.02] shadow-[0px_2px_0px_0px_rgba(255,255,255,0.1)_inset]"
         : "border-gray-200 bg-gradient-to-b from-gray-50 to-white shadow-lg"
     }`}>
       {isDark && (
         <div className="absolute -top-5 -left-5 -z-10 h-40 w-40 rounded-full bg-gradient-to-b from-blue-500/10 to-transparent blur-md"></div>
       )}
-      
+
       <Quote className={`w-8 h-8 mb-4 ${isDark ? "text-blue-400" : "text-blue-600"} opacity-60`} />
-      
+
       <div className={`leading-relaxed ${isDark ? "text-gray-200" : "text-gray-700"}`}>{body}</div>
 
       <div className="mt-6 flex items-center gap-3">
-        <img 
-          src={img} 
-          alt={name} 
-          height="48" 
-          width="48" 
-          className="h-12 w-12 rounded-full border-2 border-white/20" 
-        />
+        <div className="relative">
+          <div
+            className={`h-12 w-12 rounded-full transition-transform duration-200 hover:scale-105 ${
+              isDark
+                ? "border-2 border-white/30 shadow-lg shadow-white/10"
+                : "border-2 border-gray-200/50 shadow-md"
+            }`}
+            style={{
+              backgroundImage: `url(${img})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center 20%',
+              backgroundRepeat: 'no-repeat',
+              backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
+            }}
+          />
+          <img
+            src={img}
+            alt={`${name}'s profile picture`}
+            className="sr-only"
+          />
+        </div>
         <div className="flex flex-col">
           <div className={`leading-5 font-medium ${isDark ? "text-white" : "text-gray-900"}`}>{name}</div>
           <div className={`leading-5 ${isDark ? "text-gray-400" : "text-gray-500"}`}>{username}</div>
@@ -187,15 +201,23 @@ const testimonials = [
   },
   {
     name: "K Vinayaka Madhava Sharma",
-    username: "vinayaka_09_2004",
+    username: "@vinayaka_09_2004",
     body: "The main aim helped me to join the club was for the communication and other soft skill development. Which helped alot and assuring team spirit great. The team also assure the aptitude training required for the prior clearance stage of placement drives. Thank you so much for providing me an opportunity to be an integral part of it.",
     img: "/testimonials_images/Kvinayak.jpg",
   },
+
   {
     name: "Pratham S Salian",
-    username: "pratham_.s._salian",
+    username: "@pratham_.s._salian",
     body: "Being part of the HackerEarth Club has been an amazing experience. The coding challenges and hackathons helped me strengthen my problem-solving skills and apply concepts in real-world scenarios. Collaborating with peers also improved my teamwork and logical thinking abilities.",
     img: "testimonials_images/pratham.jpg",
+  },
+
+  {
+    name: "Samrudh R Shetty",
+    username: "",
+    body: "I wholeheartedly endorse HackerEarth NMAMIT Hub for its exemplary coding challenges and innovative problem-solving opportunities that foster intellectual growth and excellence.",
+    img: "/images/samrudh.JPG",
   },
   {
     name: "Gautham Tendulkar ",
@@ -207,25 +229,24 @@ const testimonials = [
     name: "Bhoomika Shenoy ",
     username: "@bhoomikashenoyy",
     body: "Being part of this club isn’t just about tech—it’s about connecting, creating, and making an impact. I’ve loved every contest, every brainstorm, and every moment.",
-    img: "https://media.istockphoto.com/id/2220866251/photo/isolated-generic-gray-human-figure-placeholder.webp?a=1&b=1&s=612x612&w=0&k=20&c=vkqNIInBzzIYcuk-wV5KC28xiXfFfYZmAgVOaYebNEA=",
+    img: "testimonials_images/ai_animated_g.jpg",
   },
   {
     name: "Pallavi Pai",
-    username: "pallavipai_",
+    username: "@pallavipai_",
     body: "Being a part of HackerEarth Hub has helped me strengthen my aptitude and foundations in data structures. Participating in programs like the SAP HackFest gave me exposure to what industries expect — the business models, the process of ideating, and pitching your product. The EmpowHer quiz was a great way to learn more about women in tech. My personal interests include Machine learning and App development .Always keen on learning, exploring, and building new things.",
-    img: "https://media.istockphoto.com/id/2220866251/photo/isolated-generic-gray-human-figure-placeholder.webp?a=1&b=1&s=612x612&w=0&k=20&c=vkqNIInBzzIYcuk-wV5KC28xiXfFfYZmAgVOaYebNEA=",
+    img: "testimonials_images/ai_animated_g.jpg",
   },
   {
     name: "Manvith",
     username: "@manvithhhhhh",
     body: "Being part of this club has been a valuable experience. I learned new skills, and improved my overall confidence and teamwork abilities.",
-    img: "https://media.istockphoto.com/id/2220866251/photo/isolated-generic-gray-human-figure-placeholder.webp?a=1&b=1&s=612x612&w=0&k=20&c=vkqNIInBzzIYcuk-wV5KC28xiXfFfYZmAgVOaYebNEA=",
+    img: "testimonials_images/ai_animated_m.jpg",
   },
 ];
-
-const firstColumn = testimonials.slice(0, 2);
-const secondColumn = testimonials.slice(2, 4);
-const thirdColumn = testimonials.slice(4, 7);
+const firstColumn = testimonials.slice(0, 3);
+const secondColumn = testimonials.slice(3, 5);
+const thirdColumn = testimonials.slice(5, 8);
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -851,8 +872,7 @@ const Home = () => {
       <p className={`text-xl max-w-3xl mx-auto leading-relaxed mt-2 ${
         isDark ? "text-gray-400" : "text-gray-700"
       }`}>
-        Discover our past events that brought the community together to learn, collaborate, and innovate.
-      </p>
+Take a look at some of our past events and initiatives      </p>
     </motion.div>
 
     {/* Events Grid - Using the EventCard component */}
@@ -896,7 +916,7 @@ const Home = () => {
             <p className={`mt-5 text-center text-lg ${
               isDark ? "text-gray-400" : "text-gray-600"
             }`}>
-              From coding skills to career growth, our community has helped students achieve their goals.
+              Voices from our community, hear what our members have to say about their journey..
             </p>
           </div>
 
