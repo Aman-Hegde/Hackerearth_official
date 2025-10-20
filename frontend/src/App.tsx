@@ -1,6 +1,6 @@
 // src/App.tsx
-
 import { useState, useEffect } from "react";
+import { Navigate, Outlet } from "react-router-dom";
 import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
@@ -10,10 +10,11 @@ import Team from "./pages/Team";
 import Domains from "./pages/Domains";
 import BlogPostPage from "./pages/BlogPostPage";
 import Leaderboard from "./pages/Leaderboard";
-import About from "./pages/About";
+// import About from "./pages/About";
 import Contact from "./pages/Contact";
 import LoginPage from "./pages/Login";
 import { AuthProvider } from "./context/AuthContext";
+import { useAuth } from "./context/AuthContext";
 import { ThemeProvider, useTheme } from "./context/ThemeContext"; 
 import ScrollToTop from "./components/ScrollTop";
 import Sidebar from "./components/Sidebar";
@@ -25,6 +26,11 @@ function AppWrapper() {
   const isAuthPage = location.pathname === "/login";
   const isDomainPage = location.pathname.startsWith("/domains");
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const ProtectedRoute = () => {
+  const { isAuthenticated } = useAuth();
+  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
+};
 
   useEffect(() => {
     setSidebarOpen(false); // close sidebar on route change
@@ -54,10 +60,12 @@ function AppWrapper() {
           <Route path="/" element={<Home />} />
           <Route path="/events" element={<PastEvents />} />
           <Route path="/team" element={<Team />} />
-          <Route path="/domains" element={<Domains />} />
-          <Route path="/domains/:slug" element={<BlogPostPage />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/domains" element={<Domains />} />
+            <Route path="/domains/:slug" element={<BlogPostPage />} />
+          </Route>
           <Route path="/leaderboard" element={<Leaderboard />} />
-          <Route path="/about" element={<About />} />
+          {/* <Route path="/about" element={<About />} /> */}
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<LoginPage />} />
         </Routes>
