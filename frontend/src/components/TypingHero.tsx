@@ -84,7 +84,7 @@ function TypingHero() {
       <div className="flex flex-wrap justify-center">
         <div className="relative">
           {/* Base Text */}
-          <span className={`${baseTextColor} text-4xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold`}>
+          <span className={`${baseTextColor} text-[2.15rem] xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold`}>
             {baseText}
           </span>
 
