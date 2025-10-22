@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useTheme } from "../context/ThemeContext";
 
 function TypingHero() {
@@ -80,37 +80,42 @@ function TypingHero() {
   const minWidthEm = maxPhraseLength * 0.65;
 
   return (
-    <h1 className="tracking-tighter font-sans text-center">
+    <h1 className={`tracking-tighter font-sans text-center px-4 sm:px-6 md:px-8 leading-tight`}>
       <div className="flex flex-wrap justify-center">
         <div className="relative">
-          {/* Base Text */}
-          <span className={`${baseTextColor} text-[2.15rem] xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold`}>
+          <span
+            className={`${baseTextColor} 
+            text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 
+            font-extrabold block`}
+          >
             {baseText}
           </span>
 
-          {/* Typing phrase */}
           <span
-            className={`${phraseColors} inline-block whitespace-nowrap relative text-3xl xs:text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold`}
+            className={`${phraseColors} inline-block whitespace-nowrap relative 
+            text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold`}
             style={{ minWidth: `${minWidthEm}em` }}
           >
             {displayText.split("").map((char, i) => (
               <span
                 key={i}
-                className={`inline-block ${i === displayText.length - 1 && !isDeleting ? "animate-fadeInUp" : ""
-                  }`}
+                className={`inline-block ${
+                  i === displayText.length - 1 && !isDeleting
+                    ? "animate-fadeInUp"
+                    : ""
+                }`}
               >
                 {char}
               </span>
             ))}
             <span
-              className={`inline-block w-1.5 ml-1 ${cursorColor} animate-pulse align-middle rounded-sm`}
-              style={{ height: "0.95em" }}
+              className={`inline-block w-1 ml-1 ${cursorColor} animate-pulse align-middle rounded-sm`}
+              style={{ height: "0.9em" }}
             />
           </span>
         </div>
       </div>
     </h1>
-
   );
 }
 
