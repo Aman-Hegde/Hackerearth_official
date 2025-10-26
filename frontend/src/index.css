@@ -239,29 +239,127 @@ html.dark ::-webkit-scrollbar-thumb { /* Adjust thumb for dark mode if desired *
   animation-delay: -0.1s;
 }
 
-/* Marquee animations */
-@keyframes marquee {
-  from {
-    transform: translateX(0%);
+/* Hero Crescent Glow Effect */
+.hero-crescent::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120vw;
+  height: 30vh;
+  max-width: 1400px;
+  /* Light mode styling (default) */
+  background: radial-gradient(
+    ellipse 100% 80% at 50% 100%,
+    rgba(59, 130, 246, 0.3) 0%,
+    rgba(96, 165, 250, 0.2) 25%,
+    rgba(147, 197, 253, 0.1) 45%,
+    rgba(255, 255, 255, 0.05) 65%,
+    transparent 85%
+  );
+  filter: blur(3px);
+  opacity: 0.4;
+  pointer-events: none;
+  z-index: 0;
+  animation: hero-glow-pulse 4s ease-in-out infinite;
+}
+
+/* Dark mode crescent styling (overrides light mode) */
+.dark .hero-crescent::after {
+  background: radial-gradient(
+    ellipse 100% 80% at 50% 100%,
+    rgba(139, 92, 246, 0.4) 0%,
+    rgba(167, 139, 250, 0.25) 20%,
+    rgba(196, 181, 253, 0.15) 40%,
+    rgba(255, 255, 255, 0.05) 60%,
+    transparent 80%
+  );
+  opacity: 0.3;
+  animation: hero-glow-pulse 6s ease-in-out infinite;
+}
+
+/* Additional atmospheric effect for the lower portion */
+.hero-crescent::before {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100vw;
+  height: 40vh;
+  background: radial-gradient(
+    ellipse 150% 60% at 50% 100%,
+    rgba(255, 255, 255, 0.02) 0%,
+    transparent 50%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+
+.dark .hero-crescent::before {
+  background: radial-gradient(
+    ellipse 150% 60% at 50% 100%,
+    rgba(255, 255, 255, 0.03) 0%,
+    transparent 50%
+  );
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 768px) {
+  .hero-crescent::after {
+    width: 140vw;
+    height: 25vh;
+    opacity: 0.3;
+    filter: blur(2px);
   }
-  to {
-    transform: translateX(-100%);
+
+  .dark .hero-crescent::after {
+    opacity: 0.25;
+  }
+
+  .hero-crescent::before {
+    height: 35vh;
   }
 }
 
-@keyframes marquee-vertical {
-  from {
-    transform: translateY(0%);
+/* Large screen optimizations */
+@media (min-width: 1400px) {
+  .hero-crescent::after {
+    max-width: 1600px;
+    height: 35vh;
   }
-  to {
-    transform: translateY(-100%);
+
+  .hero-crescent::before {
+    height: 45vh;
   }
 }
 
-.animate-marquee {
-  animation: marquee var(--duration, 40s) linear infinite;
+@keyframes hero-glow-pulse {
+  0%, 100% {
+    opacity: 0.3;
+    transform: translateX(-50%) translateY(0px);
+  }
+  50% {
+    opacity: 0.5;
+    transform: translateX(-50%) translateY(-5px);
+  }
 }
 
-.animate-marquee-vertical {
-  animation: marquee-vertical var(--duration, 40s) linear infinite;
+@keyframes twinkle {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.animate-twinkle {
+  animation: twinkle 4s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
 }

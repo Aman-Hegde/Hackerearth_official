@@ -68,11 +68,11 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
       ref={navRef}
       className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${scrolled
         ? isDark
-          ? "bg-black/90 backdrop-blur-md border-gray-800/50"
-          : "bg-white/90 backdrop-blur-md border-gray-200/50"
+          ? "bg-black/70 backdrop-blur-md border-gray-800/30"
+          : "bg-white/70 backdrop-blur-md border-gray-200/30"
         : isDark
-          ? "bg-black/80 backdrop-blur-sm"
-          : "bg-white/80 backdrop-blur-sm"
+          ? "bg-transparent backdrop-blur-sm"
+          : "bg-transparent backdrop-blur-sm"
         }`}
       initial={{ y: 0 }}
       animate={{ y: hidden ? -100 : 0 }}
@@ -209,8 +209,8 @@ const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
         {isOpen && (
           <motion.div
             className={`md:hidden absolute top-full left-0 right-0 backdrop-blur-md border-b ${isDark
-                ? "bg-black/95 border-gray-800"
-                : "bg-white/95 border-gray-200"
+                ? "bg-black/80 border-gray-800"
+                : "bg-white/80 border-gray-200"
               }`}
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: "auto" }}

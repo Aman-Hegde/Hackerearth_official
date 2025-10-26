@@ -4,12 +4,12 @@ import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion"
 import { ArrowRight, Users, Trophy, Calendar, Rocket, ChevronRight, FolderOpen, Quote } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import TypingHero from "../components/TypingHero";
-import { Code, Brain, Lightbulb, Puzzle, Calculator, TrendingUp, Menu, Share2, Shuffle } from "lucide-react";
+import { Code, Brain, Lightbulb, Puzzle, Calculator, TrendingUp } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+// import CurvedHorizonGlow from '../components/CurvedHorizonGlow';
+// import CurvedSectionTransition from '../components/CurvedSectionTransition';
 
 const EventCard = ({ event, index }: { event: any; index: number }) => {
-  const { isDark } = useTheme();
-
   return (
     <Link to={`/events/${event.id}`}>
       <motion.div
@@ -270,7 +270,7 @@ function ServiceUIGraphic({ feature, isDark }: { feature: any; isDark: boolean }
       {/* The graphics are rendered directly for an open, integrated feel */}
       <div className="relative flex items-center justify-center h-full min-h-[340px]">
         {feature.title === "Web Development" && (
-          <WebDevelopmentGraphic isDark={isDark} />
+          <WebDevelopmentGraphic />
         )}
         {feature.title === "Data Structures & Algorithms" && (
           <DSAGraphic isDark={isDark} />
@@ -285,7 +285,7 @@ function ServiceUIGraphic({ feature, isDark }: { feature: any; isDark: boolean }
 
 
 // --- 1. Web Development Graphic (Aesthetic Overhaul) ---
-function WebDevelopmentGraphic({ isDark }: { isDark: boolean }) {
+function WebDevelopmentGraphic() {
   const codeLines = [
     { text: "import { motion } from 'framer-motion';", color1: "text-purple-400", color2: "text-yellow-400" },
     { text: "", color1: "", color2: "" },
@@ -662,61 +662,99 @@ const Home = () => {
         }}
       />
 
-      <div className="fixed left-6 top-1/2 transform -translate-y-1/2 z-20 hidden lg:flex flex-col space-y-4">
-        {features.map((_, idx) => (
-          <button
-            key={idx}
-            onClick={() => scrollToFeature(idx)}
-            className={`group relative w-3 h-3 rounded-full transition-all duration-300 ${activeFeature === idx ? "bg-white scale-125 shadow-lg" : "bg-white/30 hover:bg-white/60 hover:scale-110"
-              }`}
-            aria-label={`Go to ${features[idx].title}`}
-          >
-            <div className="absolute left-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-              <div className="bg-black/90 text-white px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap border border-white/20">
-                {features[idx].title}
-              </div>
-            </div>
-          </button>
-        ))}
-      </div>
-
-      <section className="flex flex-col items-center justify-center min-h-[90vh] px-4 sm:px-6">
-        <div className="max-w-3xl mx-auto text-center space-y-8">
-          {/* <div className="inline-flex items-center px-3 py-2 bg-black/80 backdrop-blur-sm border border-gray-700 rounded-full text-xs text-gray-300 shadow-[0_0_20px_rgba(52,211,153,0.1)] cursor-default">
-            <span className="ml-1 mr-1">powered by Abhuday</span>
-          </div> */}
-          <TypingHero />
-          <div className="h-px w-24 bg-gradient-to-r from-transparent via-blue-500 to-transparent mx-auto my-8" />
-          <p className="text-muted-foreground max-w-xl mx-auto font-medium relative z-10 text-black-300 dark:text-gray-400">
-            We are a community of developers, designers, and innovators focused on hands-on creation. Join us to collaborate on real-world projects, hone your skills, and build a portfolio that stands out.
-          </p>
-          <div className="pt-8">
-            <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-              <button
-                onClick={handleServicesClick}
-                className="group relative px-6 py-3 bg-gray-800 text-white rounded-lg font-medium text-base hover:bg-gray-700 transition-all duration-300 transform hover:scale-105 border border-gray-700"
-              >
-                <span className="flex items-center space-x-2">
-                  <span>Services</span>
-                </span>
-              </button>
-              <Link
-                to="/login"
-                className="group relative px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium text-base hover:from-blue-400 hover:to-purple-500 transition-all duration-300 transform hover:scale-105 hover:shadow-[0_0_20px_rgba(66,153,225,0.3)]"
-              >
-                <span className="flex items-center space-x-2">
-                  <ArrowRight className="w-5 h-5" />
-                  <span>Join Our Community</span>
-                </span>
-              </Link>
-            </div>
+  <div className="fixed left-6 top-1/2 transform -translate-y-1/2 z-20 hidden lg:flex flex-col space-y-4">
+    {features.map((_, idx) => (
+      <button
+        key={idx}
+        onClick={() => scrollToFeature(idx)}
+        className={`group relative w-3 h-3 rounded-full transition-all duration-300 ${activeFeature === idx ? "bg-white scale-125 shadow-lg" : "bg-white/30 hover:bg-white/60 hover:scale-110"
+          }`}
+        aria-label={`Go to ${features[idx].title}`}
+      >
+        <div className="absolute left-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+          <div className="bg-black/90 text-white px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap border border-white/20">
+            {features[idx].title}
           </div>
         </div>
+      </button>
+    ))}
+  </div>
+
+  {/* UPDATED: Hero section with proper z-index */}
+  <section className="hero-crescent relative flex flex-col items-center justify-center min-h-[100vh] px-4 sm:px-6 overflow-hidden">
+    {/* Curved Horizon Glow Effect - Hero Section Only */}
+    {/* <CurvedHorizonGlow /> */}
+
+    {/* Starfield Effect - Dark Mode Only */}
+    {isDark && (
+      <div className="absolute inset-0 w-full h-full overflow-hidden z-0">
+        {Array.from({ length: 50 }, (_, i) => (
+          <div
+            key={i}
+            className={`absolute w-1 h-1 bg-white rounded-full animate-twinkle`}
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 80}%`,
+              animationDelay: `${Math.random() * 3}s`,
+              animationDuration: `${Math.random() * 2 + 2}s`,
+              filter: 'blur(0.5px)',
+            }}
+          />
+        ))}
+        {/* Larger twinkling stars */}
+        {Array.from({ length: 15 }, (_, i) => (
+          <div
+            key={`large-${i}`}
+            className={`absolute w-2 h-2 bg-blue-200 rounded-full animate-float`}
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 70}%`,
+              animationDelay: `${Math.random() * 4}s`,
+              animationDuration: `${Math.random() * 3 + 3}s`,
+              filter: 'blur(0.5px)',
+            }}
+          />
+        ))}
+      </div>
+    )}
+
+    {/* UPDATED: Content with higher z-index */}
+    <div className="max-w-3xl mx-auto text-center space-y-8 relative z-20">
+      <TypingHero />
+      <div className="h-px w-24 bg-gradient-to-r from-transparent via-blue-500 to-transparent mx-auto my-8" />
+      <p className="text-muted-foreground max-w-xl mx-auto font-medium relative z-10 text-black-300 dark:text-gray-400">
+        We are a community of developers, designers, and innovators focused on hands-on creation. Join us to collaborate on real-world projects, hone your skills, and build a portfolio that stands out.
+      </p>
+      <div className="pt-8">
+        <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
+          <button
+            onClick={handleServicesClick}
+            className="group relative px-6 py-3 bg-gray-800 text-white rounded-lg font-medium text-base hover:bg-gray-700 transition-all duration-300 transform hover:scale-105 border border-gray-700 z-20"
+          >
+            <span className="flex items-center space-x-2">
+              <span>Services</span>
+            </span>
+          </button>
+          <Link
+            to="/login"
+            className="group relative px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium text-base hover:from-blue-400 hover:to-purple-500 transition-all duration-300 transform hover:scale-105 hover:shadow-[0_0_20px_rgba(66,153,225,0.3)] z-20"
+          >
+            <span className="flex items-center space-x-2">
+              <ArrowRight className="w-5 h-5" />
+              <span>Join Our Community</span>
+            </span>
+          </Link>
+        </div>
+      </div>
+    </div>
       </section>
 
-      <section className="relative overflow-x-clip z-10 max-w-7xl mx-auto px-4 sm:px-6">
+      <section className="relative overflow-x-clip max-w-7xl mx-auto px-4 sm:px-6 z-[9]">
+        {/* Curved Section Transition - Creates valley effect for glow */}
+        {/* <CurvedSectionTransition /> */}
+
         <motion.div
-          className="text-center mb-16"
+          className="text-center mb-16 relative z-10 pt-24"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6 }}
@@ -830,7 +868,7 @@ const Home = () => {
       <StatsSection />
 
       {/* events */}
-      <section className={`relative z-10 py-24 ${isDark ? "bg-black" : "bg-slate-50"}`}>
+      <section className={`relative py-24 ${isDark ? "bg-black" : "bg-slate-50"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Section Header */}
           <motion.div
@@ -879,7 +917,7 @@ const Home = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section className={`relative z-10 py-24 ${isDark ? "bg-black" : "bg-gray-50"}`}>
+      <section className={`relative py-24 ${isDark ? "bg-black" : "bg-gray-50"}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="mx-auto max-w-[540px] text-center mb-16">
             <div className="flex justify-center">
@@ -960,7 +998,7 @@ const Home = () => {
         </div>
       </section>
 
-      <section className={`relative z-10 py-24 transition-colors duration-500 ${isDark ? "bg-black" : "bg-white"}`}>
+      <section className={`relative py-24 transition-colors duration-500 ${isDark ? "bg-black" : "bg-white"}`}>
         <div className="mx-auto max-w-4xl rounded-[40px] border border-black/5 dark:border-white/20 p-2 shadow-sm">
           <div className={`relative mx-auto overflow-hidden rounded-[38px] border border-black/5 dark:border-white/20 p-2 shadow-sm ${isDark ? "bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900" : "bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-500"
             }`}>
