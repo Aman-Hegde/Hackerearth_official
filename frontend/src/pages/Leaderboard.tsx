@@ -188,30 +188,41 @@ const Leaderboard = () => {
     }
 
     // Sorting
-    if (sortConfig) {
-        dataView.sort((a, b) => {
-            const aValue = a[sortConfig.key];
-            const bValue = b[sortConfig.key];
+ if (sortConfig) {
+  dataView.sort((a, b) => {
+    const aValue = a[sortConfig.key];
+    const bValue = b[sortConfig.key];
 
-            let comparison = 0;
-            
-            if (sortConfig.key === 'Score') {
-                comparison = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-            } else if (sortConfig.key === 'Name') {
-                comparison = String(aValue).localeCompare(String(bValue));
-            } else if (sortConfig.key === 'TimeDisplay') {
-                comparison = String(aValue).localeCompare(String(bValue));
-            }
-            let finalComparison = sortConfig.direction === 'asc' ? comparison : -comparison;
+    let comparison = 0;
 
-            // Tie-breaker: If scores are equal, sort by Name (Ascending)
-            if (sortConfig.key === 'Score' && finalComparison === 0) {
-                return a.Name.localeCompare(b.Name);
-            }
-            
-            return finalComparison;
-        });
+    if (sortConfig.key === 'Score') {
+      comparison = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+    } else if (sortConfig.key === 'Name') {
+      comparison = String(aValue).localeCompare(String(bValue));
+    } else if (sortConfig.key === 'TimeDisplay') {
+      comparison = String(aValue).localeCompare(String(bValue));
     }
+
+    let finalComparison = sortConfig.direction === 'asc' ? comparison : -comparison;
+
+    // Tie-breakers
+    if (sortConfig.key === 'Score' && finalComparison === 0) {
+      // For weekly contests, use TimeDisplay as tie-breaker
+      if (currentView !== 'Cumulative') {
+        const timeA = a.TimeDisplay.split(':').reduce((acc, v) => acc * 60 + Number(v), 0);
+        const timeB = b.TimeDisplay.split(':').reduce((acc, v) => acc * 60 + Number(v), 0);
+        if (timeA !== timeB) {
+          return timeA - timeB; // Lower time = better rank
+        }
+      }
+      // Final fallback: Name alphabetical order
+      return a.Name.localeCompare(b.Name);
+    }
+
+    return finalComparison;
+  });
+}
+
 
     return dataView;
   }, [currentData, searchQuery, sortConfig]);
