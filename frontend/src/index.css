@@ -363,3 +363,16 @@ html.dark ::-webkit-scrollbar-thumb { /* Adjust thumb for dark mode if desired *
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
+
+@keyframes marquee-vertical {
+  0%   { transform: translateY(0); }
+  100% { transform: translateY(-100%); }
+}
+
+.animate-marquee {
+  animation: marquee var(--duration, 40s) linear infinite;
+}
+
+.animate-marquee-vertical {
+  animation: marquee-vertical var(--duration, 40s) linear infinite;
+}
