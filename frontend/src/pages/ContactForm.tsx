@@ -1,11 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useTheme } from '../context/ThemeContext';
+import emailjs from 'emailjs-com';
 
 export function ContactForm() {
   const { isDark } = useTheme();
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
+  const form = useRef();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -15,19 +17,27 @@ export function ContactForm() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setStatusMessage('');
 
-    // Simulating API call
-    setTimeout(() => {
-      console.log("Form Data Submitted:", formData);
-      setStatusMessage("Success! Your message has been sent.");
-      setFormData({ name: '', email: '', message: '' });
+    emailjs.sendForm(
+        import.meta.env.VITE_EMAILJS_SERVICE_ID,
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+        form.current,
+        import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+    )
+    .then(() => {
+      setStatusMessage("Success! Your message has been sent.")
+      setFormData({name:'', email:'',message:''});
+    })
+    .catch(() => {
+      setStatusMessage("Failed to send Message! Try again.")
+    })
+    .finally(()=>{
       setIsSubmitting(false);
-    }, 1500);
+    })
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form ref={form} onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-2">
         <label htmlFor="name" className={`text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-900'}`}>
           Your name

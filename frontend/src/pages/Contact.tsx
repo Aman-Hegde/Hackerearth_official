@@ -22,7 +22,6 @@ const Contact = () => {
       title: "Call Us",
       contact: "+91 76195 45988",
       href: "tel:+917619545988",
-      // FIX: Replaced green gradient with a theme-consistent one
       gradient: "from-purple-500 to-pink-500",
     },
     {
