@@ -13,8 +13,8 @@
     "dev": "concurrently \"npm run backend\" \"npm run frontend\""
   },
   "dependencies": {
+    "@emailjs/browser": "^4.4.1",
     "aos": "^2.3.4",
-    "emailjs-com": "^3.2.0",
     "express": "^5.1.0",
     "google-auth-library": "^10.2.1",
     "pg": "^8.16.3",
