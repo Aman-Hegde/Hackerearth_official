@@ -4,20 +4,20 @@
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { Crown, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, X } from "lucide-react";
 import * as XLSX from "xlsx";
-import { useTheme } from "../context/ThemeContext"; 
+import { useTheme } from "../context/ThemeContext";
 import Loader from "../components/Loader";
 
 // --- Type Definitions ---
 interface LeaderboardEntry {
   Name: string;
-  Score: number; 
-  TimeDisplay: string; 
-  Email: string; 
+  Score: number;
+  TimeDisplay: string;
+  Email: string;
   UniqueKey: string;
 }
 
 interface ContestDataMap {
-    [key: string]: LeaderboardEntry[]; 
+  [key: string]: LeaderboardEntry[];
 }
 
 // --- Configuration ---
@@ -33,32 +33,32 @@ const CONTEST_FILES: { viewKey: string; filename: string }[] = [
 
 const VIEW_OPTIONS = ["Cumulative", ...CONTEST_FILES.map(f => f.viewKey)];
 const DEFAULT_VIEW = "Cumulative";
-const NAME_HEADER_KEY = "Name"; 
+const NAME_HEADER_KEY = "Name";
 const SCORE_HEADER_KEY = "Total Score 500.0";
 
 // --- Helper Functions ---
-
 const getUniqueKey = (email: string | undefined, name: string): string => {
-    //name as the unique key
-    const normalizedName = String(name || "N/A").toLowerCase().trim();
+  const normalizedEmail = String(email || "").toLowerCase().trim();
 
-    if (normalizedName && normalizedName !== 'n/a') {
-        return `N_${normalizedName}`; 
-    }
-    // Fallback
-    return `UNKNOWN_${Math.random()}`; 
+  if (normalizedEmail) {
+    return `E_${normalizedEmail}`;
+  }
+
+  // fallback ONLY if email is missing
+  const normalizedName = String(name || "N/A").toLowerCase().trim();
+  return `N_${normalizedName}`;
 };
 
 const formatTimeForDisplay = (timeValue: any): string => {
-    if (typeof timeValue === "number") {
-      const totalSeconds = Math.round(timeValue * 24 * 3600);
-      const absSeconds = Math.max(0, totalSeconds);
-      const hh = String(Math.floor(absSeconds / 3600)).padStart(2, "0");
-      const mm = String(Math.floor((absSeconds % 3600) / 60)).padStart(2, "0");
-      const ss = String(absSeconds % 60).padStart(2, "0");
-      return `${hh}:${mm}:${ss}`;
-    }
-    return typeof timeValue === 'string' && timeValue.includes(':') ? timeValue : "00:00:00";
+  if (typeof timeValue === "number") {
+    const totalSeconds = Math.round(timeValue * 24 * 3600);
+    const absSeconds = Math.max(0, totalSeconds);
+    const hh = String(Math.floor(absSeconds / 3600)).padStart(2, "0");
+    const mm = String(Math.floor((absSeconds % 3600) / 60)).padStart(2, "0");
+    const ss = String(absSeconds % 60).padStart(2, "0");
+    return `${hh}:${mm}:${ss}`;
+  }
+  return typeof timeValue === 'string' && timeValue.includes(':') ? timeValue : "00:00:00";
 };
 
 
@@ -74,99 +74,102 @@ const Leaderboard = () => {
   const [sortConfig, setSortConfig] = useState<{ key: keyof LeaderboardEntry; direction: "asc" | "desc" } | null>({ key: "Score", direction: "desc" });
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
-  
+
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [modalSearchValue, setModalSearchValue] = useState("");
-  
+
   const processAllData = useCallback(async () => {
     const contestMap: ContestDataMap = {};
     const masterCumulativeData: { [key: string]: LeaderboardEntry } = {};
-    
-  for (const contest of CONTEST_FILES) {
-        const { viewKey, filename } = contest;
-        try {
-            const response = await fetch(`/${filename}`, {
-                cache: 'no-store', 
-            });
-            if (!response.ok) {
-                contestMap[viewKey] = [];
-                continue;
-            }
-            const arrayBuffer = await response.arrayBuffer();
-            const workbook = XLSX.read(arrayBuffer, { type: "array" });
-            const sheetName = workbook.SheetNames[0];
-            const worksheet = workbook.Sheets[sheetName];
-            
-            const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
 
-            const individualWeekData: LeaderboardEntry[] = [];
-
-            jsonData.forEach((row) => {
-                const rawName = row[NAME_HEADER_KEY];
-                const name = String(rawName || "").trim(); 
-                
-                const email = String(row["Email"] || "").trim();
-                const score = Number(row[SCORE_HEADER_KEY]) || 0;
-                const timeDisplay = formatTimeForDisplay(row["Time Taken"]);
-                
-                const uniqueKey = getUniqueKey(email, name);
-
-                if (uniqueKey.startsWith('UNKNOWN')) return;
-
-                const entry: LeaderboardEntry = {
-                    Name: name,
-                    Email: email,
-                    Score: score, 
-                    TimeDisplay: timeDisplay,
-                    UniqueKey: uniqueKey,
-                };
-                individualWeekData.push(entry);
-                
-                // Cumulative Logic
-                if (!masterCumulativeData[uniqueKey]) {
-                    masterCumulativeData[uniqueKey] = {
-                        Name: name,
-                        Email: email,
-                        Score: score, 
-                        TimeDisplay: "", 
-                        UniqueKey: uniqueKey,
-                    };
-                } else {
-                    masterCumulativeData[uniqueKey].Score += score;
-                    
-                    if (name && masterCumulativeData[uniqueKey].Name === 'N/A') {
-                        masterCumulativeData[uniqueKey].Name = name;
-                    }
-                    if (email && !masterCumulativeData[uniqueKey].Email) {
-                        masterCumulativeData[uniqueKey].Email = email;
-                    }
-                }
-            });
-
-            contestMap[viewKey] = individualWeekData;
-
-        } catch (error) {
-            console.error(`Error processing file ${filename}:`, error);
+    for (const contest of CONTEST_FILES) {
+      const { viewKey, filename } = contest;
+      try {
+        const response = await fetch(`/${filename}`, {
+          cache: 'no-store',
+        });
+        if (!response.ok) {
+          contestMap[viewKey] = [];
+          continue;
         }
+        const arrayBuffer = await response.arrayBuffer();
+        const workbook = XLSX.read(arrayBuffer, { type: "array" });
+        const sheetName = workbook.SheetNames[0];
+        const worksheet = workbook.Sheets[sheetName];
+
+        const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+
+        const individualWeekData: LeaderboardEntry[] = [];
+
+        jsonData.forEach((row) => {
+          const rawName = row[NAME_HEADER_KEY];
+          const name = String(rawName || "").trim();
+
+          const email = String(row["Email"] || "").trim();
+          const score = Number(row[SCORE_HEADER_KEY]) || 0;
+          const timeDisplay = formatTimeForDisplay(row["Time Taken"]);
+
+          const uniqueKey = getUniqueKey(email);
+
+          if (uniqueKey.startsWith('UNKNOWN')) return;
+
+          const entry: LeaderboardEntry = {
+            Name: name,
+            Email: email,
+            Score: score,
+            TimeDisplay: timeDisplay,
+            UniqueKey: uniqueKey,
+          };
+          individualWeekData.push(entry);
+
+          // Cumulative Logic
+          if (!masterCumulativeData[uniqueKey]) {
+            masterCumulativeData[uniqueKey] = {
+              Name: name,
+              Email: email,
+              Score: score,
+              TimeDisplay: "",
+              UniqueKey: uniqueKey,
+            };
+          } else {
+            // accumulate score
+            masterCumulativeData[uniqueKey].Score += score;
+
+            // choose the best name
+            const existingName = masterCumulativeData[uniqueKey].Name.trim();
+            const newName = name.trim();
+
+            if (newName && (newName.length > existingName.length)) {
+              masterCumulativeData[uniqueKey].Name = newName;
+            }
+          }
+
+        });
+
+        contestMap[viewKey] = individualWeekData;
+
+      } catch (error) {
+        console.error(`Error processing file ${filename}:`, error);
+      }
     }
-    
+
     contestMap[DEFAULT_VIEW] = Object.values(masterCumulativeData);
 
     return contestMap;
-  }, []); 
+  }, []);
 
   // --- Effects and Memoization ---
 
   useEffect(() => {
     setLoading(true);
     processAllData().then((contestMap) => {
-        setAllContestData(contestMap);
-        const hasData = (contestMap[DEFAULT_VIEW]?.length || 0) > 0;
-        setFileMissing(!hasData);
-        setLoading(false);
+      setAllContestData(contestMap);
+      const hasData = (contestMap[DEFAULT_VIEW]?.length || 0) > 0;
+      setFileMissing(!hasData);
+      setLoading(false);
     });
   }, [processAllData]);
-  
+
   useEffect(() => {
     setCurrentPage(1);
     setSearchQuery("");
@@ -190,40 +193,40 @@ const Leaderboard = () => {
     }
 
     // Sorting
- if (sortConfig) {
-  dataView.sort((a, b) => {
-    const aValue = a[sortConfig.key];
-    const bValue = b[sortConfig.key];
+    if (sortConfig) {
+      dataView.sort((a, b) => {
+        const aValue = a[sortConfig.key];
+        const bValue = b[sortConfig.key];
 
-    let comparison = 0;
+        let comparison = 0;
 
-    if (sortConfig.key === 'Score') {
-      comparison = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
-    } else if (sortConfig.key === 'Name') {
-      comparison = String(aValue).localeCompare(String(bValue));
-    } else if (sortConfig.key === 'TimeDisplay') {
-      comparison = String(aValue).localeCompare(String(bValue));
-    }
-
-    let finalComparison = sortConfig.direction === 'asc' ? comparison : -comparison;
-
-    // Tie-breakers
-    if (sortConfig.key === 'Score' && finalComparison === 0) {
-      // For weekly contests, use TimeDisplay as tie-breaker
-      if (currentView !== 'Cumulative') {
-        const timeA = a.TimeDisplay.split(':').reduce((acc, v) => acc * 60 + Number(v), 0);
-        const timeB = b.TimeDisplay.split(':').reduce((acc, v) => acc * 60 + Number(v), 0);
-        if (timeA !== timeB) {
-          return timeA - timeB; // Lower time = better rank
+        if (sortConfig.key === 'Score') {
+          comparison = aValue < bValue ? -1 : aValue > bValue ? 1 : 0;
+        } else if (sortConfig.key === 'Name') {
+          comparison = String(aValue).localeCompare(String(bValue));
+        } else if (sortConfig.key === 'TimeDisplay') {
+          comparison = String(aValue).localeCompare(String(bValue));
         }
-      }
-      // Final fallback: Name alphabetical order
-      return a.Name.localeCompare(b.Name);
-    }
 
-    return finalComparison;
-  });
-}
+        let finalComparison = sortConfig.direction === 'asc' ? comparison : -comparison;
+
+        // Tie-breakers
+        if (sortConfig.key === 'Score' && finalComparison === 0) {
+          // For weekly contests, use TimeDisplay as tie-breaker
+          if (currentView !== 'Cumulative') {
+            const timeA = a.TimeDisplay.split(':').reduce((acc, v) => acc * 60 + Number(v), 0);
+            const timeB = b.TimeDisplay.split(':').reduce((acc, v) => acc * 60 + Number(v), 0);
+            if (timeA !== timeB) {
+              return timeA - timeB; // Lower time = better rank
+            }
+          }
+          // Final fallback: Name alphabetical order
+          return a.Name.localeCompare(b.Name);
+        }
+
+        return finalComparison;
+      });
+    }
 
 
     return dataView;
@@ -239,23 +242,23 @@ const Leaderboard = () => {
   // --- Event Handlers ---
   const handleSort = (key: keyof LeaderboardEntry) => {
     let direction: 'asc' | 'desc' = 'asc';
-    
+
     if (key === 'Score') {
-        direction = 'desc'; 
-    } 
+      direction = 'desc';
+    }
 
     if (sortConfig?.key === key) {
-        direction = sortConfig.direction === 'asc' ? 'desc' : 'asc';
+      direction = sortConfig.direction === 'asc' ? 'desc' : 'asc';
     }
     setSortConfig({ key, direction });
   };
-  
+
   const handleViewChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newView = event.target.value;
     setCurrentView(newView);
-    setSortConfig({ key: "Score", direction: "desc" }); 
+    setSortConfig({ key: "Score", direction: "desc" });
   };
-  
+
   const handleSearch = () => {
     setSearchQuery(modalSearchValue);
     setIsSearchModalOpen(false);
@@ -269,14 +272,14 @@ const Leaderboard = () => {
 
   // --- Render Configuration ---
   const crownColors = ["#FFD700", "#C0C0C0", "#CD7F32"];
-  
+
   const baseColumns: { key: keyof LeaderboardEntry; label: string; }[] = [
     { key: "Name", label: "Name" },
-    { key: "Score", label: currentView === 'Cumulative' ? "Total Score" : "Score" }, 
+    { key: "Score", label: currentView === 'Cumulative' ? "Total Score" : "Score" },
   ];
 
-  const columns = currentView !== 'Cumulative' 
-    ? [...baseColumns, { key: "TimeDisplay" as keyof LeaderboardEntry, label: "Time Taken" }] 
+  const columns = currentView !== 'Cumulative'
+    ? [...baseColumns, { key: "TimeDisplay" as keyof LeaderboardEntry, label: "Time Taken" }]
     : baseColumns;
 
   // --- Render ---
@@ -285,7 +288,7 @@ const Leaderboard = () => {
       <div className={`flex flex-col justify-center items-center min-h-screen ${isDark ? "bg-black text-white" : "bg-gray-50 text-gray-900"}`}>
         <Loader size={80} />
         <p className="mt-4 text-lg font-medium">Loading Leaderboard Data from all contests...</p>
-        </div>
+      </div>
     );
   }
 
@@ -303,36 +306,36 @@ const Leaderboard = () => {
             <div className="space-y-4">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div className="flex items-center gap-2">
-                    <label className="text-sm font-medium">View:</label>
-                    <select
-                        value={currentView}
-                        onChange={handleViewChange}
-                        className={`p-2 border rounded-md font-semibold transition ${isDark ? "bg-gray-800 border-gray-600 text-white" : "bg-white border-gray-300 text-gray-800"}`}
-                    >
-                        {VIEW_OPTIONS.map(view => (
-                            <option key={view} value={view}>{view}</option>
-                        ))}
-                    </select>
+                  <label className="text-sm font-medium">View:</label>
+                  <select
+                    value={currentView}
+                    onChange={handleViewChange}
+                    className={`p-2 border rounded-md font-semibold transition ${isDark ? "bg-gray-800 border-gray-600 text-white" : "bg-white border-gray-300 text-gray-800"}`}
+                  >
+                    {VIEW_OPTIONS.map(view => (
+                      <option key={view} value={view}>{view}</option>
+                    ))}
+                  </select>
                 </div>
 
                 <div className="flex items-center gap-4 w-full sm:w-auto">
-                    {searchQuery && (
-                        <div className="flex items-center gap-2 text-sm mr-auto">
-                            <span className="text-gray-400">Searching:</span>
-                            <span className="font-semibold px-2 py-1 rounded-md bg-blue-500/10 text-blue-400">{searchQuery}</span>
-                            <button onClick={clearSearch} className="p-1 rounded-full hover:bg-red-500/10 text-red-400"><X size={16}/></button>
-                        </div>
-                    )}
-                    <button
-                      onClick={() => {
-                        setModalSearchValue(searchQuery); 
-                        setIsSearchModalOpen(true);
-                      }}
-                      className={`flex items-center justify-center px-4 py-2 border rounded-md font-semibold transition ${isDark ? "bg-gray-800 border-gray-600 hover:bg-gray-700" : "bg-white border-gray-300 hover:bg-gray-100"}`}
-                    >
-                      <Search className="mr-2 h-4 w-4" />
-                      <span>Search</span>
-                    </button>
+                  {searchQuery && (
+                    <div className="flex items-center gap-2 text-sm mr-auto">
+                      <span className="text-gray-400">Searching:</span>
+                      <span className="font-semibold px-2 py-1 rounded-md bg-blue-500/10 text-blue-400">{searchQuery}</span>
+                      <button onClick={clearSearch} className="p-1 rounded-full hover:bg-red-500/10 text-red-400"><X size={16} /></button>
+                    </div>
+                  )}
+                  <button
+                    onClick={() => {
+                      setModalSearchValue(searchQuery);
+                      setIsSearchModalOpen(true);
+                    }}
+                    className={`flex items-center justify-center px-4 py-2 border rounded-md font-semibold transition ${isDark ? "bg-gray-800 border-gray-600 hover:bg-gray-700" : "bg-white border-gray-300 hover:bg-gray-100"}`}
+                  >
+                    <Search className="mr-2 h-4 w-4" />
+                    <span>Search</span>
+                  </button>
                 </div>
               </div>
 
@@ -342,9 +345,9 @@ const Leaderboard = () => {
                     <tr className={`${isDark ? "border-b border-gray-700" : "border-b border-gray-200"}`}>
                       <th className="p-4 font-semibold">Rank</th>
                       {columns.map((col) => (
-                        <th 
-                          key={col.key} 
-                          className="p-4 font-semibold cursor-pointer select-none" 
+                        <th
+                          key={col.key}
+                          className="p-4 font-semibold cursor-pointer select-none"
                           onClick={() => handleSort(col.key)}
                         >
                           <div className="flex items-center gap-2">
@@ -357,8 +360,8 @@ const Leaderboard = () => {
                   </thead>
                   <tbody>
                     {paginatedData.map((row, index) => {
-                        const rank = (currentPage - 1) * pageSize + index + 1;
-                        return (
+                      const rank = (currentPage - 1) * pageSize + index + 1;
+                      return (
                         <tr key={row.UniqueKey + row.Score} className={`transition ${isDark ? "hover:bg-gray-900" : "hover:bg-gray-100"}`}>
                           <td className="p-4">
                             <div className="flex items-center gap-3 font-medium">
@@ -372,24 +375,25 @@ const Leaderboard = () => {
                             <td className="p-4 text-gray-400">{row.TimeDisplay}</td>
                           )}
                         </tr>
-                    )})}
+                      )
+                    })}
                     {paginatedData.length === 0 && (
-                           <tr className={`${isDark ? "text-gray-500" : "text-gray-400"}`}>
-                               <td colSpan={columns.length + 1} className="p-8 text-center">
-                                   No results found for "{searchQuery}" in {currentView}.
-                               </td>
-                             </tr>
+                      <tr className={`${isDark ? "text-gray-500" : "text-gray-400"}`}>
+                        <td colSpan={columns.length + 1} className="p-8 text-center">
+                          No results found for "{searchQuery}" in {currentView}.
+                        </td>
+                      </tr>
                     )}
                   </tbody>
                 </table>
               </div>
-              
+
               <div className="flex items-center justify-between pt-4 flex-wrap gap-4">
                 <div className="flex items-center gap-2 text-sm">
                   <span>Rows per page:</span>
                   <select
                     value={pageSize}
-                    onChange={e => {setPageSize(Number(e.target.value)); setCurrentPage(1);}}
+                    onChange={e => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
                     className={`p-1 border rounded-md ${isDark ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300"}`}
                   >
                     {[10, 20, 50].map(size => <option key={size} value={size}>{size}</option>)}
@@ -413,22 +417,22 @@ const Leaderboard = () => {
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
           <div className={`p-6 rounded-lg shadow-xl w-full max-w-sm ${isDark ? "bg-gray-900 border border-gray-700" : "bg-white"}`}>
             <div>
-                <button onClick={() => setIsSearchModalOpen(false)} className="p-1 mb-4 rounded-full hover:bg-gray-500/10 float-right"><X/></button>
-                <h3 className="text-xl font-semibold mb-4">Search Leaderboard</h3>
+              <button onClick={() => setIsSearchModalOpen(false)} className="p-1 mb-4 rounded-full hover:bg-gray-500/10 float-right"><X /></button>
+              <h3 className="text-xl font-semibold mb-4">Search Leaderboard</h3>
             </div>
             <div className="space-y-4">
-                <input
-                    type="text"
-                    value={modalSearchValue}
-                    onChange={(e) => setModalSearchValue(e.target.value)}
-                    placeholder="Enter Name to search..."
-                    onKeyDown={(e) => {
-                        if (e.key === 'Enter') handleSearch();
-                    }}
-                    className={`p-3 w-full border rounded-md transition focus:ring-blue-500 focus:border-blue-500 ${isDark ? "bg-gray-800 border-gray-600 text-white" : "bg-white border-gray-300 text-black"}`}
-                />
+              <input
+                type="text"
+                value={modalSearchValue}
+                onChange={(e) => setModalSearchValue(e.target.value)}
+                placeholder="Enter Name to search..."
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') handleSearch();
+                }}
+                className={`p-3 w-full border rounded-md transition focus:ring-blue-500 focus:border-blue-500 ${isDark ? "bg-gray-800 border-gray-600 text-white" : "bg-white border-gray-300 text-black"}`}
+              />
             </div>
-            
+
             <div className="flex justify-end gap-4 mt-6">
               <button onClick={clearSearch} className="px-4 py-2 rounded-md font-semibold hover:bg-gray-500/10">Clear Search</button>
               <button onClick={handleSearch} className="px-4 py-2 rounded-md font-semibold bg-blue-600 text-white hover:bg-blue-700">Search</button>
