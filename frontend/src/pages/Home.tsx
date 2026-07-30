@@ -951,82 +951,75 @@ const Home = () => {
         </div>
       </section>
 
-      <section className={`relative py-24 transition-colors duration-500 ${isDark ? "bg-black" : "bg-white"}`}>
-        <div className="mx-auto max-w-4xl rounded-[40px] border border-black/5 dark:border-white/20 p-2 shadow-sm">
-          <div className={`relative mx-auto overflow-hidden rounded-[38px] border border-black/5 dark:border-white/20 p-2 shadow-sm ${isDark ? "bg-gradient-to-br from-blue-900 via-purple-900 to-indigo-900" : "bg-gradient-to-br from-blue-500 via-purple-500 to-indigo-500"
-            }`}>
+      <section className="section-space relative overflow-hidden bg-canvas transition-colors duration-500">
+        <div className="site-container">
+          <div className="ui-card relative isolate overflow-hidden bg-gradient-to-br from-surface via-surface to-brand-50/70 px-5 py-12 sm:px-8 sm:py-16 lg:px-12 lg:py-20 dark:to-brand-950/20">
             {/* Background effects */}
             <div
-              className="absolute inset-0 z-0"
-              style={{
-                background: isDark
-                  ? "radial-gradient(ellipse 60% 40% at 50% 50%, rgba(59, 130, 246, 0.15), transparent 70%)"
-                  : "radial-gradient(ellipse 60% 40% at 50% 50%, rgba(255, 255, 255, 0.2), transparent 70%)",
-              }}
+              className="pointer-events-none absolute -left-24 -top-32 size-72 rounded-full bg-brand-500/20 blur-3xl dark:bg-brand-400/15"
+              aria-hidden="true"
             />
-
             <div
-              className="absolute inset-0 z-0 opacity-[0.03]"
-              style={{
-                backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter'%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-              }}
+              className="pointer-events-none absolute -bottom-36 -right-24 size-80 rounded-full bg-accent-400/20 blur-3xl dark:bg-accent-400/10"
+              aria-hidden="true"
+            />
+            <div
+              className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-brand-500/70 to-transparent"
+              aria-hidden="true"
             />
 
-            <div className="relative z-10 p-12">
-              <div className="text-center">
+            <div className="relative z-10 grid items-center gap-9 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-12">
+              <div className="text-center lg:text-left">
                 {/* Main heading */}
-                <h2 className={`text-4xl font-bold mb-6 tracking-tighter ${isDark
-                    ? "bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-clip-text text-transparent"
-                    : "text-white"
-                  }`}>
+                <h2 className="section-heading mx-auto max-w-2xl lg:mx-0">
                   Ready to Begin Your Journey?
                 </h2>
 
                 {/* Subtitle */}
-                <p className={`text-lg mb-8 max-w-2xl mx-auto ${isDark ? "text-blue-200" : "text-blue-100"
-                  }`}>
+                <p className="section-lead mx-auto lg:mx-0">
                   Join a community of innovators, builders, and leaders. Start your path to technical excellence today.
                 </p>
+              </div>
 
-                {/* Animated CTA button */}
-                <div className="flex items-center justify-center mt-10">
-                  <Link to="/login">
-                    <div className="group border-white/30 bg-white/20 flex h-[64px] cursor-pointer items-center gap-2 rounded-full border p-[11px] backdrop-blur-sm transition-all hover:bg-white/30">
-                      <div className="border-white/30 bg-white flex h-[43px] items-center justify-center rounded-full border">
-                        <p className="mr-3 ml-2 flex items-center justify-center gap-2 font-medium tracking-tight text-blue-900">
-                          <Rocket className="w-5 h-5" />
-                          Get Started
-                        </p>
-                      </div>
-                      <div className="border-white/30 flex size-[26px] items-center justify-center rounded-full border-2 transition-all ease-in-out group-hover:ml-2">
-                        <ArrowRight className="w-4 h-4 text-white transition-all ease-in-out group-hover:rotate-45" />
-                      </div>
-                    </div>
-                  </Link>
-                </div>
-
-                {/* Background text effect */}
-                <h1
-                  className="absolute inset-x-0 -bottom-20 text-center text-[80px] font-semibold text-transparent sm:text-[120px] pointer-events-none"
-                  style={{
-                    WebkitTextStroke: isDark ? "1px rgba(255,255,255,0.1)" : "1px rgba(255,255,255,0.2)",
-                    color: "transparent",
-                  }}
-                  aria-hidden="true"
+              {/* Animated CTA button */}
+              <div className="flex items-center justify-center lg:justify-end">
+                <Link
+                  to="/login"
+                  className="btn btn-primary group w-full justify-between px-5 focus-visible:outline-offset-4 xs:w-auto xs:min-w-48 xs:justify-center"
                 >
-                  HackerEarth
-                </h1>
-                <h1
-                  className="absolute inset-x-0 -bottom-20 text-center text-[80px] font-semibold pointer-events-none opacity-10 sm:text-[120px]"
-                  style={{
-                    color: isDark ? "rgba(255,255,255,0.3)" : "rgba(255,255,255,0.4)",
-                  }}
-                  aria-hidden="true"
-                >
-                  HackerEarth
-                </h1>
+                  <span className="flex items-center gap-2">
+                    <Rocket className="size-5" aria-hidden="true" />
+                    <span>Get Started</span>
+                  </span>
+                  <span
+                    className="flex size-7 items-center justify-center rounded-full border border-current/30 transition-all ease-in-out group-hover:ml-2"
+                    aria-hidden="true"
+                  >
+                    <ArrowRight className="size-4 transition-transform ease-in-out group-hover:rotate-45" />
+                  </span>
+                </Link>
               </div>
             </div>
+
+            {/* Background text effect */}
+            <h1
+              className="pointer-events-none absolute inset-x-0 -bottom-4 whitespace-nowrap text-center font-display text-[3.5rem] font-semibold leading-none text-transparent sm:-bottom-8 sm:text-[7rem] lg:text-[9rem]"
+              style={{
+                WebkitTextStroke: isDark
+                  ? "1px rgba(103, 232, 249, 0.1)"
+                  : "1px rgba(37, 99, 235, 0.1)",
+                color: "transparent",
+              }}
+              aria-hidden="true"
+            >
+              HackerEarth
+            </h1>
+            <h1
+              className="pointer-events-none absolute inset-x-0 -bottom-4 whitespace-nowrap text-center font-display text-[3.5rem] font-semibold leading-none text-brand-500/5 sm:-bottom-8 sm:text-[7rem] lg:text-[9rem] dark:text-accent-300/5"
+              aria-hidden="true"
+            >
+              HackerEarth
+            </h1>
           </div>
         </div>
       </section>
