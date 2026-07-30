@@ -1,44 +1,49 @@
-import { useState, useEffect } from "react";
-import { useTheme } from "../context/ThemeContext";
+import { useEffect, useState } from 'react';
+import { useReducedMotion } from 'framer-motion';
+
+const phrases = [
+  {
+    text: 'Hackathons ',
+    color:
+      'from-accent-600 via-accent-500 to-brand-600 dark:from-accent-300 dark:via-accent-400 dark:to-brand-300',
+    cursorColor: 'bg-accent-600 dark:bg-accent-300',
+  },
+  {
+    text: 'Skill Assessments ',
+    color:
+      'from-brand-700 via-brand-600 to-accent-600 dark:from-brand-300 dark:via-brand-400 dark:to-accent-300',
+    cursorColor: 'bg-brand-600 dark:bg-brand-300',
+  },
+  {
+    text: 'Developer Community ',
+    color:
+      'from-brand-600 via-accent-500 to-signal-600 dark:from-brand-300 dark:via-accent-300 dark:to-signal-400',
+    cursorColor: 'bg-signal-600 dark:bg-signal-400',
+  },
+] as const;
+
+const baseText = 'HackerEarth empowers ';
+const longestPhrase = phrases.reduce(
+  (longest, phrase) => (phrase.text.length > longest.length ? phrase.text : longest),
+  '',
+);
+const accessibleHeading = `${baseText}${phrases
+  .map((phrase) => phrase.text.trim())
+  .join(', ')}`.trim();
+const typingSpeed = 80;
+const deletingSpeed = 45;
+const pauseTime = 1800;
 
 function TypingHero() {
-  const { isDark } = useTheme();
-
-  const [displayText, setDisplayText] = useState("");
+  const shouldReduceMotion = useReducedMotion();
+  const [displayText, setDisplayText] = useState('');
   const [currentPhraseIndex, setCurrentPhraseIndex] = useState(0);
   const [currentCharIndex, setCurrentCharIndex] = useState(0);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  const phrases = [
-    {
-      text: "Hackathons ",
-      colorDark: "bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent",
-      colorLight: "bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent",
-      cursorColorDark: "bg-gradient-to-r from-cyan-400 to-blue-400",
-      cursorColorLight: "bg-gradient-to-r from-cyan-600 to-blue-600",
-    },
-    {
-      text: "Skill Assessments ",
-      colorDark: "bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent",
-      colorLight: "bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent",
-      cursorColorDark: "bg-gradient-to-r from-blue-400 to-purple-400",
-      cursorColorLight: "bg-gradient-to-r from-blue-600 to-purple-600",
-    },
-    {
-      text: "Developer Community ",
-      colorDark: "bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent",
-      colorLight: "bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent",
-      cursorColorDark: "bg-gradient-to-r from-purple-400 to-pink-400",
-      cursorColorLight: "bg-gradient-to-r from-purple-600 to-pink-600",
-    },
-  ];
-
-  const baseText = "HackerEarth empowers ";
-  const typingSpeed = 80;
-  const deletingSpeed = 45;
-  const pauseTime = 1800;
-
   useEffect(() => {
+    if (shouldReduceMotion) return;
+
     const currentPhrase = phrases[currentPhraseIndex].text;
 
     if (!isDeleting && currentCharIndex < currentPhrase.length) {
@@ -66,55 +71,39 @@ function TypingHero() {
       setIsDeleting(false);
       setCurrentPhraseIndex((prev) => (prev + 1) % phrases.length);
     }
-  }, [currentCharIndex, isDeleting, currentPhraseIndex]);
+  }, [currentCharIndex, currentPhraseIndex, isDeleting, shouldReduceMotion]);
 
-  const phraseColors = isDark
-    ? phrases[currentPhraseIndex].colorDark
-    : phrases[currentPhraseIndex].colorLight;
-  const cursorColor = isDark
-    ? phrases[currentPhraseIndex].cursorColorDark
-    : phrases[currentPhraseIndex].cursorColorLight;
-  const baseTextColor = isDark ? "text-white" : "text-gray-900";
-
-  const maxPhraseLength = Math.max(...phrases.map((p) => p.text.length));
-  const minWidthEm = maxPhraseLength * 0.65;
+  const currentPhrase = phrases[currentPhraseIndex];
+  const visibleText = shouldReduceMotion ? currentPhrase.text : displayText;
 
   return (
-    <h1 className={`tracking-tighter font-sans text-center px-4 sm:px-6 md:px-8 leading-tight`}>
-      <div className="flex flex-wrap justify-center">
-        <div className="relative">
+    <h1
+      className="mx-auto w-full min-w-0 text-center font-display text-[clamp(2rem,8vw,4.75rem)] font-semibold leading-[1.02] tracking-[-0.045em] text-ink"
+      aria-label={accessibleHeading}
+    >
+      <span aria-hidden="true">
+        <span className="block text-balance">{baseText}</span>
+        <span className="relative mx-auto mt-2 grid w-full max-w-full">
           <span
-            className={`${baseTextColor} 
-            text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 
-            font-extrabold block`}
+            className="invisible col-start-1 row-start-1 block max-w-full break-words [overflow-wrap:anywhere]"
           >
-            {baseText}
+            {longestPhrase}
           </span>
-
-          <span
-            className={`${phraseColors} inline-block whitespace-nowrap relative 
-            text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-extrabold`}
-            style={{ minWidth: `${minWidthEm}em` }}
-          >
-            {displayText.split("").map((char, i) => (
-              <span
-                key={i}
-                className={`inline-block ${
-                  i === displayText.length - 1 && !isDeleting
-                    ? "animate-fadeInUp"
-                    : ""
-                }`}
-              >
-                {char}
-              </span>
-            ))}
+          <span className="col-start-1 row-start-1 block max-w-full break-words [overflow-wrap:anywhere]">
             <span
-              className={`inline-block w-1 ml-1 ${cursorColor} animate-pulse align-middle rounded-sm`}
-              style={{ height: "0.9em" }}
+              className={`bg-gradient-to-r bg-clip-text text-transparent ${currentPhrase.color}`}
+            >
+              {visibleText}
+            </span>
+            <span
+              className={`ml-[0.12em] inline-block min-w-0.5 w-[0.08em] rounded-sm align-baseline ${
+                currentPhrase.cursorColor
+              } ${shouldReduceMotion ? 'opacity-70' : 'animate-pulse'}`}
+              style={{ height: '0.82em' }}
             />
           </span>
-        </div>
-      </div>
+        </span>
+      </span>
     </h1>
   );
 }

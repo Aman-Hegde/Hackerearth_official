@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
+import { motion, useScroll, useTransform, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ArrowRight, Users, Trophy, Calendar, Rocket, ChevronRight, FolderOpen, Quote } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import TypingHero from "../components/TypingHero";
@@ -609,8 +609,23 @@ const StatsSection = () => {
   )
 }
 
+const heroStars = Array.from({ length: 36 }, (_, index) => ({
+  left: `${((index * 29 + 7) % 96) + 2}%`,
+  top: `${((index * 47 + 5) % 72) + 4}%`,
+  animationDelay: `${(index % 9) * 0.37}s`,
+  animationDuration: `${2.4 + (index % 5) * 0.45}s`,
+}));
+
+const heroAccentStars = Array.from({ length: 8 }, (_, index) => ({
+  left: `${((index * 41 + 13) % 90) + 5}%`,
+  top: `${((index * 31 + 9) % 62) + 6}%`,
+  animationDelay: `${(index % 5) * 0.65}s`,
+  animationDuration: `${3.4 + (index % 4) * 0.55}s`,
+}));
+
 const Home = () => {
   const { isDark } = useTheme();
+  const shouldReduceMotion = useReducedMotion();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
   const featureRefs = useRef<(HTMLDivElement | null)[]>([]);
@@ -680,73 +695,95 @@ const Home = () => {
     ))}
   </div>
 
-  {/* UPDATED: Hero section with proper z-index */}
-  <section className="hero-crescent relative flex flex-col items-center justify-center min-h-[100vh] px-4 sm:px-6 overflow-hidden">
-    {/* Curved Horizon Glow Effect - Hero Section Only */}
-    {/* <CurvedHorizonGlow /> */}
-
-    {/* Starfield Effect - Dark Mode Only */}
-    {isDark && (
-      <div className="absolute inset-0 w-full h-full overflow-hidden z-0">
-        {Array.from({ length: 50 }, (_, i) => (
+      <section className="hero-crescent relative isolate flex min-h-[100svh] items-center overflow-hidden bg-canvas pb-section-sm pt-28 text-ink sm:pt-32 lg:pt-36">
+        <div className="pointer-events-none absolute inset-0 z-0" aria-hidden="true">
           <div
-            key={i}
-            className={`absolute w-1 h-1 bg-white rounded-full animate-twinkle`}
+            className="absolute inset-0 opacity-60 dark:opacity-40"
             style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 80}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${Math.random() * 2 + 2}s`,
-              filter: 'blur(0.5px)',
+              backgroundImage:
+                "linear-gradient(to right, rgb(var(--color-border) / 0.22) 1px, transparent 1px), linear-gradient(to bottom, rgb(var(--color-border) / 0.22) 1px, transparent 1px)",
+              backgroundSize: "4rem 4rem",
+              WebkitMaskImage: "linear-gradient(to bottom, black, transparent 88%)",
+              maskImage: "linear-gradient(to bottom, black, transparent 88%)",
             }}
           />
-        ))}
-        {/* Larger twinkling stars */}
-        {Array.from({ length: 15 }, (_, i) => (
-          <div
-            key={`large-${i}`}
-            className={`absolute w-2 h-2 bg-blue-200 rounded-full animate-float`}
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 70}%`,
-              animationDelay: `${Math.random() * 4}s`,
-              animationDuration: `${Math.random() * 3 + 3}s`,
-              filter: 'blur(0.5px)',
-            }}
-          />
-        ))}
-      </div>
-    )}
-
-    {/* UPDATED: Content with higher z-index */}
-    <div className="max-w-3xl mx-auto text-center space-y-8 relative z-20">
-      <TypingHero />
-      <div className="h-px w-24 bg-gradient-to-r from-transparent via-blue-500 to-transparent mx-auto my-8" />
-      <p className="text-muted-foreground max-w-xl mx-auto font-medium relative z-10 text-black-300 dark:text-gray-400">
-        We are a community of developers, designers, and innovators focused on hands-on creation. Join us to collaborate on real-world projects, hone your skills, and build a portfolio that stands out.
-      </p>
-      <div className="pt-8">
-        <div className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-4">
-          <button
-            onClick={handleServicesClick}
-            className="group relative px-6 py-3 bg-gray-800 text-white rounded-lg font-medium text-base hover:bg-gray-700 transition-all duration-300 transform hover:scale-105 border border-gray-700 z-20"
-          >
-            <span className="flex items-center space-x-2">
-              <span>Services</span>
-            </span>
-          </button>
-          <Link
-            to="/login"
-            className="group relative px-6 py-3 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-lg font-medium text-base hover:from-blue-400 hover:to-purple-500 transition-all duration-300 transform hover:scale-105 hover:shadow-[0_0_20px_rgba(66,153,225,0.3)] z-20"
-          >
-            <span className="flex items-center space-x-2">
-              <ArrowRight className="w-5 h-5" />
-              <span>Join Our Community</span>
-            </span>
-          </Link>
+          <div className="absolute left-1/2 top-[12%] h-[30rem] w-[min(52rem,120vw)] -translate-x-1/2 rounded-full bg-brand-500/10 blur-3xl dark:bg-brand-500/15" />
+          <div className="absolute -right-24 top-1/3 size-72 rounded-full bg-accent-500/10 blur-3xl dark:bg-accent-400/10" />
+          <div className="absolute -left-20 bottom-16 size-64 rounded-full bg-signal-500/5 blur-3xl dark:bg-signal-400/5" />
+          <div className="absolute inset-x-0 top-[4.5rem] h-px bg-gradient-to-r from-transparent via-line-strong/70 to-transparent" />
         </div>
-      </div>
-    </div>
+
+        {isDark && (
+          <div
+            className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
+            aria-hidden="true"
+          >
+            {heroStars.map((star, index) => (
+              <span
+                key={index}
+                className="absolute size-1 rounded-full bg-white/70 animate-twinkle"
+                style={{
+                  ...star,
+                  filter: "blur(0.5px)",
+                }}
+              />
+            ))}
+            {heroAccentStars.map((star, index) => (
+              <span
+                key={`accent-${index}`}
+                className="absolute size-1.5 rounded-full bg-accent-200/80 shadow-[0_0_12px_rgba(34,211,238,0.45)] animate-float"
+                style={{
+                  ...star,
+                  filter: "blur(0.35px)",
+                }}
+              />
+            ))}
+          </div>
+        )}
+
+        <div className="site-container relative z-20">
+          <motion.div
+            className="mx-auto flex w-full max-w-5xl flex-col items-center text-center"
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+          >
+            <TypingHero />
+
+            <div
+              className="my-7 flex w-36 items-center justify-center gap-2 sm:my-8"
+              aria-hidden="true"
+            >
+              <span className="h-px flex-1 bg-gradient-to-r from-transparent to-brand-500/80" />
+              <span className="size-1.5 rotate-45 border border-accent-500 bg-canvas shadow-[0_0_12px_rgba(6,182,212,0.45)]" />
+              <span className="h-px flex-1 bg-gradient-to-l from-transparent to-accent-500/80" />
+            </div>
+
+            <p className="mx-auto max-w-2xl text-balance text-base font-medium leading-relaxed text-ink-muted sm:text-lg">
+              We are a community of developers, designers, and innovators focused on hands-on creation. Join us to collaborate on real-world projects, hone your skills, and build a portfolio that stands out.
+            </p>
+
+            <div className="mt-8 flex w-full max-w-xs flex-col items-stretch justify-center gap-3 sm:max-w-none sm:flex-row sm:items-center">
+              <button
+                type="button"
+                onClick={handleServicesClick}
+                className="btn btn-secondary w-full sm:w-auto sm:min-w-36"
+              >
+                Services
+              </button>
+              <Link
+                to="/login"
+                className="btn btn-primary group w-full sm:w-auto sm:min-w-52"
+              >
+                <ArrowRight
+                  className="size-4 transition-transform duration-200 group-hover:translate-x-0.5"
+                  aria-hidden="true"
+                />
+                <span>Join Our Community</span>
+              </Link>
+            </div>
+          </motion.div>
+        </div>
       </section>
 
       <section className="relative overflow-x-clip max-w-7xl mx-auto px-4 sm:px-6 z-[9]">
