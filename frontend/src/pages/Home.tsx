@@ -558,32 +558,30 @@ const StatsSection = () => {
       whileInView={{ opacity: 1 }}
       transition={{ duration: 0.5 }}
       viewport={{ once: true }}
-      className="relative bg-white dark:bg-black py-20 overflow-hidden"
+      className="section-space-sm relative overflow-hidden border-y border-line bg-canvas-subtle"
     >
-      {/* The expanding purple glow effect */}
       <motion.div
-        className="absolute top-0 left-0 w-full h-16 pointer-events-none z-0"
+        className="pointer-events-none absolute inset-x-0 top-0 z-0 h-20"
         style={{
           opacity: glowOpacity,
-          background: `radial-gradient(ellipse at top center, rgba(139,92,246,0.3) 0%, transparent 70%)`,
+          background:
+            "radial-gradient(ellipse at top center, rgb(var(--color-accent) / 0.22) 0%, rgb(var(--color-brand) / 0.08) 38%, transparent 72%)",
           scaleX: glowScaleX,
-          transformOrigin: 'center',
+          transformOrigin: "center",
         }}
+        aria-hidden="true"
       />
 
-      {/* Existing content wrapped in a div to ensure it's above the glow and has max-width */}
-      <div className="max-w-6xl mx-auto px-10 relative z-10 py-20">
+      <div className="site-container relative z-10">
         <motion.div
           variants={fadeIn}
           initial="initial"
           whileInView="animate"
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="mx-auto mb-10 max-w-2xl text-center sm:mb-12"
         >
-          <h2 className="text-5xl md:text-6xl font-semibold mb-4 text-black dark:text-white">
-            Delivering Results
-          </h2>
-          <p className="text-xl text-gray-900 dark:text-gray-300">
+          <h2 className="section-heading">Delivering Results</h2>
+          <p className="section-lead mx-auto text-center">
             Our journey in numbers and achievements
           </p>
         </motion.div>
@@ -593,36 +591,40 @@ const StatsSection = () => {
           initial="initial"
           whileInView="animate"
           viewport={{ once: true }}
-          className="grid md:grid-cols-4 gap-8"
+          className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-6"
         >
           {[
             { icon: <Users className="w-8 h-8" />, number: "400+", title: "Members, every year" },
             { icon: <FolderOpen className="w-8 h-8" />, number: "50+", title: "Projects Completed" },
             { icon: <Calendar className="w-8 h-8" />, number: "25+", title: "Events Organized" },
             { icon: <Trophy className="w-8 h-8" />, number: "15+", title: "Awards Won" }
-          ].map((stat, i) => (
+          ].map((stat) => (
             <motion.div
-              key={i}
+              key={stat.title}
               variants={fadeIn}
               whileHover={{ y: -5, boxShadow: "0 10px 30px -15px rgba(0,0,0,0.2)" }}
-              className="text-center p-6 rounded-xl bg-white/50 dark:bg-black/70 hover:bg-white/70 dark:hover:bg-black/70 transition-all duration-300 border border-gray-800 dark:border-gray-800"
+              className="ui-card flex min-w-0 flex-col items-center p-4 text-center sm:p-5 lg:p-6"
             >
               <motion.div
-                className="w-12 h-12 mx-auto mb-4 flex items-center justify-center text-black dark:text-white"
+                className="mb-3 flex size-11 items-center justify-center rounded-control border border-brand-500/20 bg-brand-500/10 text-brand-700 dark:text-brand-300 sm:mb-4 sm:size-12"
                 whileHover={{ rotate: 360 }}
                 transition={{ duration: 0.5 }}
               >
                 {stat.icon}
               </motion.div>
-              <h3 className="text-2xl font-bold mb-2 text-black dark:text-white">{stat.number}</h3>
-              <p className="text-gray-900 dark:text-gray-300">{stat.title}</p>
+              <h3 className="font-display text-2xl font-semibold leading-none text-ink sm:text-3xl">
+                {stat.number}
+              </h3>
+              <p className="mt-2 text-balance text-xs font-medium leading-snug text-ink-muted sm:text-sm">
+                {stat.title}
+              </p>
             </motion.div>
           ))}
         </motion.div>
       </div>
     </motion.section>
-  )
-}
+  );
+};
 
 const heroStars = Array.from({ length: 36 }, (_, index) => ({
   left: `${((index * 29 + 7) % 96) + 2}%`,
