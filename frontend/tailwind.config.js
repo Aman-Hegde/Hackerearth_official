@@ -40,6 +40,12 @@ const signal = {
   950: '#052e16',
 };
 
+const semanticRole = (name, scale = {}) => ({
+  ...scale,
+  DEFAULT: `rgb(var(--color-${name}) / <alpha-value>)`,
+  text: `rgb(var(--color-${name}-text) / <alpha-value>)`,
+});
+
 /** @type {import('tailwindcss').Config} */
 export default {
   content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
@@ -51,9 +57,13 @@ export default {
       },
       colors: {
         brand: cobalt,
-        primary: cobalt,
+        primary: semanticRole('primary', cobalt),
         accent: cyan,
         signal,
+        technical: semanticRole('technical', cyan),
+        creative: semanticRole('creative'),
+        success: semanticRole('success'),
+        highlight: semanticRole('highlight'),
         canvas: {
           DEFAULT: 'rgb(var(--color-canvas) / <alpha-value>)',
           subtle: 'rgb(var(--color-canvas-subtle) / <alpha-value>)',
