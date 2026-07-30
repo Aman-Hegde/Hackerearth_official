@@ -1,4 +1,4 @@
-import React from 'react';
+import type { FC } from 'react';
 import { categories } from '../lib/resourcesData';
 
 interface CategoryFilterProps {
@@ -7,39 +7,43 @@ interface CategoryFilterProps {
   isDark: boolean;
 }
 
-const CategoryFilter: React.FC<CategoryFilterProps> = ({ 
-  activeCategory, 
-  onCategoryChange, 
-  isDark 
+const CategoryFilter: FC<CategoryFilterProps> = ({
+  activeCategory,
+  onCategoryChange,
+  isDark
 }) => {
   return (
-    <div className="flex flex-wrap gap-3 mb-8">
-      {categories.map((category) => (
-        <button
-          key={category.id}
-          onClick={() => onCategoryChange(category.id)}
-          className={`inline-flex items-center px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
-            activeCategory === category.id
-              ? 'bg-blue-600 text-white shadow-lg'
-              : `${
-                  isDark 
-                    ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' 
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`
-          }`}
-        >
-          {category.name}
-          <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${
-            activeCategory === category.id
-              ? 'bg-blue-500 text-white'
-              : isDark
-                ? 'bg-gray-700 text-gray-300'
-                : 'bg-gray-200 text-gray-600'
-          }`}>
-            {category.count}
-          </span>
-        </button>
-      ))}
+    <div
+      className="-mx-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0"
+      data-color-scheme={isDark ? 'dark' : 'light'}
+    >
+      <div className="flex min-w-max gap-2" role="group" aria-label="Filter resources by category">
+        {categories.map((category) => {
+          const isActive = activeCategory === category.id;
+          return (
+            <button
+              key={category.id}
+              type="button"
+              onClick={() => onCategoryChange(category.id)}
+              aria-pressed={isActive}
+              className={isActive
+                ? 'btn btn-primary min-h-10 shrink-0 rounded-full px-3 py-2 text-xs sm:min-h-11 sm:px-4 sm:text-sm'
+                : 'btn btn-secondary min-h-10 shrink-0 rounded-full px-3 py-2 text-xs sm:min-h-11 sm:px-4 sm:text-sm'
+              }
+            >
+              <span>{category.name}</span>
+              <span
+                className={isActive
+                  ? 'rounded-full border border-current/20 bg-white/20 px-2 py-0.5 text-xs'
+                  : 'rounded-full border border-line bg-surface-muted px-2 py-0.5 text-xs text-ink-muted'
+                }
+              >
+                {category.count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 };
