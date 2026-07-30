@@ -1,10 +1,7 @@
 import React, { useState, useRef } from "react";
-import { useTheme } from "../context/ThemeContext";
 import emailjs from "@emailjs/browser";
 
 export function ContactForm() {
-  const { isDark } = useTheme();
-
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -46,15 +43,15 @@ export function ContactForm() {
   };
 
   return (
-    <form ref={form} onSubmit={handleSubmit} className="space-y-6">
+    <form
+      ref={form}
+      onSubmit={handleSubmit}
+      className="space-y-5"
+      aria-busy={isSubmitting}
+    >
       {/* NAME */}
       <div className="space-y-2">
-        <label
-          htmlFor="name"
-          className={`text-sm font-medium ${
-            isDark ? "text-gray-200" : "text-gray-900"
-          }`}
-        >
+        <label htmlFor="name" className="block text-sm font-semibold text-ink">
           Your name
         </label>
         <input
@@ -64,23 +61,14 @@ export function ContactForm() {
           value={formData.name}
           onChange={handleChange}
           placeholder="What's your good name?"
-          className={`w-full px-4 py-3 rounded-lg transition-colors duration-300 focus:outline-none ${
-            isDark
-              ? "border border-gray-700 bg-black text-white placeholder-gray-500 focus:border-gray-500"
-              : "border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:border-gray-500"
-          }`}
+          className="min-h-11 w-full rounded-control border border-line-strong bg-surface px-4 py-3 text-ink transition-colors duration-200 placeholder:text-ink-subtle hover:border-brand-400"
           required
         />
       </div>
 
       {/* EMAIL */}
       <div className="space-y-2">
-        <label
-          htmlFor="email"
-          className={`text-sm font-medium ${
-            isDark ? "text-gray-200" : "text-gray-900"
-          }`}
-        >
+        <label htmlFor="email" className="block text-sm font-semibold text-ink">
           Your email
         </label>
         <input
@@ -90,23 +78,14 @@ export function ContactForm() {
           value={formData.email}
           onChange={handleChange}
           placeholder="What's your email address?"
-          className={`w-full px-4 py-3 rounded-lg transition-colors duration-300 focus:outline-none ${
-            isDark
-              ? "border border-gray-700 bg-black text-white placeholder-gray-500 focus:border-gray-500"
-              : "border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:border-gray-500"
-          }`}
+          className="min-h-11 w-full rounded-control border border-line-strong bg-surface px-4 py-3 text-ink transition-colors duration-200 placeholder:text-ink-subtle hover:border-brand-400"
           required
         />
       </div>
 
       {/* MESSAGE */}
       <div className="space-y-2">
-        <label
-          htmlFor="message"
-          className={`text-sm font-medium ${
-            isDark ? "text-gray-200" : "text-gray-900"
-          }`}
-        >
+        <label htmlFor="message" className="block text-sm font-semibold text-ink">
           Your message
         </label>
         <textarea
@@ -116,40 +95,30 @@ export function ContactForm() {
           onChange={handleChange}
           placeholder="How can we help you?"
           rows={5}
-          className={`w-full px-4 py-3 rounded-lg transition-colors duration-300 resize-none focus:outline-none ${
-            isDark
-              ? "border border-gray-700 bg-black text-white placeholder-gray-500 focus:border-gray-500"
-              : "border border-gray-300 bg-white text-gray-900 placeholder-gray-400 focus:border-gray-500"
-          }`}
+          className="w-full resize-none rounded-control border border-line-strong bg-surface px-4 py-3 text-ink transition-colors duration-200 placeholder:text-ink-subtle hover:border-brand-400"
           required
         />
       </div>
 
       {/* SUBMIT BUTTON */}
-      <button
-        type="submit"
-        disabled={isSubmitting}
-        className={`w-full px-6 py-3 rounded-lg font-medium transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed ${
-          isDark
-            ? "bg-white text-black hover:bg-gray-200"
-            : "bg-gray-900 text-white hover:bg-gray-700"
-        }`}
-      >
+      <button type="submit" disabled={isSubmitting} className="btn btn-primary w-full">
         {isSubmitting ? "Sending..." : "Send Message"}
       </button>
 
       {/* STATUS MESSAGE */}
-      {statusMessage && (
-        <p
-          className={`text-sm text-center ${
-            statusMessage.includes("Success")
-              ? "text-green-500"
-              : "text-red-500"
-          }`}
-        >
-          {statusMessage}
-        </p>
-      )}
+      <div className="min-h-5" role="status" aria-live="polite" aria-atomic="true">
+        {statusMessage && (
+          <p
+            className={statusMessage.includes("Success")
+              ? "text-center text-sm font-medium text-signal-700 dark:text-signal-300"
+              : "text-center text-sm font-medium text-red-600 dark:text-red-300"
+            }
+          >
+            {statusMessage}
+          </p>
+        )}
+      </div>
     </form>
   );
+
 }
