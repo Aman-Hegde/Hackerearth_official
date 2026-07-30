@@ -78,12 +78,12 @@ function TypingHero() {
 
   return (
     <h1
-      className="mx-auto w-full min-w-0 text-center font-display text-[clamp(2rem,8vw,4.75rem)] font-semibold leading-[1.02] tracking-[-0.045em] text-ink"
+      className="w-full min-w-0 text-left font-display text-[clamp(2rem,5.5vw,3.5rem)] font-semibold leading-[1.02] tracking-[-0.045em] text-ink"
       aria-label={accessibleHeading}
     >
       <span aria-hidden="true">
         <span className="block text-balance">{baseText}</span>
-        <span className="relative mx-auto mt-2 grid w-full max-w-full">
+        <span className="relative mt-2 grid w-full max-w-full">
           <span
             className="invisible col-start-1 row-start-1 block max-w-full break-words [overflow-wrap:anywhere]"
           >

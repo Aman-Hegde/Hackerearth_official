@@ -728,40 +728,43 @@ const Home = () => {
 
         <div className="site-container relative z-20">
           <motion.div
-            className="mx-auto flex w-full max-w-5xl flex-col items-center text-center"
+            className="grid w-full min-w-0 items-center gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(16rem,2fr)] lg:gap-10 xl:gap-12"
             initial={shouldReduceMotion ? false : { opacity: 0, y: 24 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
           >
-            <TypingHero />
+            <div className="min-w-0 max-w-3xl">
+              <TypingHero />
 
-            <div
-              className="my-7 flex w-36 items-center justify-center gap-2 sm:my-8"
-              aria-hidden="true"
-            >
-              <span className="h-px flex-1 bg-gradient-to-r from-transparent to-brand-500/80" />
-              <span className="size-1.5 rotate-45 border border-accent-500 bg-canvas shadow-[0_0_12px_rgba(6,182,212,0.45)]" />
-              <span className="h-px flex-1 bg-gradient-to-l from-transparent to-accent-500/80" />
+              <div
+                className="my-6 flex w-36 items-center justify-start gap-2 sm:my-7"
+                aria-hidden="true"
+              >
+                <span className="h-px flex-1 bg-gradient-to-r from-transparent to-brand-500/80" />
+                <span className="size-1.5 rotate-45 border border-accent-500 bg-canvas shadow-[0_0_12px_rgba(6,182,212,0.45)]" />
+                <span className="h-px flex-1 bg-gradient-to-l from-transparent to-accent-500/80" />
+              </div>
+
+              <p className="max-w-2xl text-left text-base font-medium leading-relaxed text-ink-muted sm:text-lg">
+                We are a community of developers, designers, and innovators focused on hands-on creation. Join us to collaborate on real-world projects, hone your skills, and build a portfolio that stands out.
+              </p>
             </div>
 
-            <p className="mx-auto max-w-2xl text-balance text-base font-medium leading-relaxed text-ink-muted sm:text-lg">
-              We are a community of developers, designers, and innovators focused on hands-on creation. Join us to collaborate on real-world projects, hone your skills, and build a portfolio that stands out.
-            </p>
-
-            <div className="mt-8 flex w-full max-w-xs flex-col items-stretch justify-center gap-3 sm:max-w-none sm:flex-row sm:items-center">
+            <div className="grid w-full max-w-2xl gap-3 sm:gap-4 lg:max-w-sm lg:justify-self-end">
               <button
                 type="button"
                 onClick={handleServicesClick}
-                className="btn btn-secondary w-full sm:w-auto sm:min-w-36"
+                className="group ui-card-accent-cyan top-border-accent-cyan flex h-20 w-full items-center justify-center px-5 text-center text-sm font-semibold text-technical-text transition duration-300 hover:-translate-y-1 hover:border-technical/50 hover:shadow-surface focus-visible:outline-offset-4 sm:text-base"
               >
-                Services
+                <span>Services</span>
               </button>
+
               <Link
                 to="/login"
-                className="btn btn-primary group w-full sm:w-auto sm:min-w-52"
+                className="group ui-card top-border-accent-violet flex h-20 w-full items-center justify-center gap-2 border-primary/30 bg-gradient-to-br from-primary/10 via-surface to-creative/10 px-5 text-center text-sm font-semibold text-primary-text transition duration-300 hover:-translate-y-1 hover:border-creative/50 hover:shadow-surface focus-visible:outline-offset-4 sm:text-base"
               >
                 <ArrowRight
-                  className="size-4 transition-transform duration-200 group-hover:translate-x-0.5"
+                  className="size-4 text-creative transition-transform duration-200 group-hover:translate-x-0.5"
                   aria-hidden="true"
                 />
                 <span>Join Our Community</span>
