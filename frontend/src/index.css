@@ -376,3 +376,25 @@ html.dark ::-webkit-scrollbar-thumb { /* Adjust thumb for dark mode if desired *
 .animate-marquee-vertical {
   animation: marquee-vertical var(--duration, 40s) linear infinite;
 }
+
+@layer components {
+  @media (max-width: 639px) {
+    .auth-card {
+      width: calc(100vw - 1.5rem) !important;
+      max-width: calc(100vw - 1.5rem) !important;
+    }
+
+    .auth-card,
+    .auth-card * {
+      min-width: 0;
+    }
+
+    .auth-card p,
+    .auth-card h1,
+    .auth-card h2,
+    .auth-card a,
+    .auth-card span {
+      overflow-wrap: anywhere;
+    }
+  }
+}
