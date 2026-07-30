@@ -27,6 +27,7 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
   const { user, logout, isAuthenticated } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const { pathname } = useLocation();
+  const displayedUsername = user?.name || user?.email?.split('@')[0];
 
   useEffect(() => {
     const scrollContainer = document.getElementById('scroll-container');
@@ -163,10 +164,10 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
 
             {isAuthenticated ? (
               <>
-                <div className="flex max-w-20 items-center gap-2 rounded-control border border-line bg-surface-muted px-2 py-2 text-ink lg:max-w-28 xl:ml-1 xl:max-w-44 xl:px-3">
+                <div className="flex max-w-28 items-center gap-2 rounded-control border border-line bg-surface-muted px-2 py-2 text-ink lg:max-w-36 xl:ml-1 xl:max-w-44 xl:px-3">
                   <User className="size-4 shrink-0 text-brand-600 dark:text-brand-300" aria-hidden="true" />
-                  <span className="truncate text-xs font-semibold xl:text-sm">
-                    {user?.name || user?.email?.split('@')[0]}
+                  <span className="truncate text-xs font-semibold xl:text-sm" title={displayedUsername}>
+                    {displayedUsername}
                   </span>
                 </div>
                 <button

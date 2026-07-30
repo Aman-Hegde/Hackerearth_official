@@ -22,7 +22,7 @@ const BlogPage: FC = () => {
       className="min-h-screen bg-canvas text-ink transition-colors duration-500"
       data-color-scheme={isDark ? 'dark' : 'light'}
     >
-      <div className="site-container-wide section-space">
+      <div className="site-container-wide section-space pt-24 lg:pt-section">
         {/* Header */}
         <header className="mx-auto max-w-3xl text-center">
           <h1 className="section-heading">Learning Resources</h1>

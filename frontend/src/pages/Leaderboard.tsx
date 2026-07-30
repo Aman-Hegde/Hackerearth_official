@@ -299,7 +299,7 @@ const Leaderboard = () => {
 
   return (
     <main className="min-h-screen bg-canvas text-ink transition-colors duration-500">
-      <div className="site-container-wide section-space">
+      <div className="site-container-wide section-space pt-24 lg:pt-section">
         <header className="mx-auto mb-10 max-w-4xl text-center sm:mb-12">
           <h1 className="section-heading">{currentView} Leaderboard</h1>
         </header>

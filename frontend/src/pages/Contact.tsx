@@ -33,7 +33,7 @@ const Contact = () => {
 
   return (
     <main className="min-h-screen overflow-hidden bg-canvas text-ink transition-colors duration-500">
-      <div className="site-container-wide section-space">
+      <div className="site-container-wide section-space pt-24 lg:pt-section">
         {/* Hero Section */}
         <motion.header
           initial={{ opacity: 0, y: 20 }}

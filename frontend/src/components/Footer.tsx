@@ -97,7 +97,7 @@ const Footer = () => {
 
         {/* Bottom Section */}
         <div className="mt-12 flex flex-col items-center justify-between gap-5 border-t border-line pt-6 sm:flex-row">
-          <p className="text-center text-sm text-ink-subtle sm:text-left">
+          <p className="text-center text-sm text-ink-muted sm:text-left dark:text-ink-subtle">
             © {new Date().getFullYear()} HackerEarth Club, NMAMIT. All rights reserved.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-2 sm:justify-end">
