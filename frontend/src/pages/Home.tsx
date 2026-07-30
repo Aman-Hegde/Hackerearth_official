@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, useScroll, useTransform, AnimatePresence, useReducedMotion } from "framer-motion";
 import { ArrowRight, Users, Trophy, Calendar, Rocket, ChevronRight, FolderOpen, Quote } from "lucide-react";
@@ -258,17 +258,28 @@ const stagger = {
     }
   }
 };
-function ServiceUIGraphic({ feature, isDark }: { feature: any; isDark: boolean }) {
+interface DomainFeature {
+  icon: ReactNode;
+  title: string;
+  subtitle: string;
+  description: string;
+  technologies: string[];
+  bgGradient: string;
+  accentColor: string;
+  link: string;
+}
+
+function ServiceUIGraphic({ feature, isDark }: { feature: DomainFeature; isDark: boolean }) {
   return (
-    <div className="relative">
+    <div className="relative w-full min-w-0">
       <motion.div
-        className="absolute inset-0 bg-white/5 rounded-3xl blur-3xl dark:bg-gray-800/30"
+        className="absolute inset-0 rounded-3xl bg-brand-500/5 blur-3xl dark:bg-brand-400/10"
         animate={{ scale: [1, 1.05, 1] }}
         transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
       />
 
       {/* The graphics are rendered directly for an open, integrated feel */}
-      <div className="relative flex items-center justify-center h-full min-h-[340px]">
+      <div className="relative flex min-w-0 items-center justify-center py-2 sm:py-4">
         {feature.title === "Web Development" && (
           <WebDevelopmentGraphic />
         )}
@@ -300,7 +311,7 @@ function WebDevelopmentGraphic() {
 
   return (
     <motion.div
-      className="w-full max-w-lg mx-auto font-mono text-sm shadow-2xl shadow-blue-500/10 rounded-lg"
+      className="mx-auto w-full max-w-lg rounded-lg font-mono text-[0.625rem] shadow-2xl shadow-blue-500/10 sm:text-xs xl:text-sm"
       initial="initial"
       whileInView="animate"
       viewport={{ once: true, amount: 0.5 }}
@@ -311,14 +322,18 @@ function WebDevelopmentGraphic() {
         <div className="w-3 h-3 bg-green-500 rounded-full" />
       </div>
       <motion.div
-        className="bg-[#282c34] rounded-b-lg p-4 overflow-hidden"
+        className="overflow-x-auto overflow-y-hidden rounded-b-lg bg-[#282c34] p-3 sm:p-4"
         variants={{ initial: { height: 0 }, animate: { height: finalHeight } }}
         transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.2 }}
       >
-        <motion.div variants={{ animate: { transition: { staggerChildren: 0.12 } } }}>
+        <motion.div
+          className="min-w-[18rem]"
+          variants={{ animate: { transition: { staggerChildren: 0.12 } } }}
+        >
           {codeLines.map((line, index) => (
             <motion.p
               key={index}
+              className="whitespace-nowrap"
               variants={{ initial: { opacity: 0 }, animate: { opacity: 1 } }}
               style={{ height: lineHeight }}
             >
@@ -354,7 +369,7 @@ function DSAGraphic({ isDark }: { isDark: boolean }) {
       setIndex((prevIndex) => (prevIndex + 1) % visualizations.length);
     }, 4000);
     return () => clearInterval(interval);
-  }, []);
+  }, [visualizations.length]);
 
   return (
     <div className="w-full flex flex-col items-center justify-center space-y-4">
@@ -493,7 +508,7 @@ function AptitudeGraphic({ isDark }: { isDark: boolean }) {
 }
 
 
-const features = [
+const features: DomainFeature[] = [
   {
     icon: <Code className="w-8 h-8" />,
     title: "Web Development",
@@ -786,119 +801,104 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="relative overflow-x-clip max-w-7xl mx-auto px-4 sm:px-6 z-[9]">
-        {/* Curved Section Transition - Creates valley effect for glow */}
-        {/* <CurvedSectionTransition /> */}
-
-        <motion.div
-          className="text-center mb-16 relative z-10 pt-24"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-        >
-          <div className="flex justify-center">
-            <button
-              type="button"
-              className="group relative z-[60] mx-auto rounded-full border mt-7 px-6 py-1 text-xs backdrop-blur transition-all duration-300 active:scale-100 md:text-sm"
-              style={{
-                borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
-                backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'
-              }}
-            >
-              <div className="absolute inset-x-0 -top-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:w-3/4"></div>
-              <div className="absolute inset-x-0 -bottom-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:h-px"></div>
-              <span className={`relative ${isDark ? "text-white" : "text-gray-900"}`}>Learning Paths</span>
-            </button>
-          </div>
-
-          <h2 className={`mt-5 text-center text-4xl font-bold tracking-tighter md:text-[54px] md:leading-[60px] ${isDark
-              ? "bg-gradient-to-r from-gray-300 via-white to-gray-300 bg-clip-text text-transparent"
-              : "bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 bg-clip-text text-transparent"
-            }`}>
-            Our Different <span className="font-light italic bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">Technical Domains</span>
-          </h2>
-
-          <p className={`text-xl max-w-3xl mx-auto leading-relaxed mt-6 ${isDark ? "text-gray-300" : "text-gray-700"
-            }`}>
-            Comprehensive learning paths designed to accelerate career growth and technical transformation.
-          </p>
-        </motion.div>
-
-        <div className="space-y-32 relative">
-          {features.map((feature, idx) => (
-            <motion.div
-              key={feature.title}
-              ref={(el) => (featureRefs.current[idx] = el)}
-              initial={{ opacity: 0, y: 50 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8, delay: idx * 0.08 }}
-              className="min-h-[80vh] flex items-center"
-            >
-              <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <motion.div
-                  className={`space-y-8 ${idx % 2 === 1 ? "lg:order-2" : ""}`}
-                  initial={{ opacity: 0, x: idx % 2 === 1 ? 50 : -50 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.8 }}
-                >
-                  {/* REPLACED: Gradient badge with testimonials-style button */}
-                  {/* <div className="flex justify-center">
-              <button
-                type="button"
-                className="group relative z-[60] mx-auto rounded-full border px-6 py-1 text-xs backdrop-blur transition-all duration-300 hover:scale-105 hover:shadow-xl active:scale-100 md:text-sm"
-                style={{
-                  borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'
-                }}
-              >
-                <div className="absolute inset-x-0 -top-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:w-3/4"></div>
-                <div className="absolute inset-x-0 -bottom-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:h-px"></div>
-                <span className={`relative ${isDark ? "text-white" : "text-gray-900"}`}>Testimonials</span>
+      <section className="section-space relative z-[9] overflow-x-clip bg-canvas">
+        <div className="site-container-wide">
+          <motion.div
+            className="relative z-10 mx-auto max-w-3xl text-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+          >
+            <div className="flex justify-center">
+              <button type="button" className="eyebrow group relative overflow-hidden">
+                <span className="absolute inset-x-0 -top-px mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-accent-500 to-transparent transition-all duration-500 group-hover:w-3/4" />
+                <span className="absolute inset-x-0 -bottom-px mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-brand-500 to-transparent transition-all duration-500 group-hover:w-3/4" />
+                <span className="relative">Learning Paths</span>
               </button>
-            </div> */}
+            </div>
 
+            <h2 className="section-heading mt-5 text-center">
+              Our Different{" "}
+              <span className="bg-gradient-to-r from-brand-600 to-accent-600 bg-clip-text font-light italic text-transparent dark:from-brand-300 dark:to-accent-300">
+                Technical Domains
+              </span>
+            </h2>
 
-                  <h3 className="text-4xl sm:text-5xl font-bold text-black mb-4 leading-tight dark:text-white">{feature.title}</h3>
-                  <p className="text-lg text-gray-900 dark:text-gray-300 leading-relaxed mb-8">{feature.description}</p>
+            <p className="section-lead mx-auto text-center">
+              Comprehensive learning paths designed to accelerate career growth and technical transformation.
+            </p>
+          </motion.div>
 
-                  <div className="flex flex-wrap gap-2 mb-4">
-                    {feature.technologies.map((tech) => (
-                      <span
-                        key={tech}
-                        className={`px-3 py-1 rounded-full border font-semibold text-xs bg-gradient-to-r ${feature.bgGradient} ${feature.accentColor} border-white/20`}
-                      >
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
+          <div className="relative mt-12 space-y-6 sm:mt-16 sm:space-y-8">
+            {features.map((feature, idx) => (
+              <motion.div
+                key={feature.title}
+                ref={(el) => (featureRefs.current[idx] = el)}
+                initial={{ opacity: 0, y: 50 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, delay: idx * 0.08 }}
+                className="ui-card relative overflow-hidden p-4 sm:p-6 lg:p-8"
+              >
+                <div
+                  className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-accent-500/70 to-transparent"
+                  aria-hidden="true"
+                />
 
-                  <button
-                    onClick={handleExploreDomainClick}
-                    className={`inline-flex items-center font-medium transition-colors group px-4 py-2 rounded-lg border ${idx === activeFeature
-                        ? isDark
-                          ? "text-white border-white/20 bg-white/10 hover:bg-white/20"
-                          : "text-gray-900 border-gray-300 bg-gray-50 hover:bg-gray-100"
-                        : isDark
-                          ? "text-blue-400 hover:text-blue-300 border-blue-400/30 bg-blue-400/10 hover:bg-blue-400/20"
-                          : "text-gray-700 hover:text-gray-900 border-gray-400 bg-gray-50 hover:bg-gray-100"
-                      }`}
+                <div className="grid min-w-0 items-center gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-10">
+                  <motion.div
+                    className={`min-w-0 space-y-5 ${idx % 2 === 1 ? "lg:order-2" : ""}`}
+                    initial={{ opacity: 0, x: idx % 2 === 1 ? 50 : -50 }}
+                    whileInView={{ opacity: 1, x: 0 }}
+                    transition={{ duration: 0.8 }}
                   >
-                    <span>Explore Domain</span>
-                    <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-                  </button>
-                </motion.div>
+                    <div className="flex size-12 items-center justify-center rounded-control border border-brand-500/20 bg-brand-500/10 text-brand-700 dark:text-brand-300">
+                      {feature.icon}
+                    </div>
 
-                <motion.div
-                  className={`${idx % 2 === 1 ? "lg:order-1" : ""}`}
-                  initial={{ opacity: 0, scale: 0.85 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  transition={{ duration: 0.8 }}
-                >
-                  <ServiceUIGraphic feature={feature} isDark={isDark} />
-                </motion.div>
-              </div>
-            </motion.div>
-          ))}
+                    <h3 className="font-display text-title text-ink">{feature.title}</h3>
+                    <p className="text-base leading-relaxed text-ink-muted sm:text-lg">
+                      {feature.description}
+                    </p>
+
+                    <div className="flex flex-wrap gap-2">
+                      {feature.technologies.map((tech) => (
+                        <span
+                          key={tech}
+                          className="rounded-full border border-line bg-surface-muted px-3 py-1.5 font-mono text-[0.7rem] font-semibold text-brand-700 dark:text-brand-300"
+                        >
+                          {tech}
+                        </span>
+                      ))}
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleExploreDomainClick}
+                      className={`btn btn-secondary group w-full sm:w-auto ${
+                        idx === activeFeature
+                          ? "border-brand-400 text-brand-700 dark:text-brand-300"
+                          : ""
+                      }`}
+                    >
+                      <span>Explore Domain</span>
+                      <ChevronRight className="size-4 transition-transform group-hover:translate-x-1" />
+                    </button>
+                  </motion.div>
+
+                  <motion.div
+                    className={`min-w-0 ${idx % 2 === 1 ? "lg:order-1" : ""}`}
+                    initial={{ opacity: 0, scale: 0.85 }}
+                    whileInView={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.8 }}
+                  >
+                    <div className="ui-card-muted relative min-w-0 overflow-hidden p-3 sm:p-5">
+                      <ServiceUIGraphic feature={feature} isDark={isDark} />
+                    </div>
+                  </motion.div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </section>
 
