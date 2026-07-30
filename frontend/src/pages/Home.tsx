@@ -115,38 +115,6 @@ const events: EventItem[] = [
   },
 ];
 
-// Marquee Component
-function Marquee({
-  className = "",
-  reverse,
-  pauseOnHover = false,
-  children,
-  vertical = false,
-  repeat = 4,
-  ...props
-}: any) {
-  const baseClasses = "group flex overflow-hidden p-2 [--duration:40s] [--gap:1rem] [gap:var(--gap)]";
-  const directionClasses = vertical ? "flex-col" : "flex-row";
-
-  return (
-    <div {...props} className={`${baseClasses} ${directionClasses} ${className}`}>
-      {Array(repeat)
-        .fill(0)
-        .map((_, i) => (
-          <div
-            key={i}
-            className={`flex shrink-0 justify-around [gap:var(--gap)] ${vertical
-                ? `animate-marquee-vertical flex-col ${reverse ? "[animation-direction:reverse]" : ""}`
-                : `animate-marquee flex-row ${reverse ? "[animation-direction:reverse]" : ""}`
-              } ${pauseOnHover ? "group-hover:[animation-play-state:paused]" : ""}`}
-          >
-            {children}
-          </div>
-        ))}
-    </div>
-  );
-}
-
 // Testimonial Card Component
 const TestimonialCard = ({
   img,
@@ -159,48 +127,35 @@ const TestimonialCard = ({
   username: string;
   body: string;
 }) => {
-  const { isDark } = useTheme();
-
   return (
-    <div className={`relative w-full max-w-md overflow-hidden rounded-3xl border p-8 ${isDark
-        ? "border-white/10 bg-gradient-to-b from-white/5 to-white/[0.02] shadow-[0px_2px_0px_0px_rgba(255,255,255,0.1)_inset]"
-        : "border-gray-200 bg-gradient-to-b from-gray-50 to-white shadow-lg"
-      }`}>
-      {isDark && (
-        <div className="absolute -top-5 -left-5 -z-10 h-40 w-40 rounded-full bg-gradient-to-b from-blue-500/10 to-transparent blur-md"></div>
-      )}
+    <article className="ui-card relative min-w-0 overflow-hidden p-5 sm:p-6">
+      <div
+        className="pointer-events-none absolute -left-12 -top-12 size-36 rounded-full bg-brand-500/5 blur-3xl dark:bg-brand-400/10"
+        aria-hidden="true"
+      />
 
-      <Quote className={`w-8 h-8 mb-4 ${isDark ? "text-blue-400" : "text-blue-600"} opacity-60`} />
+      <Quote className="relative mb-4 size-8 text-brand-600 opacity-70 dark:text-brand-300" aria-hidden="true" />
 
-      <div className={`leading-relaxed ${isDark ? "text-gray-200" : "text-gray-700"}`}>{body}</div>
+      <blockquote className="relative">
+        <p className="text-sm leading-relaxed text-ink-muted sm:text-base">{body}</p>
+      </blockquote>
 
-      <div className="mt-6 flex items-center gap-3">
-        <div className="relative">
-          <div
-            className={`h-12 w-12 rounded-full transition-transform duration-200 hover:scale-105 ${isDark
-                ? "border-2 border-white/30 shadow-lg shadow-white/10"
-                : "border-2 border-gray-200/50 shadow-md"
-              }`}
-            style={{
-              backgroundImage: `url(${img})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center 20%',
-              backgroundRepeat: 'no-repeat',
-              backgroundColor: isDark ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)',
-            }}
-          />
-          <img
-            src={img}
-            alt={`${name}'s profile picture`}
-            className="sr-only"
-          />
+      <footer className="relative mt-6 flex items-center gap-3 border-t border-line pt-5">
+        <img
+          src={img}
+          alt={`${name}'s profile picture`}
+          loading="lazy"
+          decoding="async"
+          className="size-12 shrink-0 rounded-full border-2 border-line-strong bg-surface-muted object-cover object-[center_20%] shadow-soft"
+        />
+        <div className="min-w-0">
+          <p className="font-display text-sm font-semibold leading-5 text-ink sm:text-base">
+            {name}
+          </p>
+          <p className="break-words text-sm leading-5 text-ink-subtle">{username}</p>
         </div>
-        <div className="flex flex-col">
-          <div className={`leading-5 font-medium ${isDark ? "text-white" : "text-gray-900"}`}>{name}</div>
-          <div className={`leading-5 ${isDark ? "text-gray-400" : "text-gray-500"}`}>{username}</div>
-        </div>
-      </div>
-    </div>
+      </footer>
+    </article>
   );
 };
 
@@ -257,9 +212,6 @@ const testimonials = [
     img: "testimonials_images/ai_animated_m.jpg",
   },
 ];
-const firstColumn = testimonials.slice(0, 3);
-const secondColumn = testimonials.slice(3, 5);
-const thirdColumn = testimonials.slice(5, 8);
 
 const fadeIn = {
   initial: { opacity: 0, y: 20 },
@@ -959,82 +911,41 @@ const Home = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section className={`relative py-24 ${isDark ? "bg-black" : "bg-gray-50"}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="mx-auto max-w-[540px] text-center mb-16">
+      <section className="section-space relative bg-canvas-subtle">
+        <div className="site-container-wide">
+          <div className="mx-auto max-w-3xl text-center">
             <div className="flex justify-center">
               <button
                 type="button"
-                className="group relative z-[60] mx-auto rounded-full border px-6 py-1 text-xs backdrop-blur transition-all duration-300 hover:shadow-xl active:scale-100 md:text-sm"
-                style={{
-                  borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'
-                }}
+                className="eyebrow group relative overflow-hidden"
               >
-                <div className="absolute inset-x-0 -top-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:w-3/4"></div>
-                <div className="absolute inset-x-0 -bottom-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:h-px"></div>
-                <span className={`relative ${isDark ? "text-white" : "text-gray-900"}`}>Testimonials</span>
+                <span className="absolute inset-x-0 -top-px mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-accent-500 to-transparent transition-all duration-500 group-hover:w-3/4" />
+                <span className="absolute inset-x-0 -bottom-px mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-brand-500 to-transparent transition-all duration-500 group-hover:w-3/4" />
+                <span className="relative">Testimonials</span>
               </button>
             </div>
 
-            <h2 className={`mt-5 text-center text-4xl font-semibold tracking-tighter md:text-[54px] md:leading-[60px] ${isDark
-                ? "bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-clip-text text-transparent"
-                : "text-gray-900"
-              }`}>
-              What our members say
-            </h2>
+            <h2 className="section-heading mt-5 text-center">What our members say</h2>
 
-            <p className={`mt-5 text-center text-lg ${isDark ? "text-gray-400" : "text-gray-600"
-              }`}>
+            <p className="section-lead mx-auto text-center">
               Voices from our community, hear what our members have to say about their journey..
             </p>
           </div>
 
-          <div className="my-16 flex max-h-[738px] justify-center gap-6 overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_25%,black_75%,transparent)]">
-            {/* Mobile: single column */}
-            <div className="flex flex-col md:hidden">
-              <Marquee pauseOnHover vertical className="[--duration:25s]">
-                {testimonials.map((testimonial) => (
-                  <TestimonialCard key={testimonial.username} {...testimonial} />
-                ))}
-              </Marquee>
-            </div>
-
-            <div className="hidden md:flex gap-6 w-full justify-center">
-              <div>
-                <Marquee pauseOnHover vertical className="[--duration:20s]">
-                  {firstColumn.map((testimonial) => (
-                    <TestimonialCard key={testimonial.username} {...testimonial} />
-                  ))}
-                </Marquee>
-              </div>
-
-              <div className="hidden lg:block">
-                <Marquee reverse pauseOnHover vertical className="[--duration:25s]">
-                  {secondColumn.map((testimonial) => (
-                    <TestimonialCard key={testimonial.username} {...testimonial} />
-                  ))}
-                </Marquee>
-              </div>
-
-              <div className="hidden xl:block">
-                <Marquee pauseOnHover vertical className="[--duration:30s]">
-                  {thirdColumn.map((testimonial) => (
-                    <TestimonialCard key={testimonial.username} {...testimonial} />
-                  ))}
-                </Marquee>
-              </div>
-            </div>
+          <div className="mt-12 grid items-start gap-5 md:grid-cols-2 md:gap-6 xl:grid-cols-3">
+            {testimonials.map((testimonial) => (
+              <TestimonialCard
+                key={`${testimonial.name}-${testimonial.username}`}
+                {...testimonial}
+              />
+            ))}
           </div>
 
-          <div className="-mt-8 flex justify-center">
-            <button className={`group relative inline-flex items-center gap-2 rounded-full border px-6 py-3 text-sm font-medium transition-all hover:bg-blue-500/10 active:scale-95 ${isDark
-                ? "border-blue-500/30 bg-black/50 text-white hover:border-blue-500/60"
-                : "border-blue-400/30 bg-white text-gray-900 hover:border-blue-400/60"
-              }`}>
-              <div className="absolute inset-x-0 -top-px mx-auto h-px w-3/4 bg-gradient-to-r from-transparent via-blue-500/40 to-transparent"></div>
-              <div className="absolute inset-x-0 -bottom-px mx-auto h-px w-3/4 bg-gradient-to-r from-transparent via-blue-500/40 to-transparent"></div>
-              Share your experience
+          <div className="mt-10 flex justify-center sm:mt-12">
+            <button type="button" className="btn btn-secondary group relative overflow-hidden">
+              <span className="absolute inset-x-0 -top-px mx-auto h-px w-3/4 bg-gradient-to-r from-transparent via-brand-500/40 to-transparent" />
+              <span className="absolute inset-x-0 -bottom-px mx-auto h-px w-3/4 bg-gradient-to-r from-transparent via-accent-500/40 to-transparent" />
+              <span className="relative">Share your experience</span>
             </button>
           </div>
         </div>
