@@ -9,54 +9,70 @@ import { useAuth } from "../context/AuthContext";
 // import CurvedHorizonGlow from '../components/CurvedHorizonGlow';
 // import CurvedSectionTransition from '../components/CurvedSectionTransition';
 
-const EventCard = ({ event, index }: { event: any; index: number }) => {
+interface EventItem {
+  id: number;
+  title: string;
+  date: string;
+  description: string;
+  tags: string[];
+  image: string;
+}
+
+const EventCard = ({ event, index }: { event: EventItem; index: number }) => {
   return (
-    <Link to={`/events/${event.id}`}>
+    <Link
+      to={`/events/${event.id}`}
+      className="group block h-full rounded-card focus-visible:outline-offset-4"
+    >
       <motion.div
         initial={{ opacity: 0, y: 50 }}
         whileInView={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, delay: index * 0.1 }}
         viewport={{ once: true, amount: 0.3 }}
-        className="group relative aspect-[3/4] w-full overflow-hidden rounded-3xl border border-white/10 shadow-lg cursor-pointer"
+        className="ui-card flex h-full min-w-0 flex-col overflow-hidden transition duration-300 group-hover:-translate-y-1 group-hover:border-brand-400 group-hover:shadow-glow"
       >
-        {/* Background Image with Hover Zoom Effect */}
-        <img
-          src={event.image}
-          alt={`${event.title} poster`}
-          className="absolute inset-0 h-full w-full object-cover transition-transform duration-500 ease-in-out group-hover:scale-105"
-        />
+        <div className="relative aspect-[4/3] overflow-hidden border-b border-line bg-surface-muted">
+          <img
+            src={event.image}
+            alt={`${event.title} poster`}
+            loading="lazy"
+            decoding="async"
+            className="size-full object-contain transition-transform duration-500 ease-in-out group-hover:scale-105"
+          />
+          <div
+            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/25 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+            aria-hidden="true"
+          />
+        </div>
 
-        {/* Gradient Overlay (hidden by default, appears on hover) */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/0 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+        <div className="flex flex-1 flex-col p-5 sm:p-6">
+          <p className="font-mono text-xs font-semibold uppercase tracking-[0.12em] text-accent-700 dark:text-accent-300">
+            {event.date}
+          </p>
+          <h3 className="mt-2 font-display text-xl font-semibold leading-tight text-ink">
+            {event.title}
+          </h3>
+          <p className="mt-3 text-sm leading-relaxed text-ink-muted">
+            {event.description}
+          </p>
 
-        {/* Content - truly hidden until hover */}
-        <div
-          className="absolute inset-0 flex flex-col justify-end p-6 text-white 
-                     opacity-0 invisible translate-y-8 pointer-events-none
-                     group-hover:opacity-100 group-hover:visible group-hover:translate-y-0 group-hover:pointer-events-auto
-                     transition-all duration-300 ease-in-out bg-gradient-to-t from-black/90 via-black/50 to-transparent"
-        >
-          <h3 className="text-2xl font-bold mb-2">{event.title}</h3>
-          <p className="text-sm text-gray-300 mb-3">{event.date}</p>
-          <p className="text-gray-200 mb-4 leading-relaxed">{event.description}</p>
-
-          <div className="flex flex-wrap gap-2">
+          <div className="mt-4 flex flex-wrap gap-2">
             {event.tags.map((tag: string) => (
               <span
                 key={tag}
-                className="px-3 py-1 text-xs font-medium rounded-full bg-white/20 text-white backdrop-blur-sm border border-white/10"
+                className="rounded-full border border-line bg-surface-muted px-2.5 py-1 font-mono text-[0.65rem] font-semibold text-brand-700 dark:text-brand-300"
               >
                 {tag}
               </span>
             ))}
           </div>
 
-          {/* View Details button */}
-          <div className="mt-4">
-            <div className="inline-flex items-center text-sm font-medium text-white/90 hover:text-white">
-              <span>View Details</span>
-              <ArrowRight className="w-4 h-4 ml-1 transition-transform group-hover:translate-x-1" />
-            </div>
+          <div className="mt-auto flex items-center gap-1.5 pt-5 text-sm font-semibold text-brand-700 dark:text-brand-300">
+            <span>View Details</span>
+            <ArrowRight
+              className="size-4 transition-transform duration-200 group-hover:translate-x-1"
+              aria-hidden="true"
+            />
           </div>
         </div>
       </motion.div>
@@ -64,7 +80,7 @@ const EventCard = ({ event, index }: { event: any; index: number }) => {
   );
 };
 // Events Data
-const events = [
+const events: EventItem[] = [
   {
     id: 1,
     title: "The Tech Triad",
@@ -907,11 +923,10 @@ const Home = () => {
       <StatsSection />
 
       {/* events */}
-      <section className={`relative py-24 ${isDark ? "bg-black" : "bg-slate-50"}`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          {/* Section Header */}
+      <section className="section-space relative bg-canvas">
+        <div className="site-container-wide">
           <motion.div
-            className="text-center mb-16"
+            className="mx-auto max-w-3xl text-center"
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.6 }}
@@ -920,37 +935,25 @@ const Home = () => {
             <div className="flex justify-center">
               <button
                 type="button"
-                className="group relative z-[60] mx-auto rounded-full border px-7 py-2 text-xl backdrop-blur transition-all duration-300 hover:shadow-xl active:scale-100 md:text-sm"
-                style={{
-                  borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)'
-                }}
+                className="eyebrow group relative overflow-hidden"
               >
-                <div className="absolute inset-x-0 -top-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:w-3/4"></div>
-                <div className="absolute inset-x-0 -bottom-px mx-auto h-0.5 w-1/2 bg-gradient-to-r from-transparent via-blue-500 to-transparent shadow-2xl transition-all duration-500 group-hover:h-px"></div>
-                <span className={`relative ${isDark ? "text-white" : "text-gray-900"}`}>Community Events</span>
+                <span className="absolute inset-x-0 -top-px mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-accent-500 to-transparent transition-all duration-500 group-hover:w-3/4" />
+                <span className="absolute inset-x-0 -bottom-px mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-brand-500 to-transparent transition-all duration-500 group-hover:w-3/4" />
+                <span className="relative">Community Events</span>
               </button>
             </div>
 
-            <h2 className={`mt-7 text-center text-4xl font-semibold tracking-tighter md:text-[58px] md:leading-[60px] ${isDark
-                ? "bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-clip-text text-transparent"
-                : "text-gray-900"
-              }`}>
-              Explore our Past Events
-            </h2>
+            <h2 className="section-heading mt-5 text-center">Explore our Past Events</h2>
 
-            <p className={`text-xl max-w-3xl mx-auto leading-relaxed mt-2 ${isDark ? "text-gray-400" : "text-gray-700"
-              }`}>
-              Take a look at some of our past events and initiatives      </p>
+            <p className="section-lead mx-auto text-center">
+              Take a look at some of our past events and initiatives
+            </p>
           </motion.div>
 
-          {/* Events Grid - Using the EventCard component */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4">
             {events.map((event, index) => (
               <EventCard key={event.id} event={event} index={index} />
             ))}
-
-
           </div>
         </div>
       </section>
