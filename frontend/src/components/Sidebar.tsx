@@ -45,7 +45,7 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
   };
 
   useEffect(() => {
-    const desktopViewport = window.matchMedia('(min-width: 768px)');
+    const desktopViewport = window.matchMedia('(min-width: 1024px)');
     const closeOutsideMobile = () => {
       if (desktopViewport.matches) setIsOpen(false);
     };
@@ -56,7 +56,7 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
   }, [setIsOpen]);
 
   useEffect(() => {
-    if (!isOpen || window.matchMedia('(min-width: 768px)').matches) return;
+    if (!isOpen || window.matchMedia('(min-width: 1024px)').matches) return;
 
     const scrollTarget = document.getElementById('scroll-container') ?? document.body;
     const previousOverflow = scrollTarget.style.overflow;
@@ -120,7 +120,7 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
         {isOpen && (
           <motion.div
             aria-hidden="true"
-            className="fixed inset-0 z-[55] bg-canvas/70 backdrop-blur-sm md:hidden"
+            className="fixed inset-0 z-[55] bg-canvas/70 backdrop-blur-sm lg:hidden"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -139,7 +139,7 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
             aria-modal="true"
             aria-labelledby="sidebar-heading"
             tabIndex={-1}
-            className="fixed inset-y-0 left-0 z-[60] flex w-[min(19rem,88vw)] flex-col overflow-hidden rounded-r-card border-r border-line bg-surface/95 text-ink shadow-surface backdrop-blur-xl md:hidden"
+            className="fixed inset-y-0 left-0 z-[60] flex w-[min(19rem,88vw)] flex-col overflow-hidden rounded-r-card border-r border-line bg-surface/95 text-ink shadow-surface backdrop-blur-xl lg:hidden"
             initial={{ x: '-100%' }}
             animate={{ x: 0 }}
             exit={{ x: '-100%' }}

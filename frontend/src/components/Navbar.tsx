@@ -64,56 +64,58 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
     navigate('/');
   };
 
+  const controlSurfaceClass = scrolled
+    ? 'border-line-strong/80 bg-surface/95 shadow-soft backdrop-blur-md'
+    : 'border-line/80 bg-surface/90 shadow-soft backdrop-blur-md';
+
+  const inactivePillClass = `${controlSurfaceClass} text-ink-muted hover:-translate-y-0.5 hover:border-technical/40 hover:bg-surface-muted hover:text-ink`;
+  const activePillClass =
+    'border-technical/50 bg-primary/10 text-primary-text shadow-soft backdrop-blur-md';
+
   return (
     <motion.nav
       ref={navRef}
       aria-label="Primary navigation"
-      className={`fixed inset-x-0 top-0 z-50 w-full border-b backdrop-blur-xl transition-colors duration-300 ${
-        scrolled
-          ? 'border-line bg-surface/95 shadow-soft'
-          : 'border-line/60 bg-surface/75'
-      }`}
+      className="pointer-events-none fixed inset-x-0 top-0 z-50 w-full"
       initial={false}
       animate={{ y: hidden ? -96 : 0 }}
       transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
     >
-      <div className="site-container-wide">
-        <div className="flex h-[4.5rem] items-center justify-between gap-2 lg:gap-3">
+      <div className="site-container-wide py-2">
+        <div className="flex min-w-0 items-center justify-between gap-2 sm:gap-3 lg:gap-4">
           <Link
             to="/"
-            className="group flex min-w-0 flex-1 items-center gap-2 rounded-control focus-visible:outline-offset-4 md:flex-initial"
+            className="group pointer-events-auto flex min-w-0 flex-1 items-center gap-2 rounded-full focus-visible:outline-offset-4 sm:gap-3 lg:flex-none"
             aria-label="HackerEarth Hub-NMAMIT home"
           >
-            <span className="flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-control border border-line bg-white p-0.5 shadow-soft transition-transform duration-300 group-hover:-translate-y-0.5 sm:size-11">
+            <span className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-line bg-white p-0.5 shadow-soft transition duration-300 group-hover:-translate-y-0.5 group-hover:border-technical/50 sm:size-12 lg:size-14">
               <img
                 src={logo}
                 alt="HackerEarth Logo"
-                className="size-full object-cover"
+                className="size-full rounded-full object-cover"
               />
             </span>
-            <span className="max-w-[8.75rem] font-display text-[0.68rem] font-semibold leading-tight tracking-[-0.02em] text-ink xs:max-w-none xs:text-sm md:max-w-36 md:text-xs xl:max-w-none xl:text-base">
+            <span className="min-w-0 max-w-full font-display text-[0.68rem] font-semibold leading-[1.1] tracking-[-0.02em] text-ink sm:text-sm lg:whitespace-nowrap xl:text-base">
               HackerEarth Hub-NMAMIT
             </span>
           </Link>
 
-          <div className="hidden min-w-0 flex-1 items-center justify-center md:flex">
-            <div className="flex items-center gap-0.5 rounded-card border border-line/80 bg-surface-muted/75 p-1 lg:gap-1">
+          <div className="pointer-events-auto ml-auto hidden min-w-0 items-center gap-3 lg:flex xl:gap-4">
+            <div className="flex shrink-0 items-center gap-1.5 xl:gap-2">
               <Link
                 to="/"
                 aria-label="Home"
                 title="Home"
                 aria-current={isActive('/') ? 'page' : undefined}
-                className={`relative flex size-9 shrink-0 items-center justify-center rounded-control transition duration-200 ${
-                  isActive('/')
-                    ? 'bg-surface text-brand-700 shadow-soft dark:text-brand-300'
-                    : 'text-ink-muted hover:bg-surface/80 hover:text-ink'
+                className={`relative flex size-11 shrink-0 items-center justify-center rounded-full border transition duration-200 focus-visible:outline-offset-2 ${
+                  isActive('/') ? activePillClass : inactivePillClass
                 }`}
               >
                 <Home className="size-4" aria-hidden="true" />
                 {isActive('/') && (
                   <motion.span
                     layoutId="desktop-nav-active"
-                    className="absolute inset-x-2 -bottom-1 h-0.5 rounded-full bg-gradient-to-r from-brand-500 to-accent-500"
+                    className="absolute -bottom-1 left-1/2 h-1 w-4 -translate-x-1/2 rounded-full bg-gradient-to-r from-primary to-technical"
                     transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                     aria-hidden="true"
                   />
@@ -127,17 +129,15 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
                     key={item.name}
                     to={item.href}
                     aria-current={active ? 'page' : undefined}
-                    className={`relative rounded-control px-1.5 py-2 text-[0.7rem] font-semibold transition duration-200 lg:px-2 lg:text-xs xl:px-3 xl:text-sm ${
-                      active
-                        ? 'bg-surface text-brand-700 shadow-soft dark:text-brand-300'
-                        : 'text-ink-muted hover:bg-surface/80 hover:text-ink'
+                    className={`relative flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full border px-2.5 text-[0.6875rem] font-semibold transition duration-200 focus-visible:outline-offset-2 xl:px-4 xl:text-sm ${
+                      active ? activePillClass : inactivePillClass
                     }`}
                   >
                     {item.name}
                     {active && (
                       <motion.span
                         layoutId="desktop-nav-active"
-                        className="absolute inset-x-2 -bottom-1 h-0.5 rounded-full bg-gradient-to-r from-brand-500 to-accent-500 xl:inset-x-3"
+                        className="absolute -bottom-1 left-1/2 h-1 w-5 -translate-x-1/2 rounded-full bg-gradient-to-r from-primary to-technical"
                         transition={{ type: 'spring', stiffness: 380, damping: 32 }}
                         aria-hidden="true"
                       />
@@ -146,53 +146,56 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
                 );
               })}
             </div>
-          </div>
 
-          <div className="hidden shrink-0 items-center gap-1 md:flex lg:gap-1.5">
-            <button
-              onClick={toggleTheme}
-              aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              className="btn btn-ghost btn-icon"
-              type="button"
-            >
-              {isDark ? (
-                <Sun className="size-5" aria-hidden="true" />
+            <div className="flex min-w-0 shrink-0 items-center gap-2">
+              <button
+                onClick={toggleTheme}
+                aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                className={`flex size-11 shrink-0 items-center justify-center rounded-full border text-ink-muted transition duration-200 hover:-translate-y-0.5 hover:border-technical/40 hover:bg-surface-muted hover:text-ink focus-visible:outline-offset-2 ${controlSurfaceClass}`}
+                type="button"
+              >
+                {isDark ? (
+                  <Sun className="size-5" aria-hidden="true" />
+                ) : (
+                  <Moon className="size-5" aria-hidden="true" />
+                )}
+              </button>
+
+              {isAuthenticated ? (
+                <>
+                  <div className={`flex h-11 min-w-0 max-w-32 items-center gap-1.5 rounded-full border px-3 text-ink xl:max-w-44 ${controlSurfaceClass}`}>
+                    <User className="size-4 shrink-0 text-primary-text" aria-hidden="true" />
+                    <span className="truncate text-xs font-semibold xl:text-sm" title={displayedUsername}>
+                      {displayedUsername}
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className={`flex size-11 shrink-0 items-center justify-center gap-2 rounded-full border text-ink-muted transition duration-200 hover:-translate-y-0.5 hover:border-red-400 hover:bg-surface-muted hover:text-red-600 focus-visible:outline-offset-2 dark:hover:text-red-400 xl:w-auto xl:px-4 ${controlSurfaceClass}`}
+                    type="button"
+                    aria-label="Logout"
+                    title="Logout"
+                  >
+                    <LogOut className="size-4" aria-hidden="true" />
+                    <span className="hidden xl:inline">Logout</span>
+                  </button>
+                </>
               ) : (
-                <Moon className="size-5" aria-hidden="true" />
-              )}
-            </button>
-
-            {isAuthenticated ? (
-              <>
-                <div className="flex max-w-28 items-center gap-2 rounded-control border border-line bg-surface-muted px-2 py-2 text-ink lg:max-w-36 xl:ml-1 xl:max-w-44 xl:px-3">
-                  <User className="size-4 shrink-0 text-brand-600 dark:text-brand-300" aria-hidden="true" />
-                  <span className="truncate text-xs font-semibold xl:text-sm" title={displayedUsername}>
-                    {displayedUsername}
-                  </span>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className="btn btn-ghost btn-icon hover:text-red-600 dark:hover:text-red-400 xl:w-auto xl:px-3"
-                  type="button"
-                  aria-label="Logout"
-                  title="Logout"
+                <Link
+                  to="/login"
+                  className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-primary/60 bg-gradient-to-r from-primary to-creative px-4 text-xs font-semibold text-ink-inverse shadow-soft transition duration-200 hover:-translate-y-0.5 hover:brightness-105 focus-visible:outline-offset-2 xl:px-5 xl:text-sm"
                 >
-                  <LogOut className="size-4" aria-hidden="true" />
-                  <span className="hidden xl:inline">Logout</span>
-                </button>
-              </>
-            ) : (
-              <Link to="/login" className="btn btn-primary px-3 text-xs xl:ml-1 xl:text-sm">
-                Login
-              </Link>
-            )}
+                  Login
+                </Link>
+              )}
+            </div>
           </div>
 
-          <div className="flex shrink-0 items-center gap-1 md:hidden">
+          <div className="pointer-events-auto flex shrink-0 items-center gap-2 lg:hidden">
             <button
               onClick={toggleTheme}
               aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              className="btn btn-ghost btn-icon"
+              className={`flex size-11 shrink-0 items-center justify-center rounded-full border text-ink-muted transition duration-200 hover:border-technical/40 hover:bg-surface-muted hover:text-ink focus-visible:outline-offset-2 ${controlSurfaceClass}`}
               type="button"
             >
               {isDark ? (
@@ -204,7 +207,7 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
 
             <button
               onClick={onToggleSidebar}
-              className="btn btn-ghost btn-icon"
+              className={`flex size-11 shrink-0 items-center justify-center rounded-full border text-ink-muted transition duration-200 hover:border-technical/40 hover:bg-surface-muted hover:text-ink focus-visible:outline-offset-2 ${controlSurfaceClass}`}
               aria-label="Open navigation menu"
               aria-controls="sidebar-navigation"
               aria-haspopup="dialog"
