@@ -12,140 +12,129 @@ const BlogPostPage: React.FC = () => {
 
   if (!post) {
     return (
-      <div className={`min-h-screen transition-colors duration-500 ${
-        isDark ? "bg-black" : "bg-white"
-      }`}>
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 xl:max-w-5xl xl:px-0 py-16">
-          <h1 className={`text-2xl font-bold ${
-            isDark ? "text-white" : "text-gray-900"
-          }`}>
-            Post not found
-          </h1>
-          <Link to="/domains" className="text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300">
-            &larr; Back to resources
-          </Link>
+      <main
+        className="min-h-screen bg-canvas text-ink transition-colors duration-500"
+        data-color-scheme={isDark ? 'dark' : 'light'}
+      >
+        <div className="site-container pb-section pt-28 sm:pt-32">
+          <div className="ui-card mx-auto max-w-2xl p-6 text-center sm:p-10">
+            <h1 className="font-display text-title text-ink">Post not found</h1>
+            <Link to="/domains" className="btn btn-secondary mt-6">
+              &larr; Back to resources
+            </Link>
+          </div>
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className={`min-h-screen transition-colors duration-500 ${
-      isDark ? "bg-black" : "bg-white"
-    }`}>
-      <div className="max-w-4xl px-4 mx-auto sm:px-6 xl:px-0">
-        {/* Back to blog */}
-        <div className="pt-6 pb-8 space-y-2 md:space-y-5">
-          <Link 
-            to="/domains"
-            className="text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300 text-sm font-medium"
-          >
-            &larr; Back to blog
-          </Link>
-        </div>
+    <main
+      className="min-h-screen bg-canvas text-ink transition-colors duration-500"
+      data-color-scheme={isDark ? 'dark' : 'light'}
+    >
+      <div className="site-container-wide pb-section pt-28 sm:pt-32">
+        <div className="mx-auto max-w-5xl">
+          {/* Back to blog */}
+          <nav aria-label="Resource navigation">
+            <Link to="/domains" className="btn btn-secondary">
+              &larr; Back to blog
+            </Link>
+          </nav>
 
-        <article>
-          <div className={`xl:divide-y ${
-            isDark ? "xl:divide-gray-800" : "xl:divide-gray-200"
-          }`}>
-            <header className="pt-6 xl:pb-6">
-              <div className="space-y-1 text-center">
-                <dl className="space-y-10">
-                  <div>
-                    <dt className="sr-only">Published on</dt>
-                    <dd className={`text-base font-medium leading-6 ${
-                      isDark ? "text-gray-400" : "text-gray-500"
-                    }`}>
-                      <time dateTime={post.date}>
-                        {new Date(post.date).toLocaleDateString('en-US', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
-                      </time>
-                    </dd>
-                  </div>
+          <article className="mt-8 sm:mt-10">
+            <header className="border-b border-line pb-8 text-center sm:pb-10">
+              <div className="flex flex-wrap items-center justify-center gap-2 text-sm text-ink-muted">
+                <dl>
+                  <dt className="sr-only">Published on</dt>
+                  <dd className="font-mono font-medium">
+                    <time dateTime={post.date}>
+                      {new Date(post.date).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </time>
+                  </dd>
                 </dl>
-                <div>
-                  <h1 className={`pb-2 text-center text-4xl font-semibold tracking-tighter md:text-[54px] md:leading-[60px] ${
-                    isDark 
-                      ? "bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-clip-text text-transparent" 
-                      : "text-gray-900"
-                  }`}>
-                    {post.title}
-                  </h1>
-                </div>
+                <span aria-hidden="true">&bull;</span>
+                <span className="rounded-full border border-line bg-surface-muted px-2.5 py-1 font-mono text-xs font-semibold uppercase tracking-[0.1em] text-brand-700 dark:text-brand-300">
+                  {post.category}
+                </span>
+                {post.week && (
+                  <span className="rounded-full border border-line bg-surface-muted px-2.5 py-1 font-mono text-xs font-semibold text-ink-muted">
+                    Week {post.week}
+                  </span>
+                )}
               </div>
+
+              <h1 className="section-heading mx-auto mt-5 max-w-4xl">
+                {post.title}
+              </h1>
+              <p className="section-lead mx-auto">
+                {post.description}
+              </p>
             </header>
 
-            <div className={`grid-rows-[auto_1fr] divide-y pb-8 xl:grid xl:grid-cols-4 xl:gap-x-6 xl:divide-y-0 ${
-              isDark ? "divide-gray-800" : "divide-gray-200"
-            }`}>
+            <div className="mt-8 grid items-start gap-8 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-10">
               {/* Author sidebar */}
-              <dl className={`pb-10 pt-6 xl:border-b xl:pt-11 ${
-                isDark ? "xl:border-gray-800" : "xl:border-gray-200"
-              }`}>
-                <dt className="sr-only">Authors</dt>
-                <dd>
-                  <ul className="flex flex-wrap justify-center gap-8 sm:space-x-12 xl:block xl:space-x-0 xl:space-y-8">
-                    <li className="flex items-center space-x-2">
-                      <div className="h-10 w-10 rounded-full bg-gradient-to-r from-primary-400 to-primary-600 flex items-center justify-center text-white font-bold text-sm">
-                        {post.author.name.charAt(0)}
-                      </div>
-                      <dl className="whitespace-nowrap text-sm font-medium leading-5">
-                        <dt className="sr-only">Name</dt>
-                        <dd className={isDark ? "text-white" : "text-gray-900"}>{post.author.name}</dd>
-                        <dt className="sr-only">Source</dt>
-                        <dd>
-                          <a
-                            href={post.link}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-primary-500 hover:text-primary-600 dark:text-primary-400 dark:hover:text-primary-300"
-                          >
-                            {post.source}
-                          </a>
-                        </dd>
-                      </dl>
-                    </li>
-                  </ul>
-                </dd>
-              </dl>
+              <aside className="ui-card p-5 lg:sticky lg:top-28" aria-label="Resource author and source">
+                <dl>
+                  <dt className="sr-only">Authors</dt>
+                  <dd>
+                    <ul>
+                      <li className="flex items-center gap-3">
+                        <div className="flex size-11 shrink-0 items-center justify-center rounded-full bg-brand-600 text-sm font-bold text-white shadow-soft dark:bg-brand-400 dark:text-slate-950">
+                          {post.author.name.charAt(0)}
+                        </div>
+                        <dl className="min-w-0 text-sm font-medium leading-5">
+                          <dt className="sr-only">Name</dt>
+                          <dd className="break-words text-ink">{post.author.name}</dd>
+                          <dt className="sr-only">Source</dt>
+                          <dd className="mt-1">
+                            <a
+                              href={post.link}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="break-words text-brand-700 underline-offset-4 transition-colors hover:text-brand-800 hover:underline focus-visible:outline-offset-2 dark:text-brand-300 dark:hover:text-brand-200"
+                            >
+                              {post.source}
+                            </a>
+                          </dd>
+                        </dl>
+                      </li>
+                    </ul>
+                  </dd>
+                </dl>
+              </aside>
 
               {/* Main content */}
-              <div className={`divide-y xl:col-span-3 xl:row-span-2 xl:pb-0 ${
-                isDark ? "divide-gray-800" : "divide-gray-200"
-              }`}>
-                <div className={`prose max-w-none pb-8 pt-10 prose-lg ${
-                  isDark ? "prose-invert" : ""
-                }`}>
+              <div className="min-w-0">
+                <div className={isDark
+                  ? "prose prose-lg mx-auto max-w-reading prose-invert"
+                  : "prose prose-lg mx-auto max-w-reading"
+                }>
                   {/* Render the rich HTML content from the content field */}
                   <div dangerouslySetInnerHTML={{ __html: post.content }} />
-                  
-                  {/* Resource Display Section */}
-                  {post.resourceSections && (
-                    <div className="mt-12">
-                      <ResourceDisplay resourceSections={post.resourceSections} />
-                    </div>
-                  )}
                 </div>
 
+                {/* Resource Display Section */}
+                {post.resourceSections && (
+                  <div className="mt-12 border-t border-line pt-10">
+                    <ResourceDisplay resourceSections={post.resourceSections} />
+                  </div>
+                )}
+
                 {/* Tags */}
-                <div className="pt-6 pb-6">
-                  <h2 className={`text-xs uppercase tracking-wide mb-3 ${
-                    isDark ? "text-gray-400" : "text-gray-500"
-                  }`}>
+                <div className="mt-10 border-t border-line pt-6">
+                  <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-ink-subtle">
                     Tags
                   </h2>
-                  <div className="flex flex-wrap gap-2">
+                  <div className="mt-3 flex flex-wrap gap-2">
                     {post.tags.map((tag) => (
                       <span
                         key={tag}
-                        className={`px-3 py-1 text-sm font-medium uppercase rounded-full ${
-                          isDark 
-                            ? "text-primary-400 bg-primary-900/30" 
-                            : "text-primary-600 bg-primary-100"
-                        }`}
+                        className="rounded-full border border-brand-500/20 bg-brand-500/10 px-3 py-1 text-sm font-medium uppercase text-brand-700 dark:text-brand-300"
                       >
                         {tag}
                       </span>
@@ -154,10 +143,10 @@ const BlogPostPage: React.FC = () => {
                 </div>
               </div>
             </div>
-          </div>
-        </article>
+          </article>
+        </div>
       </div>
-    </div>
+    </main>
   );
 };
 
