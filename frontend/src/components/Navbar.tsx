@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, type FC } from 'react';
+import { useEffect, useRef, useState, type FC, type FocusEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import { Home, LogOut, Menu, Moon, Sun, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
@@ -21,8 +21,10 @@ const navItems = [
 const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
+  const [containsFocus, setContainsFocus] = useState(false);
   const lastScrollY = useRef(0);
   const navRef = useRef<HTMLElement>(null);
+  const shouldReduceMotion = useReducedMotion() ?? false;
   const navigate = useNavigate();
   const { user, logout, isAuthenticated } = useAuth();
   const { isDark, toggleTheme } = useTheme();
@@ -64,11 +66,21 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
     navigate('/');
   };
 
+  const handleBlurCapture = (event: FocusEvent<HTMLElement>) => {
+    const nextTarget = event.relatedTarget;
+    if (!(nextTarget instanceof Node) || !event.currentTarget.contains(nextTarget)) {
+      setContainsFocus(false);
+    }
+  };
+
+  const effectivelyHidden = hidden && !containsFocus;
+  const hoverLiftClass = shouldReduceMotion ? '' : 'hover:-translate-y-0.5';
+
   const controlSurfaceClass = scrolled
     ? 'border-line-strong/80 bg-surface/95 shadow-soft backdrop-blur-md'
     : 'border-line/80 bg-surface/90 shadow-soft backdrop-blur-md';
 
-  const inactivePillClass = `${controlSurfaceClass} text-ink-muted hover:-translate-y-0.5 hover:border-technical/40 hover:bg-surface-muted hover:text-ink`;
+  const inactivePillClass = `${controlSurfaceClass} text-ink-muted ${hoverLiftClass} hover:border-technical/40 hover:bg-surface-muted hover:text-ink`;
   const activePillClass =
     'border-technical/50 bg-primary/10 text-primary-text shadow-soft backdrop-blur-md';
 
@@ -78,8 +90,13 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
       aria-label="Primary navigation"
       className="pointer-events-none fixed inset-x-0 top-0 z-50 w-full"
       initial={false}
-      animate={{ y: hidden ? -96 : 0 }}
-      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+      animate={{ y: effectivelyHidden ? -96 : 0 }}
+      transition={{
+        duration: shouldReduceMotion || containsFocus ? 0 : 0.3,
+        ease: [0.16, 1, 0.3, 1],
+      }}
+      onFocusCapture={() => setContainsFocus(true)}
+      onBlurCapture={handleBlurCapture}
     >
       <div className="site-container-wide py-2">
         <div className="flex min-w-0 items-center justify-between gap-2 sm:gap-3 lg:gap-4">
@@ -88,7 +105,11 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
             className="group pointer-events-auto flex min-w-0 flex-1 items-center gap-2 rounded-full focus-visible:outline-offset-4 sm:gap-3 lg:flex-none"
             aria-label="HackerEarth Hub-NMAMIT home"
           >
-            <span className="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-line bg-white p-0.5 shadow-soft transition duration-300 group-hover:-translate-y-0.5 group-hover:border-technical/50 sm:size-12 lg:size-14">
+            <span
+              className={`flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-line bg-white p-0.5 shadow-soft transition duration-300 group-hover:border-technical/50 sm:size-12 lg:size-14 ${
+                shouldReduceMotion ? '' : 'group-hover:-translate-y-0.5'
+              }`}
+            >
               <img
                 src={logo}
                 alt="HackerEarth Logo"
@@ -116,7 +137,11 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
                   <motion.span
                     layoutId="desktop-nav-active"
                     className="absolute -bottom-1 left-1/2 h-1 w-4 -translate-x-1/2 rounded-full bg-gradient-to-r from-primary to-technical"
-                    transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                    transition={
+                      shouldReduceMotion
+                        ? { duration: 0 }
+                        : { type: 'spring', stiffness: 380, damping: 32 }
+                    }
                     aria-hidden="true"
                   />
                 )}
@@ -138,7 +163,11 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
                       <motion.span
                         layoutId="desktop-nav-active"
                         className="absolute -bottom-1 left-1/2 h-1 w-5 -translate-x-1/2 rounded-full bg-gradient-to-r from-primary to-technical"
-                        transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                        transition={
+                          shouldReduceMotion
+                            ? { duration: 0 }
+                            : { type: 'spring', stiffness: 380, damping: 32 }
+                        }
                         aria-hidden="true"
                       />
                     )}
@@ -151,7 +180,7 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
               <button
                 onClick={toggleTheme}
                 aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                className={`flex size-11 shrink-0 items-center justify-center rounded-full border text-ink-muted transition duration-200 hover:-translate-y-0.5 hover:border-technical/40 hover:bg-surface-muted hover:text-ink focus-visible:outline-offset-2 ${controlSurfaceClass}`}
+                className={`flex size-11 shrink-0 items-center justify-center rounded-full border text-ink-muted transition duration-200 ${hoverLiftClass} hover:border-technical/40 hover:bg-surface-muted hover:text-ink focus-visible:outline-offset-2 ${controlSurfaceClass}`}
                 type="button"
               >
                 {isDark ? (
@@ -171,7 +200,7 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
                   </div>
                   <button
                     onClick={handleLogout}
-                    className={`flex size-11 shrink-0 items-center justify-center gap-2 rounded-full border text-ink-muted transition duration-200 hover:-translate-y-0.5 hover:border-red-400 hover:bg-surface-muted hover:text-red-600 focus-visible:outline-offset-2 dark:hover:text-red-400 xl:w-auto xl:px-4 ${controlSurfaceClass}`}
+                    className={`flex size-11 shrink-0 items-center justify-center gap-2 rounded-full border text-ink-muted transition duration-200 ${hoverLiftClass} hover:border-red-400 hover:bg-surface-muted hover:text-red-600 focus-visible:outline-offset-2 dark:hover:text-red-400 xl:w-auto xl:px-4 ${controlSurfaceClass}`}
                     type="button"
                     aria-label="Logout"
                     title="Logout"
@@ -183,7 +212,7 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
               ) : (
                 <Link
                   to="/login"
-                  className="inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-primary/60 bg-gradient-to-r from-primary to-creative px-4 text-xs font-semibold text-ink-inverse shadow-soft transition duration-200 hover:-translate-y-0.5 hover:brightness-105 focus-visible:outline-offset-2 xl:px-5 xl:text-sm"
+                  className={`inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-primary/60 bg-gradient-to-r from-primary to-creative px-4 text-xs font-semibold text-ink-inverse shadow-soft transition duration-200 ${hoverLiftClass} hover:brightness-105 focus-visible:outline-offset-2 xl:px-5 xl:text-sm`}
                 >
                   Login
                 </Link>

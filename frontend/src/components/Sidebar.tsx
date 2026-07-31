@@ -1,7 +1,7 @@
 import { useEffect, useRef, type FC } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Award, Calendar, Code, Home, LogOut, Mail, User, Users, X } from 'lucide-react';
-import { AnimatePresence, motion } from 'framer-motion';
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 
 interface SidebarProps {
@@ -35,6 +35,7 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
   const { user, logout, isAuthenticated } = useAuth();
   const sidebarRef = useRef<HTMLElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const shouldReduceMotion = useReducedMotion() ?? false;
 
   const isActive = (path: string) =>
     path === '/' ? pathname === '/' : pathname === path || pathname.startsWith(`${path}/`);
@@ -121,10 +122,10 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
           <motion.div
             aria-hidden="true"
             className="fixed inset-0 z-[55] bg-canvas/70 backdrop-blur-sm lg:hidden"
-            initial={{ opacity: 0 }}
+            initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
+            exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
             onClick={() => closeSidebar(true)}
           />
         )}
@@ -140,22 +141,28 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
             aria-labelledby="sidebar-heading"
             tabIndex={-1}
             className="fixed inset-y-0 left-0 z-[60] flex w-[min(19rem,88vw)] flex-col overflow-hidden rounded-r-card border-r border-line bg-surface/95 text-ink shadow-surface backdrop-blur-xl lg:hidden"
-            initial={{ x: '-100%' }}
+            initial={shouldReduceMotion ? { x: 0 } : { x: '-100%' }}
             animate={{ x: 0 }}
-            exit={{ x: '-100%' }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+            exit={shouldReduceMotion ? { x: 0 } : { x: '-100%' }}
+            transition={{
+              duration: shouldReduceMotion ? 0 : 0.3,
+              ease: [0.16, 1, 0.3, 1],
+            }}
           >
             <div
-              className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-accent-400/80 to-transparent"
+              className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-technical/80 to-transparent"
               aria-hidden="true"
             />
 
             <div className="flex h-16 shrink-0 items-center justify-between border-b border-line/80 px-3">
               <motion.div
                 className="min-w-0"
-                initial={{ opacity: 0, x: -8 }}
+                initial={shouldReduceMotion ? { opacity: 1, x: 0 } : { opacity: 0, x: -8 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 0.08, duration: 0.18 }}
+                transition={{
+                  delay: shouldReduceMotion ? 0 : 0.08,
+                  duration: shouldReduceMotion ? 0 : 0.18,
+                }}
               >
                 <p
                   id="sidebar-heading"
@@ -172,7 +179,7 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
                 ref={closeButtonRef}
                 type="button"
                 onClick={() => closeSidebar(true)}
-                className="btn btn-ghost btn-icon size-9 min-h-9"
+                className="btn btn-ghost btn-icon"
                 aria-label="Close navigation menu"
               >
                 <X className="size-4" aria-hidden="true" />
@@ -189,9 +196,9 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
                     return (
                       <motion.li
                         key={item.name}
-                        whileHover={{ x: 2 }}
-                        whileTap={{ scale: 0.98 }}
-                        transition={{ duration: 0.16 }}
+                        whileHover={shouldReduceMotion ? undefined : { x: 2 }}
+                        whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
+                        transition={{ duration: shouldReduceMotion ? 0 : 0.16 }}
                       >
                         <Link
                           to={item.path}
@@ -200,15 +207,19 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
                           aria-current={active ? 'page' : undefined}
                           className={`group relative flex min-h-12 items-center overflow-hidden rounded-control border px-3 transition duration-200 ${
                             active
-                              ? 'border-brand-300 bg-brand-500/10 text-brand-700 dark:border-brand-800 dark:text-brand-300'
+                              ? 'border-primary bg-primary/10 text-primary-text'
                               : 'border-transparent text-ink-muted hover:border-line hover:bg-surface-muted hover:text-ink'
                           }`}
                         >
                           {active && (
                             <motion.span
                               layoutId="sidebar-active"
-                              className="absolute bottom-2 left-0 top-2 w-0.5 rounded-r-full bg-gradient-to-b from-brand-500 to-accent-500"
-                              transition={{ type: 'spring', stiffness: 380, damping: 32 }}
+                              className="absolute bottom-2 left-0 top-2 w-0.5 rounded-r-full bg-gradient-to-b from-primary to-technical"
+                              transition={
+                                shouldReduceMotion
+                                  ? { duration: 0 }
+                                  : { type: 'spring', stiffness: 380, damping: 32 }
+                              }
                               aria-hidden="true"
                             />
                           )}
@@ -216,7 +227,7 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
                           <span
                             className={`relative z-10 flex size-8 shrink-0 items-center justify-center rounded-lg transition ${
                               active
-                                ? 'bg-brand-500/10 text-brand-700 dark:text-brand-300'
+                                ? 'bg-primary/10 text-primary-text'
                                 : 'text-ink-subtle group-hover:text-ink'
                             }`}
                           >
@@ -237,7 +248,7 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
                 {isAuthenticated ? (
                   <div className="grid gap-3">
                     <div className="ui-card-muted flex items-center gap-3 rounded-control p-3 shadow-none">
-                      <span className="flex size-9 items-center justify-center rounded-control bg-brand-500/10 text-brand-700 dark:text-brand-300">
+                      <span className="flex size-9 items-center justify-center rounded-control bg-primary/10 text-primary-text">
                         <User className="size-4" aria-hidden="true" />
                       </span>
                       <span className="min-w-0 truncate text-sm font-semibold">
