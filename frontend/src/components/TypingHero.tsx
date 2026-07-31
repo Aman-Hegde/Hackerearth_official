@@ -78,7 +78,7 @@ function TypingHero() {
 
   return (
     <h1
-      className="w-full min-w-0 text-left font-display text-[clamp(2rem,5.5vw,3.5rem)] font-semibold leading-[1.02] tracking-[-0.045em] text-ink"
+      className="w-full min-w-0 text-left font-display text-[clamp(2.3rem,7vw,3.65rem)] font-bold leading-[1.02] tracking-[-0.045em] text-ink lg:text-[clamp(3.75rem,4.5vw,4.5rem)]"
       aria-label={accessibleHeading}
     >
       <span aria-hidden="true">

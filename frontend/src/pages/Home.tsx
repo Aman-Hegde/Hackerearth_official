@@ -4,6 +4,7 @@ import { motion, useScroll, useTransform, AnimatePresence, useReducedMotion } fr
 import { ArrowRight, Users, Trophy, Calendar, Rocket, ChevronRight, FolderOpen, Quote } from "lucide-react";
 import { useTheme } from "../context/ThemeContext";
 import TypingHero from "../components/TypingHero";
+import hackerEarthMark from "../assets/hackerearth-h-mark.png";
 import { Code, Brain, Lightbulb, Puzzle, Calculator, TrendingUp } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 // import CurvedHorizonGlow from '../components/CurvedHorizonGlow';
@@ -801,7 +802,7 @@ const Home = () => {
         }}
       />
 
-  <div className="fixed left-3 top-1/2 z-20 hidden -translate-y-1/2 flex-col gap-1 lg:flex xl:left-6">
+  <div className="fixed left-3 top-1/2 z-20 hidden w-8 -translate-y-1/2 flex-col items-center gap-1 lg:flex xl:left-6">
     {features.map((_, idx) => (
       <button
         key={idx}
@@ -876,55 +877,93 @@ const Home = () => {
           </div>
         )}
 
-        <div className="site-container relative z-20">
+        <div className="relative z-20 mx-auto w-full max-w-[100rem] px-4 sm:px-6 lg:px-8 xl:px-10">
           <motion.div
-            className="grid w-full min-w-0 items-center gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(16rem,2fr)] lg:gap-10 xl:gap-12"
+            className="grid w-full min-w-0 items-center gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(18rem,2fr)] lg:gap-8 xl:gap-10"
             initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: shouldReduceMotion ? 0 : 0.55, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="min-w-0 max-w-3xl">
-              <TypingHero />
+            <div className="grid min-w-0 lg:grid-cols-[2rem_minmax(0,1fr)] lg:gap-5 xl:grid-cols-[2.5rem_minmax(0,1fr)] xl:gap-6">
+              <div className="hidden lg:block" aria-hidden="true" />
 
-              <div
-                className="my-6 flex w-36 items-center justify-start gap-2 sm:my-7"
-                aria-hidden="true"
-              >
-                <span className="h-px flex-1 bg-gradient-to-r from-transparent to-primary/80" />
-                <span className="size-1.5 rotate-45 border border-technical bg-canvas shadow-soft" />
-                <span className="h-px flex-1 bg-gradient-to-l from-transparent to-technical/80" />
+              <div className="min-w-0 max-w-3xl xl:max-w-4xl">
+                <div className="relative">
+                  <div
+                    className="pointer-events-none absolute -inset-x-8 -top-10 h-48 rounded-full bg-gradient-to-r from-primary/15 via-technical/15 to-transparent blur-3xl"
+                    aria-hidden="true"
+                  />
+                  <div className="relative">
+                    <TypingHero />
+                  </div>
+                </div>
+
+                <div
+                  className="my-6 flex w-36 items-center justify-start gap-2 sm:my-7"
+                  aria-hidden="true"
+                >
+                  <span className="h-px flex-1 bg-gradient-to-r from-transparent to-primary/80" />
+                  <span className="size-1.5 rotate-45 border border-technical bg-canvas shadow-soft" />
+                  <span className="h-px flex-1 bg-gradient-to-l from-transparent to-technical/80" />
+                </div>
+
+                <p className="max-w-2xl text-left text-base font-medium leading-relaxed text-ink sm:text-lg lg:text-xl">
+                  We are a community of developers, designers, and innovators focused on hands-on creation. Join us to collaborate on real-world projects, hone your skills, and build a portfolio that stands out.
+                </p>
+
+                <div className="mt-7 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
+                  <button
+                    type="button"
+                    onClick={handleServicesClick}
+                    className={`group inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-technical/50 bg-gradient-to-r from-technical/10 to-primary/10 px-6 py-3 text-sm font-semibold text-ink shadow-soft hover:border-technical hover:shadow-glow focus-visible:outline-offset-4 sm:w-auto sm:text-base ${
+                      shouldReduceMotion ? "transition-none" : "transition duration-200 hover:-translate-y-0.5"
+                    }`}
+                  >
+                    <span>Services</span>
+                  </button>
+
+                  <Link
+                    to="/login"
+                    className={`group inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-primary/50 bg-gradient-to-r from-primary/15 to-technical/10 px-6 py-3 text-sm font-semibold text-ink shadow-soft hover:border-primary hover:shadow-glow focus-visible:outline-offset-4 sm:w-auto sm:text-base ${
+                      shouldReduceMotion ? "transition-none" : "transition duration-200 hover:-translate-y-0.5"
+                    }`}
+                  >
+                    <ArrowRight
+                      className={`size-4 text-technical-text ${
+                        shouldReduceMotion ? "" : "transition-transform duration-200 group-hover:translate-x-0.5"
+                      }`}
+                      aria-hidden="true"
+                    />
+                    <span>Join Our Community</span>
+                  </Link>
+                </div>
               </div>
-
-              <p className="max-w-2xl text-left text-base font-medium leading-relaxed text-ink-muted sm:text-lg">
-                We are a community of developers, designers, and innovators focused on hands-on creation. Join us to collaborate on real-world projects, hone your skills, and build a portfolio that stands out.
-              </p>
             </div>
 
-            <div className="grid w-full max-w-2xl gap-3 sm:gap-4 lg:max-w-sm lg:justify-self-end">
-              <button
-                type="button"
-                onClick={handleServicesClick}
-                className={`group ui-card-accent-cyan top-border-accent-cyan flex h-20 w-full items-center justify-center px-5 text-center text-sm font-semibold text-technical-text transition duration-300 hover:border-technical/50 hover:shadow-surface focus-visible:outline-offset-4 sm:text-base ${
-                  shouldReduceMotion ? "" : "hover:-translate-y-1"
+            <div className="relative flex w-full items-center justify-center py-4 lg:min-h-[24rem] lg:py-0">
+              <div
+                className="pointer-events-none absolute size-72 rounded-full bg-primary/15 blur-3xl"
+                aria-hidden="true"
+              />
+              <div
+                className="pointer-events-none absolute right-[18%] top-[18%] size-40 rounded-full bg-technical/15 blur-2xl"
+                aria-hidden="true"
+              />
+              <div
+                className={`relative aspect-square w-52 max-w-full overflow-hidden rounded-[26%] border border-technical/40 bg-surface shadow-surface hover:border-technical hover:shadow-glow sm:w-64 lg:w-[19rem] xl:w-[21rem] ${
+                  shouldReduceMotion
+                    ? "transition-none"
+                    : "transition duration-300 hover:-translate-y-1 hover:scale-[1.01]"
                 }`}
               >
-                <span>Services</span>
-              </button>
-
-              <Link
-                to="/login"
-                className={`group ui-card top-border-accent-primary flex h-20 w-full items-center justify-center gap-2 border-primary/30 bg-gradient-to-br from-primary/10 via-surface to-technical/10 px-5 text-center text-sm font-semibold text-primary-text transition duration-300 hover:border-technical/50 hover:shadow-surface focus-visible:outline-offset-4 sm:text-base ${
-                  shouldReduceMotion ? "" : "hover:-translate-y-1"
-                }`}
-              >
-                <ArrowRight
-                  className={`size-4 text-technical transition-transform duration-200 ${
-                    shouldReduceMotion ? "" : "group-hover:translate-x-0.5"
-                  }`}
-                  aria-hidden="true"
+                <img
+                  src={hackerEarthMark}
+                  alt="HackerEarth Hub symbol"
+                  className="size-full object-contain"
+                  loading="eager"
+                  decoding="async"
                 />
-                <span>Join Our Community</span>
-              </Link>
+              </div>
             </div>
           </motion.div>
         </div>
