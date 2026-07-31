@@ -1018,7 +1018,11 @@ const Home = () => {
                       }`}
                     >
                       <span>Explore Domain</span>
-                      <ChevronRight className="size-4 transition-transform group-hover:translate-x-1" />
+                      <ChevronRight
+                        className={`size-4 transition-transform ${
+                          shouldReduceMotion ? "" : "group-hover:translate-x-0.5"
+                        }`}
+                      />
                     </button>
                   </motion.div>
 

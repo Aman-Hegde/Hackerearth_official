@@ -63,7 +63,7 @@ const Contact = () => {
               ease: [0.16, 1, 0.3, 1]
             }}
             viewport={{ once: true }}
-            className="order-2 min-w-0 lg:order-1"
+            className="min-w-0"
             aria-labelledby="contact-form-heading"
           >
             <div className="mb-6 sm:mb-8">
@@ -90,7 +90,7 @@ const Contact = () => {
               ease: [0.16, 1, 0.3, 1]
             }}
             viewport={{ once: true }}
-            className="order-1 min-w-0 lg:order-2"
+            className="min-w-0"
             aria-labelledby="contact-methods-heading"
           >
             <div className="mb-6 sm:mb-8">

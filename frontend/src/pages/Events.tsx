@@ -126,9 +126,9 @@ const Events = () => {
             }}
             viewport={{ once: true, amount: 0.3 }}
           >
-            <h2 className="section-heading">
+            <h1 className="section-heading">
               <span className="text-gradient-subtle">EVENTS</span>
-            </h2>
+            </h1>
           </motion.div>
 
           <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2 lg:gap-8">

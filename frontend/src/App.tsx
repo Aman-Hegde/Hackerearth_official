@@ -15,14 +15,13 @@ import Contact from "./pages/Contact";
 import LoginPage from "./pages/Login";
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./context/AuthContext";
-import { ThemeProvider, useTheme } from "./context/ThemeContext"; 
+import { ThemeProvider } from "./context/ThemeContext";
 import ScrollToTop from "./components/ScrollTop";
 import Sidebar from "./components/Sidebar";
 import SpotlightCursor from "./components/CustomCursor";
 
 function AppWrapper() {
   const location = useLocation();
-  const { isDark } = useTheme(); // <-- Get the theme state
   const isAuthPage = location.pathname === "/login";
   const isDomainPage = location.pathname.startsWith("/domains");
   const [sidebarOpen, setSidebarOpen] = useState(false);

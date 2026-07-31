@@ -262,7 +262,10 @@ const Leaderboard = () => {
     return processedData.slice(startIndex, startIndex + pageSize);
   }, [processedData, currentPage, pageSize]);
 
-  const totalPages = Math.ceil(processedData.length / pageSize);
+  const totalPages = Math.max(
+    1,
+    Math.ceil(processedData.length / pageSize)
+  );
 
   // --- Event Handlers ---
   const handleSort = (key: keyof LeaderboardEntry) => {
@@ -286,12 +289,14 @@ const Leaderboard = () => {
 
   const handleSearch = () => {
     setSearchQuery(modalSearchValue);
+    setCurrentPage(1);
     setIsSearchModalOpen(false);
   };
 
   const clearSearch = () => {
     setModalSearchValue("");
     setSearchQuery("");
+    setCurrentPage(1);
     setIsSearchModalOpen(false);
   };
 
@@ -345,7 +350,7 @@ const Leaderboard = () => {
         >
           {fileMissing ? (
             <div
-              className="m-4 rounded-control border border-highlight/30 bg-highlight/10 px-5 py-12 text-center font-medium text-highlight-text sm:m-6"
+              className="m-4 rounded-control border border-red-500/20 bg-red-500/5 px-5 py-12 text-center font-medium text-red-600 dark:text-red-300 sm:m-6"
               role="alert"
             >
               Could not load any leaderboard data. Please ensure files are correctly named and present in the /public folder.
