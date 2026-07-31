@@ -1,14 +1,19 @@
-import dotenv from 'dotenv';
-dotenv.config();
-import sequelize from './config/db';
+import dotenv from "dotenv";
+import mongoose from "mongoose";
+import { connectDatabase } from "./config/db";
 
-(async () => {
+dotenv.config();
+
+const testDatabaseConnection = async (): Promise<void> => {
   try {
-    await sequelize.authenticate();
-    console.log('✅ Database connected successfully!');
-    process.exit(0);
+    await connectDatabase();
+    console.log("Database connection test passed.");
   } catch (error) {
-    console.error('❌ Database connection failed:', error);
-    process.exit(1);
+    console.error("Database connection test failed.");
+    process.exitCode = 1;
+  } finally {
+    await mongoose.disconnect();
   }
-})();
+};
+
+void testDatabaseConnection();
