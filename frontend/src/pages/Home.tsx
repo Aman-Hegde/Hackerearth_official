@@ -19,17 +19,25 @@ interface EventItem {
 }
 
 const EventCard = ({ event, index }: { event: EventItem; index: number }) => {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
     <Link
       to={`/events/${event.id}`}
       className="group block h-full rounded-card focus-visible:outline-offset-4"
     >
       <motion.div
-        initial={{ opacity: 0, y: 50 }}
+        initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
         whileInView={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6, delay: index * 0.1 }}
+        transition={{
+          duration: shouldReduceMotion ? 0 : 0.55,
+          delay: shouldReduceMotion ? 0 : index * 0.08,
+          ease: [0.16, 1, 0.3, 1],
+        }}
         viewport={{ once: true, amount: 0.3 }}
-        className="ui-card flex h-full min-w-0 flex-col overflow-hidden transition duration-300 group-hover:-translate-y-1 group-hover:border-brand-400 group-hover:shadow-glow"
+        className={`ui-card top-border-accent-primary flex h-full min-w-0 flex-col overflow-hidden border-primary/25 transition duration-300 group-hover:border-primary/45 group-hover:shadow-surface ${
+          shouldReduceMotion ? "" : "group-hover:-translate-y-1"
+        }`}
       >
         <div className="relative aspect-[4/3] overflow-hidden border-b border-line bg-surface-muted">
           <img
@@ -37,16 +45,18 @@ const EventCard = ({ event, index }: { event: EventItem; index: number }) => {
             alt={`${event.title} poster`}
             loading="lazy"
             decoding="async"
-            className="size-full object-contain transition-transform duration-500 ease-in-out group-hover:scale-105"
+            className={`size-full object-contain transition-transform duration-500 ease-in-out ${
+              shouldReduceMotion ? "" : "group-hover:scale-[1.02]"
+            }`}
           />
           <div
-            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/25 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+            className="pointer-events-none absolute inset-0 bg-gradient-to-t from-primary/15 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100"
             aria-hidden="true"
           />
         </div>
 
         <div className="flex flex-1 flex-col p-5 sm:p-6">
-          <p className="font-mono text-xs font-semibold uppercase tracking-[0.12em] text-accent-700 dark:text-accent-300">
+          <p className="font-mono text-xs font-semibold uppercase tracking-[0.12em] text-highlight-text">
             {event.date}
           </p>
           <h3 className="mt-2 font-display text-xl font-semibold leading-tight text-ink">
@@ -60,17 +70,19 @@ const EventCard = ({ event, index }: { event: EventItem; index: number }) => {
             {event.tags.map((tag: string) => (
               <span
                 key={tag}
-                className="rounded-full border border-line bg-surface-muted px-2.5 py-1 font-mono text-[0.65rem] font-semibold text-brand-700 dark:text-brand-300"
+                className="rounded-full border border-primary/20 bg-primary/5 px-2.5 py-1 font-mono text-[0.65rem] font-semibold text-primary-text"
               >
                 {tag}
               </span>
             ))}
           </div>
 
-          <div className="mt-auto flex items-center gap-1.5 pt-5 text-sm font-semibold text-brand-700 dark:text-brand-300">
+          <div className="mt-auto flex items-center gap-1.5 pt-5 text-sm font-semibold text-primary-text">
             <span>View Details</span>
             <ArrowRight
-              className="size-4 transition-transform duration-200 group-hover:translate-x-1"
+              className={`size-4 transition-transform duration-200 ${
+                shouldReduceMotion ? "" : "group-hover:translate-x-0.5"
+              }`}
               aria-hidden="true"
             />
           </div>
@@ -121,20 +133,47 @@ const TestimonialCard = ({
   name,
   username,
   body,
+  index,
 }: {
   img: string;
   name: string;
   username: string;
   body: string;
+  index: number;
 }) => {
+  const shouldReduceMotion = useReducedMotion();
+  const isCyanAccent = index % 2 === 0;
+
   return (
-    <article className="ui-card relative min-w-0 overflow-hidden p-5 sm:p-6">
+    <motion.article
+      initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      whileHover={shouldReduceMotion ? undefined : { y: -4 }}
+      transition={{
+        duration: shouldReduceMotion ? 0 : 0.5,
+        delay: shouldReduceMotion ? 0 : (index % 3) * 0.06,
+        ease: [0.16, 1, 0.3, 1],
+      }}
+      viewport={{ once: true, amount: 0.2 }}
+      className={`relative min-w-0 overflow-hidden p-5 transition-colors duration-300 sm:p-6 ${
+        isCyanAccent
+          ? "ui-card-accent-cyan top-border-accent-cyan hover:border-technical/50"
+          : "ui-card-accent-violet top-border-accent-violet hover:border-creative/50"
+      }`}
+    >
       <div
-        className="pointer-events-none absolute -left-12 -top-12 size-36 rounded-full bg-brand-500/5 blur-3xl dark:bg-brand-400/10"
+        className={`pointer-events-none absolute -left-12 -top-12 size-36 rounded-full blur-3xl ${
+          isCyanAccent ? "bg-technical/10" : "bg-creative/10"
+        }`}
         aria-hidden="true"
       />
 
-      <Quote className="relative mb-4 size-8 text-brand-600 opacity-70 dark:text-brand-300" aria-hidden="true" />
+      <Quote
+        className={`relative mb-4 size-8 opacity-80 ${
+          isCyanAccent ? "text-technical-text" : "text-creative-text"
+        }`}
+        aria-hidden="true"
+      />
 
       <blockquote className="relative">
         <p className="text-sm leading-relaxed text-ink-muted sm:text-base">{body}</p>
@@ -146,7 +185,9 @@ const TestimonialCard = ({
           alt={`${name}'s profile picture`}
           loading="lazy"
           decoding="async"
-          className="size-12 shrink-0 rounded-full border-2 border-line-strong bg-surface-muted object-cover object-[center_20%] shadow-soft"
+          className={`size-12 shrink-0 rounded-full border-2 bg-surface-muted object-cover object-[center_20%] shadow-soft ${
+            isCyanAccent ? "border-technical/35" : "border-creative/35"
+          }`}
         />
         <div className="min-w-0">
           <p className="font-display text-sm font-semibold leading-5 text-ink sm:text-base">
@@ -155,7 +196,7 @@ const TestimonialCard = ({
           <p className="break-words text-sm leading-5 text-ink-subtle">{username}</p>
         </div>
       </footer>
-    </article>
+    </motion.article>
   );
 };
 
@@ -237,13 +278,60 @@ interface DomainFeature {
   link: string;
 }
 
-function ServiceUIGraphic({ feature, isDark }: { feature: DomainFeature; isDark: boolean }) {
+type DomainAccent = "cyan" | "violet" | "amber";
+
+const domainAccentStyles = [
+  {
+    accent: "cyan" as DomainAccent,
+    card: "ui-card-accent-cyan top-border-accent-cyan",
+    line: "via-technical/70",
+    icon: "border-technical/25 bg-technical/10 text-technical-text",
+    tag: "border-technical/25 bg-technical/5 text-technical-text",
+    button: "border-technical/50 text-technical-text",
+  },
+  {
+    accent: "violet" as DomainAccent,
+    card: "ui-card-accent-violet top-border-accent-violet",
+    line: "via-creative/70",
+    icon: "border-creative/25 bg-creative/10 text-creative-text",
+    tag: "border-creative/25 bg-creative/5 text-creative-text",
+    button: "border-creative/50 text-creative-text",
+  },
+  {
+    accent: "amber" as DomainAccent,
+    card: "ui-card-accent-amber top-border-accent-amber",
+    line: "via-highlight/70",
+    icon: "border-highlight/25 bg-highlight/10 text-highlight-text",
+    tag: "border-highlight/25 bg-highlight/5 text-highlight-text",
+    button: "border-highlight/50 text-highlight-text",
+  },
+] as const;
+
+const serviceGlowClass: Record<DomainAccent, string> = {
+  cyan: "bg-technical/10",
+  violet: "bg-creative/10",
+  amber: "bg-highlight/10",
+};
+
+function ServiceUIGraphic({
+  feature,
+  accent,
+}: {
+  feature: DomainFeature;
+  accent: DomainAccent;
+}) {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
     <div className="relative w-full min-w-0">
       <motion.div
-        className="absolute inset-0 rounded-3xl bg-brand-500/5 blur-3xl dark:bg-brand-400/10"
-        animate={{ scale: [1, 1.05, 1] }}
-        transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+        className={`absolute inset-0 rounded-3xl blur-3xl ${serviceGlowClass[accent]}`}
+        animate={shouldReduceMotion ? { scale: 1 } : { scale: [1, 1.05, 1] }}
+        transition={
+          shouldReduceMotion
+            ? { duration: 0 }
+            : { duration: 5, repeat: Infinity, ease: "easeInOut" }
+        }
       />
 
       {/* The graphics are rendered directly for an open, integrated feel */}
@@ -252,10 +340,10 @@ function ServiceUIGraphic({ feature, isDark }: { feature: DomainFeature; isDark:
           <WebDevelopmentGraphic />
         )}
         {feature.title === "Data Structures & Algorithms" && (
-          <DSAGraphic isDark={isDark} />
+          <DSAGraphic />
         )}
         {feature.title === "Aptitude & Reasoning" && (
-          <AptitudeGraphic isDark={isDark} />
+          <AptitudeGraphic />
         )}
       </div>
     </div>
@@ -265,38 +353,47 @@ function ServiceUIGraphic({ feature, isDark }: { feature: DomainFeature; isDark:
 
 // --- 1. Web Development Graphic (Aesthetic Overhaul) ---
 function WebDevelopmentGraphic() {
+  const shouldReduceMotion = useReducedMotion();
   const codeLines = [
-    { text: "import { motion } from 'framer-motion';", color1: "text-purple-400", color2: "text-yellow-400" },
+    { text: "import { motion } from 'framer-motion';", color1: "text-primary-text", color2: "text-technical-text" },
     { text: "", color1: "", color2: "" },
-    { text: "const App = () => (", color1: "text-cyan-400", color2: "text-yellow-400" },
-    { text: "  <motion.div animate={{ scale: 1.1 }}>", color1: "text-green-400", color2: "text-yellow-400" },
-    { text: "   Build the Future", color1: "", color2: "text-blue-400" },
-    { text: "  </motion.div>", color1: "text-green-400", color2: "text-green-400" },
-    { text: ");", color1: "text-cyan-400", color2: "" },
+    { text: "const App = () => (", color1: "text-technical-text", color2: "text-primary-text" },
+    { text: "  <motion.div animate={{ scale: 1.1 }}>", color1: "text-primary-text", color2: "text-technical-text" },
+    { text: "   Build the Future", color1: "", color2: "text-technical-text" },
+    { text: "  </motion.div>", color1: "text-primary-text", color2: "text-primary-text" },
+    { text: ");", color1: "text-technical-text", color2: "" },
   ];
   const lineHeight = 22;
   const finalHeight = codeLines.length * lineHeight + 32;
 
   return (
     <motion.div
-      className="mx-auto w-full max-w-lg rounded-lg font-mono text-[0.625rem] shadow-2xl shadow-blue-500/10 sm:text-xs xl:text-sm"
-      initial="initial"
+      className="mx-auto w-full max-w-lg rounded-lg font-mono text-[0.625rem] shadow-surface sm:text-xs xl:text-sm"
+      initial={shouldReduceMotion ? "animate" : "initial"}
       whileInView="animate"
       viewport={{ once: true, amount: 0.5 }}
     >
-      <div className="bg-[#1e212b] rounded-t-lg p-3 flex items-center gap-2 border-b border-white/10">
-        <div className="w-3 h-3 bg-red-500 rounded-full" />
-        <div className="w-3 h-3 bg-yellow-500 rounded-full" />
-        <div className="w-3 h-3 bg-green-500 rounded-full" />
+      <div className="flex items-center gap-2 rounded-t-lg border-b border-line bg-surface-muted p-3">
+        <div className="size-3 rounded-full bg-technical" />
+        <div className="size-3 rounded-full bg-technical/60" />
+        <div className="size-3 rounded-full bg-technical/30" />
       </div>
       <motion.div
-        className="overflow-x-auto overflow-y-hidden rounded-b-lg bg-[#282c34] p-3 sm:p-4"
+        className="overflow-x-auto overflow-y-hidden rounded-b-lg bg-surface-raised p-3 text-ink sm:p-4"
         variants={{ initial: { height: 0 }, animate: { height: finalHeight } }}
-        transition={{ type: "spring", stiffness: 100, damping: 20, delay: 0.2 }}
+        transition={
+          shouldReduceMotion
+            ? { duration: 0 }
+            : { type: "spring", stiffness: 100, damping: 20, delay: 0.2 }
+        }
       >
         <motion.div
           className="min-w-[18rem]"
-          variants={{ animate: { transition: { staggerChildren: 0.12 } } }}
+          variants={{
+            animate: {
+              transition: { staggerChildren: shouldReduceMotion ? 0 : 0.12 },
+            },
+          }}
         >
           {codeLines.map((line, index) => (
             <motion.p
@@ -305,15 +402,26 @@ function WebDevelopmentGraphic() {
               variants={{ initial: { opacity: 0 }, animate: { opacity: 1 } }}
               style={{ height: lineHeight }}
             >
-              <span className="text-gray-600 w-6 inline-block select-none">{index + 1}</span>
+              <span className="inline-block w-6 select-none text-ink-subtle">{index + 1}</span>
               <span className={line.color1}>{line.text.split(' ')[0]}</span>
               <span className={line.color2}> {line.text.split(' ').slice(1).join(' ')}</span>
             </motion.p>
           ))}
           <motion.div
-            className="w-0.5 h-4 bg-cyan-400 mt-1"
-            variants={{ initial: { opacity: 0 }, animate: { opacity: [0, 1, 0] } }}
-            transition={{ duration: 1.2, repeat: Infinity, delay: codeLines.length * 0.12 + 0.5 }}
+            className="mt-1 h-4 w-0.5 bg-technical"
+            variants={{
+              initial: { opacity: 0 },
+              animate: { opacity: shouldReduceMotion ? 1 : [0, 1, 0] },
+            }}
+            transition={
+              shouldReduceMotion
+                ? { duration: 0 }
+                : {
+                    duration: 1.2,
+                    repeat: Infinity,
+                    delay: codeLines.length * 0.12 + 0.5,
+                  }
+            }
           />
         </motion.div>
       </motion.div>
@@ -323,30 +431,35 @@ function WebDevelopmentGraphic() {
 
 
 // --- 2. DSA Graphic (Carousel with Corrected & Improved Visualizations) ---
-function DSAGraphic({ isDark }: { isDark: boolean }) {
+function DSAGraphic() {
+  const shouldReduceMotion = useReducedMotion();
   const visualizations = [
-    { title: "Pathfinding Algorithm", component: <PathfindingViz isDark={isDark} /> },
-    { title: "Sorting Algorithm", component: <SortingViz isDark={isDark} /> },
-    { title: "Graph Traversal", component: <GraphTraversalViz isDark={isDark} /> },
+    { title: "Pathfinding Algorithm", component: <PathfindingViz shouldReduceMotion={shouldReduceMotion} /> },
+    { title: "Sorting Algorithm", component: <SortingViz shouldReduceMotion={shouldReduceMotion} /> },
+    { title: "Graph Traversal", component: <GraphTraversalViz shouldReduceMotion={shouldReduceMotion} /> },
   ];
 
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
+    if (shouldReduceMotion) return;
+
     const interval = setInterval(() => {
       setIndex((prevIndex) => (prevIndex + 1) % visualizations.length);
     }, 4000);
     return () => clearInterval(interval);
-  }, [visualizations.length]);
+  }, [shouldReduceMotion, visualizations.length]);
 
   return (
     <div className="w-full flex flex-col items-center justify-center space-y-4">
       <AnimatePresence mode="wait">
         <motion.h3
           key={visualizations[index].title}
-          className="text-sm font-medium text-gray-700 dark:text-gray-300"
-          initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-          transition={{ duration: 0.4, ease: "easeInOut" }}
+          className="text-sm font-medium text-creative-text"
+          initial={shouldReduceMotion ? false : { opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={shouldReduceMotion ? undefined : { opacity: 0, y: 10 }}
+          transition={{ duration: shouldReduceMotion ? 0 : 0.4, ease: "easeInOut" }}
         >
           {visualizations[index].title}
         </motion.h3>
@@ -355,10 +468,10 @@ function DSAGraphic({ isDark }: { isDark: boolean }) {
         <AnimatePresence mode="wait">
           <motion.div
             key={index}
-            initial={{ opacity: 0, scale: 0.95 }}
+            initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.5, ease: "easeInOut" }}
+            exit={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.95 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.5, ease: "easeInOut" }}
             className="absolute inset-0"
           >
             {visualizations[index].component}
@@ -367,7 +480,7 @@ function DSAGraphic({ isDark }: { isDark: boolean }) {
       </div>
       <div className="flex justify-center space-x-3">
         {["O(n log n)", "O(n²)", "O(V+E)"].map((complexity) => (
-          <div key={complexity} className="px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-xs">
+          <div key={complexity} className="rounded-full border border-creative/20 bg-creative/5 px-3 py-1 text-xs text-creative-text">
             {complexity}
           </div>
         ))}
@@ -377,68 +490,79 @@ function DSAGraphic({ isDark }: { isDark: boolean }) {
 }
 
 // Sub-components for the DSA Carousel
-const PathfindingViz = ({ isDark }: { isDark: boolean }) => {
+const PathfindingViz = ({ shouldReduceMotion }: { shouldReduceMotion: boolean | null }) => {
   const path = "M 20,50 C 60,0, 140,100, 180,50";
   return (
     <svg className="w-full h-full" viewBox="0 0 200 100">
-      <path d={path} fill="none" stroke={isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"} strokeWidth="2" strokeDasharray="5 5" />
-      <motion.circle r="6" fill={isDark ? "#A5B4FC" : "#4F46E5"}
+      <path d={path} fill="none" stroke="rgb(var(--color-border))" strokeWidth="2" strokeDasharray="5 5" />
+      <motion.circle r="6" fill="rgb(var(--color-creative))"
         style={{ offsetPath: `path("${path}")` }}
-        animate={{ offsetDistance: "100%" }}
-        transition={{ duration: 4, repeat: Infinity, ease: "linear" }} />
+        animate={{ offsetDistance: shouldReduceMotion ? "0%" : "100%" }}
+        transition={shouldReduceMotion ? { duration: 0 } : { duration: 4, repeat: Infinity, ease: "linear" }} />
     </svg>
   );
 };
-const SortingViz = ({ isDark }: { isDark: boolean }) => (
+const SortingViz = ({ shouldReduceMotion }: { shouldReduceMotion: boolean | null }) => (
   <div className="w-full h-full flex items-end justify-center gap-2 px-4">
     {[50, 80, 30, 95, 40, 70, 60, 20].map((height, i) => (
       <motion.div
-        key={i} layout className={`w-full rounded-t-full ${isDark ? 'bg-purple-400' : 'bg-purple-500'}`}
-        initial={{ height: `${height}%` }}
+        key={i}
+        layout={!shouldReduceMotion}
+        className="w-full rounded-t-full bg-creative"
+        initial={shouldReduceMotion ? { height: `${i * 9 + 25}%` } : { height: `${height}%` }}
         animate={{ height: `${i * 9 + 25}%` }}
-        transition={{ type: "spring", stiffness: 120, damping: 12, delay: i * 0.05 }} />
+        transition={shouldReduceMotion ? { duration: 0 } : { type: "spring", stiffness: 120, damping: 12, delay: i * 0.05 }} />
     ))}
   </div>
 );
-const GraphTraversalViz = ({ isDark }: { isDark: boolean }) => {
+const GraphTraversalViz = ({ shouldReduceMotion }: { shouldReduceMotion: boolean | null }) => {
   const nodes = [{ x: 50, y: 50 }, { x: 100, y: 20 }, { x: 150, y: 50 }, { x: 100, y: 80 }];
   const edges = [{ from: 0, to: 1 }, { from: 1, to: 2 }, { from: 2, to: 3 }, { from: 3, to: 0 }];
   return (
     <svg className="w-full h-full" viewBox="0 0 200 100">
       {edges.map((edge, i) => (
-        <line key={i} x1={nodes[edge.from].x} y1={nodes[edge.from].y} x2={nodes[edge.to].x} y2={nodes[edge.to].y} stroke={isDark ? "rgba(255,255,255,0.1)" : "rgba(0,0,0,0.1)"} strokeWidth="1" />
+        <line key={i} x1={nodes[edge.from].x} y1={nodes[edge.from].y} x2={nodes[edge.to].x} y2={nodes[edge.to].y} stroke="rgb(var(--color-border))" strokeWidth="1" />
       ))}
       {nodes.map((node, i) => (
-        <circle key={i} cx={node.x} cy={node.y} r="5" fill={isDark ? "#4B5563" : "#9CA3AF"} />
+        <circle key={i} cx={node.x} cy={node.y} r="5" fill="rgb(var(--color-creative) / 0.45)" />
       ))}
-      <motion.circle r="6" fill={isDark ? "#67E8F9" : "#0891B2"}
-        animate={{ cx: nodes.map(n => n.x), cy: nodes.map(n => n.y) }}
-        transition={{ duration: 4, repeat: Infinity, ease: "easeInOut", times: [0, 0.25, 0.5, 0.75] }} />
+      <motion.circle r="6" fill="rgb(var(--color-creative))"
+        animate={
+          shouldReduceMotion
+            ? { cx: nodes[0].x, cy: nodes[0].y }
+            : { cx: nodes.map(n => n.x), cy: nodes.map(n => n.y) }
+        }
+        transition={
+          shouldReduceMotion
+            ? { duration: 0 }
+            : { duration: 4, repeat: Infinity, ease: "easeInOut", times: [0, 0.25, 0.5, 0.75] }
+        } />
     </svg>
   );
 };
 
 
 // --- 3. Aptitude Graphic (Fluid Keyframe-based Orbit) ---
-function AptitudeGraphic({ isDark }: { isDark: boolean }) {
+function AptitudeGraphic() {
+  const shouldReduceMotion = useReducedMotion();
   const orbitRadius = 80;
   return (
     <div className="w-full h-64 flex flex-col items-center justify-center space-y-4">
-      {/* <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300">
+      {/* <h3 className="text-sm font-medium text-ink-muted">
         Logical Thinking Network
       </h3> */}
       <div className="relative w-56 h-56">
         <div className="absolute inset-0 flex items-center justify-center">
-          <div className={`w-48 h-48 rounded-full ${isDark ? "bg-purple-500/5" : "bg-purple-500/10"} blur-xl`}></div>
+          <div className="h-48 w-48 rounded-full bg-highlight/10 blur-xl"></div>
         </div>
 
         <motion.div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
           <motion.div
-            className="w-20 h-20 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center shadow-lg"
-            animate={{ scale: [1, 1.05, 1] }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+            className="flex h-20 w-20 items-center justify-center rounded-full bg-highlight shadow-soft"
+            animate={shouldReduceMotion ? { scale: 1 } : { scale: [1, 1.05, 1] }}
+            transition={shouldReduceMotion ? { duration: 0 } : { duration: 5, repeat: Infinity, ease: "easeInOut" }}
           >
-            <Brain className="w-9 h-9 text-white" />
+            <Brain className="h-9 w-9 text-ink-inverse" />
           </motion.div>
         </motion.div>
 
@@ -452,23 +576,31 @@ function AptitudeGraphic({ isDark }: { isDark: boolean }) {
             key={i}
             className="absolute top-1/2 left-1/2"
             style={{ x: -20, y: -20 }} // Center the icon origin
-            animate={{
-              rotate: 360,
-              x: [orbitRadius, 0, -orbitRadius, 0, orbitRadius].map(v => v - 20),
-              y: [0, orbitRadius, 0, -orbitRadius, 0].map(v => v - 20),
-            }}
-            transition={{ duration, repeat: Infinity, ease: "linear", delay }}
+            animate={
+              shouldReduceMotion
+                ? {
+                    rotate: 0,
+                    x: [orbitRadius, 0, -orbitRadius, 0][i] - 20,
+                    y: [0, orbitRadius, 0, -orbitRadius][i] - 20,
+                  }
+                : {
+                    rotate: 360,
+                    x: [orbitRadius, 0, -orbitRadius, 0, orbitRadius].map(v => v - 20),
+                    y: [0, orbitRadius, 0, -orbitRadius, 0].map(v => v - 20),
+                  }
+            }
+            transition={shouldReduceMotion ? { duration: 0 } : { duration, repeat: Infinity, ease: "linear", delay }}
           >
             <motion.div
-              className="w-10 h-10 bg-gradient-to-br from-purple-400 to-pink-500 rounded-full flex items-center justify-center shadow-md"
-              whileHover={{ scale: 1.25, transition: { type: 'spring', stiffness: 300 } }}
+              className="flex h-10 w-10 items-center justify-center rounded-full bg-highlight shadow-soft"
+              whileHover={shouldReduceMotion ? undefined : { scale: 1.25, transition: { type: 'spring', stiffness: 300 } }}
             >
-              <Icon className="w-5 h-5 text-white" />
+              <Icon className="h-5 w-5 text-ink-inverse" />
             </motion.div>
           </motion.div>
         ))}
       </div>
-      <div className="px-4 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-xs font-medium">
+      <div className="rounded-full border border-highlight/20 bg-highlight/5 px-4 py-1 text-xs font-medium text-highlight-text">
         Analytical Reasoning
       </div>
     </div>
@@ -483,8 +615,8 @@ const features: DomainFeature[] = [
     subtitle: "(React, Node.js, Tailwind CSS...)",
     description: "Master modern web technologies and build stunning, responsive applications.",
     technologies: ["React", "Next.js", "TypeScript", "Tailwind CSS", "Node.js"],
-    bgGradient: "from-cyan-500/40 via-blue-800/10 to-cyan-600/20",
-    accentColor: "text-blue-400",
+    bgGradient: "from-technical/20 via-primary/5 to-technical/10",
+    accentColor: "text-technical-text",
     link: "/domains",
   },
   {
@@ -493,8 +625,8 @@ const features: DomainFeature[] = [
     subtitle: "(Python, Java, C++...)",
     description: "Build a rock-solid foundation in computer science fundamentals.",
     technologies: ["Python", "Java", "C++", "Algorithm Design", "Complexity Analysis"],
-    bgGradient: "from-blue-400/20 via-purple-400/10 to-blue-600/20",
-    accentColor: "text-blue-400",
+    bgGradient: "from-creative/20 via-primary/5 to-creative/10",
+    accentColor: "text-creative-text",
     link: "/domains",
   },
   {
@@ -503,13 +635,14 @@ const features: DomainFeature[] = [
     subtitle: "(Quantitative, Verbal, Logical...)",
     description: "Sharpen your analytical thinking and logical reasoning skills.",
     technologies: ["Quantitative", "Verbal", "Logical", "Analytical", "Critical Thinking"],
-    bgGradient: "from-purple-400/20 via-pink-400/10 to-purple-600/20",
-    accentColor: "text-purple-400",
+    bgGradient: "from-highlight/20 via-primary/5 to-highlight/10",
+    accentColor: "text-highlight-text",
     link: "/domains",
   },
 ];
 const StatsSection = () => {
   const sectionRef = useRef(null);
+  const shouldReduceMotion = useReducedMotion();
 
   const { scrollYProgress } = useScroll({
     target: sectionRef,
@@ -522,19 +655,22 @@ const StatsSection = () => {
   return (
     <motion.section
       ref={sectionRef}
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      transition={{ duration: 0.5 }}
+      initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      transition={{
+        duration: shouldReduceMotion ? 0 : 0.5,
+        ease: [0.16, 1, 0.3, 1],
+      }}
       viewport={{ once: true }}
       className="section-space-sm relative overflow-hidden border-y border-line bg-canvas-subtle"
     >
       <motion.div
         className="pointer-events-none absolute inset-x-0 top-0 z-0 h-20"
         style={{
-          opacity: glowOpacity,
+          opacity: shouldReduceMotion ? 1 : glowOpacity,
           background:
-            "radial-gradient(ellipse at top center, rgb(var(--color-accent) / 0.22) 0%, rgb(var(--color-brand) / 0.08) 38%, transparent 72%)",
-          scaleX: glowScaleX,
+            "radial-gradient(ellipse at top center, rgb(var(--color-primary) / 0.16) 0%, rgb(var(--color-success) / 0.07) 38%, transparent 72%)",
+          scaleX: shouldReduceMotion ? 1 : glowScaleX,
           transformOrigin: "center",
         }}
         aria-hidden="true"
@@ -543,7 +679,7 @@ const StatsSection = () => {
       <div className="site-container relative z-10">
         <motion.div
           variants={fadeIn}
-          initial="initial"
+          initial={shouldReduceMotion ? "animate" : "initial"}
           whileInView="animate"
           viewport={{ once: true }}
           className="mx-auto mb-10 max-w-2xl text-center sm:mb-12"
@@ -556,7 +692,7 @@ const StatsSection = () => {
 
         <motion.div
           variants={stagger}
-          initial="initial"
+          initial={shouldReduceMotion ? "animate" : "initial"}
           whileInView="animate"
           viewport={{ once: true }}
           className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4 lg:gap-6"
@@ -570,17 +706,17 @@ const StatsSection = () => {
             <motion.div
               key={stat.title}
               variants={fadeIn}
-              whileHover={{ y: -5, boxShadow: "0 10px 30px -15px rgba(0,0,0,0.2)" }}
-              className="ui-card flex min-w-0 flex-col items-center p-4 text-center sm:p-5 lg:p-6"
+              whileHover={shouldReduceMotion ? undefined : { y: -4 }}
+              className="ui-card top-border-accent-primary flex min-w-0 flex-col items-center border-primary/25 p-4 text-center transition-colors duration-300 hover:border-success/35 hover:shadow-surface sm:p-5 lg:p-6"
             >
               <motion.div
-                className="mb-3 flex size-11 items-center justify-center rounded-control border border-brand-500/20 bg-brand-500/10 text-brand-700 dark:text-brand-300 sm:mb-4 sm:size-12"
-                whileHover={{ rotate: 360 }}
-                transition={{ duration: 0.5 }}
+                className="mb-3 flex size-11 items-center justify-center rounded-control border border-success/25 bg-success/10 text-success-text sm:mb-4 sm:size-12"
+                whileHover={shouldReduceMotion ? undefined : { y: -2 }}
+                transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
               >
                 {stat.icon}
               </motion.div>
-              <h3 className="font-display text-2xl font-semibold leading-none text-ink sm:text-3xl">
+              <h3 className="font-display text-2xl font-semibold leading-none text-primary-text sm:text-3xl">
                 {stat.number}
               </h3>
               <p className="mt-2 text-balance text-xs font-medium leading-snug text-ink-muted sm:text-sm">
@@ -633,7 +769,10 @@ const Home = () => {
   }, []);
 
   const scrollToFeature = (idx: number) => {
-    featureRefs.current[idx]?.scrollIntoView({ behavior: "smooth", block: "center" });
+    featureRefs.current[idx]?.scrollIntoView({
+      behavior: shouldReduceMotion ? "auto" : "smooth",
+      block: "center",
+    });
   };
 
   const handleServicesClick = () => {
@@ -653,26 +792,37 @@ const Home = () => {
   };
 
   return (
-    <div className={`${isDark ? "bg-black" : "bg-slate-50"} overflow-hidden transition-colors duration-500`}>
-      <div className="fixed inset-0 opacity-5 pointer-events-none z-0"
+    <div className="overflow-hidden bg-canvas text-ink transition-colors duration-500">
+      <div className="pointer-events-none fixed inset-0 z-0 opacity-50"
         style={{
-          backgroundImage: `radial-gradient(circle at 20% 50%, rgba(255,255,255,0.08) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(255,255,255,0.1) 0%, transparent 50%), radial-gradient(circle at 50% 80%, rgba(255,255,255,0.07) 0%, transparent 50%), radial-gradient(circle at 20% 50%, rgba(255,255,255,0.08) 0%, transparent 50%)`,
+          backgroundImage: `radial-gradient(circle at 20% 50%, rgb(var(--color-primary) / 0.05) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgb(var(--color-technical) / 0.05) 0%, transparent 50%)`,
           backgroundRepeat: "no-repeat",
           backgroundSize: "cover",
         }}
       />
 
-  <div className="fixed left-6 top-1/2 transform -translate-y-1/2 z-20 hidden lg:flex flex-col space-y-4">
+  <div className="fixed left-3 top-1/2 z-20 hidden -translate-y-1/2 flex-col gap-1 lg:flex xl:left-6">
     {features.map((_, idx) => (
       <button
         key={idx}
         onClick={() => scrollToFeature(idx)}
-        className={`group relative w-3 h-3 rounded-full transition-all duration-300 ${activeFeature === idx ? "bg-white scale-125 shadow-lg" : "bg-white/30 hover:bg-white/60 hover:scale-110"
-          }`}
+        className="group relative flex size-11 items-center justify-center rounded-full"
         aria-label={`Go to ${features[idx].title}`}
       >
-        <div className="absolute left-6 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
-          <div className="bg-black/90 text-white px-3 py-2 rounded-lg text-sm font-medium whitespace-nowrap border border-white/20">
+        <span
+          className={`size-3 rounded-full border transition duration-300 ${
+            activeFeature === idx
+              ? idx === 0
+                ? "scale-125 border-technical bg-technical shadow-soft"
+                : idx === 1
+                  ? "scale-125 border-creative bg-creative shadow-soft"
+                  : "scale-125 border-highlight bg-highlight shadow-soft"
+              : "border-line-strong bg-surface-muted group-hover:border-primary group-hover:bg-primary/20"
+          }`}
+          aria-hidden="true"
+        />
+        <div className="pointer-events-none absolute left-12 top-1/2 -translate-y-1/2 opacity-0 transition-opacity duration-300 group-hover:opacity-100 group-focus-visible:opacity-100">
+          <div className="whitespace-nowrap rounded-control border border-line bg-ink px-3 py-2 text-sm font-medium text-ink-inverse shadow-soft">
             {features[idx].title}
           </div>
         </div>
@@ -692,9 +842,9 @@ const Home = () => {
               maskImage: "linear-gradient(to bottom, black, transparent 88%)",
             }}
           />
-          <div className="absolute left-1/2 top-[12%] h-[30rem] w-[min(52rem,120vw)] -translate-x-1/2 rounded-full bg-brand-500/10 blur-3xl dark:bg-brand-500/15" />
-          <div className="absolute -right-24 top-1/3 size-72 rounded-full bg-accent-500/10 blur-3xl dark:bg-accent-400/10" />
-          <div className="absolute -left-20 bottom-16 size-64 rounded-full bg-signal-500/5 blur-3xl dark:bg-signal-400/5" />
+          <div className="absolute left-1/2 top-[12%] h-[30rem] w-[min(52rem,120vw)] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl dark:bg-primary/15" />
+          <div className="absolute -right-24 top-1/3 size-72 rounded-full bg-technical/10 blur-3xl" />
+          <div className="absolute -left-20 bottom-16 size-64 rounded-full bg-primary/5 blur-3xl" />
           <div className="absolute inset-x-0 top-[4.5rem] h-px bg-gradient-to-r from-transparent via-line-strong/70 to-transparent" />
         </div>
 
@@ -706,7 +856,7 @@ const Home = () => {
             {heroStars.map((star, index) => (
               <span
                 key={index}
-                className="absolute size-1 rounded-full bg-white/70 animate-twinkle"
+                className="absolute size-1 animate-twinkle rounded-full bg-ink/70"
                 style={{
                   ...star,
                   filter: "blur(0.5px)",
@@ -716,7 +866,7 @@ const Home = () => {
             {heroAccentStars.map((star, index) => (
               <span
                 key={`accent-${index}`}
-                className="absolute size-1.5 rounded-full bg-accent-200/80 shadow-[0_0_12px_rgba(34,211,238,0.45)] animate-float"
+                className="absolute size-1.5 animate-float rounded-full bg-technical/80 shadow-soft"
                 style={{
                   ...star,
                   filter: "blur(0.35px)",
@@ -729,9 +879,9 @@ const Home = () => {
         <div className="site-container relative z-20">
           <motion.div
             className="grid w-full min-w-0 items-center gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(16rem,2fr)] lg:gap-10 xl:gap-12"
-            initial={shouldReduceMotion ? false : { opacity: 0, y: 24 }}
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.55, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="min-w-0 max-w-3xl">
               <TypingHero />
@@ -740,9 +890,9 @@ const Home = () => {
                 className="my-6 flex w-36 items-center justify-start gap-2 sm:my-7"
                 aria-hidden="true"
               >
-                <span className="h-px flex-1 bg-gradient-to-r from-transparent to-brand-500/80" />
-                <span className="size-1.5 rotate-45 border border-accent-500 bg-canvas shadow-[0_0_12px_rgba(6,182,212,0.45)]" />
-                <span className="h-px flex-1 bg-gradient-to-l from-transparent to-accent-500/80" />
+                <span className="h-px flex-1 bg-gradient-to-r from-transparent to-primary/80" />
+                <span className="size-1.5 rotate-45 border border-technical bg-canvas shadow-soft" />
+                <span className="h-px flex-1 bg-gradient-to-l from-transparent to-technical/80" />
               </div>
 
               <p className="max-w-2xl text-left text-base font-medium leading-relaxed text-ink-muted sm:text-lg">
@@ -754,17 +904,23 @@ const Home = () => {
               <button
                 type="button"
                 onClick={handleServicesClick}
-                className="group ui-card-accent-cyan top-border-accent-cyan flex h-20 w-full items-center justify-center px-5 text-center text-sm font-semibold text-technical-text transition duration-300 hover:-translate-y-1 hover:border-technical/50 hover:shadow-surface focus-visible:outline-offset-4 sm:text-base"
+                className={`group ui-card-accent-cyan top-border-accent-cyan flex h-20 w-full items-center justify-center px-5 text-center text-sm font-semibold text-technical-text transition duration-300 hover:border-technical/50 hover:shadow-surface focus-visible:outline-offset-4 sm:text-base ${
+                  shouldReduceMotion ? "" : "hover:-translate-y-1"
+                }`}
               >
                 <span>Services</span>
               </button>
 
               <Link
                 to="/login"
-                className="group ui-card top-border-accent-violet flex h-20 w-full items-center justify-center gap-2 border-primary/30 bg-gradient-to-br from-primary/10 via-surface to-creative/10 px-5 text-center text-sm font-semibold text-primary-text transition duration-300 hover:-translate-y-1 hover:border-creative/50 hover:shadow-surface focus-visible:outline-offset-4 sm:text-base"
+                className={`group ui-card top-border-accent-primary flex h-20 w-full items-center justify-center gap-2 border-primary/30 bg-gradient-to-br from-primary/10 via-surface to-technical/10 px-5 text-center text-sm font-semibold text-primary-text transition duration-300 hover:border-technical/50 hover:shadow-surface focus-visible:outline-offset-4 sm:text-base ${
+                  shouldReduceMotion ? "" : "hover:-translate-y-1"
+                }`}
               >
                 <ArrowRight
-                  className="size-4 text-creative transition-transform duration-200 group-hover:translate-x-0.5"
+                  className={`size-4 text-technical transition-transform duration-200 ${
+                    shouldReduceMotion ? "" : "group-hover:translate-x-0.5"
+                  }`}
                   aria-hidden="true"
                 />
                 <span>Join Our Community</span>
@@ -774,25 +930,26 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="section-space relative z-[9] overflow-x-clip bg-canvas">
+      <section className="section-glow-cyan section-space relative z-[9] overflow-x-clip bg-canvas">
         <div className="site-container-wide">
           <motion.div
             className="relative z-10 mx-auto max-w-3xl text-center"
-            initial={{ opacity: 0, y: 20 }}
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.55, ease: [0.16, 1, 0.3, 1] }}
+            viewport={{ once: true, amount: 0.3 }}
           >
             <div className="flex justify-center">
               <button type="button" className="eyebrow group relative overflow-hidden">
-                <span className="absolute inset-x-0 -top-px mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-accent-500 to-transparent transition-all duration-500 group-hover:w-3/4" />
-                <span className="absolute inset-x-0 -bottom-px mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-brand-500 to-transparent transition-all duration-500 group-hover:w-3/4" />
+                <span className="absolute inset-x-0 -top-px mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-technical to-transparent transition-all duration-500 group-hover:w-3/4" />
+                <span className="absolute inset-x-0 -bottom-px mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-primary to-transparent transition-all duration-500 group-hover:w-3/4" />
                 <span className="relative">Learning Paths</span>
               </button>
             </div>
 
             <h2 className="section-heading mt-5 text-center">
               Our Different{" "}
-              <span className="bg-gradient-to-r from-brand-600 to-accent-600 bg-clip-text font-light italic text-transparent dark:from-brand-300 dark:to-accent-300">
+              <span className="bg-gradient-to-r from-primary-text to-technical-text bg-clip-text font-light italic text-transparent">
                 Technical Domains
               </span>
             </h2>
@@ -807,24 +964,31 @@ const Home = () => {
               <motion.div
                 key={feature.title}
                 ref={(el) => (featureRefs.current[idx] = el)}
-                initial={{ opacity: 0, y: 50 }}
+                initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: idx * 0.08 }}
-                className="ui-card relative overflow-hidden p-4 sm:p-6 lg:p-8"
+                whileHover={shouldReduceMotion ? undefined : { y: -4 }}
+                transition={{
+                  duration: shouldReduceMotion ? 0 : 0.55,
+                  delay: shouldReduceMotion ? 0 : idx * 0.06,
+                  ease: [0.16, 1, 0.3, 1],
+                }}
+                viewport={{ once: true, amount: 0.15 }}
+                className={`relative overflow-hidden p-4 transition-colors duration-300 hover:shadow-surface sm:p-6 lg:p-8 ${domainAccentStyles[idx].card}`}
               >
                 <div
-                  className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-accent-500/70 to-transparent"
+                  className={`pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent to-transparent ${domainAccentStyles[idx].line}`}
                   aria-hidden="true"
                 />
 
                 <div className="grid min-w-0 items-center gap-8 lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)] lg:gap-10">
                   <motion.div
                     className={`min-w-0 space-y-5 ${idx % 2 === 1 ? "lg:order-2" : ""}`}
-                    initial={{ opacity: 0, x: idx % 2 === 1 ? 50 : -50 }}
+                    initial={shouldReduceMotion ? false : { opacity: 0, x: idx % 2 === 1 ? 18 : -18 }}
                     whileInView={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.8 }}
+                    transition={{ duration: shouldReduceMotion ? 0 : 0.55, ease: [0.16, 1, 0.3, 1] }}
+                    viewport={{ once: true, amount: 0.2 }}
                   >
-                    <div className="flex size-12 items-center justify-center rounded-control border border-brand-500/20 bg-brand-500/10 text-brand-700 dark:text-brand-300">
+                    <div className={`flex size-12 items-center justify-center rounded-control border ${domainAccentStyles[idx].icon}`}>
                       {feature.icon}
                     </div>
 
@@ -837,7 +1001,7 @@ const Home = () => {
                       {feature.technologies.map((tech) => (
                         <span
                           key={tech}
-                          className="rounded-full border border-line bg-surface-muted px-3 py-1.5 font-mono text-[0.7rem] font-semibold text-brand-700 dark:text-brand-300"
+                          className={`rounded-full border px-3 py-1.5 font-mono text-[0.7rem] font-semibold ${domainAccentStyles[idx].tag}`}
                         >
                           {tech}
                         </span>
@@ -849,7 +1013,7 @@ const Home = () => {
                       onClick={handleExploreDomainClick}
                       className={`btn btn-secondary group w-full sm:w-auto ${
                         idx === activeFeature
-                          ? "border-brand-400 text-brand-700 dark:text-brand-300"
+                          ? domainAccentStyles[idx].button
                           : ""
                       }`}
                     >
@@ -860,12 +1024,13 @@ const Home = () => {
 
                   <motion.div
                     className={`min-w-0 ${idx % 2 === 1 ? "lg:order-1" : ""}`}
-                    initial={{ opacity: 0, scale: 0.85 }}
+                    initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.96 }}
                     whileInView={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.8 }}
+                    transition={{ duration: shouldReduceMotion ? 0 : 0.55, ease: [0.16, 1, 0.3, 1] }}
+                    viewport={{ once: true, amount: 0.2 }}
                   >
                     <div className="ui-card-muted relative min-w-0 overflow-hidden p-3 sm:p-5">
-                      <ServiceUIGraphic feature={feature} isDark={isDark} />
+                      <ServiceUIGraphic feature={feature} accent={domainAccentStyles[idx].accent} />
                     </div>
                   </motion.div>
                 </div>
@@ -878,22 +1043,22 @@ const Home = () => {
       <StatsSection />
 
       {/* events */}
-      <section className="section-space relative bg-canvas">
+      <section className="section-glow-amber section-space relative bg-canvas">
         <div className="site-container-wide">
           <motion.div
             className="mx-auto max-w-3xl text-center"
-            initial={{ opacity: 0, y: 20 }}
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.55, ease: [0.16, 1, 0.3, 1] }}
+            viewport={{ once: true, amount: 0.3 }}
           >
             <div className="flex justify-center">
               <button
                 type="button"
                 className="eyebrow group relative overflow-hidden"
               >
-                <span className="absolute inset-x-0 -top-px mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-accent-500 to-transparent transition-all duration-500 group-hover:w-3/4" />
-                <span className="absolute inset-x-0 -bottom-px mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-brand-500 to-transparent transition-all duration-500 group-hover:w-3/4" />
+                <span className="absolute inset-x-0 -top-px mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-highlight to-transparent transition-all duration-500 group-hover:w-3/4" />
+                <span className="absolute inset-x-0 -bottom-px mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-primary to-transparent transition-all duration-500 group-hover:w-3/4" />
                 <span className="relative">Community Events</span>
               </button>
             </div>
@@ -916,14 +1081,20 @@ const Home = () => {
       {/* Testimonials Section */}
       <section className="section-space relative bg-canvas-subtle">
         <div className="site-container-wide">
-          <div className="mx-auto max-w-3xl text-center">
+          <motion.div
+            className="mx-auto max-w-3xl text-center"
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.55, ease: [0.16, 1, 0.3, 1] }}
+            viewport={{ once: true, amount: 0.3 }}
+          >
             <div className="flex justify-center">
               <button
                 type="button"
                 className="eyebrow group relative overflow-hidden"
               >
-                <span className="absolute inset-x-0 -top-px mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-accent-500 to-transparent transition-all duration-500 group-hover:w-3/4" />
-                <span className="absolute inset-x-0 -bottom-px mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-brand-500 to-transparent transition-all duration-500 group-hover:w-3/4" />
+                <span className="absolute inset-x-0 -top-px mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-technical to-transparent transition-all duration-500 group-hover:w-3/4" />
+                <span className="absolute inset-x-0 -bottom-px mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-creative to-transparent transition-all duration-500 group-hover:w-3/4" />
                 <span className="relative">Testimonials</span>
               </button>
             </div>
@@ -933,21 +1104,22 @@ const Home = () => {
             <p className="section-lead mx-auto text-center">
               Voices from our community, hear what our members have to say about their journey..
             </p>
-          </div>
+          </motion.div>
 
           <div className="mt-12 grid items-start gap-5 md:grid-cols-2 md:gap-6 xl:grid-cols-3">
-            {testimonials.map((testimonial) => (
+            {testimonials.map((testimonial, index) => (
               <TestimonialCard
                 key={`${testimonial.name}-${testimonial.username}`}
                 {...testimonial}
+                index={index}
               />
             ))}
           </div>
 
           <div className="mt-10 flex justify-center sm:mt-12">
             <button type="button" className="btn btn-secondary group relative overflow-hidden">
-              <span className="absolute inset-x-0 -top-px mx-auto h-px w-3/4 bg-gradient-to-r from-transparent via-brand-500/40 to-transparent" />
-              <span className="absolute inset-x-0 -bottom-px mx-auto h-px w-3/4 bg-gradient-to-r from-transparent via-accent-500/40 to-transparent" />
+              <span className="absolute inset-x-0 -top-px mx-auto h-px w-3/4 bg-gradient-to-r from-transparent via-technical/40 to-transparent" />
+              <span className="absolute inset-x-0 -bottom-px mx-auto h-px w-3/4 bg-gradient-to-r from-transparent via-creative/40 to-transparent" />
               <span className="relative">Share your experience</span>
             </button>
           </div>
@@ -956,18 +1128,24 @@ const Home = () => {
 
       <section className="section-space relative overflow-hidden bg-canvas transition-colors duration-500">
         <div className="site-container">
-          <div className="ui-card relative isolate overflow-hidden bg-gradient-to-br from-surface via-surface to-brand-50/70 px-5 py-12 sm:px-8 sm:py-16 lg:px-12 lg:py-20 dark:to-brand-950/20">
+          <motion.div
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.55, ease: [0.16, 1, 0.3, 1] }}
+            viewport={{ once: true, amount: 0.25 }}
+            className="ui-card top-border-accent-violet relative isolate overflow-hidden border-primary/25 bg-gradient-to-br from-primary/10 via-surface to-creative/10 px-5 py-12 sm:px-8 sm:py-16 lg:px-12 lg:py-20"
+          >
             {/* Background effects */}
             <div
-              className="pointer-events-none absolute -left-24 -top-32 size-72 rounded-full bg-brand-500/20 blur-3xl dark:bg-brand-400/15"
+              className="pointer-events-none absolute -left-24 -top-32 size-72 rounded-full bg-primary/15 blur-3xl"
               aria-hidden="true"
             />
             <div
-              className="pointer-events-none absolute -bottom-36 -right-24 size-80 rounded-full bg-accent-400/20 blur-3xl dark:bg-accent-400/10"
+              className="pointer-events-none absolute -bottom-36 -right-24 size-80 rounded-full bg-creative/10 blur-3xl"
               aria-hidden="true"
             />
             <div
-              className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-brand-500/70 to-transparent"
+              className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-creative/70 to-transparent"
               aria-hidden="true"
             />
 
@@ -988,17 +1166,28 @@ const Home = () => {
               <div className="flex items-center justify-center lg:justify-end">
                 <Link
                   to="/login"
-                  className="btn btn-primary group w-full justify-between px-5 focus-visible:outline-offset-4 xs:w-auto xs:min-w-48 xs:justify-center"
+                  className={`btn btn-primary group w-full justify-between px-5 focus-visible:outline-offset-4 xs:w-auto xs:min-w-48 xs:justify-center ${
+                    shouldReduceMotion ? "" : "hover:-translate-y-1"
+                  }`}
                 >
                   <span className="flex items-center gap-2">
-                    <Rocket className="size-5" aria-hidden="true" />
+                    <Rocket
+                      className={`size-5 transition-transform duration-200 ${
+                        shouldReduceMotion ? "" : "group-hover:-translate-y-0.5"
+                      }`}
+                      aria-hidden="true"
+                    />
                     <span>Get Started</span>
                   </span>
                   <span
-                    className="flex size-7 items-center justify-center rounded-full border border-current/30 transition-all ease-in-out group-hover:ml-2"
+                    className="flex size-7 items-center justify-center rounded-full border border-current/30 transition-transform ease-in-out"
                     aria-hidden="true"
                   >
-                    <ArrowRight className="size-4 transition-transform ease-in-out group-hover:rotate-45" />
+                    <ArrowRight
+                      className={`size-4 transition-transform ease-in-out ${
+                        shouldReduceMotion ? "" : "group-hover:translate-x-0.5"
+                      }`}
+                    />
                   </span>
                 </Link>
               </div>
@@ -1008,9 +1197,7 @@ const Home = () => {
             <h1
               className="pointer-events-none absolute inset-x-0 -bottom-4 whitespace-nowrap text-center font-display text-[3.5rem] font-semibold leading-none text-transparent sm:-bottom-8 sm:text-[7rem] lg:text-[9rem]"
               style={{
-                WebkitTextStroke: isDark
-                  ? "1px rgba(103, 232, 249, 0.1)"
-                  : "1px rgba(37, 99, 235, 0.1)",
+                WebkitTextStroke: "1px rgb(var(--color-primary) / 0.12)",
                 color: "transparent",
               }}
               aria-hidden="true"
@@ -1018,12 +1205,12 @@ const Home = () => {
               HackerEarth
             </h1>
             <h1
-              className="pointer-events-none absolute inset-x-0 -bottom-4 whitespace-nowrap text-center font-display text-[3.5rem] font-semibold leading-none text-brand-500/5 sm:-bottom-8 sm:text-[7rem] lg:text-[9rem] dark:text-accent-300/5"
+              className="pointer-events-none absolute inset-x-0 -bottom-4 whitespace-nowrap text-center font-display text-[3.5rem] font-semibold leading-none text-primary/5 sm:-bottom-8 sm:text-[7rem] lg:text-[9rem] dark:text-creative/5"
               aria-hidden="true"
             >
               HackerEarth
             </h1>
-          </div>
+          </motion.div>
         </div>
       </section>
     </div>
