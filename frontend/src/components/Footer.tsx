@@ -1,8 +1,10 @@
 import { Mail, MapPin, Github, Linkedin, Twitter, Instagram } from 'lucide-react';
 import logo from '../assets/image.png'; // Ensure path is correct
 import { Link } from 'react-router-dom'; // Use Link for internal navigation
+import { useReducedMotion } from 'framer-motion';
 
 const Footer = () => {
+  const shouldReduceMotion = useReducedMotion() ?? false;
   const socialLinks = [
     { icon: Instagram, href: "https://www.instagram.com/hackerearth_nmamit/?hl=en", label: "Instagram" },
     { icon: Github, href: "https://github.com/HackerearthHubNmamit", label: "GitHub" },
@@ -13,7 +15,7 @@ const Footer = () => {
   const quickLinks = ["Events", "Team", "Domains", "Contact"];
 
   return (
-    <footer className="relative overflow-hidden border-t border-line bg-canvas-subtle text-ink transition-colors duration-300">
+    <footer className="relative overflow-hidden border-t border-primary/25 bg-canvas-subtle text-ink transition-colors duration-300">
       {/* Background Text Element */}
       <div
         className="pointer-events-none absolute -bottom-8 left-1/2 z-0 -translate-x-1/2 select-none whitespace-nowrap font-display text-ink/[0.035] dark:text-ink/[0.045]"
@@ -31,9 +33,9 @@ const Footer = () => {
               <img
                 src={logo}
                 alt="HackerEarth Logo"
-                className="h-12 w-16 rounded-control border border-line bg-surface object-cover shadow-soft"
+                className="h-12 w-16 rounded-control border border-primary/25 bg-surface object-cover shadow-soft"
               />
-              <span className="font-display text-2xl font-semibold tracking-tight text-ink">
+              <span className="text-gradient-subtle font-display text-2xl font-semibold tracking-tight">
                 HackerEarth
               </span>
             </div>
@@ -52,7 +54,7 @@ const Footer = () => {
                 <li key={link}>
                   <Link
                     to={`/${link.toLowerCase()}`}
-                    className="btn btn-ghost w-full justify-start px-3 text-sm focus-visible:outline-offset-2"
+                    className="btn btn-ghost w-full justify-start px-3 text-sm text-ink-muted underline decoration-line underline-offset-4 hover:border-technical/30 hover:text-technical-text hover:decoration-technical/60 focus-visible:border-technical/40 focus-visible:bg-surface focus-visible:text-technical-text focus-visible:decoration-technical/60 focus-visible:outline-offset-2"
                   >
                     {link}
                   </Link>
@@ -69,12 +71,18 @@ const Footer = () => {
             <div className="mt-4 space-y-2 text-sm">
               <a
                 href="mailto:Hackerearth.Nmamit@Nitte.edu.in"
-                className="group flex min-h-11 min-w-0 items-center gap-3 rounded-control px-2 py-2 text-ink-muted transition-colors duration-200 hover:bg-surface-muted hover:text-ink focus-visible:outline-offset-2"
+                className="group flex min-h-11 min-w-0 items-center gap-3 rounded-control px-2 py-2 text-ink-muted transition-colors duration-200 hover:bg-surface-muted hover:text-technical-text focus-visible:bg-surface focus-visible:text-technical-text focus-visible:outline-offset-2"
               >
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-control border border-line bg-surface text-brand-700 dark:text-brand-300">
+                <span
+                  className={`flex size-8 shrink-0 items-center justify-center rounded-control border border-technical/25 bg-surface text-technical-text ${
+                    shouldReduceMotion
+                      ? ''
+                      : 'transition-transform duration-200 group-hover:translate-x-0.5'
+                  }`}
+                >
                   <Mail className="size-4" aria-hidden="true" />
                 </span>
-                <span className="min-w-0 break-words group-hover:underline">
+                <span className="min-w-0 break-words underline decoration-line underline-offset-4 group-hover:decoration-technical/60">
                   hackerearth@nmamit.in
                 </span>
               </a>
@@ -82,12 +90,18 @@ const Footer = () => {
                 href="https://www.google.com/maps/place/Nitte+Mahalinga+Adyantaya+Memorial+Institute+of+Technology"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group flex min-h-11 min-w-0 items-center gap-3 rounded-control px-2 py-2 text-ink-muted transition-colors duration-200 hover:bg-surface-muted hover:text-ink focus-visible:outline-offset-2"
+                className="group flex min-h-11 min-w-0 items-center gap-3 rounded-control px-2 py-2 text-ink-muted transition-colors duration-200 hover:bg-surface-muted hover:text-technical-text focus-visible:bg-surface focus-visible:text-technical-text focus-visible:outline-offset-2"
               >
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-control border border-line bg-surface text-brand-700 dark:text-brand-300">
+                <span
+                  className={`flex size-8 shrink-0 items-center justify-center rounded-control border border-technical/25 bg-surface text-technical-text ${
+                    shouldReduceMotion
+                      ? ''
+                      : 'transition-transform duration-200 group-hover:translate-x-0.5'
+                  }`}
+                >
                   <MapPin className="size-4" aria-hidden="true" />
                 </span>
-                <span className="min-w-0 break-words group-hover:underline">
+                <span className="min-w-0 break-words underline decoration-line underline-offset-4 group-hover:decoration-technical/60">
                   NMAMIT, Nitte College
                 </span>
               </a>
@@ -96,7 +110,7 @@ const Footer = () => {
         </div>
 
         {/* Bottom Section */}
-        <div className="mt-12 flex flex-col items-center justify-between gap-5 border-t border-line pt-6 sm:flex-row">
+        <div className="mt-12 flex flex-col items-center justify-between gap-5 border-t border-primary/20 pt-6 sm:flex-row">
           <p className="text-center text-sm text-ink-muted sm:text-left dark:text-ink-subtle">
             © {new Date().getFullYear()} HackerEarth Club, NMAMIT. All rights reserved.
           </p>
@@ -107,10 +121,21 @@ const Footer = () => {
                 href={social.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="btn btn-ghost btn-icon text-ink-muted hover:text-brand-700 focus-visible:outline-offset-2 dark:hover:text-brand-300"
+                className={`btn btn-ghost btn-icon group border-line bg-surface text-ink-muted focus-visible:border-primary/50 focus-visible:text-primary-text focus-visible:outline-offset-2 ${
+                  social.label === "LinkedIn"
+                    ? 'hover:border-creative/40 hover:text-creative-text'
+                    : 'hover:border-technical/40 hover:text-technical-text'
+                }`}
                 aria-label={social.label}
               >
-                <social.icon className="size-5" aria-hidden="true" />
+                <social.icon
+                  className={`size-5 ${
+                    shouldReduceMotion
+                      ? ''
+                      : 'transition-transform duration-200 group-hover:-translate-y-0.5'
+                  }`}
+                  aria-hidden="true"
+                />
               </a>
             ))}
           </div>
