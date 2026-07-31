@@ -5,20 +5,20 @@ const phrases = [
   {
     text: 'Hackathons ',
     color:
-      'from-accent-600 via-accent-500 to-brand-600 dark:from-accent-300 dark:via-accent-400 dark:to-brand-300',
-    cursorColor: 'bg-accent-600 dark:bg-accent-300',
+      'from-technical-text via-technical-text to-primary-text',
+    cursorColor: 'bg-primary-text dark:bg-technical-text',
   },
   {
     text: 'Skill Assessments ',
     color:
-      'from-brand-700 via-brand-600 to-accent-600 dark:from-brand-300 dark:via-brand-400 dark:to-accent-300',
-    cursorColor: 'bg-brand-600 dark:bg-brand-300',
+      'from-primary-text via-primary-text to-technical-text',
+    cursorColor: 'bg-primary-text dark:bg-technical-text',
   },
   {
     text: 'Developer Community ',
     color:
-      'from-brand-600 via-accent-500 to-signal-600 dark:from-brand-300 dark:via-accent-300 dark:to-signal-400',
-    cursorColor: 'bg-signal-600 dark:bg-signal-400',
+      'from-primary-text via-technical-text to-primary-text',
+    cursorColor: 'bg-primary-text dark:bg-technical-text',
   },
 ] as const;
 
