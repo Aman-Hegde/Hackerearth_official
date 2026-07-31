@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Calendar, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Loader from '../components/Loader';
@@ -28,13 +28,20 @@ const pastEvents = [
 type EventItem = (typeof pastEvents)[number];
 
 const EventCard = ({ event, index }: { event: EventItem; index: number }) => {
+  const shouldReduceMotion = useReducedMotion();
+
   return (
     <motion.article
-      initial={{ opacity: 0, y: 30 }}
+      initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      viewport={{ once: true }}
-      className="ui-card group flex h-full min-w-0 flex-col overflow-hidden transition duration-300 hover:border-brand-400 hover:shadow-glow"
+      whileHover={shouldReduceMotion ? undefined : { y: -4 }}
+      transition={{
+        duration: shouldReduceMotion ? 0 : 0.5,
+        delay: shouldReduceMotion ? 0 : index * 0.08,
+        ease: [0.16, 1, 0.3, 1],
+      }}
+      viewport={{ once: true, amount: 0.25 }}
+      className="ui-card top-border-accent-primary group flex h-full min-w-0 flex-col overflow-hidden border-primary/25 transition-colors duration-300 hover:border-primary/45 hover:shadow-surface"
     >
       <div className="relative aspect-[16/10] overflow-hidden border-b border-line bg-surface-muted">
         <img
@@ -42,21 +49,21 @@ const EventCard = ({ event, index }: { event: EventItem; index: number }) => {
           alt={event.title}
           loading="lazy"
           decoding="async"
-          className="size-full object-cover transition-transform duration-500 ease-out group-hover:scale-105"
+          className="size-full object-contain"
         />
         <div
-          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/30 via-transparent to-transparent"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-primary/10 via-transparent to-transparent"
           aria-hidden="true"
         />
         <div
-          className={`pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${event.gradient}`}
+          className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-primary to-technical"
           aria-hidden="true"
         />
       </div>
 
       <div className="flex flex-1 flex-col p-5 sm:p-6">
-        <div className="flex items-center gap-2 text-sm font-medium text-ink-muted">
-          <Calendar className="size-4 shrink-0 text-brand-700 dark:text-brand-300" aria-hidden="true" />
+        <div className="flex w-fit items-center gap-2 rounded-control border border-highlight/20 bg-highlight/5 px-3 py-2 text-sm font-medium text-highlight-text">
+          <Calendar className="icon-accent-amber size-4 shrink-0" aria-hidden="true" />
           <time dateTime={event.date}>
             {new Date(event.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
           </time>
@@ -68,11 +75,13 @@ const EventCard = ({ event, index }: { event: EventItem; index: number }) => {
 
         <Link
           to={event.link}
-          className="btn btn-secondary group/button mt-6 w-full justify-center focus-visible:outline-offset-4 sm:w-fit"
+          className="btn btn-secondary group/button mt-6 w-full justify-center border-primary/30 text-primary-text hover:border-technical/40 focus-visible:outline-offset-4 sm:w-fit"
         >
           <span>View Highlights</span>
           <ArrowRight
-            className="size-4 transition-transform duration-200 group-hover/button:translate-x-1"
+            className={`size-4 text-technical transition-transform duration-200 ${
+              shouldReduceMotion ? '' : 'group-hover/button:translate-x-0.5'
+            }`}
             aria-hidden="true"
           />
         </Link>
@@ -83,6 +92,7 @@ const EventCard = ({ event, index }: { event: EventItem; index: number }) => {
 
 const Events = () => {
   const [loading, setLoading] = useState(true);
+  const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 1500);
@@ -104,16 +114,21 @@ const Events = () => {
 
   return (
     <main className="min-h-screen bg-canvas text-ink transition-colors duration-500">
-      <section className="section-space">
+      <section className="section-glow-subtle section-space overflow-x-clip pt-28 sm:pt-32">
         <div className="site-container">
           <motion.div
             className="mx-auto mb-12 max-w-3xl text-center sm:mb-14 lg:mb-16"
-            initial={{ opacity: 0, y: 20 }}
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
+            transition={{
+              duration: shouldReduceMotion ? 0 : 0.55,
+              ease: [0.16, 1, 0.3, 1],
+            }}
+            viewport={{ once: true, amount: 0.3 }}
           >
-            <h2 className="section-heading">EVENTS</h2>
+            <h2 className="section-heading">
+              <span className="text-gradient-subtle">EVENTS</span>
+            </h2>
           </motion.div>
 
           <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2 lg:gap-8">
