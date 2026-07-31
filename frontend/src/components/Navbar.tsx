@@ -80,9 +80,9 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
     ? 'border-line-strong/80 bg-surface/95 shadow-soft backdrop-blur-md'
     : 'border-line/80 bg-surface/90 shadow-soft backdrop-blur-md';
 
-  const inactivePillClass = `${controlSurfaceClass} text-ink-muted ${hoverLiftClass} hover:border-technical/40 hover:bg-surface-muted hover:text-ink`;
+  const inactivePillClass = `border-transparent bg-transparent text-ink-muted ${hoverLiftClass} hover:border-line hover:bg-surface hover:text-ink`;
   const activePillClass =
-    'border-technical/50 bg-primary/10 text-primary-text shadow-soft backdrop-blur-md';
+    'border-primary/60 bg-primary/10 text-primary-text shadow-soft';
 
   return (
     <motion.nav
@@ -98,15 +98,15 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
       onFocusCapture={() => setContainsFocus(true)}
       onBlurCapture={handleBlurCapture}
     >
-      <div className="site-container-wide py-2">
-        <div className="flex min-w-0 items-center justify-between gap-2 sm:gap-3 lg:gap-4">
+      <div className="site-container-wide py-2 lg:py-3">
+        <div className="flex min-w-0 items-center justify-between gap-2 sm:gap-3 lg:rounded-3xl lg:border lg:border-line-strong/80 lg:bg-surface/95 lg:px-3 lg:py-2.5 lg:shadow-surface lg:backdrop-blur-xl xl:px-4">
           <Link
             to="/"
             className="group pointer-events-auto flex min-w-0 flex-1 items-center gap-2 rounded-full focus-visible:outline-offset-4 sm:gap-3 lg:flex-none"
             aria-label="HackerEarth Hub-NMAMIT home"
           >
             <span
-              className={`flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-line bg-white p-0.5 shadow-soft transition duration-300 group-hover:border-technical/50 sm:size-12 lg:size-14 ${
+              className={`flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-line bg-white p-0.5 shadow-soft transition duration-300 group-hover:border-technical/50 sm:size-12 lg:size-12 lg:bg-surface ${
                 shouldReduceMotion ? '' : 'group-hover:-translate-y-0.5'
               }`}
             >
@@ -116,32 +116,26 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
                 className="size-full rounded-full object-cover"
               />
             </span>
-            <span className="min-w-0 max-w-full font-display text-[0.68rem] font-semibold leading-[1.1] tracking-[-0.02em] text-ink sm:text-sm lg:whitespace-nowrap xl:text-base">
+            <span className="min-w-0 max-w-full font-display text-[0.68rem] font-semibold leading-[1.1] tracking-[-0.02em] text-ink sm:text-sm lg:max-w-36 lg:truncate lg:whitespace-nowrap xl:max-w-none xl:text-base">
               HackerEarth Hub-NMAMIT
             </span>
           </Link>
 
-          <div className="pointer-events-auto ml-auto hidden min-w-0 items-center gap-3 lg:flex xl:gap-4">
-            <div className="flex shrink-0 items-center gap-1.5 xl:gap-2">
+          <div className="pointer-events-auto ml-auto hidden min-w-0 items-center gap-2 lg:flex xl:gap-3">
+            <div className="flex min-w-0 shrink items-center gap-0.5 rounded-2xl border border-line bg-surface-muted/80 p-1 shadow-soft xl:gap-1">
               <Link
                 to="/"
                 aria-label="Home"
                 title="Home"
                 aria-current={isActive('/') ? 'page' : undefined}
-                className={`relative flex size-11 shrink-0 items-center justify-center rounded-full border transition duration-200 focus-visible:outline-offset-2 ${
+                className={`relative flex size-11 shrink-0 items-center justify-center rounded-xl border transition duration-200 focus-visible:outline-offset-2 ${
                   isActive('/') ? activePillClass : inactivePillClass
                 }`}
               >
                 <Home className="size-4" aria-hidden="true" />
                 {isActive('/') && (
-                  <motion.span
-                    layoutId="desktop-nav-active"
-                    className="absolute -bottom-1 left-1/2 h-1 w-4 -translate-x-1/2 rounded-full bg-gradient-to-r from-primary to-technical"
-                    transition={
-                      shouldReduceMotion
-                        ? { duration: 0 }
-                        : { type: 'spring', stiffness: 380, damping: 32 }
-                    }
+                  <span
+                    className="absolute -bottom-0.5 left-1/2 h-[3px] w-6 -translate-x-1/2 rounded-full bg-technical shadow-soft"
                     aria-hidden="true"
                   />
                 )}
@@ -154,20 +148,14 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
                     key={item.name}
                     to={item.href}
                     aria-current={active ? 'page' : undefined}
-                    className={`relative flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-full border px-2.5 text-[0.6875rem] font-semibold transition duration-200 focus-visible:outline-offset-2 xl:px-4 xl:text-sm ${
+                    className={`relative flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-xl border px-2.5 py-2 text-[0.6875rem] font-semibold transition duration-200 focus-visible:outline-offset-2 xl:px-4 xl:text-sm ${
                       active ? activePillClass : inactivePillClass
                     }`}
                   >
                     {item.name}
                     {active && (
-                      <motion.span
-                        layoutId="desktop-nav-active"
-                        className="absolute -bottom-1 left-1/2 h-1 w-5 -translate-x-1/2 rounded-full bg-gradient-to-r from-primary to-technical"
-                        transition={
-                          shouldReduceMotion
-                            ? { duration: 0 }
-                            : { type: 'spring', stiffness: 380, damping: 32 }
-                        }
+                      <span
+                        className="absolute -bottom-0.5 left-1/2 h-[3px] w-6 -translate-x-1/2 rounded-full bg-technical shadow-soft"
                         aria-hidden="true"
                       />
                     )}
@@ -200,7 +188,7 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
                   </div>
                   <button
                     onClick={handleLogout}
-                    className={`flex size-11 shrink-0 items-center justify-center gap-2 rounded-full border text-ink-muted transition duration-200 ${hoverLiftClass} hover:border-red-400 hover:bg-surface-muted hover:text-red-600 focus-visible:outline-offset-2 dark:hover:text-red-400 xl:w-auto xl:px-4 ${controlSurfaceClass}`}
+                    className={`flex size-11 shrink-0 items-center justify-center gap-2 rounded-full border text-ink-muted transition duration-200 ${hoverLiftClass} hover:border-technical/40 hover:bg-surface-muted hover:text-technical-text focus-visible:outline-offset-2 xl:w-auto xl:px-4 ${controlSurfaceClass}`}
                     type="button"
                     aria-label="Logout"
                     title="Logout"
@@ -212,7 +200,7 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
               ) : (
                 <Link
                   to="/login"
-                  className={`inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-primary/60 bg-gradient-to-r from-primary to-creative px-4 text-xs font-semibold text-ink-inverse shadow-soft transition duration-200 ${hoverLiftClass} hover:brightness-105 focus-visible:outline-offset-2 xl:px-5 xl:text-sm`}
+                  className={`inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-primary/60 bg-gradient-to-r from-primary to-technical px-4 text-xs font-semibold text-ink-inverse shadow-soft transition duration-200 ${hoverLiftClass} hover:brightness-105 focus-visible:outline-offset-2 xl:px-5 xl:text-sm`}
                 >
                   Login
                 </Link>
