@@ -1,22 +1,30 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { motion, type Variants } from "framer-motion";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { Github, Linkedin, Mail } from "lucide-react";
 import Loader from "../components/Loader";
 
 // --- Animation Variants ---
-const fadeInUp: Variants = {
-  initial: { opacity: 0, y: 50 },
+const getFadeInUp = (shouldReduceMotion: boolean | null): Variants => ({
+  initial: shouldReduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 18 },
   animate: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: [0.6, -0.05, 0.01, 0.99] },
+    transition: {
+      duration: shouldReduceMotion ? 0 : 0.5,
+      ease: [0.16, 1, 0.3, 1],
+    },
   },
-};
-const staggerContainer = {
-  animate: { transition: { staggerChildren: 0.1 } },
-};
+});
+
+const getStaggerContainer = (shouldReduceMotion: boolean | null): Variants => ({
+  animate: {
+    transition: {
+      staggerChildren: shouldReduceMotion ? 0 : 0.08,
+    },
+  },
+});
 
 // --- TEAM DATA (EXCEL STRUCTURE) ---
 const coreTeam = [
@@ -300,12 +308,85 @@ const teamSections: Array<{ title: string; data: TeamMember[] }> = [
   { title: "Graphics Team", data: graphicsTeam },
 ];
 
+type TeamAccent = "primary" | "technical" | "creative" | "success";
+
+const teamSectionAccents: TeamAccent[] = [
+  "primary",
+  "technical",
+  "creative",
+  "success",
+  "primary",
+  "technical",
+  "creative",
+];
+
+const teamAccentStyles: Record<
+  TeamAccent,
+  {
+    card: string;
+    topBorder: string;
+    line: string;
+    label: string;
+    role: string;
+    skill: string;
+    social: string;
+  }
+> = {
+  primary: {
+    card: "border-primary/25 hover:border-primary/45",
+    topBorder: "top-border-accent-primary",
+    line: "via-primary/70",
+    label: "text-primary-text",
+    role: "text-primary-text",
+    skill: "border-primary/20 bg-primary/5",
+    social: "border-primary/20 text-primary-text hover:border-primary/40",
+  },
+  technical: {
+    card: "border-technical/25 hover:border-technical/45",
+    topBorder: "top-border-accent-cyan",
+    line: "via-technical/70",
+    label: "text-technical-text",
+    role: "text-technical-text",
+    skill: "border-technical/20 bg-technical/5",
+    social: "border-technical/20 text-technical-text hover:border-technical/40",
+  },
+  creative: {
+    card: "border-creative/25 hover:border-creative/45",
+    topBorder: "top-border-accent-violet",
+    line: "via-creative/70",
+    label: "text-creative-text",
+    role: "text-creative-text",
+    skill: "border-creative/20 bg-creative/5",
+    social: "border-creative/20 text-creative-text hover:border-creative/40",
+  },
+  success: {
+    card: "border-success/25 hover:border-success/45",
+    topBorder: "top-border-accent-emerald",
+    line: "via-success/70",
+    label: "text-success-text",
+    role: "text-success-text",
+    skill: "border-success/20 bg-success/5",
+    social: "border-success/20 text-success-text hover:border-success/40",
+  },
+};
+
 // --- Reusable Team Member Card Component ---
-const TeamMemberCard = ({ member }: { member: TeamMember }) => {
+const TeamMemberCard = ({
+  member,
+  accent,
+  entranceVariants,
+  shouldReduceMotion,
+}: {
+  member: TeamMember;
+  accent: (typeof teamAccentStyles)[TeamAccent];
+  entranceVariants: Variants;
+  shouldReduceMotion: boolean | null;
+}) => {
   return (
     <motion.article
-      variants={fadeInUp}
-      className="ui-card group mx-auto flex h-full w-full max-w-sm flex-col overflow-hidden transition duration-300 hover:border-brand-400 hover:shadow-glow"
+      variants={entranceVariants}
+      whileHover={shouldReduceMotion ? undefined : { y: -4 }}
+      className={`ui-card group mx-auto flex h-full w-full max-w-sm flex-col overflow-hidden transition-colors duration-300 hover:shadow-surface ${accent.card} ${accent.topBorder}`}
     >
       <div className="relative aspect-[4/5] overflow-hidden border-b border-line bg-surface-muted">
         <img
@@ -313,14 +394,14 @@ const TeamMemberCard = ({ member }: { member: TeamMember }) => {
           alt={member.name}
           loading="lazy"
           decoding="async"
-          className="size-full object-cover object-[center_20%] transition-transform duration-500 ease-out group-hover:scale-[1.03]"
+          className="size-full object-cover object-[center_20%]"
         />
         <div
-          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-slate-950/20 via-transparent to-transparent"
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/10 via-transparent to-transparent"
           aria-hidden="true"
         />
         <div
-          className={`pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r ${member.gradient || "from-gray-400 to-gray-200"}`}
+          className={`pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent to-transparent ${accent.line}`}
           aria-hidden="true"
         />
       </div>
@@ -329,7 +410,7 @@ const TeamMemberCard = ({ member }: { member: TeamMember }) => {
         <h3 className="font-display text-xl font-semibold leading-tight text-ink">
           {member.name}
         </h3>
-        <p className="mt-2 font-mono text-xs font-semibold uppercase tracking-[0.12em] text-brand-700 dark:text-brand-300">
+        <p className={`mt-2 font-mono text-xs font-semibold uppercase tracking-[0.12em] ${accent.role}`}>
           {member.position}
         </p>
 
@@ -344,7 +425,7 @@ const TeamMemberCard = ({ member }: { member: TeamMember }) => {
             member.skills.slice(0, 3).map((skill: string) => (
               <span
                 key={skill}
-                className="rounded-full border border-line bg-surface-muted px-3 py-1 font-mono text-xs font-semibold text-ink-muted"
+                className={`rounded-full border px-3 py-1 font-mono text-xs font-semibold text-ink-muted ${accent.skill}`}
               >
                 {skill}
               </span>
@@ -360,10 +441,15 @@ const TeamMemberCard = ({ member }: { member: TeamMember }) => {
               href={member.github}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn btn-ghost btn-icon border-line bg-surface-muted text-ink-muted hover:text-brand-700 focus-visible:outline-offset-2 dark:hover:text-brand-300"
+              className={`btn btn-ghost btn-icon group/social bg-surface-muted focus-visible:outline-offset-2 ${accent.social}`}
               aria-label={`GitHub profile for ${member.name}`}
             >
-              <Github className="size-5" aria-hidden="true" />
+              <Github
+                className={`size-5 transition-transform duration-200 ${
+                  shouldReduceMotion ? "" : "group-hover/social:translate-x-0.5"
+                }`}
+                aria-hidden="true"
+              />
             </a>
           )}
           {member.linkedin && (
@@ -371,19 +457,29 @@ const TeamMemberCard = ({ member }: { member: TeamMember }) => {
               href={member.linkedin}
               target="_blank"
               rel="noopener noreferrer"
-              className="btn btn-ghost btn-icon border-line bg-surface-muted text-ink-muted hover:text-brand-700 focus-visible:outline-offset-2 dark:hover:text-brand-300"
+              className={`btn btn-ghost btn-icon group/social bg-surface-muted focus-visible:outline-offset-2 ${accent.social}`}
               aria-label={`LinkedIn profile for ${member.name}`}
             >
-              <Linkedin className="size-5" aria-hidden="true" />
+              <Linkedin
+                className={`size-5 transition-transform duration-200 ${
+                  shouldReduceMotion ? "" : "group-hover/social:translate-x-0.5"
+                }`}
+                aria-hidden="true"
+              />
             </a>
           )}
           {member.email && (
             <a
               href={`mailto:${member.email}`}
-              className="btn btn-ghost btn-icon border-line bg-surface-muted text-ink-muted hover:text-brand-700 focus-visible:outline-offset-2 dark:hover:text-brand-300"
+              className={`btn btn-ghost btn-icon group/social bg-surface-muted focus-visible:outline-offset-2 ${accent.social}`}
               aria-label={`Email ${member.name}`}
             >
-              <Mail className="size-5" aria-hidden="true" />
+              <Mail
+                className={`size-5 transition-transform duration-200 ${
+                  shouldReduceMotion ? "" : "group-hover/social:translate-x-0.5"
+                }`}
+                aria-hidden="true"
+              />
             </a>
           )}
         </div>
@@ -395,6 +491,9 @@ const TeamMemberCard = ({ member }: { member: TeamMember }) => {
 // --- Main Team Page Component ---
 const Team = () => {
   const [loading, setLoading] = useState(true);
+  const shouldReduceMotion = useReducedMotion();
+  const fadeInUp = getFadeInUp(shouldReduceMotion);
+  const staggerContainer = getStaggerContainer(shouldReduceMotion);
 
   useEffect(() => {
     // Simulate loading time for better UX
@@ -415,8 +514,8 @@ const Team = () => {
   }
 
   return (
-    <main className="min-h-screen overflow-hidden bg-canvas text-ink transition-colors duration-500">
-      <div className="site-container-wide section-space">
+    <main className="section-glow-subtle min-h-screen overflow-hidden bg-canvas text-ink transition-colors duration-500">
+      <div className="site-container-wide section-space pt-28 sm:pt-32">
         {/* Header */}
         <motion.div
           initial="initial"
@@ -425,41 +524,57 @@ const Team = () => {
           className="mx-auto max-w-3xl text-center"
         >
           <motion.h1 variants={fadeInUp} className="section-heading">
-            Meet Our Team
+            <span className="text-gradient-subtle">Meet Our Team</span>
           </motion.h1>
         </motion.div>
 
         {/* Sections */}
         <div className="mt-16 space-y-20 sm:mt-20 sm:space-y-24">
-          {teamSections.map((section, idx) => (
-            <section
-              className="scroll-mt-24"
-              key={section.title}
-              aria-labelledby={`team-section-${idx}`}
-            >
-              <motion.h2
-                id={`team-section-${idx}`}
-                initial={{ opacity: 0 }}
-                whileInView={{ opacity: 1 }}
-                viewport={{ once: true }}
-                className="mb-8 text-center font-display text-title text-ink sm:mb-10"
-              >
-                {section.title}
-              </motion.h2>
+          {teamSections.map((section, idx) => {
+            const accent = teamAccentStyles[teamSectionAccents[idx]];
 
-              <motion.div
-                initial="initial"
-                whileInView="animate"
-                variants={staggerContainer}
-                viewport={{ once: true, amount: 0.2 }}
-                className="grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8"
+            return (
+              <section
+                className="scroll-mt-24"
+                key={section.title}
+                aria-labelledby={`team-section-${idx}`}
               >
-                {section.data.map((member) => (
-                  <TeamMemberCard key={member.name} member={member} />
-                ))}
-              </motion.div>
-            </section>
-          ))}
+                <motion.h2
+                  id={`team-section-${idx}`}
+                  initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: shouldReduceMotion ? 0 : 0.5,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  className="mb-8 text-center font-display text-title text-ink sm:mb-10"
+                >
+                  <span className={`inline-flex px-4 pt-3 ${accent.label} ${accent.topBorder}`}>
+                    {section.title}
+                  </span>
+                </motion.h2>
+
+                <motion.div
+                  initial="initial"
+                  whileInView="animate"
+                  variants={staggerContainer}
+                  viewport={{ once: true, amount: 0.2 }}
+                  className="grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8"
+                >
+                  {section.data.map((member) => (
+                    <TeamMemberCard
+                      key={member.name}
+                      member={member}
+                      accent={accent}
+                      entranceVariants={fadeInUp}
+                      shouldReduceMotion={shouldReduceMotion}
+                    />
+                  ))}
+                </motion.div>
+              </section>
+            );
+          })}
         </div>
       </div>
     </main>
