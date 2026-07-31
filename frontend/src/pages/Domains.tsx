@@ -5,11 +5,13 @@ import ResourceCard from '../components/ResourceCard';
 import CategoryFilter from '../components/CategoryFilter';
 import WeekFilter from '../components/WeekTabs';
 import { useTheme } from '../context/ThemeContext';
+import { motion, useReducedMotion } from 'framer-motion';
 
 const BlogPage: FC = () => {
   const [activeCategory, setActiveCategory] = useState('all');
   const [activeWeek, setActiveWeek] = useState(0);
   const { isDark } = useTheme();
+  const shouldReduceMotion = useReducedMotion();
 
   const filteredPosts = blogPosts.filter(post => {
     const categoryMatch = activeCategory === 'all' || post.category === activeCategory;
@@ -19,19 +21,39 @@ const BlogPage: FC = () => {
 
   return (
     <main
-      className="min-h-screen bg-canvas text-ink transition-colors duration-500"
+      className="section-glow-subtle min-h-screen bg-canvas text-ink transition-colors duration-500"
       data-color-scheme={isDark ? 'dark' : 'light'}
     >
       <div className="site-container-wide section-space pt-24 lg:pt-section">
         {/* Header */}
-        <header className="mx-auto max-w-3xl text-center">
-          <h1 className="section-heading">Learning Resources</h1>
+        <motion.header
+          className="mx-auto max-w-3xl text-center"
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            duration: shouldReduceMotion ? 0 : 0.5,
+            ease: [0.16, 1, 0.3, 1]
+          }}
+        >
+          <h1 className="section-heading">
+            <span className="text-gradient-subtle">Learning Resources</span>
+          </h1>
           <p className="section-lead mx-auto">
             Curated tutorials, articles, and resources organized by week and category
           </p>
-        </header>
+        </motion.header>
 
-        <section className="ui-card-muted mt-10 space-y-4 overflow-hidden p-4 sm:mt-12 sm:p-6" aria-label="Resource filters">
+        <motion.section
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            duration: shouldReduceMotion ? 0 : 0.5,
+            delay: shouldReduceMotion ? 0 : 0.04,
+            ease: [0.16, 1, 0.3, 1]
+          }}
+          className="ui-card-muted top-border-accent-primary mt-10 space-y-4 overflow-hidden border-primary/20 p-4 sm:mt-12 sm:p-6"
+          aria-label="Resource filters"
+        >
           {/* Week Filter */}
           <WeekFilter
             activeWeek={activeWeek}
@@ -47,7 +69,7 @@ const BlogPage: FC = () => {
               isDark={isDark}
             />
           </div>
-        </section>
+        </motion.section>
 
         {/* Results Count */}
         <div className="my-6 text-sm font-medium text-ink-muted" aria-live="polite">

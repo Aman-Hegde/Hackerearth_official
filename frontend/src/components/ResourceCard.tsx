@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import type { BlogPost } from '../lib/resourcesData';
 import { Link } from 'react-router-dom';
+import { motion, useReducedMotion } from 'framer-motion';
 
 interface ResourceCardProps {
   post: BlogPost;
@@ -8,25 +9,39 @@ interface ResourceCardProps {
   className?: string;
 }
 
-const ResourceCard: FC<ResourceCardProps> = ({ post, isDark, className = '' }) => {
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'web': return 'border-brand-500/20 bg-brand-500/10 text-brand-700 dark:text-brand-300';
-      case 'dsa': return 'border-signal-500/20 bg-signal-500/10 text-signal-700 dark:text-signal-300';
-      case 'aptitude': return 'border-accent-500/20 bg-accent-500/10 text-accent-700 dark:text-accent-300';
-      case 'system-design': return 'border-orange-500/20 bg-orange-500/10 text-orange-700 dark:text-orange-300';
-      default: return 'border-line bg-surface-muted text-ink-muted';
-    }
-  };
+const categoryAccentStyles: Record<
+  BlogPost['category'],
+  { card: string; topBorder: string; chip: string; link: string }
+> = {
+  web: {
+    card: 'border-technical/25 hover:border-technical/45',
+    topBorder: 'top-border-accent-cyan',
+    chip: 'border-technical/25 bg-technical/10 text-technical-text',
+    link: 'text-technical-text'
+  },
+  dsa: {
+    card: 'border-creative/25 hover:border-creative/45',
+    topBorder: 'top-border-accent-violet',
+    chip: 'border-creative/25 bg-creative/10 text-creative-text',
+    link: 'text-creative-text'
+  },
+  aptitude: {
+    card: 'border-highlight/25 hover:border-highlight/45',
+    topBorder: 'top-border-accent-amber',
+    chip: 'border-highlight/25 bg-highlight/10 text-highlight-text',
+    link: 'text-highlight-text'
+  },
+  general: {
+    card: 'border-primary/25 hover:border-primary/45',
+    topBorder: 'top-border-accent-primary',
+    chip: 'border-primary/25 bg-primary/10 text-primary-text',
+    link: 'text-primary-text'
+  }
+};
 
-  const getLevelColor = (level: string) => {
-    switch (level) {
-      case 'beginner': return 'border-signal-500/20 bg-signal-500/10 text-signal-700 dark:text-signal-300';
-      case 'intermediate': return 'border-amber-500/20 bg-amber-500/10 text-amber-700 dark:text-amber-300';
-      case 'advanced': return 'border-red-500/20 bg-red-500/10 text-red-700 dark:text-red-300';
-      default: return 'border-line bg-surface-muted text-ink-muted';
-    }
-  };
+const ResourceCard: FC<ResourceCardProps> = ({ post, isDark, className = '' }) => {
+  const shouldReduceMotion = useReducedMotion();
+  const accent = categoryAccentStyles[post.category] || categoryAccentStyles.general;
 
   const getTypeIcon = (type: string) => {
     switch (type) {
@@ -38,8 +53,16 @@ const ResourceCard: FC<ResourceCardProps> = ({ post, isDark, className = '' }) =
   };
 
   return (
-    <article
-      className={`ui-card-interactive flex h-full min-w-0 flex-col overflow-hidden ${className}`}
+    <motion.article
+      initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      whileHover={shouldReduceMotion ? undefined : { y: -4 }}
+      transition={{
+        duration: shouldReduceMotion ? 0 : 0.5,
+        ease: [0.16, 1, 0.3, 1]
+      }}
+      viewport={{ once: true, amount: 0.2 }}
+      className={`ui-card flex h-full min-w-0 flex-col overflow-hidden transition-colors duration-300 hover:shadow-surface ${accent.card} ${accent.topBorder} ${className}`}
       data-color-scheme={isDark ? 'dark' : 'light'}
     >
       <div className="flex h-full flex-col p-5 sm:p-6">
@@ -58,19 +81,19 @@ const ResourceCard: FC<ResourceCardProps> = ({ post, isDark, className = '' }) =
           </dl>
 
           <div className="flex flex-wrap justify-end gap-2">
-            <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${getCategoryColor(post.category)}`}>
+            <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${accent.chip}`}>
               {post.category === 'web' ? 'Web Development' :
                post.category === 'dsa' ? 'Data Structures and Algorithms' :
                post.category === 'aptitude' ? 'Aptitude' : 'System Design'}
             </span>
-            <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${getLevelColor(post.level)}`}>
+            <span className="inline-flex items-center rounded-full border border-line bg-surface-muted px-2.5 py-1 text-xs font-medium text-ink-muted">
               {post.level}
             </span>
             <span className="inline-flex items-center rounded-full border border-line bg-surface-muted px-2.5 py-1 text-xs font-medium text-ink-muted">
               {getTypeIcon(post.type)} {post.type}
             </span>
             {post.week && (
-              <span className="inline-flex items-center rounded-full border border-brand-500/20 bg-brand-500/10 px-2.5 py-1 text-xs font-medium text-brand-700 dark:text-brand-300">
+              <span className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-2.5 py-1 text-xs font-medium text-primary-text">
                 Week {post.week}
               </span>
             )}
@@ -80,7 +103,7 @@ const ResourceCard: FC<ResourceCardProps> = ({ post, isDark, className = '' }) =
         <h2 className="mt-5 font-display text-2xl font-semibold leading-tight text-ink">
           <Link
             to={`/domains/${post.slug}`}
-            className="transition-colors hover:text-brand-700 focus-visible:outline-offset-4 dark:hover:text-brand-300"
+            className={`transition-colors hover:underline hover:underline-offset-4 focus-visible:outline-offset-4 ${accent.link}`}
           >
             {post.title}
           </Link>
@@ -93,10 +116,18 @@ const ResourceCard: FC<ResourceCardProps> = ({ post, isDark, className = '' }) =
         <div className="mt-auto flex flex-col gap-4 border-t border-line pt-5 sm:flex-row sm:items-center sm:justify-between">
           <Link
             to={`/domains/${post.slug}`}
-            className="font-semibold text-brand-700 transition-colors hover:text-brand-800 focus-visible:outline-offset-2 dark:text-brand-300 dark:hover:text-brand-200"
+            className={`group/read inline-flex min-h-11 items-center gap-1 py-2 font-semibold transition-colors hover:underline hover:underline-offset-4 focus-visible:outline-offset-2 ${accent.link}`}
             aria-label={`Read more: "${post.title}"`}
           >
-            Read more &rarr;
+            <span>Read more</span>
+            <span
+              className={`transition-transform duration-200 ${
+                shouldReduceMotion ? '' : 'group-hover/read:translate-x-0.5'
+              }`}
+              aria-hidden="true"
+            >
+              &rarr;
+            </span>
           </Link>
 
           <div className="flex flex-wrap items-center gap-2 text-sm text-ink-subtle">
@@ -106,7 +137,7 @@ const ResourceCard: FC<ResourceCardProps> = ({ post, isDark, className = '' }) =
           </div>
         </div>
       </div>
-    </article>
+    </motion.article>
   );
 };
 

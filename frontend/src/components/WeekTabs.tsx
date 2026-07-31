@@ -29,8 +29,8 @@ const WeekFilter: FC<WeekFilterProps> = ({
               onClick={() => onWeekChange(week)}
               aria-pressed={isActive}
               className={isActive
-                ? 'btn btn-primary min-h-10 shrink-0 px-3 py-2 text-xs sm:min-h-11 sm:px-4 sm:text-sm'
-                : 'btn btn-secondary min-h-10 shrink-0 px-3 py-2 text-xs sm:min-h-11 sm:px-4 sm:text-sm'
+                ? 'btn btn-primary min-h-11 shrink-0 border-2 px-3 py-2 text-xs shadow-soft sm:px-4 sm:text-sm'
+                : 'btn btn-secondary min-h-11 shrink-0 px-3 py-2 text-xs sm:px-4 sm:text-sm'
               }
             >
               {week === 0 ? 'All Weeks' : `Week ${week}`}
