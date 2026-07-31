@@ -1,84 +1,149 @@
-import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { User, Shield, CheckCircle, Sun, Moon } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
+import { useEffect, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
+import { Mail } from "lucide-react";
+import AuthInput from "../components/auth/AuthInput";
+import AuthShell from "../components/auth/AuthShell";
+import AuthThemeToggle from "../components/auth/AuthThemeToggle";
+import AuthVisual from "../components/auth/AuthVisual";
+import PasswordInput from "../components/auth/PasswordInput";
+import { useAuth } from "../context/AuthContext";
+
+interface GoogleCredentialResponse {
+  credential?: string;
+}
+
+interface GooglePromptNotification {
+  isNotDisplayed: () => boolean;
+  isSkippedMoment: () => boolean;
+}
+
+interface GoogleIdentityConfiguration {
+  client_id: string;
+  callback: (response: GoogleCredentialResponse) => void;
+}
+
+interface GoogleIdentityService {
+  initialize: (configuration: GoogleIdentityConfiguration) => void;
+  prompt: (callback: (notification: GooglePromptNotification) => void) => void;
+}
 
 declare global {
   interface Window {
-    google?: any;
+    google?: {
+      accounts: {
+        id: GoogleIdentityService;
+      };
+    };
   }
 }
 
-const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || '';
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || "";
 
-const classNames = (...classes: (string | boolean | undefined | null)[]) => {
-  return classes.filter(Boolean).join(' ');
-};
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null;
 
-const LoginPage: React.FC = () => {
-  const { isDark, toggleTheme } = useTheme();
-  const [isLogin, setIsLogin] = useState(true);
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    password: '',
-    confirmPassword: '',
-  });
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+const validateEmail = (email: string) => email.endsWith("@nmamit.in");
+
+export default function LoginPage() {
   const [isLoading, setIsLoading] = useState(false);
-
+  const [authError, setAuthError] = useState("");
   const { login } = useAuth();
   const navigate = useNavigate();
+  const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
-    if (!window.google && !document.getElementById('google-identity')) {
-      const script = document.createElement('script');
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.async = true;
-      script.defer = true;
-      script.id = 'google-identity';
-      document.body.appendChild(script);
-    }
+    if (window.google || document.getElementById("google-identity")) return;
+
+    const script = document.createElement("script");
+    const handleScriptError = () => {
+      setAuthError("Google Sign-In failed to load. Please try again.");
+    };
+
+    script.src = "https://accounts.google.com/gsi/client";
+    script.async = true;
+    script.defer = true;
+    script.id = "google-identity";
+    script.addEventListener("error", handleScriptError);
+    document.body.appendChild(script);
+
+    return () => {
+      script.removeEventListener("error", handleScriptError);
+    };
   }, []);
 
-  const validateEmail = (email: string) => {
-    return email.endsWith('@nmamit.in');
-  };
+  const handleGoogleCallback = async (response: GoogleCredentialResponse) => {
+    setAuthError("");
+    setIsLoading(true);
 
-  const validateForm = () => {
-    const newErrors: { [key: string]: string } = {};
-
-    if (!formData.email) {
-      newErrors.email = 'Email is required';
-    } else if (!validateEmail(formData.email)) {
-      newErrors.email = 'Email must end with @nmamit.in';
-    }
-
-    if (!formData.password) {
-      newErrors.password = 'Password is required';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
-    }
-
-    if (!isLogin) {
-      if (!formData.name) {
-        newErrors.name = 'Name is required';
+    try {
+      if (!response.credential) {
+        setAuthError("No Google Credential received.");
+        return;
       }
-      if (formData.password !== formData.confirmPassword) {
-        newErrors.confirmPassword = 'Passwords do not match';
-      }
-    }
 
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+      const BASE_URL = import.meta.env.VITE_API_URL || "";
+      const res = await fetch(`${BASE_URL}/auth/google`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken: response.credential }),
+      });
+
+      let data: unknown;
+      try {
+        data = await res.json();
+      } catch {
+        setAuthError("Authentication response was invalid.");
+        return;
+      }
+
+      if (!res.ok) {
+        const backendError =
+          isRecord(data) && typeof data.error === "string" && data.error
+            ? data.error
+            : "Authentication failed";
+        setAuthError(backendError);
+        return;
+      }
+
+      if (
+        !isRecord(data) ||
+        typeof data.email !== "string" ||
+        data.email.length === 0 ||
+        typeof data.name !== "string" ||
+        data.name.trim().length === 0
+      ) {
+        setAuthError("Authentication response was invalid.");
+        return;
+      }
+
+      if (!validateEmail(data.email)) {
+        setAuthError("Please use your verified @nmamit.in Google account.");
+        return;
+      }
+
+      login(data.email, data.name);
+      navigate("/");
+    } catch (error) {
+      console.error("Sign-in error:", error);
+      setAuthError("Sign-in failed, please try again");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleGoogleSignIn = () => {
+    setAuthError("");
     setIsLoading(true);
 
+    if (!GOOGLE_CLIENT_ID) {
+      setAuthError("Google Sign-In is not configured.");
+      setIsLoading(false);
+      return;
+    }
+
     if (!window.google?.accounts?.id) {
-      alert('Google Sign-In not loaded yet. Please wait or try again.');
+      setAuthError("Google Sign-In not loaded yet. Please wait or try again.");
       setIsLoading(false);
       return;
     }
@@ -88,112 +153,137 @@ const LoginPage: React.FC = () => {
       callback: handleGoogleCallback,
     });
 
-    window.google.accounts.id.prompt((notification: any) => {
-      if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+    window.google.accounts.id.prompt((notification) => {
+      if (notification.isNotDisplayed()) {
+        setAuthError("Google Sign-In could not be displayed. Please try again.");
+        setIsLoading(false);
+      } else if (notification.isSkippedMoment()) {
+        setAuthError("Google Sign-In was skipped. Please try again.");
         setIsLoading(false);
       }
     });
   };
 
-  const handleGoogleCallback = async (response: any) => {
-    setIsLoading(true);
-    try {
-      if (!response?.credential) {
-        throw new Error('No Google Credential received.');
-      }
-
-      const BASE_URL = import.meta.env.VITE_API_URL || '';
-      const res = await fetch(`${BASE_URL}/auth/google`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken: response.credential }),
-      });
-
-      const data = await res.json();
-      if (res.ok) {
-        login(data.email, data.name);
-        navigate('/');
-      } else {
-        alert(data.error || 'Authentication failed');
-      }
-    } catch (error) {
-      console.error('Sign-in error:', error);
-      alert('Sign-in failed, please try again');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    if (!validateForm()) return;
-    setIsLoading(true);
-
-    setTimeout(() => {
-      if (isLogin) {
-        login(formData.email, formData.name || formData.email.split('@')[0]);
-      } else {
-        login(formData.email, formData.name);
-      }
-      setIsLoading(false);
-      navigate('/');
-    }, 1200);
-  };
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-    if (errors[e.target.name]) {
-      setErrors({
-        ...errors,
-        [e.target.name]: '',
-      });
-    }
-  };
-
   return (
-    <div className="grid min-h-screen lg:grid-cols-2">
-      {/* Theme Toggle Button - Top Right */}
-      <button
-        onClick={toggleTheme}
-        aria-label="Toggle theme"
-        className="fixed top-4 right-4 z-50 p-2 rounded-full bg-gray-100/10 hover:bg-gray-100/20 transition-colors"
-      >
-        {isDark ? <Sun className="w-5 h-5 text-white" /> : <Moon className="w-5 h-5" />}
-      </button>
+    <AuthShell>
+      <div className="relative grid w-full min-w-0 max-w-6xl grid-cols-[minmax(0,1fr)] gap-4 overflow-hidden rounded-[2rem] border border-line-strong bg-surface/80 p-3 pt-14 shadow-surface backdrop-blur-2xl sm:pt-3 lg:grid-cols-[1.05fr_0.95fr]">
+        <AuthThemeToggle />
+        <AuthVisual variant="login" />
 
-      {/* Left Panel - Login Form */}
-      <div className="flex flex-col gap-4 p-6 md:p-10">
-        <div className="flex justify-center gap-2 md:justify-start">
-          <a href="/" className="flex items-center gap-2 font-medium text-gray-900 dark:text-gray-50">
-            <span>HackerEarth</span>
-          </a>
-        </div>
-        <div className="flex flex-1 items-center justify-center">
-          <div className="w-full max-w-xs">
-            <form className={classNames("flex flex-col gap-6")} onSubmit={handleSubmit}>
-              <div className="flex flex-col items-center gap-2 text-center">
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-50">Login to your account</h1>
-                <p className="text-balance text-sm text-gray-500 dark:text-gray-300">Sign in with your NMAMIT Google account</p>
-              </div>
+        <div className="min-w-0 overflow-hidden rounded-[1.55rem] border border-line-strong bg-surface/95 p-4 shadow-surface backdrop-blur-xl sm:p-8 lg:p-10">
+          <motion.section
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.45, ease: "easeOut" }}
+            aria-busy={isLoading}
+          >
+            <Link
+              to="/"
+              className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-primary-text underline decoration-line underline-offset-4 transition-colors hover:text-technical-text focus-visible:outline-offset-2"
+            >
+              HackerEarth Hub NMAMIT
+            </Link>
 
-              {/* Google Sign In Button */}
-              <button 
-                type="button" 
-                className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background
-                              h-10 px-4 py-2 w-full
-                              border border-gray-300 dark:border-gray-800 hover:bg-gray-100 dark:hover:bg-gray-900
-                              text-gray-900 dark:text-gray-50" 
+            <div className="mt-8 space-y-2">
+              <p className="text-sm font-medium uppercase tracking-[0.2em] text-technical-text">
+                Portal access
+              </p>
+              <h2 className="break-words text-3xl font-bold tracking-tight text-ink">
+                Login to your account
+              </h2>
+              <p className="break-words text-sm leading-6 text-ink-muted">
+                Pick up where you left off in contests, resources, and domain practice.
+              </p>
+            </div>
+
+            <div className="mt-8 space-y-5">
+              <p
+                id="credential-login-status"
+                className="rounded-control border border-highlight/40 bg-highlight/10 px-4 py-3 text-sm font-medium text-highlight-text"
+              >
+                Email and password login is not available yet. Please use Google Sign-In.
+              </p>
+
+              <fieldset
+                disabled
+                aria-describedby="credential-login-status persistence-status"
+                className="space-y-5"
+              >
+                <legend className="sr-only">Email and password login</legend>
+                <AuthInput
+                  id="email"
+                  name="email"
+                  label="Email"
+                  type="email"
+                  autoComplete="email"
+                  value=""
+                  disabled
+                  icon={<Mail className="h-4 w-4" aria-hidden="true" />}
+                  className="cursor-not-allowed bg-surface-muted text-ink-muted"
+                />
+                <PasswordInput
+                  id="password"
+                  name="password"
+                  label="Password"
+                  value=""
+                  autoComplete="current-password"
+                  onChange={() => undefined}
+                />
+
+                <div className="flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between">
+                  <label className="inline-flex min-h-11 items-center gap-2 text-ink-muted">
+                    <input
+                      type="checkbox"
+                      disabled
+                      className="size-5 rounded border-line-strong bg-surface-muted"
+                    />
+                    Remember me
+                  </label>
+                  <span className="inline-flex min-h-11 items-center font-semibold text-ink-muted" aria-disabled="true">
+                    Forgot Password unavailable
+                  </span>
+                </div>
+                <p id="persistence-status" className="text-sm leading-6 text-ink-muted">
+                  Persistence options are unavailable until email and password login is supported.
+                </p>
+              </fieldset>
+
+              {authError && (
+                <p
+                  className="rounded-control border border-red-500/50 bg-red-500/10 px-4 py-3 text-sm font-medium text-red-700 dark:text-red-300"
+                  role="alert"
+                  aria-live="assertive"
+                  aria-atomic="true"
+                >
+                  {authError}
+                </p>
+              )}
+
+              <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+                {isLoading ? "Google Sign-In in progress." : ""}
+              </p>
+
+              <button
+                type="button"
+                className="btn btn-primary w-full"
                 onClick={handleGoogleSignIn}
                 disabled={isLoading}
               >
                 {isLoading ? (
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mr-2"></div>
+                  <span
+                    className={`size-4 rounded-full border-2 border-ink-inverse/40 border-b-ink-inverse ${
+                      shouldReduceMotion ? "" : "animate-spin"
+                    }`}
+                    aria-hidden="true"
+                  />
                 ) : (
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" className="w-4 h-4 mr-2">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    className="size-5"
+                    aria-hidden="true"
+                    focusable="false"
+                  >
                     <path
                       d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
                       fill="#4285F4"
@@ -212,95 +302,22 @@ const LoginPage: React.FC = () => {
                     />
                   </svg>
                 )}
-                {isLoading ? 'Signing in...' : 'Continue with Google'}
+                {isLoading ? "Signing in..." : "Continue with Google"}
               </button>
-
-              {/* Features */}
-              <div className="grid grid-cols-3 gap-4 text-center mt-6">
-                <div className="backdrop-blur-sm rounded-xl p-3 border border-gray-300 dark:border-gray-800 bg-white dark:bg-gray-900">
-                  <Shield className="w-5 h-5 text-blue-600 mx-auto mb-1" />
-                  <p className="text-xs text-gray-500 dark:text-gray-300">Secure</p>
-                </div>
-                <div className="backdrop-blur-sm rounded-xl p-3 border border-gray-300 dark:border-gray-800 bg-white dark:bg-gray-900">
-                  <CheckCircle className="w-5 h-5 text-green-600 mx-auto mb-1" />
-                  <p className="text-xs text-gray-500 dark:text-gray-300">Verified</p>
-                </div>
-                <div className="backdrop-blur-sm rounded-xl p-3 border border-gray-300 dark:border-gray-800 bg-white dark:bg-gray-900">
-                  <User className="w-5 h-5 text-purple-600 mx-auto mb-1" />
-                  <p className="text-xs text-gray-500 dark:text-gray-300">NMAMIT Only</p>
-                </div>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-
-      {/* Right Panel - Hero Section */}
-      <div className="relative hidden lg:block bg-gradient-to-br from-blue-900/80 via-purple-900/70 to-pink-800/60">
-        {/* Background pattern */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--primary)_0%,_transparent_70%)] opacity-20"></div>
-        
-        {/* Animated gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-pink-500/10 animate-pulse"></div>
-        
-        {/* Hero Content */}
-        <div className="absolute bottom-8 left-8 z-20 max-w-lg">
-          <div className="text-left">
-            {/* Badge with glass effect */}
-            <div
-              className="inline-flex items-center px-4 py-2 rounded-full bg-white/10 backdrop-blur-md mb-6 relative border border-white/20"
-              style={{
-                filter: "url(#glass-effect)",
-              }}
-            >
-              <div className="absolute top-0 left-2 right-2 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-              <span className="text-white/90 text-sm font-light relative z-10">✨ HackerEarth Community</span>
             </div>
 
-            {/* Main Heading */}
-            <h1 className="text-5xl md:text-6xl md:leading-16 tracking-tight font-light text-white mb-6">
-              <span className="font-medium italic">Code, Compete, Conquer</span>
-            </h1>
-
-            {/* Description */}
-            <p className="text-sm font-light text-white/80 mb-8 leading-relaxed max-w-md">
-              Take on coding challenges, sharpen your skills, and climb the leaderboard. Push your limits with every problem you solve.
+            <p className="mt-6 break-words text-center text-sm text-ink-muted">
+              New member?{" "}
+              <Link
+                to="/register"
+                className="inline-flex min-h-11 items-center font-semibold text-primary-text underline underline-offset-4 transition-colors hover:text-technical-text focus-visible:outline-offset-2"
+              >
+                Create an account
+              </Link>
             </p>
-
-            {/* Buttons with glass effect */}
-            <div className="flex items-center gap-4 flex-wrap">
-              {/* <div 
-                className="px-8 py-3 rounded-full bg-transparent border border-white/30 text-white font-normal text-sm transition-all duration-200 hover:bg-white/10 hover:border-white/50 cursor-pointer backdrop-blur-sm"
-                style={{ filter: "url(#glass-effect)" }}
-              >
-                Learn More
-              </div>
-              <div 
-                className="px-8 py-3 rounded-full bg-white/90 text-black font-normal text-sm transition-all duration-200 hover:bg-white cursor-pointer backdrop-blur-sm"
-                style={{ filter: "url(#glass-effect)" }}
-              >
-                Join Community
-              </div> */}
-            </div>
-          </div>
+          </motion.section>
         </div>
-
-        {/* Floating elements */}
-        <div className="absolute top-1/4 right-1/4 w-16 h-16 bg-blue-500/20 rounded-full blur-xl animate-pulse"></div>
-        <div className="absolute bottom-1/3 left-1/3 w-24 h-24 bg-purple-500/20 rounded-full blur-xl animate-pulse delay-1000"></div>
-        <div className="absolute top-1/3 right-1/3 w-20 h-20 bg-pink-500/20 rounded-full blur-xl animate-pulse delay-2000"></div>
       </div>
-
-      {/* SVG filter for glass effect */}
-      <svg width="0" height="0" className="absolute">
-        <filter id="glass-effect" x="0" y="0" width="100%" height="100%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur" />
-          <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -8" result="glass" />
-          <feBlend in="SourceGraphic" in2="glass" />
-        </filter>
-      </svg>
-    </div>
+    </AuthShell>
   );
-};
-
-export default LoginPage;
+}

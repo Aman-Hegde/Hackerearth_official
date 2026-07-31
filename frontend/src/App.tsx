@@ -13,6 +13,7 @@ import Leaderboard from "./pages/Leaderboard";
 // import About from "./pages/About";
 import Contact from "./pages/Contact";
 import LoginPage from "./pages/Login";
+import RegisterPage from "./pages/Register";
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
@@ -22,7 +23,9 @@ import SpotlightCursor from "./components/CustomCursor";
 
 function AppWrapper() {
   const location = useLocation();
-  const isAuthPage = location.pathname === "/login";
+  const isAuthPage =
+    location.pathname === "/login" ||
+    location.pathname === "/register";
   const isDomainPage = location.pathname.startsWith("/domains");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
@@ -67,6 +70,7 @@ function AppWrapper() {
           {/* <Route path="/about" element={<About />} /> */}
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
         </Routes>
       </main>
 
