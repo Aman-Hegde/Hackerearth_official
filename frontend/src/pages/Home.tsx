@@ -402,7 +402,7 @@ function WebDevelopmentGraphic() {
               variants={{ initial: { opacity: 0 }, animate: { opacity: 1 } }}
               style={{ height: lineHeight }}
             >
-              <span className="inline-block w-6 select-none text-ink-subtle">{index + 1}</span>
+              <span className="inline-block w-6 select-none text-ink-muted">{index + 1}</span>
               <span className={line.color1}>{line.text.split(' ')[0]}</span>
               <span className={line.color2}> {line.text.split(' ').slice(1).join(' ')}</span>
             </motion.p>

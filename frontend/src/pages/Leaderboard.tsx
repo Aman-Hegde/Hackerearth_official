@@ -455,7 +455,7 @@ const Leaderboard = () => {
                 <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center lg:justify-end">
                   {searchQuery && (
                     <div className="flex min-w-0 items-center gap-2 rounded-control border border-line bg-surface-muted px-3 py-2 text-sm">
-                      <span className="shrink-0 text-ink-subtle">Searching:</span>
+                      <span className="shrink-0 text-ink-muted">Searching:</span>
                       <span className="min-w-0 break-all font-semibold text-primary-text">
                         {searchQuery}
                       </span>
@@ -553,7 +553,7 @@ const Leaderboard = () => {
                             >
                               <span
                                 className={`w-6 text-center tabular-nums ${
-                                  topRankStyle ? topRankStyle.number : "text-ink-subtle"
+                                  topRankStyle ? topRankStyle.number : "text-ink-muted"
                                 }`}
                               >
                                 {rank}
