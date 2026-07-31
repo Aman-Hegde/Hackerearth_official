@@ -493,7 +493,7 @@ function DSAGraphic() {
 const PathfindingViz = ({ shouldReduceMotion }: { shouldReduceMotion: boolean | null }) => {
   const path = "M 20,50 C 60,0, 140,100, 180,50";
   return (
-    <svg className="w-full h-full" viewBox="0 0 200 100">
+    <svg className="w-full h-full" viewBox="0 0 200 100" aria-hidden="true" focusable="false">
       <path d={path} fill="none" stroke="rgb(var(--color-border))" strokeWidth="2" strokeDasharray="5 5" />
       <motion.circle r="6" fill="rgb(var(--color-creative))"
         style={{ offsetPath: `path("${path}")` }}
@@ -519,7 +519,7 @@ const GraphTraversalViz = ({ shouldReduceMotion }: { shouldReduceMotion: boolean
   const nodes = [{ x: 50, y: 50 }, { x: 100, y: 20 }, { x: 150, y: 50 }, { x: 100, y: 80 }];
   const edges = [{ from: 0, to: 1 }, { from: 1, to: 2 }, { from: 2, to: 3 }, { from: 3, to: 0 }];
   return (
-    <svg className="w-full h-full" viewBox="0 0 200 100">
+    <svg className="w-full h-full" viewBox="0 0 200 100" aria-hidden="true" focusable="false">
       {edges.map((edge, i) => (
         <line key={i} x1={nodes[edge.from].x} y1={nodes[edge.from].y} x2={nodes[edge.to].x} y2={nodes[edge.to].y} stroke="rgb(var(--color-border))" strokeWidth="1" />
       ))}
@@ -940,11 +940,11 @@ const Home = () => {
             viewport={{ once: true, amount: 0.3 }}
           >
             <div className="flex justify-center">
-              <button type="button" className="eyebrow group relative overflow-hidden">
+              <span className="eyebrow group relative overflow-hidden">
                 <span className="absolute inset-x-0 -top-px mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-technical to-transparent transition-all duration-500 group-hover:w-3/4" />
                 <span className="absolute inset-x-0 -bottom-px mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-primary to-transparent transition-all duration-500 group-hover:w-3/4" />
                 <span className="relative">Learning Paths</span>
-              </button>
+              </span>
             </div>
 
             <h2 className="section-heading mt-5 text-center">
@@ -1057,14 +1057,11 @@ const Home = () => {
             viewport={{ once: true, amount: 0.3 }}
           >
             <div className="flex justify-center">
-              <button
-                type="button"
-                className="eyebrow group relative overflow-hidden"
-              >
+              <span className="eyebrow group relative overflow-hidden">
                 <span className="absolute inset-x-0 -top-px mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-highlight to-transparent transition-all duration-500 group-hover:w-3/4" />
                 <span className="absolute inset-x-0 -bottom-px mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-primary to-transparent transition-all duration-500 group-hover:w-3/4" />
                 <span className="relative">Community Events</span>
-              </button>
+              </span>
             </div>
 
             <h2 className="section-heading mt-5 text-center">Explore our Past Events</h2>
@@ -1093,14 +1090,11 @@ const Home = () => {
             viewport={{ once: true, amount: 0.3 }}
           >
             <div className="flex justify-center">
-              <button
-                type="button"
-                className="eyebrow group relative overflow-hidden"
-              >
+              <span className="eyebrow group relative overflow-hidden">
                 <span className="absolute inset-x-0 -top-px mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-technical to-transparent transition-all duration-500 group-hover:w-3/4" />
                 <span className="absolute inset-x-0 -bottom-px mx-auto h-px w-1/2 bg-gradient-to-r from-transparent via-creative to-transparent transition-all duration-500 group-hover:w-3/4" />
                 <span className="relative">Testimonials</span>
-              </button>
+              </span>
             </div>
 
             <h2 className="section-heading mt-5 text-center">What our members say</h2>
@@ -1121,11 +1115,11 @@ const Home = () => {
           </div>
 
           <div className="mt-10 flex justify-center sm:mt-12">
-            <button type="button" className="btn btn-secondary group relative overflow-hidden">
+            <span className="btn btn-secondary group relative overflow-hidden">
               <span className="absolute inset-x-0 -top-px mx-auto h-px w-3/4 bg-gradient-to-r from-transparent via-technical/40 to-transparent" />
               <span className="absolute inset-x-0 -bottom-px mx-auto h-px w-3/4 bg-gradient-to-r from-transparent via-creative/40 to-transparent" />
               <span className="relative">Share your experience</span>
-            </button>
+            </span>
           </div>
         </div>
       </section>

@@ -1,7 +1,7 @@
 //cumulative leaderboard
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { Crown, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, X } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
 import * as XLSX from "xlsx";
@@ -102,6 +102,11 @@ const Leaderboard = () => {
 
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [modalSearchValue, setModalSearchValue] = useState("");
+  const searchTriggerRef = useRef<HTMLButtonElement>(null);
+  const searchDialogRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const leaderboardContentRef = useRef<HTMLDivElement>(null);
+  const wasSearchModalOpenRef = useRef(false);
 
   const processAllData = useCallback(async () => {
     const contestMap: ContestDataMap = {};
@@ -200,6 +205,27 @@ const Leaderboard = () => {
     setSearchQuery("");
     setModalSearchValue("");
   }, [currentView]);
+
+  useEffect(() => {
+    const leaderboardContent = leaderboardContentRef.current;
+    if (leaderboardContent) {
+      leaderboardContent.inert = isSearchModalOpen;
+    }
+
+    if (isSearchModalOpen) {
+      wasSearchModalOpenRef.current = true;
+      searchInputRef.current?.focus();
+    } else if (wasSearchModalOpenRef.current) {
+      wasSearchModalOpenRef.current = false;
+      searchTriggerRef.current?.focus();
+    }
+
+    return () => {
+      if (leaderboardContent) {
+        leaderboardContent.inert = false;
+      }
+    };
+  }, [isSearchModalOpen]);
 
 
   const currentData = useMemo(() => {
@@ -300,6 +326,58 @@ const Leaderboard = () => {
     setIsSearchModalOpen(false);
   };
 
+  const handleSearchDialogKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      setIsSearchModalOpen(false);
+      return;
+    }
+
+    if (event.key !== "Tab") return;
+
+    const dialog = searchDialogRef.current;
+    if (!dialog) return;
+
+    const focusableElements = Array.from(
+      dialog.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]'
+      )
+    ).filter((element) => {
+      const style = window.getComputedStyle(element);
+      return (
+        !element.hidden &&
+        element.tabIndex >= 0 &&
+        !element.matches(":disabled") &&
+        !element.closest("[inert]") &&
+        element.getAttribute("aria-hidden") !== "true" &&
+        style.display !== "none" &&
+        style.visibility !== "hidden" &&
+        element.getClientRects().length > 0
+      );
+    });
+
+    const firstFocusableElement = focusableElements[0];
+    const lastFocusableElement = focusableElements[focusableElements.length - 1];
+    if (!firstFocusableElement || !lastFocusableElement) return;
+
+    const activeElement = document.activeElement;
+
+    if (!focusableElements.some((element) => element === activeElement)) {
+      event.preventDefault();
+      firstFocusableElement.focus();
+      return;
+    }
+
+    if (event.shiftKey && activeElement === firstFocusableElement) {
+      event.preventDefault();
+      lastFocusableElement.focus();
+    } else if (!event.shiftKey && activeElement === lastFocusableElement) {
+      event.preventDefault();
+      firstFocusableElement.focus();
+    }
+  };
+
   // --- Render Configuration ---
   const baseColumns: { key: keyof LeaderboardEntry; label: string; }[] = [
     { key: "Name", label: "Name" },
@@ -322,7 +400,7 @@ const Leaderboard = () => {
 
   return (
     <main className="section-glow-subtle min-h-screen bg-canvas text-ink transition-colors duration-500">
-      <div className="site-container-wide section-space pt-24 lg:pt-section">
+      <div ref={leaderboardContentRef} className="site-container-wide section-space pt-24 lg:pt-section">
         <motion.header
           className="mx-auto mb-10 max-w-4xl text-center sm:mb-12"
           initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
@@ -393,12 +471,15 @@ const Leaderboard = () => {
                     </div>
                   )}
                   <button
+                    ref={searchTriggerRef}
                     type="button"
                     onClick={() => {
                       setModalSearchValue(searchQuery);
                       setIsSearchModalOpen(true);
                     }}
                     className="btn btn-primary w-full shrink-0 sm:w-auto"
+                    aria-haspopup="dialog"
+                    aria-expanded={isSearchModalOpen}
                   >
                     <Search className="size-4" aria-hidden="true" />
                     <span>Search</span>
@@ -584,10 +665,12 @@ const Leaderboard = () => {
           }
         >
           <div
+            ref={searchDialogRef}
             className="ui-card top-border-accent-primary max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto border-primary/25 p-5 sm:p-6"
             role="dialog"
             aria-modal="true"
             aria-labelledby="leaderboard-search-title"
+            onKeyDown={handleSearchDialogKeyDown}
           >
             <div className="flex items-start justify-between gap-4">
               <h3 id="leaderboard-search-title" className="font-display text-xl font-semibold text-ink">
@@ -609,6 +692,7 @@ const Leaderboard = () => {
                 Enter Name to search...
               </label>
               <input
+                ref={searchInputRef}
                 id="leaderboard-search-input"
                 type="text"
                 value={modalSearchValue}
