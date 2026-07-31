@@ -61,7 +61,7 @@ export function ContactForm() {
           value={formData.name}
           onChange={handleChange}
           placeholder="What's your good name?"
-          className="min-h-11 w-full rounded-control border border-line-strong bg-surface px-4 py-3 text-ink transition-colors duration-200 placeholder:text-ink-subtle hover:border-brand-400"
+          className="min-h-11 w-full rounded-control border border-line-strong bg-surface px-4 py-3 text-ink transition-colors duration-200 placeholder:text-ink-muted hover:border-technical/60 focus-visible:border-focus focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/30"
           required
         />
       </div>
@@ -78,7 +78,7 @@ export function ContactForm() {
           value={formData.email}
           onChange={handleChange}
           placeholder="What's your email address?"
-          className="min-h-11 w-full rounded-control border border-line-strong bg-surface px-4 py-3 text-ink transition-colors duration-200 placeholder:text-ink-subtle hover:border-brand-400"
+          className="min-h-11 w-full rounded-control border border-line-strong bg-surface px-4 py-3 text-ink transition-colors duration-200 placeholder:text-ink-muted hover:border-technical/60 focus-visible:border-focus focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/30"
           required
         />
       </div>
@@ -95,7 +95,7 @@ export function ContactForm() {
           onChange={handleChange}
           placeholder="How can we help you?"
           rows={5}
-          className="w-full resize-none rounded-control border border-line-strong bg-surface px-4 py-3 text-ink transition-colors duration-200 placeholder:text-ink-subtle hover:border-brand-400"
+          className="w-full resize-none rounded-control border border-line-strong bg-surface px-4 py-3 text-ink transition-colors duration-200 placeholder:text-ink-muted hover:border-technical/60 focus-visible:border-focus focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/30"
           required
         />
       </div>
@@ -110,8 +110,8 @@ export function ContactForm() {
         {statusMessage && (
           <p
             className={statusMessage.includes("Success")
-              ? "text-center text-sm font-medium text-signal-700 dark:text-signal-300"
-              : "text-center text-sm font-medium text-red-600 dark:text-red-300"
+              ? "rounded-control border border-success/30 bg-success/10 px-3 py-2 text-center text-sm font-semibold text-success-text"
+              : "rounded-control border border-line-strong bg-surface px-3 py-2 text-center text-sm font-semibold text-red-600 dark:text-red-300"
             }
           >
             {statusMessage}
