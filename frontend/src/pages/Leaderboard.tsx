@@ -3,6 +3,7 @@
 
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { Crown, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, X } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
 import * as XLSX from "xlsx";
 import { useTheme } from "../context/ThemeContext";
 import Loader from "../components/Loader";
@@ -41,6 +42,24 @@ const DEFAULT_VIEW = "Cumulative";
 const NAME_HEADER_KEY = "Name";
 const SCORE_HEADER_KEY = "Total Score 500.0";
 
+const topRankStyles = [
+  {
+    container: "border-highlight/30 bg-highlight/10",
+    number: "text-highlight-text",
+    crown: "text-highlight",
+  },
+  {
+    container: "border-line-strong bg-surface-muted",
+    number: "text-ink-muted",
+    crown: "text-ink-subtle",
+  },
+  {
+    container: "border-highlight/20 bg-highlight/5",
+    number: "text-highlight-text",
+    crown: "text-highlight/70",
+  },
+] as const;
+
 // --- Helper Functions ---
 const getUniqueKey = (email: string | undefined, name: string): string => {
   const normalizedEmail = String(email || "").toLowerCase().trim();
@@ -69,6 +88,7 @@ const formatTimeForDisplay = (timeValue: unknown): string => {
 
 const Leaderboard = () => {
   const { isDark } = useTheme();
+  const shouldReduceMotion = useReducedMotion();
 
   const [allContestData, setAllContestData] = useState<ContestDataMap>({});
   const [fileMissing, setFileMissing] = useState(false);
@@ -276,8 +296,6 @@ const Leaderboard = () => {
   };
 
   // --- Render Configuration ---
-  const crownColors = ["#FFD700", "#C0C0C0", "#CD7F32"];
-
   const baseColumns: { key: keyof LeaderboardEntry; label: string; }[] = [
     { key: "Name", label: "Name" },
     { key: "Score", label: currentView === 'Cumulative' ? "Total Score" : "Score" },
@@ -298,15 +316,38 @@ const Leaderboard = () => {
   }
 
   return (
-    <main className="min-h-screen bg-canvas text-ink transition-colors duration-500">
+    <main className="section-glow-subtle min-h-screen bg-canvas text-ink transition-colors duration-500">
       <div className="site-container-wide section-space pt-24 lg:pt-section">
-        <header className="mx-auto mb-10 max-w-4xl text-center sm:mb-12">
-          <h1 className="section-heading">{currentView} Leaderboard</h1>
-        </header>
+        <motion.header
+          className="mx-auto mb-10 max-w-4xl text-center sm:mb-12"
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            duration: shouldReduceMotion ? 0 : 0.5,
+            ease: [0.16, 1, 0.3, 1],
+          }}
+        >
+          <h1 className="section-heading">
+            <span className="text-gradient-subtle">{currentView} Leaderboard</span>
+          </h1>
+        </motion.header>
 
-        <section className="ui-card overflow-hidden" aria-label="Leaderboard controls and results">
+        <motion.section
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            duration: shouldReduceMotion ? 0 : 0.5,
+            delay: shouldReduceMotion ? 0 : 0.04,
+            ease: [0.16, 1, 0.3, 1],
+          }}
+          className="ui-card top-border-accent-primary overflow-hidden border-primary/25"
+          aria-label="Leaderboard controls and results"
+        >
           {fileMissing ? (
-            <div className="m-4 rounded-control border border-red-500/20 bg-red-500/5 px-5 py-12 text-center text-red-600 dark:text-red-300 sm:m-6">
+            <div
+              className="m-4 rounded-control border border-highlight/30 bg-highlight/10 px-5 py-12 text-center font-medium text-highlight-text sm:m-6"
+              role="alert"
+            >
               Could not load any leaderboard data. Please ensure files are correctly named and present in the /public folder.
             </div>
           ) : (
@@ -320,7 +361,7 @@ const Leaderboard = () => {
                     id="leaderboard-view"
                     value={currentView}
                     onChange={handleViewChange}
-                    className="mt-2 min-h-11 w-full rounded-control border border-line-strong bg-surface px-3 py-2 font-semibold text-ink transition-colors sm:max-w-xs"
+                    className="mt-2 min-h-11 w-full rounded-control border border-primary/30 bg-surface px-3 py-2 font-semibold text-ink transition-colors focus:border-technical/50 sm:max-w-xs"
                   >
                     {VIEW_OPTIONS.map(view => (
                       <option key={view} value={view}>{view}</option>
@@ -332,13 +373,13 @@ const Leaderboard = () => {
                   {searchQuery && (
                     <div className="flex min-w-0 items-center gap-2 rounded-control border border-line bg-surface-muted px-3 py-2 text-sm">
                       <span className="shrink-0 text-ink-subtle">Searching:</span>
-                      <span className="min-w-0 break-all font-semibold text-brand-700 dark:text-brand-300">
+                      <span className="min-w-0 break-all font-semibold text-primary-text">
                         {searchQuery}
                       </span>
                       <button
                         type="button"
                         onClick={clearSearch}
-                        className="btn btn-ghost btn-icon ml-auto size-8 shrink-0 text-ink-muted hover:text-red-600 focus-visible:outline-offset-2 dark:hover:text-red-300"
+                        className="btn btn-ghost btn-icon ml-auto shrink-0 text-ink-muted hover:text-technical-text focus-visible:outline-offset-2"
                         aria-label="Clear leaderboard search"
                         title="Clear search"
                       >
@@ -352,7 +393,7 @@ const Leaderboard = () => {
                       setModalSearchValue(searchQuery);
                       setIsSearchModalOpen(true);
                     }}
-                    className="btn btn-secondary w-full shrink-0 sm:w-auto"
+                    className="btn btn-primary w-full shrink-0 sm:w-auto"
                   >
                     <Search className="size-4" aria-hidden="true" />
                     <span>Search</span>
@@ -375,7 +416,7 @@ const Leaderboard = () => {
                   <caption className="sr-only">{currentView} Leaderboard</caption>
                   <thead>
                     <tr>
-                      <th className="sticky left-0 top-0 z-30 w-20 min-w-20 border-b border-line bg-surface px-3 py-3 font-semibold text-ink">
+                      <th className="sticky left-0 top-0 z-30 w-20 min-w-20 border-b border-primary/25 bg-surface px-3 py-3 font-semibold text-ink">
                         Rank
                       </th>
                       {columns.map((col) => {
@@ -388,21 +429,21 @@ const Leaderboard = () => {
                               : 'none'
                             }
                             className={isNameColumn
-                              ? "sticky left-20 top-0 z-30 min-w-48 border-b border-line bg-surface p-0 font-semibold text-ink"
-                              : "sticky top-0 z-20 min-w-32 border-b border-line bg-surface p-0 font-semibold text-ink"
+                              ? "sticky left-20 top-0 z-30 min-w-48 border-b border-primary/25 bg-surface p-0 font-semibold text-ink"
+                              : "sticky top-0 z-20 min-w-32 border-b border-primary/25 bg-surface p-0 font-semibold text-ink"
                             }
                           >
                             <button
                               type="button"
                               onClick={() => handleSort(col.key)}
-                              className="flex min-h-11 w-full select-none items-center gap-2 px-4 py-3 text-left transition-colors hover:bg-surface-muted focus-visible:outline-offset-[-3px]"
+                              className="flex min-h-11 w-full select-none items-center gap-2 px-4 py-3 text-left transition-colors hover:bg-primary/5 hover:text-primary-text focus-visible:outline-offset-[-3px]"
                               aria-label={"Sort by " + col.label}
                             >
                               <span>{col.label}</span>
                               {sortConfig?.key === col.key && (
                                 sortConfig.direction === 'asc'
-                                  ? <ChevronUp className="size-4" aria-hidden="true" />
-                                  : <ChevronDown className="size-4" aria-hidden="true" />
+                                  ? <ChevronUp className="size-4 text-technical" aria-hidden="true" />
+                                  : <ChevronDown className="size-4 text-technical" aria-hidden="true" />
                               )}
                             </button>
                           </th>
@@ -413,20 +454,37 @@ const Leaderboard = () => {
                   <tbody>
                     {paginatedData.map((row, index) => {
                       const rank = (currentPage - 1) * pageSize + index + 1;
+                      const topRankStyle = rank <= 3 ? topRankStyles[rank - 1] : undefined;
                       return (
                         <tr key={row.UniqueKey + row.Score} className="group transition-colors hover:bg-surface-muted">
                           <td className="sticky left-0 z-10 w-20 min-w-20 border-b border-line bg-surface px-3 py-4 transition-colors group-hover:bg-surface-muted">
-                            <div className="flex items-center gap-2 font-medium">
-                              <span className="w-6 text-center tabular-nums text-ink-subtle">{rank}</span>
+                            <div
+                              className={`flex items-center gap-2 rounded-control border py-1 font-medium ${
+                                topRankStyle
+                                  ? topRankStyle.container
+                                  : "border-transparent bg-transparent"
+                              }`}
+                            >
+                              <span
+                                className={`w-6 text-center tabular-nums ${
+                                  topRankStyle ? topRankStyle.number : "text-ink-subtle"
+                                }`}
+                              >
+                                {rank}
+                              </span>
                               {rank <= 3 && (
-                                <Crown size={18} color={crownColors[rank - 1]} aria-hidden="true" />
+                                <Crown
+                                  size={18}
+                                  className={topRankStyle?.crown}
+                                  aria-hidden="true"
+                                />
                               )}
                             </div>
                           </td>
                           <td className="sticky left-20 z-10 min-w-48 border-b border-line bg-surface px-4 py-4 font-medium text-ink transition-colors group-hover:bg-surface-muted">
                             {row.Name}
                           </td>
-                          <td className="min-w-32 border-b border-line px-4 py-4 font-mono font-semibold tabular-nums text-signal-700 dark:text-signal-300">
+                          <td className="min-w-32 border-b border-line px-4 py-4 font-mono font-semibold tabular-nums text-success-text">
                             {Math.round(row.Score)}
                           </td>
                           {currentView !== 'Cumulative' && (
@@ -455,7 +513,7 @@ const Leaderboard = () => {
                     id="leaderboard-page-size"
                     value={pageSize}
                     onChange={e => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
-                    className="min-h-10 rounded-control border border-line-strong bg-surface px-2 py-1 font-semibold text-ink"
+                    className="min-h-11 rounded-control border border-primary/30 bg-surface px-2 py-1 font-semibold text-ink focus:border-technical/50"
                   >
                     {[10, 20, 50].map(size => <option key={size} value={size}>{size}</option>)}
                   </select>
@@ -470,7 +528,7 @@ const Leaderboard = () => {
                     type="button"
                     onClick={() => setCurrentPage(1)}
                     disabled={currentPage === 1}
-                    className="btn btn-secondary btn-icon size-10"
+                    className="btn btn-secondary btn-icon border-primary/25"
                     aria-label="First page"
                     title="First page"
                   >
@@ -480,7 +538,7 @@ const Leaderboard = () => {
                     type="button"
                     onClick={() => setCurrentPage(p => p - 1)}
                     disabled={currentPage === 1}
-                    className="btn btn-secondary btn-icon size-10"
+                    className="btn btn-secondary btn-icon border-primary/25"
                     aria-label="Previous page"
                     title="Previous page"
                   >
@@ -490,7 +548,7 @@ const Leaderboard = () => {
                     type="button"
                     onClick={() => setCurrentPage(p => p + 1)}
                     disabled={currentPage === totalPages}
-                    className="btn btn-secondary btn-icon size-10"
+                    className="btn btn-secondary btn-icon border-primary/25"
                     aria-label="Next page"
                     title="Next page"
                   >
@@ -500,7 +558,7 @@ const Leaderboard = () => {
                     type="button"
                     onClick={() => setCurrentPage(totalPages)}
                     disabled={currentPage === totalPages}
-                    className="btn btn-secondary btn-icon size-10"
+                    className="btn btn-secondary btn-icon border-primary/25"
                     aria-label="Last page"
                     title="Last page"
                   >
@@ -510,18 +568,18 @@ const Leaderboard = () => {
               </div>
             </div>
           )}
-        </section>
+        </motion.section>
       </div>
 
       {isSearchModalOpen && (
         <div
           className={isDark
-            ? "fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/80 p-4"
-            : "fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/60 p-4"
+            ? "fixed inset-0 z-[100] flex items-center justify-center bg-ink-inverse/80 p-4"
+            : "fixed inset-0 z-[100] flex items-center justify-center bg-ink/60 p-4"
           }
         >
           <div
-            className="ui-card max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto p-5 sm:p-6"
+            className="ui-card top-border-accent-primary max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto border-primary/25 p-5 sm:p-6"
             role="dialog"
             aria-modal="true"
             aria-labelledby="leaderboard-search-title"
@@ -533,7 +591,7 @@ const Leaderboard = () => {
               <button
                 type="button"
                 onClick={() => setIsSearchModalOpen(false)}
-                className="btn btn-ghost btn-icon size-9 shrink-0 text-ink-muted"
+                className="btn btn-ghost btn-icon shrink-0 text-ink-muted hover:text-technical-text"
                 aria-label="Close search dialog"
                 title="Close"
               >
@@ -554,7 +612,7 @@ const Leaderboard = () => {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleSearch();
                 }}
-                className="min-h-11 w-full rounded-control border border-line-strong bg-surface px-3 py-2 text-ink transition-colors placeholder:text-ink-subtle"
+                className="min-h-11 w-full rounded-control border border-primary/30 bg-surface px-3 py-2 text-ink transition-colors placeholder:text-ink-subtle focus:border-technical/50"
               />
             </div>
 
