@@ -6,7 +6,8 @@
     "dev": "nodemon --watch src --ext ts --exec ts-node src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "test:db": "ts-node src/testDb.ts"
+    "test:db": "ts-node src/testDb.ts",
+    "test:email": "ts-node src/testEmail.ts"
   },
   "keywords": [],
   "author": "",
@@ -20,6 +21,7 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.9.0",
+    "nodemailer": "^9.0.3",
     "serverless-http": "^3.2.0"
   },
   "devDependencies": {
@@ -28,6 +30,7 @@
     "@types/express": "^5.0.3",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^24.2.0",
+    "@types/nodemailer": "^8.0.1",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2"
