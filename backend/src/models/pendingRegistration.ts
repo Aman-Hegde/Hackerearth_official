@@ -1,11 +1,7 @@
 import mongoose, { Document, Schema } from "mongoose";
+import { VALID_DOMAINS, EnrolledDomain } from "./user";
 
-export const VALID_DOMAINS = ["Web Development", "DSA", "Aptitude"] as const;
-
-export type EnrolledDomain = (typeof VALID_DOMAINS)[number];
-export type UserRole = "student" | "admin";
-
-export interface IUser extends Document {
+export interface IPendingRegistration extends Document {
   name: string;
   email: string;
   usn: string;
@@ -14,14 +10,14 @@ export interface IUser extends Document {
   year: number;
   passwordHash: string;
   enrolledDomains: EnrolledDomain[];
-  role: UserRole;
-  emailVerified: boolean;
-  isActive: boolean;
+  otpHash: string;
+  otpExpiresAt: Date;
+  otpAttempts: number;
+  resendAvailableAt: Date;
   createdAt: Date;
-  updatedAt: Date;
 }
 
-const userSchema = new Schema<IUser>(
+const pendingRegistrationSchema = new Schema<IPendingRegistration>(
   {
     name: {
       type: String,
@@ -34,17 +30,17 @@ const userSchema = new Schema<IUser>(
     email: {
       type: String,
       required: [true, "Email is required"],
-      unique: true,
       lowercase: true,
       trim: true,
+      index: true,
     },
 
     usn: {
       type: String,
       required: [true, "USN is required"],
-      unique: true,
       uppercase: true,
       trim: true,
+      index: true,
     },
 
     contactNumber: {
@@ -87,28 +83,46 @@ const userSchema = new Schema<IUser>(
       },
     },
 
-    role: {
+    otpHash: {
       type: String,
-      enum: ["student", "admin"],
-      default: "student",
-      index: true,
+      required: [true, "OTP hash is required"],
+      select: false,
     },
 
-    emailVerified: {
-      type: Boolean,
-      default: false,
+    otpExpiresAt: {
+      type: Date,
+      required: [true, "OTP expiry is required"],
     },
 
-    isActive: {
-      type: Boolean,
-      default: true,
+    otpAttempts: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    resendAvailableAt: {
+      type: Date,
+      required: [true, "Resend availability time is required"],
+    },
+
+    createdAt: {
+      type: Date,
+      default: Date.now,
+      immutable: true,
     },
   },
   {
-    timestamps: true,
+    versionKey: false,
   }
 );
 
-const User = mongoose.models.User || mongoose.model<IUser>("User", userSchema);
+pendingRegistrationSchema.index({ otpExpiresAt: 1 }, { expireAfterSeconds: 0 });
 
-export default User;
+const PendingRegistration =
+  mongoose.models.PendingRegistration ||
+  mongoose.model<IPendingRegistration>(
+    "PendingRegistration",
+    pendingRegistrationSchema
+  );
+
+export default PendingRegistration;
