@@ -11,6 +11,7 @@ import DomainSelector from "../components/auth/DomainSelector";
 import type { Domain } from "../components/auth/DomainSelector";
 import PasswordInput from "../components/auth/PasswordInput";
 import { cn } from "../lib/utils";
+import logo from "../assets/image.png";
 
 interface RegisterForm {
   name: string;
@@ -162,8 +163,32 @@ export default function RegisterPage() {
 
   return (
     <AuthShell>
-      <div className="relative grid w-full min-w-0 max-w-7xl grid-cols-[minmax(0,1fr)] gap-4 overflow-hidden rounded-[2rem] border border-line-strong bg-surface/80 p-3 pt-14 shadow-surface backdrop-blur-2xl sm:pt-3 lg:grid-cols-[0.78fr_1.22fr] lg:items-start">
+      <Link
+        to="/"
+        aria-label="Go to HackerEarth Hub-NMAMIT home page"
+        className="group absolute left-4 top-4 z-20 flex min-h-11 max-w-[calc(100%-5.5rem)] min-w-0 items-center gap-2 rounded-full border border-line-strong bg-surface/95 p-1 pr-3 text-ink shadow-soft backdrop-blur-xl transition-colors hover:border-technical hover:text-technical-text focus-visible:outline-offset-2 sm:left-6 sm:top-6 sm:gap-3"
+      >
+        <span
+          className={`flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-line bg-white p-0.5 transition duration-200 group-hover:border-technical/50 sm:size-11 ${
+            shouldReduceMotion ? "" : "group-hover:-translate-y-0.5"
+          }`}
+        >
+          <img
+            src={logo}
+            alt="HackerEarth Logo"
+            className="size-full rounded-full object-cover"
+          />
+        </span>
+        <span className="min-w-0 break-words font-display text-sm font-semibold leading-tight tracking-[-0.02em] sm:text-base">
+          HackerEarth Hub-NMAMIT
+        </span>
+      </Link>
+
+      <div className="absolute right-4 top-4 z-20 sm:right-6 sm:top-6">
         <AuthThemeToggle />
+      </div>
+
+      <div className="relative mt-20 grid w-full min-w-0 max-w-7xl grid-cols-[minmax(0,1fr)] gap-4 overflow-hidden rounded-[2rem] border border-line-strong bg-surface/80 p-3 shadow-surface backdrop-blur-2xl sm:mt-24 lg:grid-cols-[0.78fr_1.22fr] lg:items-start">
         <div className="min-w-0 lg:sticky lg:top-8 lg:h-[calc(100vh-4rem)] lg:self-start">
           <AuthVisual variant="register" />
         </div>
@@ -176,9 +201,6 @@ export default function RegisterPage() {
         >
           <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
             <div className="space-y-3">
-              <Link to="/" className="inline-flex min-h-11 items-center gap-2 text-sm font-semibold text-primary-text underline decoration-line underline-offset-4 transition-colors hover:text-technical-text focus-visible:outline-offset-2">
-                HackerEarth Hub NMAMIT
-              </Link>
               <div>
                 <p className="text-sm font-medium uppercase tracking-[0.2em] text-technical-text">Student registration</p>
                 <h2 className="mt-2 break-words text-3xl font-bold tracking-tight text-ink">Create your account</h2>
