@@ -287,7 +287,7 @@ const domainAccentStyles = [
     line: "via-technical/70",
     icon: "border-technical/25 bg-technical/10 text-technical-text",
     tag: "border-technical/25 bg-technical/5 text-technical-text",
-    button: "border-technical/50 text-technical-text",
+    button: "border-technical text-technical-text",
   },
   {
     accent: "violet" as DomainAccent,
@@ -295,7 +295,7 @@ const domainAccentStyles = [
     line: "via-creative/70",
     icon: "border-creative/25 bg-creative/10 text-creative-text",
     tag: "border-creative/25 bg-creative/5 text-creative-text",
-    button: "border-creative/50 text-creative-text",
+    button: "border-creative text-creative-text",
   },
   {
     accent: "amber" as DomainAccent,
@@ -303,7 +303,7 @@ const domainAccentStyles = [
     line: "via-highlight/70",
     icon: "border-highlight/25 bg-highlight/10 text-highlight-text",
     tag: "border-highlight/25 bg-highlight/5 text-highlight-text",
-    button: "border-highlight/50 text-highlight-text",
+    button: "border-highlight text-highlight-text",
   },
 ] as const;
 

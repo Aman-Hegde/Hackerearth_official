@@ -9,19 +9,19 @@ interface CategoryFilterProps {
 
 const activeCategoryStyles: Record<string, { button: string; count: string }> = {
   all: {
-    button: 'border-primary/60 bg-primary/5 text-primary-text shadow-soft',
+    button: 'border-primary bg-primary/5 text-primary-text shadow-soft',
     count: 'border-primary/25 bg-surface text-primary-text'
   },
   web: {
-    button: 'border-technical/60 bg-technical/5 text-technical-text shadow-soft',
+    button: 'border-technical bg-technical/5 text-technical-text shadow-soft',
     count: 'border-technical/25 bg-surface text-technical-text'
   },
   dsa: {
-    button: 'border-creative/60 bg-creative/5 text-creative-text shadow-soft',
+    button: 'border-creative bg-creative/5 text-creative-text shadow-soft',
     count: 'border-creative/25 bg-surface text-creative-text'
   },
   aptitude: {
-    button: 'border-highlight/60 bg-highlight/5 text-highlight-text shadow-soft',
+    button: 'border-highlight bg-highlight/5 text-highlight-text shadow-soft',
     count: 'border-highlight/25 bg-surface text-highlight-text'
   }
 };

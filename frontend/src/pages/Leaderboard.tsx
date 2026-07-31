@@ -361,7 +361,7 @@ const Leaderboard = () => {
                     id="leaderboard-view"
                     value={currentView}
                     onChange={handleViewChange}
-                    className="mt-2 min-h-11 w-full rounded-control border border-primary/30 bg-surface px-3 py-2 font-semibold text-ink transition-colors focus:border-technical/50 sm:max-w-xs"
+                    className="mt-2 min-h-11 w-full rounded-control border border-line-strong bg-surface px-3 py-2 font-semibold text-ink transition-colors focus:border-technical sm:max-w-xs"
                   >
                     {VIEW_OPTIONS.map(view => (
                       <option key={view} value={view}>{view}</option>
@@ -513,7 +513,7 @@ const Leaderboard = () => {
                     id="leaderboard-page-size"
                     value={pageSize}
                     onChange={e => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
-                    className="min-h-11 rounded-control border border-primary/30 bg-surface px-2 py-1 font-semibold text-ink focus:border-technical/50"
+                    className="min-h-11 rounded-control border border-line-strong bg-surface px-2 py-1 font-semibold text-ink focus:border-technical"
                   >
                     {[10, 20, 50].map(size => <option key={size} value={size}>{size}</option>)}
                   </select>
@@ -528,7 +528,7 @@ const Leaderboard = () => {
                     type="button"
                     onClick={() => setCurrentPage(1)}
                     disabled={currentPage === 1}
-                    className="btn btn-secondary btn-icon border-primary/25"
+                    className="btn btn-secondary btn-icon"
                     aria-label="First page"
                     title="First page"
                   >
@@ -538,7 +538,7 @@ const Leaderboard = () => {
                     type="button"
                     onClick={() => setCurrentPage(p => p - 1)}
                     disabled={currentPage === 1}
-                    className="btn btn-secondary btn-icon border-primary/25"
+                    className="btn btn-secondary btn-icon"
                     aria-label="Previous page"
                     title="Previous page"
                   >
@@ -548,7 +548,7 @@ const Leaderboard = () => {
                     type="button"
                     onClick={() => setCurrentPage(p => p + 1)}
                     disabled={currentPage === totalPages}
-                    className="btn btn-secondary btn-icon border-primary/25"
+                    className="btn btn-secondary btn-icon"
                     aria-label="Next page"
                     title="Next page"
                   >
@@ -558,7 +558,7 @@ const Leaderboard = () => {
                     type="button"
                     onClick={() => setCurrentPage(totalPages)}
                     disabled={currentPage === totalPages}
-                    className="btn btn-secondary btn-icon border-primary/25"
+                    className="btn btn-secondary btn-icon"
                     aria-label="Last page"
                     title="Last page"
                   >
@@ -612,7 +612,7 @@ const Leaderboard = () => {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleSearch();
                 }}
-                className="min-h-11 w-full rounded-control border border-primary/30 bg-surface px-3 py-2 text-ink transition-colors placeholder:text-ink-subtle focus:border-technical/50"
+                className="min-h-11 w-full rounded-control border border-line-strong bg-surface px-3 py-2 text-ink transition-colors placeholder:text-ink-subtle focus:border-technical"
               />
             </div>
 

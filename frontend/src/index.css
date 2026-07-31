@@ -17,7 +17,7 @@
     --color-text-subtle: 100 116 139;
     --color-text-inverse: 248 250 252;
     --color-border: 203 213 225;
-    --color-border-strong: 148 163 184;
+    --color-border-strong: 116 134 158;
     --color-primary: 37 99 235;
     --color-primary-text: 29 78 216;
     --color-technical: 8 145 178;
@@ -46,7 +46,7 @@
     --color-text-subtle: 123 142 166;
     --color-text-inverse: 7 17 31;
     --color-border: 59 82 111;
-    --color-border-strong: 82 109 145;
+    --color-border-strong: 100 132 172;
     --color-primary: 59 130 246;
     --color-primary-text: 147 197 253;
     --color-technical: 34 211 238;
@@ -121,7 +121,7 @@
   }
 
   :where(a, button, input, textarea, select, summary, [tabindex]):focus-visible {
-    outline: 3px solid rgb(var(--color-focus) / 0.72);
+    outline: 2px solid rgb(var(--color-focus));
     outline-offset: 3px;
   }
 
@@ -185,7 +185,7 @@
   }
 
   .btn-secondary {
-    @apply border-line-strong bg-surface text-ink shadow-soft hover:border-brand-400 hover:bg-surface-muted;
+    @apply border-line-strong bg-surface text-ink shadow-soft hover:border-primary hover:bg-surface-muted;
   }
 
   .btn-ghost {

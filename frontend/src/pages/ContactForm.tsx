@@ -61,7 +61,7 @@ export function ContactForm() {
           value={formData.name}
           onChange={handleChange}
           placeholder="What's your good name?"
-          className="min-h-11 w-full rounded-control border border-line-strong bg-surface px-4 py-3 text-ink transition-colors duration-200 placeholder:text-ink-muted hover:border-technical/60 focus-visible:border-focus focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/30"
+          className="min-h-11 w-full rounded-control border border-line-strong bg-surface px-4 py-3 text-ink transition-colors duration-200 placeholder:text-ink-muted hover:border-technical focus-visible:border-focus"
           required
         />
       </div>
@@ -78,7 +78,7 @@ export function ContactForm() {
           value={formData.email}
           onChange={handleChange}
           placeholder="What's your email address?"
-          className="min-h-11 w-full rounded-control border border-line-strong bg-surface px-4 py-3 text-ink transition-colors duration-200 placeholder:text-ink-muted hover:border-technical/60 focus-visible:border-focus focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/30"
+          className="min-h-11 w-full rounded-control border border-line-strong bg-surface px-4 py-3 text-ink transition-colors duration-200 placeholder:text-ink-muted hover:border-technical focus-visible:border-focus"
           required
         />
       </div>
@@ -95,7 +95,7 @@ export function ContactForm() {
           onChange={handleChange}
           placeholder="How can we help you?"
           rows={5}
-          className="w-full resize-none rounded-control border border-line-strong bg-surface px-4 py-3 text-ink transition-colors duration-200 placeholder:text-ink-muted hover:border-technical/60 focus-visible:border-focus focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus/30"
+          className="w-full resize-none rounded-control border border-line-strong bg-surface px-4 py-3 text-ink transition-colors duration-200 placeholder:text-ink-muted hover:border-technical focus-visible:border-focus"
           required
         />
       </div>

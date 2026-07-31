@@ -75,7 +75,7 @@ const EventCard = ({ event, index }: { event: EventItem; index: number }) => {
 
         <Link
           to={event.link}
-          className="btn btn-secondary group/button mt-6 w-full justify-center border-primary/30 text-primary-text hover:border-technical/40 focus-visible:outline-offset-4 sm:w-fit"
+          className="btn btn-secondary group/button mt-6 w-full justify-center border-line-strong text-primary-text hover:border-technical focus-visible:outline-offset-4 sm:w-fit"
         >
           <span>View Highlights</span>
           <ArrowRight
