@@ -109,10 +109,10 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
     };
   }, [isOpen, setIsOpen]);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     setIsOpen(false);
-    navigate('/');
+    navigate('/login');
   };
 
   return (

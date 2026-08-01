@@ -61,9 +61,9 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/');
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
   };
 
   const handleBlurCapture = (event: FocusEvent<HTMLElement>) => {

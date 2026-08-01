@@ -1,8 +1,8 @@
 import { FormEvent, useMemo, useState } from "react";
 import type { ChangeEvent, FocusEvent } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, Mail, Phone, User } from "lucide-react";
+import { ArrowRight, GraduationCap, Mail, Phone, User } from "lucide-react";
 import AuthInput from "../components/auth/AuthInput";
 import AuthShell from "../components/auth/AuthShell";
 import AuthThemeToggle from "../components/auth/AuthThemeToggle";
@@ -18,6 +18,8 @@ interface RegisterForm {
   email: string;
   usn: string;
   contactNumber: string;
+  branch: string;
+  year: string;
   password: string;
   confirmPassword: string;
 }
@@ -27,11 +29,14 @@ const initialForm: RegisterForm = {
   email: "",
   usn: "",
   contactNumber: "",
+  branch: "",
+  year: "",
   password: "",
   confirmPassword: "",
 };
 
 const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const API_BASE_URL = import.meta.env.VITE_API_URL ?? "";
 const passwordRules = [
   { label: "8 characters", test: (value: string) => value.length >= 8 },
   { label: "1 uppercase letter", test: (value: string) => /[A-Z]/.test(value) },
@@ -49,6 +54,7 @@ export default function RegisterPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState("");
   const shouldReduceMotion = useReducedMotion();
+  const navigate = useNavigate();
 
   const passedPasswordRules = useMemo(() => passwordRules.filter((rule) => rule.test(formData.password)).length, [formData.password]);
   const strengthLabel = ["Very weak", "Weak", "Fair", "Good", "Strong", "Excellent"][passedPasswordRules];
@@ -68,11 +74,18 @@ export default function RegisterPage() {
       const email = fieldValue.trim();
       if (!email) return "Email ID is required.";
       if (!emailPattern.test(email)) return "Enter a valid email address.";
+      if (!email.toLowerCase().endsWith("@nmamit.in")) return "Use your official @nmamit.in email address.";
     }
     if (name === "usn" && !fieldValue.trim()) return "USN is required.";
     if (name === "contactNumber") {
       if (!fieldValue.trim()) return "Contact number is required.";
       if (!/^\d{10}$/.test(fieldValue)) return "Contact number must contain exactly 10 digits.";
+    }
+    if (name === "branch" && !fieldValue.trim()) return "Branch is required.";
+    if (name === "year") {
+      const year = Number(fieldValue);
+      if (!fieldValue) return "Year is required.";
+      if (!Number.isInteger(year) || year < 1 || year > 4) return "Year must be from 1 to 4.";
     }
     if (name === "password") {
       if (!fieldValue) return "Password is required.";
@@ -89,7 +102,7 @@ export default function RegisterPage() {
   const validateForm = () => {
     const nextErrors: Partial<Record<keyof RegisterForm | "domains", string>> = {};
 
-    (["name", "email", "usn", "contactNumber", "password", "confirmPassword"] as Array<keyof RegisterForm>).forEach((field) => {
+    (["name", "email", "usn", "contactNumber", "branch", "year", "password", "confirmPassword"] as Array<keyof RegisterForm>).forEach((field) => {
       const error = validateField(field, formData[field]);
       if (error) nextErrors[field] = error;
     });
@@ -100,7 +113,7 @@ export default function RegisterPage() {
     return Object.keys(nextErrors).length === 0;
   };
 
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = event.target;
     const fieldName = name as keyof RegisterForm;
     const nextValue = name === "contactNumber" ? value.replace(/\D/g, "").slice(0, 10) : value;
@@ -119,7 +132,7 @@ export default function RegisterPage() {
     setStatusMessage("");
   };
 
-  const handleBlur = (event: FocusEvent<HTMLInputElement>) => {
+  const handleBlur = (event: FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
     const fieldName = event.target.name as keyof RegisterForm;
     setTouched((current) => ({ ...current, [fieldName]: true }));
     setErrors((current) => ({ ...current, [fieldName]: validateField(fieldName, formData[fieldName]) }));
@@ -138,7 +151,16 @@ export default function RegisterPage() {
     setErrors((current) => ({ ...current, domains: validateField("domains", selectedDomains) }));
   };
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const parseResponseJson = async (response: Response): Promise<Record<string, unknown>> => {
+    try {
+      const data = await response.json();
+      return data && typeof data === "object" ? data : {};
+    } catch {
+      return {};
+    }
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setHasSubmitted(true);
     setTouched({
@@ -146,6 +168,8 @@ export default function RegisterPage() {
       email: true,
       usn: true,
       contactNumber: true,
+      branch: true,
+      year: true,
       password: true,
       confirmPassword: true,
       domains: true,
@@ -155,10 +179,45 @@ export default function RegisterPage() {
 
     setIsLoading(true);
 
-    window.setTimeout(() => {
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/register/request-otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          name: formData.name.trim(),
+          email: formData.email.trim().toLowerCase(),
+          usn: formData.usn.trim().toUpperCase(),
+          contactNumber: formData.contactNumber,
+          branch: formData.branch.trim(),
+          year: Number(formData.year),
+          password: formData.password,
+          confirmPassword: formData.confirmPassword,
+          enrolledDomains: selectedDomains,
+        }),
+      });
+
+      const data = await parseResponseJson(response);
+
+      if (!response.ok || data.success === false) {
+        setStatusMessage(typeof data.message === "string" ? data.message : "Unable to request OTP. Please try again.");
+        return;
+      }
+
+      navigate("/register/verify-otp", {
+        state: {
+          email: typeof data.email === "string" ? data.email : formData.email.trim().toLowerCase(),
+          expiresInSeconds: typeof data.expiresInSeconds === "number" ? data.expiresInSeconds : 600,
+          resendAvailableInSeconds: typeof data.resendAvailableInSeconds === "number" ? data.resendAvailableInSeconds : 60,
+        },
+      });
+    } catch {
+      setStatusMessage("Unable to connect to the server. Please try again.");
+    } finally {
       setIsLoading(false);
-      setStatusMessage("Registration backend integration is pending. Your account has not been created.");
-    }, 900);
+    }
   };
 
   return (
@@ -218,6 +277,36 @@ export default function RegisterPage() {
               <AuthInput id="email" name="email" label="Email ID" type="email" value={formData.email} error={errors.email} onChange={handleChange} onBlur={handleBlur} autoComplete="email" icon={<Mail className="h-4 w-4" aria-hidden="true" />} />
               <AuthInput id="usn" name="usn" label="USN" value={formData.usn} error={errors.usn} onChange={handleChange} onBlur={handleBlur} autoComplete="off" />
               <AuthInput id="contactNumber" name="contactNumber" label="Contact Number" inputMode="numeric" value={formData.contactNumber} error={errors.contactNumber} onChange={handleChange} onBlur={handleBlur} autoComplete="tel" icon={<Phone className="h-4 w-4" aria-hidden="true" />} />
+              <AuthInput id="branch" name="branch" label="Branch" value={formData.branch} error={errors.branch} onChange={handleChange} onBlur={handleBlur} autoComplete="organization-title" icon={<GraduationCap className="h-4 w-4" aria-hidden="true" />} />
+              <div className="space-y-2">
+                <label htmlFor="year" className="block text-[0.95rem] font-medium text-ink">
+                  Year
+                </label>
+                <select
+                  id="year"
+                  name="year"
+                  value={formData.year}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  aria-invalid={Boolean(errors.year)}
+                  aria-describedby={errors.year ? "year-error" : undefined}
+                  className={cn(
+                    "w-full rounded-control border bg-surface/90 px-4 py-3.5 text-sm text-ink shadow-soft outline-none transition focus:border-technical focus:ring-2 focus:ring-technical/30",
+                    errors.year ? "border-highlight focus:border-highlight focus:ring-highlight/30" : "border-line-strong hover:border-technical/40",
+                  )}
+                >
+                  <option value="">Select year</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                </select>
+                {errors.year && (
+                  <p id="year-error" className="text-sm text-highlight-text">
+                    {errors.year}
+                  </p>
+                )}
+              </div>
               <div>
                 <PasswordInput id="password" name="password" label="Password" value={formData.password} error={errors.password} autoComplete="new-password" onChange={handleChange} onBlur={handleBlur} />
                 <div className="mt-2 space-y-1.5" aria-live="polite">
@@ -262,7 +351,7 @@ export default function RegisterPage() {
               disabled={isLoading}
               className="btn btn-primary group w-full sm:w-auto sm:px-8"
             >
-              {isLoading ? "Checking details..." : "Submit registration details"}
+              {isLoading ? "Sending OTP..." : "Submit registration details"}
               <ArrowRight
                 className={cn(
                   "h-4 w-4",

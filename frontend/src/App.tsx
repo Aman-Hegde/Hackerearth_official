@@ -14,25 +14,79 @@ import Leaderboard from "./pages/Leaderboard";
 import Contact from "./pages/Contact";
 import LoginPage from "./pages/Login";
 import RegisterPage from "./pages/Register";
+import RegisterOtpPage from "./pages/RegisterOtp";
+import ForgotPasswordPage from "./pages/ForgotPassword";
+import ForgotPasswordOtpPage from "./pages/ForgotPasswordOtp";
+import ChangeForgottenPasswordPage from "./pages/ChangeForgottenPassword";
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import ScrollToTop from "./components/ScrollTop";
 import Sidebar from "./components/Sidebar";
 import SpotlightCursor from "./components/CustomCursor";
+import type { UserRole } from "./context/AuthContext";
 
 function AppWrapper() {
   const location = useLocation();
   const isAuthPage =
     location.pathname === "/login" ||
-    location.pathname === "/register";
+    location.pathname === "/register" ||
+    location.pathname === "/register/verify-otp" ||
+    location.pathname.startsWith("/forgot-password");
   const isDomainPage = location.pathname.startsWith("/domains");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const AuthLoadingState = () => (
+    <div
+      className="flex min-h-screen items-center justify-center bg-canvas px-4 text-ink"
+      role="status"
+      aria-live="polite"
+    >
+      <span className="rounded-control border border-line bg-surface px-4 py-3 text-sm font-semibold shadow-soft">
+        Checking your session...
+      </span>
+    </div>
+  );
+
   const ProtectedRoute = () => {
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
-};
+    const { isAuthenticated, isLoading } = useAuth();
+
+    if (isLoading) return <AuthLoadingState />;
+    return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
+  };
+
+  const RoleRoute = ({ allowedRoles }: { allowedRoles: UserRole[] }) => {
+    const { user, isAuthenticated, isLoading } = useAuth();
+
+    if (isLoading) return <AuthLoadingState />;
+    if (!isAuthenticated || !user) return <Navigate to="/login" replace />;
+    if (!allowedRoles.includes(user.role)) {
+      return (
+        <Navigate
+          to={user.role === "admin" ? "/admin/dashboard" : "/student/dashboard"}
+          replace
+        />
+      );
+    }
+
+    return <Outlet />;
+  };
+
+  const DashboardRoutePlaceholder = ({ role }: { role: UserRole }) => (
+    <div className="flex min-h-[60vh] items-center justify-center px-4 py-20 text-center">
+      <div className="max-w-md rounded-card border border-line bg-surface p-6 text-ink shadow-soft">
+        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-technical-text">
+          {role === "admin" ? "Admin" : "Student"} dashboard
+        </p>
+        <h1 className="mt-3 text-2xl font-bold tracking-tight">
+          Dashboard route protected
+        </h1>
+        <p className="mt-3 text-sm leading-6 text-ink-muted">
+          The authenticated route is ready. The dashboard UI component can be connected here by its owner.
+        </p>
+      </div>
+    </div>
+  );
 
   useEffect(() => {
     setSidebarOpen(false); // close sidebar on route change
@@ -71,6 +125,16 @@ function AppWrapper() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
+          <Route path="/register/verify-otp" element={<RegisterOtpPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/forgot-password/verify-otp" element={<ForgotPasswordOtpPage />} />
+          <Route path="/forgot-password/change-password" element={<ChangeForgottenPasswordPage />} />
+          <Route element={<RoleRoute allowedRoles={["student"]} />}>
+            <Route path="/student/dashboard/*" element={<DashboardRoutePlaceholder role="student" />} />
+          </Route>
+          <Route element={<RoleRoute allowedRoles={["admin"]} />}>
+            <Route path="/admin/dashboard/*" element={<DashboardRoutePlaceholder role="admin" />} />
+          </Route>
         </Routes>
       </main>
 
