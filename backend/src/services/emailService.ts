@@ -7,6 +7,12 @@ interface RegistrationOtpEmailInput {
   otp: string;
 }
 
+interface PasswordResetOtpEmailInput {
+  recipientEmail: string;
+  recipientName: string;
+  otp: string;
+}
+
 interface SmtpConfig {
   host: string;
   port: number;
@@ -145,6 +151,46 @@ export const sendRegistrationOtpEmail = async ({
         <p>This OTP expires in ${OTP_EXPIRY_MINUTES} minutes.</p>
         <p>Do not share this OTP with anyone.</p>
         <p>If you did not request registration, please ignore this email.</p>
+      </div>
+    `,
+  });
+};
+
+export const sendPasswordResetOtpEmail = async ({
+  recipientEmail,
+  recipientName,
+  otp,
+}: PasswordResetOtpEmailInput): Promise<void> => {
+  const config = parseSmtpConfig();
+  const safeRecipientName = escapeHtml(recipientName);
+
+  await getTransporter().sendMail({
+    from: {
+      name: config.fromName,
+      address: config.fromAddress,
+    },
+    to: {
+      name: recipientName,
+      address: recipientEmail,
+    },
+    subject: "HackerEarth Hub NMAMIT - Password Reset OTP",
+    text: [
+      `Hi ${recipientName},`,
+      "",
+      `Your HackerEarth Hub NMAMIT password reset OTP is ${otp}.`,
+      `This OTP expires in ${OTP_EXPIRY_MINUTES} minutes.`,
+      "",
+      "Do not share this OTP with anyone.",
+      "If you did not request a password change, please ignore this email.",
+    ].join("\n"),
+    html: `
+      <div style="font-family: Arial, sans-serif; color: #0f172a; line-height: 1.6;">
+        <p>Hi ${safeRecipientName},</p>
+        <p>Your HackerEarth Hub NMAMIT password reset OTP is:</p>
+        <p style="font-size: 24px; font-weight: 700; letter-spacing: 6px;">${otp}</p>
+        <p>This OTP expires in ${OTP_EXPIRY_MINUTES} minutes.</p>
+        <p>Do not share this OTP with anyone.</p>
+        <p>If you did not request a password change, please ignore this email.</p>
       </div>
     `,
   });
