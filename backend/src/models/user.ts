@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Document, Model, Schema } from "mongoose";
 
 export const VALID_DOMAINS = ["Web Development", "DSA", "Aptitude"] as const;
 
@@ -109,6 +109,8 @@ const userSchema = new Schema<IUser>(
   }
 );
 
-const User = mongoose.models.User || mongoose.model<IUser>("User", userSchema);
+const User: Model<IUser> =
+  (mongoose.models.User as Model<IUser> | undefined) ||
+  mongoose.model<IUser>("User", userSchema);
 
 export default User;

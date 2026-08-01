@@ -1,37 +1,36 @@
 {
   "compilerOptions": {
-    // File Layout
-    "rootDir": "./src",        // Source files location
-    "outDir": "./dist",        // Output directory for compiled JS
-    
-    // Environment Settings
-    "module": "CommonJS",      // CommonJS module system for Node.js
-    "target": "ES2020",        // Target modern JS compatible with Node.js
-    "lib": ["ES2020"],         // Include ES2020 library features
-    "types": ["node"],         // Include Node.js type definitions
-    
-    // Other Outputs
-    "sourceMap": true,         // Generate sourcemaps for debugging
-    "declaration": true,       // Generate declaration files (.d.ts)
-    "declarationMap": true,    // Generate sourcemaps for declarations
-    
-    // Stricter Typechecking Options
-    "strict": true,                    // Enable all strict type-checking options
-    "noUncheckedIndexedAccess": true, // More precise checking for indexed accesses
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "module": "CommonJS",
+    "target": "ES2020",
+    "lib": [
+      "ES2020"
+    ],
+    "typeRoots": [
+      "./src/types",
+      "./node_modules/@types"
+    ],
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
-    
-    // Module Resolution
-    "esModuleInterop": true,           // Enable compatibility for ES import interoperability
+    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "moduleResolution": "node",
-    "verbatimModuleSyntax": false,     // Allow CommonJS style imports & exports
-    
-    // Other Recommended Options
+    "verbatimModuleSyntax": false,
     "isolatedModules": true,
     "noUncheckedSideEffectImports": true,
     "moduleDetection": "force"
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["node_modules"]
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.d.ts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
 }

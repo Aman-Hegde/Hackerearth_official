@@ -1,4 +1,4 @@
-import mongoose, { Document, Schema } from "mongoose";
+import mongoose, { Document, Model, Schema } from "mongoose";
 import { VALID_DOMAINS, EnrolledDomain } from "./user";
 
 export interface IPendingRegistration extends Document {
@@ -32,7 +32,7 @@ const pendingRegistrationSchema = new Schema<IPendingRegistration>(
       required: [true, "Email is required"],
       lowercase: true,
       trim: true,
-      index: true,
+      unique: true,
     },
 
     usn: {
@@ -40,7 +40,7 @@ const pendingRegistrationSchema = new Schema<IPendingRegistration>(
       required: [true, "USN is required"],
       uppercase: true,
       trim: true,
-      index: true,
+      unique: true,
     },
 
     contactNumber: {
@@ -118,8 +118,10 @@ const pendingRegistrationSchema = new Schema<IPendingRegistration>(
 
 pendingRegistrationSchema.index({ otpExpiresAt: 1 }, { expireAfterSeconds: 0 });
 
-const PendingRegistration =
-  mongoose.models.PendingRegistration ||
+const PendingRegistration: Model<IPendingRegistration> =
+  (mongoose.models.PendingRegistration as
+    | Model<IPendingRegistration>
+    | undefined) ||
   mongoose.model<IPendingRegistration>(
     "PendingRegistration",
     pendingRegistrationSchema
