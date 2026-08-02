@@ -18,6 +18,7 @@ import {
 import { getCurrentUser, logoutUser } from "../controllers/sessionController";
 import { authenticate } from "../middleware/authenticate";
 import { authorize } from "../middleware/authorize";
+import { requireRegistrationOpen } from "../middleware/requireRegistrationOpen";
 
 const router = Router();
 
@@ -28,7 +29,11 @@ router.post("/google", (_req: Request, res: Response) => {
   });
 });
 
-router.post("/register/request-otp", requestRegistrationOtp);
+router.post(
+  "/register/request-otp",
+  requireRegistrationOpen,
+  requestRegistrationOtp
+);
 
 router.post("/register/resend-otp", resendRegistrationOtp);
 

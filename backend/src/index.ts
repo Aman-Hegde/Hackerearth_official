@@ -1,4 +1,5 @@
 import authRoutes from "./routes/auth";
+import adminRoutes from "./routes/admin";
 import { connectDatabase } from "./config/db";
 import express, { Request, Response } from "express";
 import cors, { CorsOptions } from "cors";
@@ -42,6 +43,7 @@ app.get("/api/health", (_req: Request, res: Response) => {
 });
 
 app.use("/api/auth", authRoutes);
+app.use("/api/admin", adminRoutes);
 
 const PORT = Number(process.env.PORT) || 5000;
 
