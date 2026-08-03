@@ -10,6 +10,7 @@ import Team from "./pages/Team";
 import Domains from "./pages/Domains";
 import BlogPostPage from "./pages/BlogPostPage";
 import StudentDashboard from "./pages/StudentDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 // import About from "./pages/About";
 import Contact from "./pages/Contact";
 import LoginPage from "./pages/Login";
@@ -72,22 +73,6 @@ function AppWrapper() {
     return <Outlet />;
   };
 
-  const DashboardRoutePlaceholder = ({ role }: { role: UserRole }) => (
-    <div className="flex min-h-[60vh] items-center justify-center px-4 py-20 text-center">
-      <div className="max-w-md rounded-card border border-line bg-surface p-6 text-ink shadow-soft">
-        <p className="text-sm font-semibold uppercase tracking-[0.18em] text-technical-text">
-          {role === "admin" ? "Admin" : "Student"} dashboard
-        </p>
-        <h1 className="mt-3 text-2xl font-bold tracking-tight">
-          Dashboard route protected
-        </h1>
-        <p className="mt-3 text-sm leading-6 text-ink-muted">
-          The authenticated route is ready. The dashboard UI component can be connected here by its owner.
-        </p>
-      </div>
-    </div>
-  );
-
   useEffect(() => {
     setSidebarOpen(false); // close sidebar on route change
   }, [location]);
@@ -133,7 +118,7 @@ function AppWrapper() {
             <Route path="/student/dashboard/*" element={<StudentDashboard />} />
           </Route>
           <Route element={<RoleRoute allowedRoles={["admin"]} />}>
-            <Route path="/admin/dashboard/*" element={<DashboardRoutePlaceholder role="admin" />} />
+            <Route path="/admin/dashboard/*" element={<AdminDashboard />} />
           </Route>
         </Routes>
       </main>

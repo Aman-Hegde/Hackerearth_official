@@ -18,6 +18,14 @@ const navItems = [
   { name: 'Contact', href: '/contact' },
 ] as const;
 
+const adminNavItems = [
+  { name: 'Events', href: '/events' },
+  { name: 'Leaderboard', disabled: true },
+  { name: 'Team', href: '/team' },
+  { name: 'Admin', href: '/admin/dashboard' },
+  { name: 'Contact', href: '/contact' },
+] as const;
+
 const studentDashboardNavItems = [
   { name: 'Home', href: '/' },
   { name: 'Dashboard', target: 'student-dashboard-top' },
@@ -42,6 +50,7 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
   const { pathname } = useLocation();
   const displayedUsername = user?.name || user?.email?.split('@')[0];
   const isStudentDashboard = pathname === '/student/dashboard';
+  const mainNavItems = user?.role === 'admin' ? adminNavItems : navItems;
 
   useEffect(() => {
     const scrollContainer = document.getElementById('scroll-container');
@@ -212,7 +221,7 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
                   )}
                 </Link>
 
-                {navItems.map((item) => {
+                {mainNavItems.map((item) => {
                   const isDisabled = 'disabled' in item && item.disabled;
                   if (isDisabled) {
                     return (
