@@ -1,8 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Calendar, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useTheme } from '../context/ThemeContext';
-import { motion } from 'framer-motion';
+import { motion, useReducedMotion } from 'framer-motion';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 import Loader from '../components/Loader';
@@ -26,82 +25,74 @@ const pastEvents = [
   },
 ];
 
-const EventCard = ({ event, index, isDark }) => {
-  const [isMobile, setIsMobile] = useState(false);
+type EventItem = (typeof pastEvents)[number];
 
-  useEffect(() => {
-    const updateMobile = () => setIsMobile(window.innerWidth < 768);
-    updateMobile();
-    window.addEventListener('resize', updateMobile);
-    return () => window.removeEventListener('resize', updateMobile);
-  }, []);
+const EventCard = ({ event, index }: { event: EventItem; index: number }) => {
+  const shouldReduceMotion = useReducedMotion();
 
-  if (isMobile) {
-    return (
-      <div className="rounded-2xl shadow-xl border border-white/10 overflow-hidden bg-gradient-to-br from-slate-900/70 via-purple-800/60 to-slate-800/80 mb-2">
+  return (
+    <motion.article
+      initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      whileHover={shouldReduceMotion ? undefined : { y: -4 }}
+      transition={{
+        duration: shouldReduceMotion ? 0 : 0.5,
+        delay: shouldReduceMotion ? 0 : index * 0.08,
+        ease: [0.16, 1, 0.3, 1],
+      }}
+      viewport={{ once: true, amount: 0.25 }}
+      className="ui-card top-border-accent-primary group flex h-full min-w-0 flex-col overflow-hidden border-primary/25 transition-colors duration-300 hover:border-primary/45 hover:shadow-surface"
+    >
+      <div className="relative aspect-[16/10] overflow-hidden border-b border-line bg-surface-muted">
         <img
           src={event.image}
           alt={event.title}
-          className="w-full h-48 object-cover rounded-t-2xl"
+          loading="lazy"
+          decoding="async"
+          className="size-full object-contain"
         />
-        <div className="px-5 py-5">
-          <div className="flex items-center gap-2 text-sm text-white/80 mb-3 justify-center">
-            <Calendar className="w-4 h-4" />
-            <span>
-              {new Date(event.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
-            </span>
-          </div>
-          <h3 className="text-center text-2xl font-bold text-white mb-6">{event.title}</h3>
-          <div className="flex justify-center">
-            <Link
-              to={event.link}
-              className={`inline-flex items-center gap-2 px-5 py-2 rounded-full font-semibold bg-gradient-to-r ${event.gradient} text-white shadow`}
-              style={{ minWidth: 150 }}
-            >
-              View Highlights
-              <ArrowRight className="w-4 h-4" />
-            </Link>
-          </div>
-        </div>
+        <div
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-primary/10 via-transparent to-transparent"
+          aria-hidden="true"
+        />
+        <div
+          className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-primary to-technical"
+          aria-hidden="true"
+        />
       </div>
-    );
-  }
 
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5, delay: index * 0.1 }}
-      viewport={{ once: true }}
-      className="group relative aspect-[3/4] overflow-hidden rounded-2xl shadow-lg"
-    >
-      <img
-        src={event.image}
-        alt={event.title}
-        className="absolute inset-0 h-full w-full object-cover"
-      />
-      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/50 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500" />
-      <div className="relative z-10 flex h-full flex-col justify-end p-6 opacity-0 group-hover:opacity-100 transition-all duration-500">
-        <div className="flex items-center gap-2 text-sm text-white/80 mb-2">
-          <Calendar className="w-4 h-4" />
-          <span>{new Date(event.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</span>
+      <div className="flex flex-1 flex-col p-5 sm:p-6">
+        <div className="flex w-fit items-center gap-2 rounded-control border border-highlight/20 bg-highlight/5 px-3 py-2 text-sm font-medium text-highlight-text">
+          <Calendar className="icon-accent-amber size-4 shrink-0" aria-hidden="true" />
+          <time dateTime={event.date}>
+            {new Date(event.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
+          </time>
         </div>
-        <h3 className="text-2xl font-bold text-white mb-6">{event.title}</h3>
-        <button className="group/button relative inline-flex items-center gap-2 text-base font-semibold">
-          <Link to={event.link} className={`bg-gradient-to-r ${event.gradient} bg-clip-text text-transparent`}>
-            View Highlights
-          </Link>
-          <ArrowRight className={`w-4 h-4 bg-gradient-to-r ${event.gradient} bg-clip-text text-transparent transition-transform group-hover/button:translate-x-1`} />
-          <span className={`absolute -bottom-1 left-0 h-0.5 w-0 bg-gradient-to-r ${event.gradient} transition-all duration-300 group-hover/button:w-full`} />
-        </button>
+
+        <h3 className="mt-3 font-display text-2xl font-semibold leading-tight text-ink">
+          {event.title}
+        </h3>
+
+        <Link
+          to={event.link}
+          className="btn btn-secondary group/button mt-6 w-full justify-center border-line-strong text-primary-text hover:border-technical focus-visible:outline-offset-4 sm:w-fit"
+        >
+          <span>View Highlights</span>
+          <ArrowRight
+            className={`size-4 text-technical transition-transform duration-200 ${
+              shouldReduceMotion ? '' : 'group-hover/button:translate-x-0.5'
+            }`}
+            aria-hidden="true"
+          />
+        </Link>
       </div>
-    </motion.div>
+    </motion.article>
   );
 };
 
 const Events = () => {
-  const { isDark } = useTheme();
   const [loading, setLoading] = useState(true);
+  const shouldReduceMotion = useReducedMotion();
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 1500);
@@ -114,7 +105,7 @@ const Events = () => {
 
   if (loading) {
     return (
-      <div className={`flex flex-col justify-center items-center min-h-screen ${isDark ? "bg-black text-white" : "bg-slate-50 text-gray-900"}`}>
+      <div className="flex min-h-screen flex-col items-center justify-center bg-canvas px-4 text-ink transition-colors duration-500">
         <Loader size={80} />
         <p className="mt-4 text-lg font-medium">Loading Events...</p>
       </div>
@@ -122,40 +113,32 @@ const Events = () => {
   }
 
   return (
-    <div className={`transition-colors duration-500 ${isDark ? 'bg-black' : 'bg-slate-50'}`}>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
-        <section className="relative z-10">
+    <main className="min-h-screen bg-canvas text-ink transition-colors duration-500">
+      <section className="section-glow-subtle section-space overflow-x-clip pt-28 sm:pt-32">
+        <div className="site-container">
           <motion.div
-            className="text-center mb-16"
-            initial={{ opacity: 0, y: 20 }}
+            className="mx-auto mb-12 max-w-3xl text-center sm:mb-14 lg:mb-16"
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
             whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
+            transition={{
+              duration: shouldReduceMotion ? 0 : 0.55,
+              ease: [0.16, 1, 0.3, 1],
+            }}
+            viewport={{ once: true, amount: 0.3 }}
           >
-            <div className="flex justify-center">
-              {/* <button
-                type="button"
-                className="group relative z-[60] mx-auto rounded-full border px-7 py-2 text-xl backdrop-blur transition-all duration-300 hover:shadow-xl md:text-sm"
-                style={{
-                  borderColor: isDark ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)',
-                  backgroundColor: isDark ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-                }}
-              >
-                <span className={`relative ${isDark ? "text-white" : "text-gray-900"}`}>Past Events</span>
-              </button> */}
-            </div>
-            <h2 className={`mt-7 p-2 text-4xl text-center font-semibold tracking-tight md:text-[56px] ${isDark ? "bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-clip-text text-transparent" : "text-gray-900"}`}>
-              EVENTS
-            </h2>
+            <h1 className="section-heading">
+              <span className="text-gradient-subtle">EVENTS</span>
+            </h1>
           </motion.div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+
+          <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2 lg:gap-8">
             {pastEvents.map((event, index) => (
-              <EventCard key={event.id} event={event} index={index} isDark={isDark} />
+              <EventCard key={event.id} event={event} index={index} />
             ))}
           </div>
-        </section>
-      </div>
-    </div>
+        </div>
+      </section>
+    </main>
   );
 };
 

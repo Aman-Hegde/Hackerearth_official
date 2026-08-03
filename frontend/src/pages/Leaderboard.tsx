@@ -1,8 +1,9 @@
 //cumulative leaderboard
 "use client";
 
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { Crown, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, X } from "lucide-react";
+import { motion, useReducedMotion } from "framer-motion";
 import * as XLSX from "xlsx";
 import { useTheme } from "../context/ThemeContext";
 import Loader from "../components/Loader";
@@ -41,6 +42,24 @@ const DEFAULT_VIEW = "Cumulative";
 const NAME_HEADER_KEY = "Name";
 const SCORE_HEADER_KEY = "Total Score 500.0";
 
+const topRankStyles = [
+  {
+    container: "border-highlight/30 bg-highlight/10",
+    number: "text-highlight-text",
+    crown: "text-highlight",
+  },
+  {
+    container: "border-line-strong bg-surface-muted",
+    number: "text-ink-muted",
+    crown: "text-ink-subtle",
+  },
+  {
+    container: "border-highlight/20 bg-highlight/5",
+    number: "text-highlight-text",
+    crown: "text-highlight/70",
+  },
+] as const;
+
 // --- Helper Functions ---
 const getUniqueKey = (email: string | undefined, name: string): string => {
   const normalizedEmail = String(email || "").toLowerCase().trim();
@@ -54,7 +73,7 @@ const getUniqueKey = (email: string | undefined, name: string): string => {
   return `N_${normalizedName}`;
 };
 
-const formatTimeForDisplay = (timeValue: any): string => {
+const formatTimeForDisplay = (timeValue: unknown): string => {
   if (typeof timeValue === "number") {
     const totalSeconds = Math.round(timeValue * 24 * 3600);
     const absSeconds = Math.max(0, totalSeconds);
@@ -69,6 +88,7 @@ const formatTimeForDisplay = (timeValue: any): string => {
 
 const Leaderboard = () => {
   const { isDark } = useTheme();
+  const shouldReduceMotion = useReducedMotion();
 
   const [allContestData, setAllContestData] = useState<ContestDataMap>({});
   const [fileMissing, setFileMissing] = useState(false);
@@ -82,6 +102,11 @@ const Leaderboard = () => {
 
   const [isSearchModalOpen, setIsSearchModalOpen] = useState(false);
   const [modalSearchValue, setModalSearchValue] = useState("");
+  const searchTriggerRef = useRef<HTMLButtonElement>(null);
+  const searchDialogRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const leaderboardContentRef = useRef<HTMLDivElement>(null);
+  const wasSearchModalOpenRef = useRef(false);
 
   const processAllData = useCallback(async () => {
     const contestMap: ContestDataMap = {};
@@ -102,7 +127,7 @@ const Leaderboard = () => {
         const sheetName = workbook.SheetNames[0];
         const worksheet = workbook.Sheets[sheetName];
 
-        const jsonData: any[] = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
+        const jsonData = XLSX.utils.sheet_to_json<Record<string, unknown>>(worksheet, { defval: "" });
 
         const individualWeekData: LeaderboardEntry[] = [];
 
@@ -181,6 +206,27 @@ const Leaderboard = () => {
     setModalSearchValue("");
   }, [currentView]);
 
+  useEffect(() => {
+    const leaderboardContent = leaderboardContentRef.current;
+    if (leaderboardContent) {
+      leaderboardContent.inert = isSearchModalOpen;
+    }
+
+    if (isSearchModalOpen) {
+      wasSearchModalOpenRef.current = true;
+      searchInputRef.current?.focus();
+    } else if (wasSearchModalOpenRef.current) {
+      wasSearchModalOpenRef.current = false;
+      searchTriggerRef.current?.focus();
+    }
+
+    return () => {
+      if (leaderboardContent) {
+        leaderboardContent.inert = false;
+      }
+    };
+  }, [isSearchModalOpen]);
+
 
   const currentData = useMemo(() => {
     return allContestData[currentView] || [];
@@ -213,7 +259,7 @@ const Leaderboard = () => {
           comparison = String(aValue).localeCompare(String(bValue));
         }
 
-        let finalComparison = sortConfig.direction === 'asc' ? comparison : -comparison;
+        const finalComparison = sortConfig.direction === 'asc' ? comparison : -comparison;
 
         // Tie-breakers
         if (sortConfig.key === 'Score' && finalComparison === 0) {
@@ -235,14 +281,17 @@ const Leaderboard = () => {
 
 
     return dataView;
-  }, [currentData, searchQuery, sortConfig]);
+  }, [currentData, currentView, searchQuery, sortConfig]);
 
   const paginatedData = useMemo(() => {
     const startIndex = (currentPage - 1) * pageSize;
     return processedData.slice(startIndex, startIndex + pageSize);
   }, [processedData, currentPage, pageSize]);
 
-  const totalPages = Math.ceil(processedData.length / pageSize);
+  const totalPages = Math.max(
+    1,
+    Math.ceil(processedData.length / pageSize)
+  );
 
   // --- Event Handlers ---
   const handleSort = (key: keyof LeaderboardEntry) => {
@@ -266,18 +315,70 @@ const Leaderboard = () => {
 
   const handleSearch = () => {
     setSearchQuery(modalSearchValue);
+    setCurrentPage(1);
     setIsSearchModalOpen(false);
   };
 
   const clearSearch = () => {
     setModalSearchValue("");
     setSearchQuery("");
+    setCurrentPage(1);
     setIsSearchModalOpen(false);
   };
 
-  // --- Render Configuration ---
-  const crownColors = ["#FFD700", "#C0C0C0", "#CD7F32"];
+  const handleSearchDialogKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      setIsSearchModalOpen(false);
+      return;
+    }
 
+    if (event.key !== "Tab") return;
+
+    const dialog = searchDialogRef.current;
+    if (!dialog) return;
+
+    const focusableElements = Array.from(
+      dialog.querySelectorAll<HTMLElement>(
+        'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]'
+      )
+    ).filter((element) => {
+      const style = window.getComputedStyle(element);
+      return (
+        !element.hidden &&
+        element.tabIndex >= 0 &&
+        !element.matches(":disabled") &&
+        !element.closest("[inert]") &&
+        element.getAttribute("aria-hidden") !== "true" &&
+        style.display !== "none" &&
+        style.visibility !== "hidden" &&
+        element.getClientRects().length > 0
+      );
+    });
+
+    const firstFocusableElement = focusableElements[0];
+    const lastFocusableElement = focusableElements[focusableElements.length - 1];
+    if (!firstFocusableElement || !lastFocusableElement) return;
+
+    const activeElement = document.activeElement;
+
+    if (!focusableElements.some((element) => element === activeElement)) {
+      event.preventDefault();
+      firstFocusableElement.focus();
+      return;
+    }
+
+    if (event.shiftKey && activeElement === firstFocusableElement) {
+      event.preventDefault();
+      lastFocusableElement.focus();
+    } else if (!event.shiftKey && activeElement === lastFocusableElement) {
+      event.preventDefault();
+      firstFocusableElement.focus();
+    }
+  };
+
+  // --- Render Configuration ---
   const baseColumns: { key: keyof LeaderboardEntry; label: string; }[] = [
     { key: "Name", label: "Name" },
     { key: "Score", label: currentView === 'Cumulative' ? "Total Score" : "Score" },
@@ -290,7 +391,7 @@ const Leaderboard = () => {
   // --- Render ---
   if (loading) {
     return (
-      <div className={`flex flex-col justify-center items-center min-h-screen ${isDark ? "bg-black text-white" : "bg-gray-50 text-gray-900"}`}>
+      <div className="flex min-h-screen flex-col items-center justify-center bg-canvas px-4 text-center text-ink transition-colors duration-500">
         <Loader size={80} />
         <p className="mt-4 text-lg font-medium">Loading Leaderboard Data from all contests...</p>
       </div>
@@ -298,24 +399,52 @@ const Leaderboard = () => {
   }
 
   return (
-    <div className={`min-h-screen pt-24 pb-10 px-4 sm:px-8 transition-colors duration-500 ${isDark ? "bg-black text-gray-200" : "bg-gray-50 text-gray-800"}`}>
-      <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-6">
-          <h1 className={`text-4xl font-semibold tracking-tighter md:text-[54px] md:leading-[60px] pb-2 ${isDark ? "bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-clip-text text-transparent" : "text-gray-900"}`}>{currentView} Leaderboard</h1>
-        </div>
+    <main className="section-glow-subtle min-h-screen bg-canvas text-ink transition-colors duration-500">
+      <div ref={leaderboardContentRef} className="site-container-wide section-space pt-24 lg:pt-section">
+        <motion.header
+          className="mx-auto mb-10 max-w-4xl text-center sm:mb-12"
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            duration: shouldReduceMotion ? 0 : 0.5,
+            ease: [0.16, 1, 0.3, 1],
+          }}
+        >
+          <h1 className="section-heading">
+            <span className="text-gradient-subtle">{currentView} Leaderboard</span>
+          </h1>
+        </motion.header>
 
-        <div className={`rounded-xl border p-4 sm:p-6 shadow-lg ${isDark ? "bg-black border-gray-700" : "bg-white border-gray-200"}`}>
+        <motion.section
+          initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{
+            duration: shouldReduceMotion ? 0 : 0.5,
+            delay: shouldReduceMotion ? 0 : 0.04,
+            ease: [0.16, 1, 0.3, 1],
+          }}
+          className="ui-card top-border-accent-primary overflow-hidden border-primary/25"
+          aria-label="Leaderboard controls and results"
+        >
           {fileMissing ? (
-            <div className="text-center py-12 text-red-500">Could not load any leaderboard data. Please ensure files are correctly named and present in the /public folder.</div>
+            <div
+              className="m-4 rounded-control border border-red-500/20 bg-red-500/5 px-5 py-12 text-center font-medium text-red-600 dark:text-red-300 sm:m-6"
+              role="alert"
+            >
+              Could not load any leaderboard data. Please ensure files are correctly named and present in the /public folder.
+            </div>
           ) : (
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-                <div className="flex items-center gap-2">
-                  <label className="text-sm font-medium">View:</label>
+            <div>
+              <div className="grid gap-4 border-b border-line p-4 sm:p-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+                <div className="min-w-0">
+                  <label htmlFor="leaderboard-view" className="block text-sm font-semibold text-ink-muted">
+                    View:
+                  </label>
                   <select
+                    id="leaderboard-view"
                     value={currentView}
                     onChange={handleViewChange}
-                    className={`p-2 border rounded-md font-semibold transition ${isDark ? "bg-gray-800 border-gray-600 text-white" : "bg-white border-gray-300 text-gray-800"}`}
+                    className="mt-2 min-h-11 w-full rounded-control border border-line-strong bg-surface px-3 py-2 font-semibold text-ink transition-colors focus:border-technical sm:max-w-xs"
                   >
                     {VIEW_OPTIONS.map(view => (
                       <option key={view} value={view}>{view}</option>
@@ -323,67 +452,137 @@ const Leaderboard = () => {
                   </select>
                 </div>
 
-                <div className="flex items-center gap-4 w-full sm:w-auto">
+                <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center lg:justify-end">
                   {searchQuery && (
-                    <div className="flex items-center gap-2 text-sm mr-auto">
-                      <span className="text-gray-400">Searching:</span>
-                      <span className="font-semibold px-2 py-1 rounded-md bg-blue-500/10 text-blue-400">{searchQuery}</span>
-                      <button onClick={clearSearch} className="p-1 rounded-full hover:bg-red-500/10 text-red-400"><X size={16} /></button>
+                    <div className="flex min-w-0 items-center gap-2 rounded-control border border-line bg-surface-muted px-3 py-2 text-sm">
+                      <span className="shrink-0 text-ink-muted">Searching:</span>
+                      <span className="min-w-0 break-all font-semibold text-primary-text">
+                        {searchQuery}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={clearSearch}
+                        className="btn btn-ghost btn-icon ml-auto shrink-0 text-ink-muted hover:text-technical-text focus-visible:outline-offset-2"
+                        aria-label="Clear leaderboard search"
+                        title="Clear search"
+                      >
+                        <X className="size-4" aria-hidden="true" />
+                      </button>
                     </div>
                   )}
                   <button
+                    ref={searchTriggerRef}
+                    type="button"
                     onClick={() => {
                       setModalSearchValue(searchQuery);
                       setIsSearchModalOpen(true);
                     }}
-                    className={`flex items-center justify-center px-4 py-2 border rounded-md font-semibold transition ${isDark ? "bg-gray-800 border-gray-600 hover:bg-gray-700" : "bg-white border-gray-300 hover:bg-gray-100"}`}
+                    className="btn btn-primary w-full shrink-0 sm:w-auto"
+                    aria-haspopup="dialog"
+                    aria-expanded={isSearchModalOpen}
                   >
-                    <Search className="mr-2 h-4 w-4" />
+                    <Search className="size-4" aria-hidden="true" />
                     <span>Search</span>
                   </button>
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full text-left">
+              <div
+                className="max-h-[70vh] overflow-auto border-b border-line bg-surface"
+                role="region"
+                aria-label={currentView + " leaderboard table"}
+                tabIndex={0}
+              >
+                <table
+                  className={currentView !== 'Cumulative'
+                    ? "w-full min-w-[44rem] border-separate border-spacing-0 text-left text-sm"
+                    : "w-full min-w-[36rem] border-separate border-spacing-0 text-left text-sm"
+                  }
+                >
+                  <caption className="sr-only">{currentView} Leaderboard</caption>
                   <thead>
-                    <tr className={`${isDark ? "border-b border-gray-700" : "border-b border-gray-200"}`}>
-                      <th className="p-4 font-semibold">Rank</th>
-                      {columns.map((col) => (
-                        <th
-                          key={col.key}
-                          className="p-4 font-semibold cursor-pointer select-none"
-                          onClick={() => handleSort(col.key)}
-                        >
-                          <div className="flex items-center gap-2">
-                            {col.label}
-                            {sortConfig?.key === col.key && (sortConfig.direction === 'asc' ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />)}
-                          </div>
-                        </th>
-                      ))}
+                    <tr>
+                      <th className="sticky left-0 top-0 z-30 w-20 min-w-20 border-b border-primary/25 bg-surface px-3 py-3 font-semibold text-ink">
+                        Rank
+                      </th>
+                      {columns.map((col) => {
+                        const isNameColumn = col.key === "Name";
+                        return (
+                          <th
+                            key={col.key}
+                            aria-sort={sortConfig?.key === col.key
+                              ? (sortConfig.direction === 'asc' ? 'ascending' : 'descending')
+                              : 'none'
+                            }
+                            className={isNameColumn
+                              ? "sticky left-20 top-0 z-30 min-w-48 border-b border-primary/25 bg-surface p-0 font-semibold text-ink"
+                              : "sticky top-0 z-20 min-w-32 border-b border-primary/25 bg-surface p-0 font-semibold text-ink"
+                            }
+                          >
+                            <button
+                              type="button"
+                              onClick={() => handleSort(col.key)}
+                              className="flex min-h-11 w-full select-none items-center gap-2 px-4 py-3 text-left transition-colors hover:bg-primary/5 hover:text-primary-text focus-visible:outline-offset-[-3px]"
+                              aria-label={"Sort by " + col.label}
+                            >
+                              <span>{col.label}</span>
+                              {sortConfig?.key === col.key && (
+                                sortConfig.direction === 'asc'
+                                  ? <ChevronUp className="size-4 text-technical" aria-hidden="true" />
+                                  : <ChevronDown className="size-4 text-technical" aria-hidden="true" />
+                              )}
+                            </button>
+                          </th>
+                        );
+                      })}
                     </tr>
                   </thead>
                   <tbody>
                     {paginatedData.map((row, index) => {
                       const rank = (currentPage - 1) * pageSize + index + 1;
+                      const topRankStyle = rank <= 3 ? topRankStyles[rank - 1] : undefined;
                       return (
-                        <tr key={row.UniqueKey + row.Score} className={`transition ${isDark ? "hover:bg-gray-900" : "hover:bg-gray-100"}`}>
-                          <td className="p-4">
-                            <div className="flex items-center gap-3 font-medium">
-                              <span className="w-6 text-center text-gray-500">{rank}</span>
-                              {rank <= 3 && <Crown size={18} color={crownColors[rank - 1]} />}
+                        <tr key={row.UniqueKey + row.Score} className="group transition-colors hover:bg-surface-muted">
+                          <td className="sticky left-0 z-10 w-20 min-w-20 border-b border-line bg-surface px-3 py-4 transition-colors group-hover:bg-surface-muted">
+                            <div
+                              className={`flex items-center gap-2 rounded-control border py-1 font-medium ${
+                                topRankStyle
+                                  ? topRankStyle.container
+                                  : "border-transparent bg-transparent"
+                              }`}
+                            >
+                              <span
+                                className={`w-6 text-center tabular-nums ${
+                                  topRankStyle ? topRankStyle.number : "text-ink-muted"
+                                }`}
+                              >
+                                {rank}
+                              </span>
+                              {rank <= 3 && (
+                                <Crown
+                                  size={18}
+                                  className={topRankStyle?.crown}
+                                  aria-hidden="true"
+                                />
+                              )}
                             </div>
                           </td>
-                          <td className="p-4">{row.Name}</td>
-                          <td className="p-4 font-semibold text-yellow-500">{Math.round(row.Score)}</td>
+                          <td className="sticky left-20 z-10 min-w-48 border-b border-line bg-surface px-4 py-4 font-medium text-ink transition-colors group-hover:bg-surface-muted">
+                            {row.Name}
+                          </td>
+                          <td className="min-w-32 border-b border-line px-4 py-4 font-mono font-semibold tabular-nums text-success-text">
+                            {Math.round(row.Score)}
+                          </td>
                           {currentView !== 'Cumulative' && (
-                            <td className="p-4 text-gray-400">{row.TimeDisplay}</td>
+                            <td className="min-w-36 border-b border-line px-4 py-4 font-mono tabular-nums text-ink-muted">
+                              {row.TimeDisplay}
+                            </td>
                           )}
                         </tr>
-                      )
+                      );
                     })}
                     {paginatedData.length === 0 && (
-                      <tr className={`${isDark ? "text-gray-500" : "text-gray-400"}`}>
+                      <tr className="text-ink-subtle">
                         <td colSpan={columns.length + 1} className="p-8 text-center">
                           No results found for "{searchQuery}" in {currentView}.
                         </td>
@@ -393,40 +592,108 @@ const Leaderboard = () => {
                 </table>
               </div>
 
-              <div className="flex items-center justify-between pt-4 flex-wrap gap-4">
-                <div className="flex items-center gap-2 text-sm">
-                  <span>Rows per page:</span>
+              <div className="grid items-center gap-4 p-4 sm:p-6 md:grid-cols-[1fr_auto_1fr]">
+                <div className="flex items-center gap-2 text-sm text-ink-muted">
+                  <label htmlFor="leaderboard-page-size">Rows per page:</label>
                   <select
+                    id="leaderboard-page-size"
                     value={pageSize}
                     onChange={e => { setPageSize(Number(e.target.value)); setCurrentPage(1); }}
-                    className={`p-1 border rounded-md ${isDark ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300"}`}
+                    className="min-h-11 rounded-control border border-line-strong bg-surface px-2 py-1 font-semibold text-ink focus:border-technical"
                   >
                     {[10, 20, 50].map(size => <option key={size} value={size}>{size}</option>)}
                   </select>
                 </div>
-                <div className="text-sm text-gray-500">
+
+                <div className="text-sm font-medium tabular-nums text-ink-muted md:text-center">
                   Page {currentPage} of {totalPages}
                 </div>
-                <div className="flex items-center gap-2">
-                  <button onClick={() => setCurrentPage(1)} disabled={currentPage === 1} className="p-2 border rounded-md disabled:opacity-50"><ChevronsLeft className="h-4 w-4" /></button>
-                  <button onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 1} className="p-2 border rounded-md disabled:opacity-50"><ChevronLeft className="h-4 w-4" /></button>
-                  <button onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage === totalPages} className="p-2 border rounded-md disabled:opacity-50"><ChevronRight className="h-4 w-4" /></button>
-                  <button onClick={() => setCurrentPage(totalPages)} disabled={currentPage === totalPages} className="p-2 border rounded-md disabled:opacity-50"><ChevronsRight className="h-4 w-4" /></button>
+
+                <div className="flex items-center gap-2 md:justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage(1)}
+                    disabled={currentPage === 1}
+                    className="btn btn-secondary btn-icon"
+                    aria-label="First page"
+                    title="First page"
+                  >
+                    <ChevronsLeft className="size-4" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage(p => p - 1)}
+                    disabled={currentPage === 1}
+                    className="btn btn-secondary btn-icon"
+                    aria-label="Previous page"
+                    title="Previous page"
+                  >
+                    <ChevronLeft className="size-4" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage(p => p + 1)}
+                    disabled={currentPage === totalPages}
+                    className="btn btn-secondary btn-icon"
+                    aria-label="Next page"
+                    title="Next page"
+                  >
+                    <ChevronRight className="size-4" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentPage(totalPages)}
+                    disabled={currentPage === totalPages}
+                    className="btn btn-secondary btn-icon"
+                    aria-label="Last page"
+                    title="Last page"
+                  >
+                    <ChevronsRight className="size-4" aria-hidden="true" />
+                  </button>
                 </div>
               </div>
             </div>
           )}
-        </div>
+        </motion.section>
       </div>
+
       {isSearchModalOpen && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-          <div className={`p-6 rounded-lg shadow-xl w-full max-w-sm ${isDark ? "bg-gray-900 border border-gray-700" : "bg-white"}`}>
-            <div>
-              <button onClick={() => setIsSearchModalOpen(false)} className="p-1 mb-4 rounded-full hover:bg-gray-500/10 float-right"><X /></button>
-              <h3 className="text-xl font-semibold mb-4">Search Leaderboard</h3>
+        <div
+          className={isDark
+            ? "fixed inset-0 z-[100] flex items-center justify-center bg-ink-inverse/80 p-4"
+            : "fixed inset-0 z-[100] flex items-center justify-center bg-ink/60 p-4"
+          }
+        >
+          <div
+            ref={searchDialogRef}
+            className="ui-card top-border-accent-primary max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto border-primary/25 p-5 sm:p-6"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="leaderboard-search-title"
+            onKeyDown={handleSearchDialogKeyDown}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <h3 id="leaderboard-search-title" className="font-display text-xl font-semibold text-ink">
+                Search Leaderboard
+              </h3>
+              <button
+                type="button"
+                onClick={() => setIsSearchModalOpen(false)}
+                className="btn btn-ghost btn-icon shrink-0 text-ink-muted hover:text-technical-text"
+                aria-label="Close search dialog"
+                title="Close"
+              >
+                <X className="size-5" aria-hidden="true" />
+              </button>
             </div>
-            <div className="space-y-4">
+
+            <div className="mt-6">
+              <label htmlFor="leaderboard-search-input" className="sr-only">
+                Enter Name to search...
+              </label>
               <input
+                ref={searchInputRef}
+                id="leaderboard-search-input"
                 type="text"
                 value={modalSearchValue}
                 onChange={(e) => setModalSearchValue(e.target.value)}
@@ -434,19 +701,24 @@ const Leaderboard = () => {
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') handleSearch();
                 }}
-                className={`p-3 w-full border rounded-md transition focus:ring-blue-500 focus:border-blue-500 ${isDark ? "bg-gray-800 border-gray-600 text-white" : "bg-white border-gray-300 text-black"}`}
+                className="min-h-11 w-full rounded-control border border-line-strong bg-surface px-3 py-2 text-ink transition-colors placeholder:text-ink-subtle focus:border-technical"
               />
             </div>
 
-            <div className="flex justify-end gap-4 mt-6">
-              <button onClick={clearSearch} className="px-4 py-2 rounded-md font-semibold hover:bg-gray-500/10">Clear Search</button>
-              <button onClick={handleSearch} className="px-4 py-2 rounded-md font-semibold bg-blue-600 text-white hover:bg-blue-700">Search</button>
+            <div className="mt-6 flex flex-col-reverse gap-3 xs:flex-row xs:justify-end">
+              <button type="button" onClick={clearSearch} className="btn btn-secondary w-full xs:w-auto">
+                Clear Search
+              </button>
+              <button type="button" onClick={handleSearch} className="btn btn-primary w-full xs:w-auto">
+                Search
+              </button>
             </div>
           </div>
         </div>
       )}
-    </div>
+    </main>
   );
+
 };
 
 export default Leaderboard;

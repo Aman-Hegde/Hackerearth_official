@@ -1,125 +1,153 @@
-import React from 'react';
-import { BlogPost } from '../lib/resourcesData';
+import type { FC } from 'react';
+import type { BlogPost } from '../lib/resourcesData';
 import { Link } from 'react-router-dom';
+import { motion, useReducedMotion } from 'framer-motion';
 
 interface ResourceCardProps {
   post: BlogPost;
   isDark: boolean;
   className?: string;
+  detailSearch?: string;
+  detailState?: { fromStudentDashboard: true };
 }
 
-const ResourceCard: React.FC<ResourceCardProps> = ({ post, isDark }) => {
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case 'web': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300';
-      case 'dsa': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-      case 'aptitude': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300';
-      case 'system-design': return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
-    }
-  };
+const categoryAccentStyles: Record<
+  BlogPost['category'],
+  { card: string; topBorder: string; chip: string; link: string }
+> = {
+  web: {
+    card: 'border-technical/25 hover:border-technical/45',
+    topBorder: 'top-border-accent-cyan',
+    chip: 'border-technical/25 bg-technical/10 text-technical-text',
+    link: 'text-technical-text'
+  },
+  dsa: {
+    card: 'border-creative/25 hover:border-creative/45',
+    topBorder: 'top-border-accent-violet',
+    chip: 'border-creative/25 bg-creative/10 text-creative-text',
+    link: 'text-creative-text'
+  },
+  aptitude: {
+    card: 'border-highlight/25 hover:border-highlight/45',
+    topBorder: 'top-border-accent-amber',
+    chip: 'border-highlight/25 bg-highlight/10 text-highlight-text',
+    link: 'text-highlight-text'
+  },
+  general: {
+    card: 'border-primary/25 hover:border-primary/45',
+    topBorder: 'top-border-accent-primary',
+    chip: 'border-primary/25 bg-primary/10 text-primary-text',
+    link: 'text-primary-text'
+  }
+};
 
-  const getLevelColor = (level: string) => {
-    switch (level) {
-      case 'beginner': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
-      case 'intermediate': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
-      case 'advanced': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
-      default: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
-    }
-  };
+const ResourceCard: FC<ResourceCardProps> = ({
+  post,
+  isDark,
+  className = '',
+  detailSearch = '',
+  detailState,
+}) => {
+  const shouldReduceMotion = useReducedMotion();
+  const accent = categoryAccentStyles[post.category] || categoryAccentStyles.general;
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'youtube': return '🎬';
-      case 'article': return '📚';
-      case 'documentation': return '📄';
-      default: return '🔗';
+      case 'youtube': return '\uD83C\uDFAC';
+      case 'article': return '\uD83D\uDCDA';
+      case 'documentation': return '\uD83D\uDCC4';
+      default: return '\uD83D\uDD17';
     }
   };
 
   return (
-    <article className={`group py-6 transition-all duration-300 ${
-      isDark ? "border-gray-800" : "border-gray-200"
-    }`}>
-      <div className={`space-y-2 xl:grid xl:grid-cols-4 xl:items-baseline xl:space-y-0 p-6 rounded-2xl ${
-        isDark ? "bg-black" : "bg-white"  // CHANGED HERE - added background colors
-      }`}>
-        <dl>
-          <dt className="sr-only">Published on</dt>
-          <dd className={`text-base font-medium leading-6 ${
-            isDark ? "text-gray-500" : "text-gray-400"
-          }`}>
-            <time dateTime={post.date}>
-              {new Date(post.date).toLocaleDateString('en-US', {
-                year: 'numeric',
-                month: 'long',
-                day: 'numeric'
-              })}
-            </time>
-          </dd>
-        </dl>
-        
-        <div className="space-y-5 xl:col-span-3">
-          <div className="space-y-6">
-            <div>
-              <h2 className={`text-2xl font-bold leading-8 tracking-tight ${
-                isDark ? "text-white" : "text-gray-900"
-              }`}>
-                <Link 
-                  to={`/domains/${post.slug}`}
-                  className="transition-colors hover:text-blue-600 dark:hover:text-blue-400"
-                >
-                  {post.title}
-                </Link>
-              </h2>
-              
-              <div className="flex flex-wrap gap-2 mt-3">
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getCategoryColor(post.category)}`}>
-                  {post.category === 'web' ? 'Web Development' : 
-                   post.category === 'dsa' ? 'Data Structures and Algorithms' : 
-                   post.category === 'aptitude' ? 'Aptitude' : 'System Design'}
-                </span>
-                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getLevelColor(post.level)}`}>
-                  {post.level}
-                </span>
-                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
-                  {getTypeIcon(post.type)} {post.type}
-                </span>
-                {post.week && (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300">
-                    Week {post.week}
-                  </span>
-                )}
-              </div>
-            </div>
-            
-            <div className={`prose max-w-none ${
-              isDark ? "text-gray-400" : "text-gray-500"
-            }`}>
-              {post.description}
-            </div>
+    <motion.article
+      initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      whileHover={shouldReduceMotion ? undefined : { y: -4 }}
+      transition={{
+        duration: shouldReduceMotion ? 0 : 0.5,
+        ease: [0.16, 1, 0.3, 1]
+      }}
+      viewport={{ once: true, amount: 0.2 }}
+      className={`ui-card flex h-full min-w-0 flex-col overflow-hidden transition-colors duration-300 hover:shadow-surface ${accent.card} ${accent.topBorder} ${className}`}
+      data-color-scheme={isDark ? 'dark' : 'light'}
+    >
+      <div className="flex h-full flex-col p-5 sm:p-6">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <dl>
+            <dt className="sr-only">Published on</dt>
+            <dd className="font-mono text-xs font-medium text-ink-subtle">
+              <time dateTime={post.date}>
+                {new Date(post.date).toLocaleDateString('en-US', {
+                  year: 'numeric',
+                  month: 'long',
+                  day: 'numeric'
+                })}
+              </time>
+            </dd>
+          </dl>
+
+          <div className="flex flex-wrap justify-end gap-2">
+            <span className={`inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium ${accent.chip}`}>
+              {post.category === 'web' ? 'Web Development' :
+               post.category === 'dsa' ? 'Data Structures and Algorithms' :
+               post.category === 'aptitude' ? 'Aptitude' : 'System Design'}
+            </span>
+            <span className="inline-flex items-center rounded-full border border-line bg-surface-muted px-2.5 py-1 text-xs font-medium text-ink-muted">
+              {post.level}
+            </span>
+            <span className="inline-flex items-center rounded-full border border-line bg-surface-muted px-2.5 py-1 text-xs font-medium text-ink-muted">
+              {getTypeIcon(post.type)} {post.type}
+            </span>
+            {post.week && (
+              <span className="inline-flex items-center rounded-full border border-primary/20 bg-primary/5 px-2.5 py-1 text-xs font-medium text-primary-text">
+                Week {post.week}
+              </span>
+            )}
           </div>
-          
-          <div className="flex items-center justify-between text-base font-medium leading-6">
-            <Link 
-              to={`/domains/${post.slug}`}
-              className="text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
-              aria-label={`Read more: "${post.title}"`}
+        </div>
+
+        <h2 className="mt-5 font-display text-2xl font-semibold leading-tight text-ink">
+          <Link
+            to={`/domains/${post.slug}${detailSearch}`}
+            state={detailState}
+            className={`transition-colors hover:underline hover:underline-offset-4 focus-visible:outline-offset-4 ${accent.link}`}
+          >
+            {post.title}
+          </Link>
+        </h2>
+
+        <p className="mt-4 text-sm leading-relaxed text-ink-muted">
+          {post.description}
+        </p>
+
+        <div className="mt-auto flex flex-col gap-4 border-t border-line pt-5 sm:flex-row sm:items-center sm:justify-between">
+          <Link
+            to={`/domains/${post.slug}${detailSearch}`}
+            state={detailState}
+            className={`group/read inline-flex min-h-11 items-center gap-1 py-2 font-semibold transition-colors hover:underline hover:underline-offset-4 focus-visible:outline-offset-2 ${accent.link}`}
+            aria-label={`Read more: "${post.title}"`}
+          >
+            <span>Read more</span>
+            <span
+              className={`transition-transform duration-200 ${
+                shouldReduceMotion ? '' : 'group-hover/read:translate-x-0.5'
+              }`}
+              aria-hidden="true"
             >
-              Read more &rarr;
-            </Link>
-            
-            <div className={`flex items-center space-x-2 ${
-              isDark ? "text-gray-500" : "text-gray-400"
-            }`}>
-              <span>{post.readTime}</span>
-              <span>•</span>
-              <span>{post.author.name}</span>
-            </div>
+              &rarr;
+            </span>
+          </Link>
+
+          <div className="flex flex-wrap items-center gap-2 text-sm text-ink-subtle">
+            <span>{post.readTime}</span>
+            <span>&bull;</span>
+            <span>{post.author.name}</span>
           </div>
         </div>
       </div>
-    </article>
+    </motion.article>
   );
 };
 
