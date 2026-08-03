@@ -12,16 +12,27 @@ interface NavbarProps {
 
 const navItems = [
   { name: 'Events', href: '/events' },
-  { name: 'Leaderboard', href: '/leaderboard' },
+  { name: 'Leaderboard', disabled: true },
   { name: 'Team', href: '/team' },
   { name: 'Domains', href: '/domains' },
   { name: 'Contact', href: '/contact' },
-];
+] as const;
+
+const studentDashboardNavItems = [
+  { name: 'Home', href: '/' },
+  { name: 'Dashboard', target: 'student-dashboard-top' },
+  { name: 'Events & Tasks', target: 'student-events-tasks' },
+  { name: 'Resources', target: 'student-resources' },
+  { name: 'My Domains', target: 'student-domains' },
+  { name: 'Leaderboard', disabled: true },
+  { name: 'Contact', href: '/contact' },
+] as const;
 
 const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [containsFocus, setContainsFocus] = useState(false);
+  const [activeDashboardSection, setActiveDashboardSection] = useState('student-dashboard-top');
   const lastScrollY = useRef(0);
   const navRef = useRef<HTMLElement>(null);
   const shouldReduceMotion = useReducedMotion() ?? false;
@@ -30,6 +41,7 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
   const { isDark, toggleTheme } = useTheme();
   const { pathname } = useLocation();
   const displayedUsername = user?.name || user?.email?.split('@')[0];
+  const isStudentDashboard = pathname === '/student/dashboard';
 
   useEffect(() => {
     const scrollContainer = document.getElementById('scroll-container');
@@ -64,6 +76,14 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
   const handleLogout = async () => {
     await logout();
     navigate('/login');
+  };
+
+  const scrollToDashboardSection = (target: string) => {
+    setActiveDashboardSection(target);
+    document.getElementById(target)?.scrollIntoView({
+      behavior: shouldReduceMotion ? 'auto' : 'smooth',
+      block: 'start',
+    });
   };
 
   const handleBlurCapture = (event: FocusEvent<HTMLElement>) => {
@@ -121,48 +141,114 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
             </span>
           </Link>
 
-          <div className="pointer-events-auto ml-auto hidden min-w-0 items-center gap-2 lg:flex xl:gap-3">
-            <div className="flex min-w-0 shrink items-center gap-0.5 rounded-2xl border border-line bg-surface-muted/80 p-1 shadow-soft xl:gap-1">
-              <Link
-                to="/"
-                aria-label="Home"
-                title="Home"
-                aria-current={isActive('/') ? 'page' : undefined}
-                className={`relative flex size-11 shrink-0 items-center justify-center rounded-xl border transition duration-200 focus-visible:outline-offset-2 ${
-                  isActive('/') ? activePillClass : inactivePillClass
-                }`}
-              >
-                <Home className="size-4" aria-hidden="true" />
-                {isActive('/') && (
-                  <span
-                    className="absolute -bottom-0.5 left-1/2 h-[3px] w-6 -translate-x-1/2 rounded-full bg-technical shadow-soft"
-                    aria-hidden="true"
-                  />
-                )}
-              </Link>
+          <div
+            className={`pointer-events-auto ml-auto min-w-0 items-center gap-2 xl:gap-3 ${
+              isStudentDashboard ? 'hidden xl:flex' : 'hidden lg:flex'
+            }`}
+          >
+            {isStudentDashboard ? (
+              <div className="flex min-w-0 shrink items-center gap-0.5 rounded-2xl border border-line bg-surface-muted/80 p-1 shadow-soft">
+                {studentDashboardNavItems.map((item) => {
+                  const isDisabled = 'disabled' in item && item.disabled;
+                  const isSectionItem = 'target' in item;
+                  const active = !isDisabled && isSectionItem && activeDashboardSection === item.target;
+                  const className = `relative flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-xl border px-2 py-2 text-[0.625rem] font-semibold transition duration-200 focus-visible:outline-offset-2 xl:px-3 xl:text-xs ${
+                    isDisabled
+                      ? 'cursor-not-allowed select-none border-transparent text-ink-subtle opacity-60'
+                      : active
+                        ? activePillClass
+                        : inactivePillClass
+                  }`;
 
-              {navItems.map((item) => {
-                const active = isActive(item.href);
-                return (
-                  <Link
-                    key={item.name}
-                    to={item.href}
-                    aria-current={active ? 'page' : undefined}
-                    className={`relative flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-xl border px-2.5 py-2 text-[0.6875rem] font-semibold transition duration-200 focus-visible:outline-offset-2 xl:px-4 xl:text-sm ${
-                      active ? activePillClass : inactivePillClass
-                    }`}
-                  >
-                    {item.name}
-                    {active && (
+                  return isDisabled ? (
+                    <span
+                      key={item.name}
+                      aria-disabled="true"
+                      title="Temporarily unavailable"
+                      className={className}
+                    >
+                      {item.name}
+                    </span>
+                  ) : isSectionItem ? (
+                    <button
+                      key={item.name}
+                      type="button"
+                      onClick={() => scrollToDashboardSection(item.target)}
+                      aria-current={active ? 'location' : undefined}
+                      className={className}
+                    >
+                      {item.name}
+                      {active && (
+                        <span
+                          className="absolute -bottom-0.5 left-1/2 h-[3px] w-6 -translate-x-1/2 rounded-full bg-technical shadow-soft"
+                          aria-hidden="true"
+                        />
+                      )}
+                    </button>
+                  ) : (
+                    <Link key={item.name} to={item.href} className={className}>
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex min-w-0 shrink items-center gap-0.5 rounded-2xl border border-line bg-surface-muted/80 p-1 shadow-soft xl:gap-1">
+                <Link
+                  to="/"
+                  aria-label="Home"
+                  title="Home"
+                  aria-current={isActive('/') ? 'page' : undefined}
+                  className={`relative flex size-11 shrink-0 items-center justify-center rounded-xl border transition duration-200 focus-visible:outline-offset-2 ${
+                    isActive('/') ? activePillClass : inactivePillClass
+                  }`}
+                >
+                  <Home className="size-4" aria-hidden="true" />
+                  {isActive('/') && (
+                    <span
+                      className="absolute -bottom-0.5 left-1/2 h-[3px] w-6 -translate-x-1/2 rounded-full bg-technical shadow-soft"
+                      aria-hidden="true"
+                    />
+                  )}
+                </Link>
+
+                {navItems.map((item) => {
+                  const isDisabled = 'disabled' in item && item.disabled;
+                  if (isDisabled) {
+                    return (
                       <span
-                        className="absolute -bottom-0.5 left-1/2 h-[3px] w-6 -translate-x-1/2 rounded-full bg-technical shadow-soft"
-                        aria-hidden="true"
-                      />
-                    )}
-                  </Link>
-                );
-              })}
-            </div>
+                        key={item.name}
+                        aria-disabled="true"
+                        title="Temporarily unavailable"
+                        className="relative flex min-h-11 shrink-0 cursor-not-allowed select-none items-center whitespace-nowrap rounded-xl border border-transparent px-2.5 py-2 text-[0.6875rem] font-semibold text-ink-subtle opacity-60 xl:px-4 xl:text-sm"
+                      >
+                        {item.name}
+                      </span>
+                    );
+                  }
+
+                  const active = isActive(item.href);
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      aria-current={active ? 'page' : undefined}
+                      className={`relative flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-xl border px-2.5 py-2 text-[0.6875rem] font-semibold transition duration-200 focus-visible:outline-offset-2 xl:px-4 xl:text-sm ${
+                        active ? activePillClass : inactivePillClass
+                      }`}
+                    >
+                      {item.name}
+                      {active && (
+                        <span
+                          className="absolute -bottom-0.5 left-1/2 h-[3px] w-6 -translate-x-1/2 rounded-full bg-technical shadow-soft"
+                          aria-hidden="true"
+                        />
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
 
             <div className="flex min-w-0 shrink-0 items-center gap-2">
               <button
@@ -208,7 +294,11 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
             </div>
           </div>
 
-          <div className="pointer-events-auto flex shrink-0 items-center gap-2 lg:hidden">
+          <div
+            className={`pointer-events-auto shrink-0 items-center gap-2 ${
+              isStudentDashboard ? 'flex xl:hidden' : 'flex lg:hidden'
+            }`}
+          >
             <button
               onClick={toggleTheme}
               aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}

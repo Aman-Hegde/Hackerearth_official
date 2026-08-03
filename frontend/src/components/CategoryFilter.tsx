@@ -1,10 +1,13 @@
 import type { FC } from 'react';
-import { categories } from '../lib/resourcesData';
+import { categories as allCategories } from '../lib/resourcesData';
+
+type Category = (typeof allCategories)[number];
 
 interface CategoryFilterProps {
   activeCategory: string;
   onCategoryChange: (category: string) => void;
   isDark: boolean;
+  categories?: Category[];
 }
 
 const activeCategoryStyles: Record<string, { button: string; count: string }> = {
@@ -29,7 +32,8 @@ const activeCategoryStyles: Record<string, { button: string; count: string }> = 
 const CategoryFilter: FC<CategoryFilterProps> = ({
   activeCategory,
   onCategoryChange,
-  isDark
+  isDark,
+  categories = allCategories,
 }) => {
   return (
     <div

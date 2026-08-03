@@ -7,6 +7,8 @@ interface ResourceCardProps {
   post: BlogPost;
   isDark: boolean;
   className?: string;
+  detailSearch?: string;
+  detailState?: { fromStudentDashboard: true };
 }
 
 const categoryAccentStyles: Record<
@@ -39,7 +41,13 @@ const categoryAccentStyles: Record<
   }
 };
 
-const ResourceCard: FC<ResourceCardProps> = ({ post, isDark, className = '' }) => {
+const ResourceCard: FC<ResourceCardProps> = ({
+  post,
+  isDark,
+  className = '',
+  detailSearch = '',
+  detailState,
+}) => {
   const shouldReduceMotion = useReducedMotion();
   const accent = categoryAccentStyles[post.category] || categoryAccentStyles.general;
 
@@ -102,7 +110,8 @@ const ResourceCard: FC<ResourceCardProps> = ({ post, isDark, className = '' }) =
 
         <h2 className="mt-5 font-display text-2xl font-semibold leading-tight text-ink">
           <Link
-            to={`/domains/${post.slug}`}
+            to={`/domains/${post.slug}${detailSearch}`}
+            state={detailState}
             className={`transition-colors hover:underline hover:underline-offset-4 focus-visible:outline-offset-4 ${accent.link}`}
           >
             {post.title}
@@ -115,7 +124,8 @@ const ResourceCard: FC<ResourceCardProps> = ({ post, isDark, className = '' }) =
 
         <div className="mt-auto flex flex-col gap-4 border-t border-line pt-5 sm:flex-row sm:items-center sm:justify-between">
           <Link
-            to={`/domains/${post.slug}`}
+            to={`/domains/${post.slug}${detailSearch}`}
+            state={detailState}
             className={`group/read inline-flex min-h-11 items-center gap-1 py-2 font-semibold transition-colors hover:underline hover:underline-offset-4 focus-visible:outline-offset-2 ${accent.link}`}
             aria-label={`Read more: "${post.title}"`}
           >

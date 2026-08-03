@@ -186,9 +186,9 @@ export const ResourceDisplay = ({ resourceSections }: ResourceDisplayProps) => {
   const accent = categoryAccentStyles[category] || categoryAccentStyles.general;
 
   return (
-    <div className="space-y-12 sm:space-y-16">
+    <div className="w-full space-y-12 sm:space-y-16">
       {resourceSections.map((section, sectionIndex) => (
-        <section key={sectionIndex}>
+        <section key={sectionIndex} className="w-full">
           <SectionHeader
             title={section.title}
             description={section.description}
@@ -197,7 +197,7 @@ export const ResourceDisplay = ({ resourceSections }: ResourceDisplayProps) => {
             shouldReduceMotion={shouldReduceMotion}
           />
 
-          <div className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-2">
+          <div className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3">
             {section.resources.map((resource, resourceIndex) => (
               <ResourceItem
                 key={resourceIndex}

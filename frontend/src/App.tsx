@@ -9,7 +9,7 @@ import PastEvents from "./pages/Events";
 import Team from "./pages/Team";
 import Domains from "./pages/Domains";
 import BlogPostPage from "./pages/BlogPostPage";
-import Leaderboard from "./pages/Leaderboard";
+import StudentDashboard from "./pages/StudentDashboard";
 // import About from "./pages/About";
 import Contact from "./pages/Contact";
 import LoginPage from "./pages/Login";
@@ -120,7 +120,7 @@ function AppWrapper() {
             <Route path="/domains" element={<Domains />} />
             <Route path="/domains/:slug" element={<BlogPostPage />} />
           </Route>
-          <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/leaderboard" element={<Navigate to="/" replace />} />
           {/* <Route path="/about" element={<About />} /> */}
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<LoginPage />} />
@@ -130,7 +130,7 @@ function AppWrapper() {
           <Route path="/forgot-password/verify-otp" element={<ForgotPasswordOtpPage />} />
           <Route path="/forgot-password/change-password" element={<ChangeForgottenPasswordPage />} />
           <Route element={<RoleRoute allowedRoles={["student"]} />}>
-            <Route path="/student/dashboard/*" element={<DashboardRoutePlaceholder role="student" />} />
+            <Route path="/student/dashboard/*" element={<StudentDashboard />} />
           </Route>
           <Route element={<RoleRoute allowedRoles={["admin"]} />}>
             <Route path="/admin/dashboard/*" element={<DashboardRoutePlaceholder role="admin" />} />

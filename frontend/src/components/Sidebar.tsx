@@ -1,6 +1,20 @@
-import { useEffect, useRef, type FC } from 'react';
+import { useEffect, useRef, useState, type FC } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Award, Calendar, Code, Home, LogOut, Mail, User, Users, X } from 'lucide-react';
+import {
+  Award,
+  BookOpen,
+  Calendar,
+  CalendarCheck,
+  Code,
+  Home,
+  LayoutDashboard,
+  LogOut,
+  Mail,
+  Shapes,
+  User,
+  Users,
+  X,
+} from 'lucide-react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
 
@@ -14,9 +28,19 @@ const navItems = [
   { name: 'Events', path: '/events', icon: Calendar },
   { name: 'Team', path: '/team', icon: Users },
   { name: 'Domains', path: '/domains', icon: Code },
-  { name: 'Leaderboard', path: '/leaderboard', icon: Award },
+  { name: 'Leaderboard', disabled: true, icon: Award },
   { name: 'Contact', path: '/contact', icon: Mail },
-];
+] as const;
+
+const studentDashboardNavItems = [
+  { name: 'Home', path: '/', icon: Home },
+  { name: 'Dashboard', target: 'student-dashboard-top', icon: LayoutDashboard },
+  { name: 'Events & Tasks', target: 'student-events-tasks', icon: CalendarCheck },
+  { name: 'Resources', target: 'student-resources', icon: BookOpen },
+  { name: 'My Domains', target: 'student-domains', icon: Shapes },
+  { name: 'Leaderboard', disabled: true, icon: Award },
+  { name: 'Contact', path: '/contact', icon: Mail },
+] as const;
 
 const restoreSidebarToggleFocus = () => {
   window.requestAnimationFrame(() => {
@@ -31,11 +55,14 @@ const restoreSidebarToggleFocus = () => {
 
 const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
   const { pathname } = useLocation();
+  const [activeDashboardSection, setActiveDashboardSection] = useState('student-dashboard-top');
   const navigate = useNavigate();
   const { user, logout, isAuthenticated } = useAuth();
   const sidebarRef = useRef<HTMLElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const shouldReduceMotion = useReducedMotion() ?? false;
+  const isStudentDashboard = pathname === '/student/dashboard';
+  const displayedNavItems = isStudentDashboard ? studentDashboardNavItems : navItems;
 
   const isActive = (path: string) =>
     path === '/' ? pathname === '/' : pathname === path || pathname.startsWith(`${path}/`);
@@ -46,7 +73,9 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
   };
 
   useEffect(() => {
-    const desktopViewport = window.matchMedia('(min-width: 1024px)');
+    const desktopViewport = window.matchMedia(
+      isStudentDashboard ? '(min-width: 1280px)' : '(min-width: 1024px)',
+    );
     const closeOutsideMobile = () => {
       if (desktopViewport.matches) setIsOpen(false);
     };
@@ -54,10 +83,11 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
     closeOutsideMobile();
     desktopViewport.addEventListener('change', closeOutsideMobile);
     return () => desktopViewport.removeEventListener('change', closeOutsideMobile);
-  }, [setIsOpen]);
+  }, [isStudentDashboard, setIsOpen]);
 
   useEffect(() => {
-    if (!isOpen || window.matchMedia('(min-width: 1024px)').matches) return;
+    const desktopQuery = isStudentDashboard ? '(min-width: 1280px)' : '(min-width: 1024px)';
+    if (!isOpen || window.matchMedia(desktopQuery).matches) return;
 
     const scrollTarget = document.getElementById('scroll-container') ?? document.body;
     const previousOverflow = scrollTarget.style.overflow;
@@ -107,12 +137,23 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
       document.removeEventListener('keydown', handleKeyDown);
       scrollTarget.style.overflow = previousOverflow;
     };
-  }, [isOpen, setIsOpen]);
+  }, [isOpen, isStudentDashboard, setIsOpen]);
 
   const handleLogout = async () => {
     await logout();
     setIsOpen(false);
     navigate('/login');
+  };
+
+  const scrollToDashboardSection = (target: string) => {
+    setActiveDashboardSection(target);
+    closeSidebar();
+    window.requestAnimationFrame(() => {
+      document.getElementById(target)?.scrollIntoView({
+        behavior: shouldReduceMotion ? 'auto' : 'smooth',
+        block: 'start',
+      });
+    });
   };
 
   return (
@@ -121,7 +162,9 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
         {isOpen && (
           <motion.div
             aria-hidden="true"
-            className="fixed inset-0 z-[55] bg-canvas/70 backdrop-blur-sm lg:hidden"
+            className={`fixed inset-0 z-[55] bg-canvas/70 backdrop-blur-sm ${
+              isStudentDashboard ? 'xl:hidden' : 'lg:hidden'
+            }`}
             initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={shouldReduceMotion ? { opacity: 1 } : { opacity: 0 }}
@@ -140,7 +183,9 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
             aria-modal="true"
             aria-labelledby="sidebar-heading"
             tabIndex={-1}
-            className="fixed inset-y-0 left-0 z-[60] flex w-[min(19rem,88vw)] flex-col overflow-hidden rounded-r-card border-r border-line bg-surface/95 text-ink shadow-surface backdrop-blur-xl lg:hidden"
+            className={`fixed inset-y-0 left-0 z-[60] w-[min(19rem,88vw)] flex-col overflow-hidden rounded-r-card border-r border-line bg-surface/95 text-ink shadow-surface backdrop-blur-xl ${
+              isStudentDashboard ? 'flex xl:hidden' : 'flex lg:hidden'
+            }`}
             initial={shouldReduceMotion ? { x: 0 } : { x: '-100%' }}
             animate={{ x: 0 }}
             exit={shouldReduceMotion ? { x: 0 } : { x: '-100%' }}
@@ -189,55 +234,91 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
             <div className="flex-1 overflow-y-auto">
               <nav className="px-2 py-3" aria-label="Mobile navigation">
                 <ul className="space-y-1.5">
-                  {navItems.map((item) => {
+                  {displayedNavItems.map((item) => {
                     const Icon = item.icon;
-                    const active = isActive(item.path);
+                    const isDisabled = 'disabled' in item && item.disabled;
+                    const isSectionItem = 'target' in item;
+                    const active = isDisabled
+                      ? false
+                      : isSectionItem
+                        ? activeDashboardSection === item.target
+                        : isActive(item.path);
+                    const itemClassName = `group relative flex min-h-12 w-full items-center overflow-hidden rounded-control border px-3 text-left transition duration-200 ${
+                      isDisabled
+                        ? 'cursor-not-allowed select-none border-transparent text-ink-subtle opacity-60'
+                        : active
+                        ? 'border-primary bg-primary/10 text-primary-text'
+                        : 'border-transparent text-ink-muted hover:border-line hover:bg-surface-muted hover:text-ink'
+                    }`;
+                    const itemContent = (
+                      <>
+                        {active && (
+                          <motion.span
+                            layoutId="sidebar-active"
+                            className="absolute bottom-2 left-0 top-2 w-0.5 rounded-r-full bg-gradient-to-b from-primary to-technical"
+                            transition={
+                              shouldReduceMotion
+                                ? { duration: 0 }
+                                : { type: 'spring', stiffness: 380, damping: 32 }
+                            }
+                            aria-hidden="true"
+                          />
+                        )}
+
+                        <span
+                          className={`relative z-10 flex size-8 shrink-0 items-center justify-center rounded-lg transition ${
+                            isDisabled
+                              ? 'text-ink-subtle'
+                              : active
+                              ? 'bg-primary/10 text-primary-text'
+                              : 'text-ink-subtle group-hover:text-ink'
+                          }`}
+                        >
+                          <Icon className="size-5" aria-hidden="true" />
+                        </span>
+
+                        <span className="relative z-10 ml-2.5 whitespace-nowrap text-sm font-semibold">
+                          {item.name}
+                        </span>
+                      </>
+                    );
 
                     return (
                       <motion.li
                         key={item.name}
-                        whileHover={shouldReduceMotion ? undefined : { x: 2 }}
-                        whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
+                        whileHover={isDisabled || shouldReduceMotion ? undefined : { x: 2 }}
+                        whileTap={isDisabled || shouldReduceMotion ? undefined : { scale: 0.98 }}
                         transition={{ duration: shouldReduceMotion ? 0 : 0.16 }}
                       >
-                        <Link
-                          to={item.path}
-                          onClick={() => closeSidebar()}
-                          aria-label={item.name}
-                          aria-current={active ? 'page' : undefined}
-                          className={`group relative flex min-h-12 items-center overflow-hidden rounded-control border px-3 transition duration-200 ${
-                            active
-                              ? 'border-primary bg-primary/10 text-primary-text'
-                              : 'border-transparent text-ink-muted hover:border-line hover:bg-surface-muted hover:text-ink'
-                          }`}
-                        >
-                          {active && (
-                            <motion.span
-                              layoutId="sidebar-active"
-                              className="absolute bottom-2 left-0 top-2 w-0.5 rounded-r-full bg-gradient-to-b from-primary to-technical"
-                              transition={
-                                shouldReduceMotion
-                                  ? { duration: 0 }
-                                  : { type: 'spring', stiffness: 380, damping: 32 }
-                              }
-                              aria-hidden="true"
-                            />
-                          )}
-
+                        {isDisabled ? (
                           <span
-                            className={`relative z-10 flex size-8 shrink-0 items-center justify-center rounded-lg transition ${
-                              active
-                                ? 'bg-primary/10 text-primary-text'
-                                : 'text-ink-subtle group-hover:text-ink'
-                            }`}
+                            aria-disabled="true"
+                            title="Temporarily unavailable"
+                            className={itemClassName}
                           >
-                            <Icon className="size-5" aria-hidden="true" />
+                            {itemContent}
                           </span>
-
-                          <span className="relative z-10 ml-2.5 whitespace-nowrap text-sm font-semibold">
-                            {item.name}
-                          </span>
-                        </Link>
+                        ) : isSectionItem ? (
+                          <button
+                            type="button"
+                            onClick={() => scrollToDashboardSection(item.target)}
+                            aria-label={item.name}
+                            aria-current={active ? 'location' : undefined}
+                            className={itemClassName}
+                          >
+                            {itemContent}
+                          </button>
+                        ) : (
+                          <Link
+                            to={item.path}
+                            onClick={() => closeSidebar()}
+                            aria-label={item.name}
+                            aria-current={active ? 'page' : undefined}
+                            className={itemClassName}
+                          >
+                            {itemContent}
+                          </Link>
+                        )}
                       </motion.li>
                     );
                   })}

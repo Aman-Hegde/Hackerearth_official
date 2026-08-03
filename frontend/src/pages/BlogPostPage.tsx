@@ -1,9 +1,14 @@
 import React from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useLocation, useParams, Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { blogPosts, type BlogPost } from '../lib/resourcesData';
 import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/AuthContext';
 import ResourceDisplay from '../components/ResourceDisplay';
+import {
+  getEnrolledResourceCategories,
+  isStudentResourceOrigin,
+} from '../lib/studentResources';
 
 const categoryPresentation: Record<BlogPost['category'], {
   glow: string;
@@ -44,12 +49,19 @@ const categoryPresentation: Record<BlogPost['category'], {
 
 const BlogPostPage: React.FC = () => {
   const { slug } = useParams<{ slug: string }>();
+  const location = useLocation();
   const { isDark } = useTheme();
+  const { user } = useAuth();
   const shouldReduceMotion = useReducedMotion() ?? false;
+  const fromStudentDashboard =
+    user?.role === 'student' && isStudentResourceOrigin(location.search, location.state);
 
   const post = blogPosts.find(p => p.slug === slug);
+  const enrolledCategories = getEnrolledResourceCategories(user);
+  const canViewStudentResource =
+    !fromStudentDashboard || (post ? enrolledCategories.has(post.category) : false);
 
-  if (!post) {
+  if (!post || !canViewStudentResource) {
     return (
       <main
         className="section-glow-subtle min-h-screen overflow-x-hidden bg-canvas text-ink transition-colors duration-500"
@@ -66,9 +78,16 @@ const BlogPostPage: React.FC = () => {
             }}
             className="ui-card top-border-accent-primary mx-auto max-w-2xl p-6 text-center sm:p-10"
           >
-            <h1 className="font-display text-title text-ink">Post not found</h1>
+            <h1 className="font-display text-title text-ink">
+              {post ? 'Resource unavailable' : 'Post not found'}
+            </h1>
+            {post && (
+              <p className="mt-3 text-sm leading-6 text-ink-muted">
+                This resource is outside your enrolled domains.
+              </p>
+            )}
             <Link to="/domains" className="btn btn-secondary mt-6">
-              &larr; Back to resources
+              &larr; Back to Blog
             </Link>
           </motion.div>
         </div>
@@ -84,7 +103,7 @@ const BlogPostPage: React.FC = () => {
       data-color-scheme={isDark ? 'dark' : 'light'}
     >
       <div className="site-container-wide pb-section pt-28 sm:pt-32">
-        <div className="mx-auto max-w-5xl">
+        <div>
           {/* Back to blog */}
           <motion.nav
             initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
@@ -97,7 +116,7 @@ const BlogPostPage: React.FC = () => {
             aria-label="Resource navigation"
           >
             <Link to="/domains" className="btn btn-secondary">
-              &larr; Back to blog
+              &larr; Back to Blog
             </Link>
           </motion.nav>
 
@@ -152,71 +171,64 @@ const BlogPostPage: React.FC = () => {
                 delay: shouldReduceMotion ? 0 : 0.08,
                 ease: [0.16, 1, 0.3, 1]
               }}
-              className="mt-8 grid min-w-0 items-start gap-8 lg:grid-cols-[14rem_minmax(0,1fr)] lg:gap-10"
+              className="mt-8 min-w-0"
             >
-              {/* Author sidebar */}
-              <aside className={`ui-card p-5 lg:sticky lg:top-28 ${accent.topBorder}`} aria-label="Resource author and source">
-                <dl>
-                  <dt className="sr-only">Authors</dt>
-                  <dd>
-                    <ul>
-                      <li className="flex items-center gap-3">
-                        <div className={`flex size-11 shrink-0 items-center justify-center rounded-full border text-sm font-bold shadow-soft ${accent.icon}`}>
-                          {post.author.name.charAt(0)}
-                        </div>
-                        <dl className="min-w-0 text-sm font-medium leading-5">
-                          <dt className="sr-only">Name</dt>
-                          <dd className="break-words text-ink">{post.author.name}</dd>
-                          <dt className="sr-only">Source</dt>
-                          <dd className="mt-1">
-                            <a
-                              href={post.link}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={`break-words font-semibold underline underline-offset-4 transition-colors focus-visible:outline-offset-2 ${accent.text}`}
-                            >
-                              {post.source}
-                            </a>
-                          </dd>
-                        </dl>
-                      </li>
-                    </ul>
-                  </dd>
-                </dl>
-              </aside>
-
-              {/* Main content */}
-              <div className="min-w-0">
-                <div className={isDark
-                  ? "prose prose-lg mx-auto min-w-0 max-w-reading break-words prose-invert"
-                  : "prose prose-lg mx-auto min-w-0 max-w-reading break-words"
-                }>
-                  {/* Render the rich HTML content from the content field */}
-                  <div dangerouslySetInnerHTML={{ __html: post.content }} />
-                </div>
-
-                {/* Resource Display Section */}
-                {post.resourceSections && (
-                  <div className={`mt-12 pt-10 ${accent.topBorder}`}>
-                    <ResourceDisplay resourceSections={post.resourceSections} />
-                  </div>
-                )}
-
-                {/* Tags */}
-                <div className="mt-10 border-t border-line pt-6">
-                  <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-ink-subtle">
-                    Tags
-                  </h2>
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {post.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className={`rounded-full border px-3 py-1 text-sm font-medium uppercase ${accent.chip}`}
+              <div className={`ui-card min-w-0 overflow-hidden ${accent.topBorder}`}>
+                <header className="border-b border-line bg-surface-muted/60 p-5 sm:p-6" aria-label="Resource author and source">
+                  <p className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-ink-subtle">
+                    Source
+                  </p>
+                  <div className="mt-3 flex flex-wrap items-center gap-3">
+                    <div className={`flex size-11 shrink-0 items-center justify-center rounded-full border text-sm font-bold shadow-soft ${accent.icon}`}>
+                      {post.author.name.charAt(0)}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <p className="break-words text-sm font-semibold text-ink">{post.author.name}</p>
+                      <a
+                        href={post.link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`inline-flex min-h-11 items-center gap-2 py-2 text-sm font-semibold underline underline-offset-4 transition-colors focus-visible:outline-offset-2 ${accent.text}`}
                       >
-                        {tag}
-                      </span>
-                    ))}
+                        {post.source}
+                        <span aria-hidden="true">&nearr;</span>
+                      </a>
+                    </div>
                   </div>
+                </header>
+
+                <div className="w-full p-5 sm:p-6 lg:p-8">
+                  <div className={isDark
+                    ? "prose prose-lg w-full min-w-0 max-w-none break-words prose-invert"
+                    : "prose prose-lg w-full min-w-0 max-w-none break-words"
+                  }>
+                    {/* Render the rich HTML content from the content field */}
+                    <div dangerouslySetInnerHTML={{ __html: post.content }} />
+                  </div>
+                </div>
+              </div>
+
+              {/* Resource Display Section */}
+              {post.resourceSections && (
+                <div className={`mt-12 w-full pt-10 ${accent.topBorder}`}>
+                  <ResourceDisplay resourceSections={post.resourceSections} />
+                </div>
+              )}
+
+              {/* Tags */}
+              <div className="mt-10 w-full border-t border-line pt-6">
+                <h2 className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-ink-subtle">
+                  Tags
+                </h2>
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {post.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className={`rounded-full border px-3 py-1 text-sm font-medium uppercase ${accent.chip}`}
+                    >
+                      {tag}
+                    </span>
+                  ))}
                 </div>
               </div>
             </motion.div>
