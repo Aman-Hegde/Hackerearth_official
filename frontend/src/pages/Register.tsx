@@ -54,7 +54,9 @@ const branchOptions = [
   { value: "ME", label: "Mechanical Engineering (ME)" },
   { value: "CV", label: "Civil Engineering (CV)" },
   { value: "BT", label: "Biotechnology (BT)" },
-  { value: "CC", label: "Computer Communication (CC)" },
+  { value: "CC", label: "Computer Communication Engineering (CCE)" },
+  { value: "RAI", label: "Robotics and Artificial Intelligence (RAI)" },
+  { value: "CSE-FSD", label: "Computer Science (Full Stack Development) (CSE-FSD)" },
 ] as const;
 const validBranchCodes = new Set<string>(branchOptions.map((option) => option.value));
 
@@ -244,9 +246,8 @@ export default function RegisterPage() {
         className="group absolute left-4 top-4 z-20 flex min-h-11 max-w-[calc(100%-5.5rem)] min-w-0 items-center gap-2 rounded-full border border-line-strong bg-surface/95 p-1 pr-3 text-ink shadow-soft backdrop-blur-xl transition-colors hover:border-technical hover:text-technical-text focus-visible:outline-offset-2 sm:left-6 sm:top-6 sm:gap-3"
       >
         <span
-          className={`flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-line bg-white p-0.5 transition duration-200 group-hover:border-technical/50 sm:size-11 ${
-            shouldReduceMotion ? "" : "group-hover:-translate-y-0.5"
-          }`}
+          className={`flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-line bg-white p-0.5 transition duration-200 group-hover:border-technical/50 sm:size-11 ${shouldReduceMotion ? "" : "group-hover:-translate-y-0.5"
+            }`}
         >
           <img
             src={logo}
@@ -269,153 +270,153 @@ export default function RegisterPage() {
         </div>
 
         <div className="min-w-0 overflow-hidden rounded-[1.55rem] border border-line-strong bg-surface/95 p-4 shadow-surface backdrop-blur-xl sm:p-6 lg:p-7">
-        <motion.section
-          initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: shouldReduceMotion ? 0 : 0.45, ease: "easeOut" }}
-        >
-          <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
-            <div className="space-y-3">
-              <div>
-                <p className="text-sm font-medium uppercase tracking-[0.2em] text-technical-text">Student registration</p>
-                <h2 className="mt-2 break-words text-3xl font-bold tracking-tight text-ink">Create your account</h2>
-                <p className="mt-2 max-w-2xl break-words text-sm leading-6 text-ink-muted">Tell us who you are and which tracks you want to grow in.</p>
-              </div>
-            </div>
-            <div className="hidden rounded-card border border-technical/30 bg-gradient-to-br from-technical/10 to-creative/10 px-4 py-3 font-mono text-xs text-ink-muted md:block">
-              const member = ready;
-            </div>
-          </div>
-
-          <form className="mt-6 space-y-4" onSubmit={handleSubmit} noValidate aria-busy={isLoading}>
-            <div className="grid gap-4 md:grid-cols-2">
-              <AuthInput id="name" name="name" label="Name" value={formData.name} error={errors.name} onChange={handleChange} onBlur={handleBlur} autoComplete="name" icon={<User className="h-4 w-4" aria-hidden="true" />} />
-              <AuthInput id="email" name="email" label="Email ID" type="email" placeholder="yourname@nmamit.in" value={formData.email} error={errors.email} onChange={handleChange} onBlur={handleBlur} autoComplete="email" icon={<Mail className="h-4 w-4" aria-hidden="true" />} />
-              <AuthInput id="usn" name="usn" label="USN" value={formData.usn} error={errors.usn} onChange={handleChange} onBlur={handleBlur} autoComplete="off" />
-              <AuthInput id="contactNumber" name="contactNumber" label="Contact Number" inputMode="numeric" value={formData.contactNumber} error={errors.contactNumber} onChange={handleChange} onBlur={handleBlur} autoComplete="tel" icon={<Phone className="h-4 w-4" aria-hidden="true" />} />
-              <div className="min-w-0 space-y-2">
-                <label htmlFor="branch" className="block text-[0.95rem] font-medium text-ink">
-                  Branch
-                </label>
-                <select
-                  id="branch"
-                  name="branch"
-                  value={formData.branch}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  aria-invalid={Boolean(errors.branch)}
-                  aria-describedby={errors.branch ? "branch-error" : undefined}
-                  className={cn(
-                    "min-h-11 w-full min-w-0 rounded-control border bg-surface px-4 py-3 text-sm text-ink shadow-soft transition-colors duration-200 focus-visible:border-focus focus-visible:ring-2 focus-visible:ring-technical/30",
-                    errors.branch
-                      ? "border-highlight focus-visible:border-highlight focus-visible:ring-highlight/30"
-                      : "border-line-strong hover:border-technical",
-                  )}
-                >
-                  <option value="">Select your branch</option>
-                  {branchOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-                {errors.branch && (
-                  <p id="branch-error" className="text-sm font-medium text-highlight-text" role="alert">
-                    {errors.branch}
-                  </p>
-                )}
-              </div>
-              <div className="space-y-2">
-                <label htmlFor="year" className="block text-[0.95rem] font-medium text-ink">
-                  Year
-                </label>
-                <select
-                  id="year"
-                  name="year"
-                  value={formData.year}
-                  onChange={handleChange}
-                  onBlur={handleBlur}
-                  aria-invalid={Boolean(errors.year)}
-                  aria-describedby={errors.year ? "year-error" : undefined}
-                  className={cn(
-                    "w-full rounded-control border bg-surface/90 px-4 py-3.5 text-sm text-ink shadow-soft outline-none transition focus:border-technical focus:ring-2 focus:ring-technical/30",
-                    errors.year ? "border-highlight focus:border-highlight focus:ring-highlight/30" : "border-line-strong hover:border-technical/40",
-                  )}
-                >
-                  <option value="">Select year</option>
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                </select>
-                {errors.year && (
-                  <p id="year-error" className="text-sm text-highlight-text">
-                    {errors.year}
-                  </p>
-                )}
-              </div>
-              <div>
-                <PasswordInput id="password" name="password" label="Password" value={formData.password} error={errors.password} autoComplete="new-password" onChange={handleChange} onBlur={handleBlur} />
-                <div className="mt-2 space-y-1.5" aria-live="polite">
-                  <div className="h-1.5 overflow-hidden rounded-full bg-surface-muted">
-                    <div
-                      className={cn(
-                        "h-full rounded-full",
-                        shouldReduceMotion ? "" : "transition-[width] duration-300",
-                        strengthColor,
-                      )}
-                      style={{ width: `${(passedPasswordRules / passwordRules.length) * 100}%` }}
-                    />
-                  </div>
-                  <p className="text-xs font-medium text-ink-muted">Password strength: {strengthLabel}</p>
-                  <div className="grid gap-x-3 gap-y-0.5 text-[0.72rem] leading-5 text-ink-muted sm:grid-cols-2">
-                    {passwordRules.map((rule) => (
-                      <span key={rule.label} className={cn(rule.test(formData.password) && "text-success-text")}>
-                        {rule.label}
-                      </span>
-                    ))}
-                  </div>
+          <motion.section
+            initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: shouldReduceMotion ? 0 : 0.45, ease: "easeOut" }}
+          >
+            <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
+              <div className="space-y-3">
+                <div>
+                  <p className="text-sm font-medium uppercase tracking-[0.2em] text-technical-text">Student registration</p>
+                  <h2 className="mt-2 break-words text-3xl font-bold tracking-tight text-ink">Create your account</h2>
+                  <p className="mt-2 max-w-2xl break-words text-sm leading-6 text-ink-muted">Tell us who you are and which tracks you want to grow in.</p>
                 </div>
               </div>
-              <PasswordInput id="confirmPassword" name="confirmPassword" label="Confirm Password" value={formData.confirmPassword} error={errors.confirmPassword} autoComplete="new-password" onChange={handleChange} onBlur={handleBlur} />
+              <div className="hidden rounded-card border border-technical/30 bg-gradient-to-br from-technical/10 to-creative/10 px-4 py-3 font-mono text-xs text-ink-muted md:block">
+                const member = ready;
+              </div>
             </div>
 
-            <DomainSelector selectedDomains={selectedDomains} onChange={handleDomainChange} onBlur={handleDomainBlur} error={errors.domains} />
+            <form className="mt-6 space-y-4" onSubmit={handleSubmit} noValidate aria-busy={isLoading}>
+              <div className="grid gap-4 md:grid-cols-2">
+                <AuthInput id="name" name="name" label="Name" value={formData.name} error={errors.name} onChange={handleChange} onBlur={handleBlur} autoComplete="name" icon={<User className="h-4 w-4" aria-hidden="true" />} />
+                <AuthInput id="email" name="email" label="Email ID" type="email" placeholder="yourusn@nmamit.in" value={formData.email} error={errors.email} onChange={handleChange} onBlur={handleBlur} autoComplete="email" icon={<Mail className="h-4 w-4" aria-hidden="true" />} />
+                <AuthInput id="usn" name="usn" label="USN" value={formData.usn} error={errors.usn} onChange={handleChange} onBlur={handleBlur} autoComplete="off" />
+                <AuthInput id="contactNumber" name="contactNumber" label="Contact Number" inputMode="numeric" value={formData.contactNumber} error={errors.contactNumber} onChange={handleChange} onBlur={handleBlur} autoComplete="tel" icon={<Phone className="h-4 w-4" aria-hidden="true" />} />
+                <div className="min-w-0 space-y-2">
+                  <label htmlFor="branch" className="block text-[0.95rem] font-medium text-ink">
+                    Branch
+                  </label>
+                  <select
+                    id="branch"
+                    name="branch"
+                    value={formData.branch}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    aria-invalid={Boolean(errors.branch)}
+                    aria-describedby={errors.branch ? "branch-error" : undefined}
+                    className={cn(
+                      "min-h-11 w-full min-w-0 rounded-control border bg-surface px-4 py-3 text-sm text-ink shadow-soft transition-colors duration-200 focus-visible:border-focus focus-visible:ring-2 focus-visible:ring-technical/30",
+                      errors.branch
+                        ? "border-highlight focus-visible:border-highlight focus-visible:ring-highlight/30"
+                        : "border-line-strong hover:border-technical",
+                    )}
+                  >
+                    <option value="">Select your branch</option>
+                    {branchOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                  {errors.branch && (
+                    <p id="branch-error" className="text-sm font-medium text-highlight-text" role="alert">
+                      {errors.branch}
+                    </p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <label htmlFor="year" className="block text-[0.95rem] font-medium text-ink">
+                    Year
+                  </label>
+                  <select
+                    id="year"
+                    name="year"
+                    value={formData.year}
+                    onChange={handleChange}
+                    onBlur={handleBlur}
+                    aria-invalid={Boolean(errors.year)}
+                    aria-describedby={errors.year ? "year-error" : undefined}
+                    className={cn(
+                      "w-full rounded-control border bg-surface/90 px-4 py-3.5 text-sm text-ink shadow-soft outline-none transition focus:border-technical focus:ring-2 focus:ring-technical/30",
+                      errors.year ? "border-highlight focus:border-highlight focus:ring-highlight/30" : "border-line-strong hover:border-technical/40",
+                    )}
+                  >
+                    <option value="">Select year</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4">4</option>
+                  </select>
+                  {errors.year && (
+                    <p id="year-error" className="text-sm text-highlight-text">
+                      {errors.year}
+                    </p>
+                  )}
+                </div>
+                <div>
+                  <PasswordInput id="password" name="password" label="Password" value={formData.password} error={errors.password} autoComplete="new-password" onChange={handleChange} onBlur={handleBlur} />
+                  <div className="mt-2 space-y-1.5" aria-live="polite">
+                    <div className="h-1.5 overflow-hidden rounded-full bg-surface-muted">
+                      <div
+                        className={cn(
+                          "h-full rounded-full",
+                          shouldReduceMotion ? "" : "transition-[width] duration-300",
+                          strengthColor,
+                        )}
+                        style={{ width: `${(passedPasswordRules / passwordRules.length) * 100}%` }}
+                      />
+                    </div>
+                    <p className="text-xs font-medium text-ink-muted">Password strength: {strengthLabel}</p>
+                    <div className="grid gap-x-3 gap-y-0.5 text-[0.72rem] leading-5 text-ink-muted sm:grid-cols-2">
+                      {passwordRules.map((rule) => (
+                        <span key={rule.label} className={cn(rule.test(formData.password) && "text-success-text")}>
+                          {rule.label}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                <PasswordInput id="confirmPassword" name="confirmPassword" label="Confirm Password" value={formData.confirmPassword} error={errors.confirmPassword} autoComplete="new-password" onChange={handleChange} onBlur={handleBlur} />
+              </div>
 
-            {statusMessage && (
-              <p
-                className="rounded-control border border-highlight/40 bg-highlight/10 px-4 py-3 text-sm font-medium text-highlight-text"
-                role="status"
-                aria-live="polite"
-                aria-atomic="true"
+              <DomainSelector selectedDomains={selectedDomains} onChange={handleDomainChange} onBlur={handleDomainBlur} error={errors.domains} />
+
+              {statusMessage && (
+                <p
+                  className="rounded-control border border-highlight/40 bg-highlight/10 px-4 py-3 text-sm font-medium text-highlight-text"
+                  role="status"
+                  aria-live="polite"
+                  aria-atomic="true"
+                >
+                  {statusMessage}
+                </p>
+              )}
+
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="btn btn-primary group w-full sm:w-auto sm:px-8"
               >
-                {statusMessage}
-              </p>
-            )}
+                {isLoading ? "Sending OTP..." : "Submit registration details"}
+                <ArrowRight
+                  className={cn(
+                    "h-4 w-4",
+                    shouldReduceMotion ? "" : "transition-transform group-hover:translate-x-0.5",
+                  )}
+                  aria-hidden="true"
+                />
+              </button>
+            </form>
 
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="btn btn-primary group w-full sm:w-auto sm:px-8"
-            >
-              {isLoading ? "Sending OTP..." : "Submit registration details"}
-              <ArrowRight
-                className={cn(
-                  "h-4 w-4",
-                  shouldReduceMotion ? "" : "transition-transform group-hover:translate-x-0.5",
-                )}
-                aria-hidden="true"
-              />
-            </button>
-          </form>
-
-          <p className="mt-5 text-center text-sm text-ink-muted">
-            Already registered?{" "}
-            <Link to="/login" className="inline-flex min-h-11 items-center font-semibold text-primary-text underline underline-offset-4 transition-colors hover:text-technical-text focus-visible:outline-offset-2">
-              Login
-            </Link>
-          </p>
-        </motion.section>
+            <p className="mt-5 text-center text-sm text-ink-muted">
+              Already registered?{" "}
+              <Link to="/login" className="inline-flex min-h-11 items-center font-semibold text-primary-text underline underline-offset-4 transition-colors hover:text-technical-text focus-visible:outline-offset-2">
+                Login
+              </Link>
+            </p>
+          </motion.section>
         </div>
       </div>
     </AuthShell>
