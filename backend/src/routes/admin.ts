@@ -3,6 +3,7 @@ import {
   getAdminOverview,
   getRegistrationSettings,
   getStudents,
+  exportStudents,
   updateRegistrationSettings,
   updateStudentStatus,
 } from "../controllers/adminController";
@@ -15,6 +16,7 @@ router.use(authenticate, authorize("admin"));
 
 router.get("/overview", getAdminOverview);
 router.get("/students", getStudents);
+router.get("/students/export", exportStudents);
 router.patch("/students/:studentId/status", updateStudentStatus);
 router.get("/settings/registration", getRegistrationSettings);
 router.patch("/settings/registration", updateRegistrationSettings);

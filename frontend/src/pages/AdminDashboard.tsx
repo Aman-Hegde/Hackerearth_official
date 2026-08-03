@@ -11,6 +11,7 @@ import {
   ChevronLeft,
   ChevronRight,
   DoorOpen,
+  FileSpreadsheet,
   Loader2,
   RefreshCw,
   Search,
@@ -24,6 +25,7 @@ import {
   getAdminOverview,
   getAdminRegistrationSettings,
   getAdminStudents,
+  downloadAdminStudentsExcel,
   type AdminOverview,
   type AdminStudent,
   type RegistrationSettings,
@@ -194,6 +196,7 @@ const AdminDashboard = () => {
   const [studentsNotice, setStudentsNotice] = useState<string | null>(null);
   const [pendingStudentId, setPendingStudentId] = useState<string | null>(null);
   const [studentRefreshToken, setStudentRefreshToken] = useState(0);
+  const [studentsExporting, setStudentsExporting] = useState(false);
 
   const [search, setSearch] = useState('');
   const [branch, setBranch] = useState('');
@@ -363,6 +366,41 @@ const AdminDashboard = () => {
       }
     } finally {
       setPendingStudentId(null);
+    }
+  };
+
+  const handleDownloadExcel = async () => {
+    if (studentsExporting || pagination.total === 0) return;
+
+    setStudentsExporting(true);
+    setStudentsError(null);
+    setStudentsNotice(null);
+
+    try {
+      const { blob, filename } = await downloadAdminStudentsExcel({
+        search: debouncedSearch,
+        branch: debouncedBranch,
+        year: year ? Number(year) : undefined,
+        status: status || undefined,
+      });
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+      setStudentsNotice('Excel export downloaded successfully.');
+    } catch (error) {
+      const requestError = classifyAdminError(error, 'Unable to export students.');
+      if (isGlobalAuthorizationError(requestError)) {
+        setGlobalAuthError(requestError);
+      } else {
+        setStudentsError(requestError);
+      }
+    } finally {
+      setStudentsExporting(false);
     }
   };
 
@@ -548,15 +586,30 @@ const AdminDashboard = () => {
                   {pagination.total} {pagination.total === 1 ? 'student' : 'students'}
                 </p>
               </div>
-              <button
-                type="button"
-                onClick={() => setStudentRefreshToken((current) => current + 1)}
-                className="btn btn-secondary"
-                disabled={studentsLoading}
-              >
-                <RefreshCw className={`size-4 ${studentsLoading ? 'animate-spin motion-reduce:animate-none' : ''}`} aria-hidden="true" />
-                Refresh
-              </button>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => void handleDownloadExcel()}
+                  className="btn btn-secondary"
+                  disabled={studentsLoading || studentsExporting || pagination.total === 0}
+                >
+                  {studentsExporting ? (
+                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+                  ) : (
+                    <FileSpreadsheet className="size-4" aria-hidden="true" />
+                  )}
+                  {studentsExporting ? 'Preparing Excel...' : 'Download Excel'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setStudentRefreshToken((current) => current + 1)}
+                  className="btn btn-secondary"
+                  disabled={studentsLoading}
+                >
+                  <RefreshCw className={`size-4 ${studentsLoading ? 'animate-spin motion-reduce:animate-none' : ''}`} aria-hidden="true" />
+                  Refresh
+                </button>
+              </div>
             </div>
           </div>
 

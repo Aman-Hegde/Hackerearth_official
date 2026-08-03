@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import ExcelJS from "exceljs";
 import mongoose, { SortOrder } from "mongoose";
 import User, { EnrolledDomain, IUser, VALID_DOMAINS } from "../models/user";
 import SystemSettings, { getSystemSettings } from "../models/systemSettings";
@@ -24,10 +25,21 @@ interface StudentListFilter {
   isActive?: boolean;
 }
 
+interface StudentQueryOptions {
+  filter: StudentListFilter;
+  sort: Record<string, SortOrder>;
+  sortBy: string;
+  sortOrder: "asc" | "desc";
+}
+
 const MAX_REGISTRATION_MESSAGE_LENGTH = 500;
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 25;
 const MAX_LIMIT = 100;
+const STUDENT_SAFE_FIELDS =
+  "name email usn contactNumber branch year enrolledDomains role emailVerified isActive createdAt";
+const STUDENT_EXPORT_FIELDS =
+  "name email usn contactNumber branch year enrolledDomains emailVerified isActive createdAt";
 
 const isString = (value: unknown): value is string => typeof value === "string";
 
@@ -51,6 +63,111 @@ const parsePositiveInteger = (
   }
 
   return maxValue ? Math.min(parsed, maxValue) : parsed;
+};
+
+const buildStudentQueryOptions = (
+  query: Request["query"]
+): { options?: StudentQueryOptions; response?: { status: number; body: object } } => {
+  const filter: StudentListFilter = { role: "student" };
+
+  const search = normalizeString(query.search);
+  if (search) {
+    const regex = new RegExp(escapeRegex(search), "i");
+    filter.$or = [{ name: regex }, { email: regex }, { usn: regex }];
+  }
+
+  const branch = normalizeString(query.branch);
+  if (branch) {
+    filter.branch = new RegExp(`^${escapeRegex(branch)}$`, "i");
+  }
+
+  const year = Number(query.year);
+  if (query.year !== undefined) {
+    if (!Number.isInteger(year) || year < 1 || year > 4) {
+      return {
+        response: {
+          status: 400,
+          body: {
+            success: false,
+            code: "INVALID_QUERY",
+            message: "Year must be an integer from 1 to 4.",
+          },
+        },
+      };
+    }
+    filter.year = year;
+  }
+
+  const domain = normalizeString(query.domain);
+  if (domain) {
+    if (!isValidDomain(domain)) {
+      return {
+        response: {
+          status: 400,
+          body: {
+            success: false,
+            code: "INVALID_QUERY",
+            message: "Domain filter contains an invalid value.",
+          },
+        },
+      };
+    }
+    filter.enrolledDomains = domain;
+  }
+
+  const status = normalizeString(query.status);
+  if (status) {
+    if (status !== "active" && status !== "inactive") {
+      return {
+        response: {
+          status: 400,
+          body: {
+            success: false,
+            code: "INVALID_QUERY",
+            message: "Status must be active or inactive.",
+          },
+        },
+      };
+    }
+    filter.isActive = status === "active";
+  }
+
+  const sortBy = normalizeString(query.sortBy) || "createdAt";
+  if (!["createdAt", "name", "usn"].includes(sortBy)) {
+    return {
+      response: {
+        status: 400,
+        body: {
+          success: false,
+          code: "INVALID_QUERY",
+          message: "sortBy must be createdAt, name, or usn.",
+        },
+      },
+    };
+  }
+
+  const sortOrder = normalizeString(query.sortOrder) || "desc";
+  if (sortOrder !== "asc" && sortOrder !== "desc") {
+    return {
+      response: {
+        status: 400,
+        body: {
+          success: false,
+          code: "INVALID_QUERY",
+          message: "sortOrder must be asc or desc.",
+        },
+      },
+    };
+  }
+
+  return {
+    options: {
+      filter,
+      sort: { [sortBy]: sortOrder === "asc" ? 1 : -1 },
+      sortBy,
+      sortOrder,
+    },
+  };
 };
 
 const isValidDomain = (domain: string): domain is EnrolledDomain => {
@@ -109,6 +226,30 @@ const toSafeSettings = (settings: Awaited<ReturnType<typeof getSystemSettings>>)
   updatedAt: settings.updatedAt,
 });
 
+const createSafeExportFilename = (query: Request["query"]): string => {
+  const parts = ["hackerearth_students"];
+  const year = normalizeString(query.year);
+  const branch = normalizeString(query.branch);
+  const status = normalizeString(query.status);
+  const domain = normalizeString(query.domain);
+  const today = new Date().toISOString().slice(0, 10);
+
+  if (year) parts.push(`year_${year}`);
+  if (branch) parts.push(branch.toLowerCase());
+  if (domain) parts.push(domain.toLowerCase());
+  if (status) parts.push(status.toLowerCase());
+  parts.push(today);
+
+  const safeName = parts
+    .join("_")
+    .replace(/[^a-z0-9_-]+/gi, "_")
+    .replace(/_+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .toLowerCase();
+
+  return `${safeName || `hackerearth_students_${today}`}.xlsx`;
+};
+
 export const getAdminOverview = async (_req: Request, res: Response) => {
   try {
     const [
@@ -151,82 +292,26 @@ export const getStudents = async (req: Request, res: Response) => {
     const page = parsePositiveInteger(req.query.page, DEFAULT_PAGE);
     const limit = parsePositiveInteger(req.query.limit, DEFAULT_LIMIT, MAX_LIMIT);
     const skip = (page - 1) * limit;
-    const filter: StudentListFilter = { role: "student" };
+    const studentQuery = buildStudentQueryOptions(req.query);
 
-    const search = normalizeString(req.query.search);
-    if (search) {
-      const regex = new RegExp(escapeRegex(search), "i");
-      filter.$or = [{ name: regex }, { email: regex }, { usn: regex }];
+    if (studentQuery.response) {
+      return res
+        .status(studentQuery.response.status)
+        .json(studentQuery.response.body);
     }
 
-    const branch = normalizeString(req.query.branch);
-    if (branch) {
-      filter.branch = new RegExp(`^${escapeRegex(branch)}$`, "i");
-    }
-
-    const year = Number(req.query.year);
-    if (req.query.year !== undefined) {
-      if (!Number.isInteger(year) || year < 1 || year > 4) {
-        return res.status(400).json({
-          success: false,
-          code: "INVALID_QUERY",
-          message: "Year must be an integer from 1 to 4.",
-        });
-      }
-      filter.year = year;
-    }
-
-    const domain = normalizeString(req.query.domain);
-    if (domain) {
-      if (!isValidDomain(domain)) {
-        return res.status(400).json({
-          success: false,
-          code: "INVALID_QUERY",
-          message: "Domain filter contains an invalid value.",
-        });
-      }
-      filter.enrolledDomains = domain;
-    }
-
-    const status = normalizeString(req.query.status);
-    if (status) {
-      if (status !== "active" && status !== "inactive") {
-        return res.status(400).json({
-          success: false,
-          code: "INVALID_QUERY",
-          message: "Status must be active or inactive.",
-        });
-      }
-      filter.isActive = status === "active";
-    }
-
-    const sortBy = normalizeString(req.query.sortBy) || "createdAt";
-    if (!["createdAt", "name", "usn"].includes(sortBy)) {
-      return res.status(400).json({
+    if (!studentQuery.options) {
+      return res.status(500).json({
         success: false,
-        code: "INVALID_QUERY",
-        message: "sortBy must be createdAt, name, or usn.",
+        message: "Unexpected server error.",
       });
     }
 
-    const sortOrderValue = normalizeString(req.query.sortOrder) || "desc";
-    if (sortOrderValue !== "asc" && sortOrderValue !== "desc") {
-      return res.status(400).json({
-        success: false,
-        code: "INVALID_QUERY",
-        message: "sortOrder must be asc or desc.",
-      });
-    }
-
-    const sort: Record<string, SortOrder> = {
-      [sortBy]: sortOrderValue === "asc" ? 1 : -1,
-    };
+    const { filter, sort } = studentQuery.options;
 
     const [students, total] = await Promise.all([
       User.find(filter)
-        .select(
-          "name email usn contactNumber branch year enrolledDomains role emailVerified isActive createdAt"
-        )
+        .select(STUDENT_SAFE_FIELDS)
         .sort(sort)
         .skip(skip)
         .limit(limit)
@@ -244,6 +329,104 @@ export const getStudents = async (req: Request, res: Response) => {
         totalPages: Math.ceil(total / limit),
       },
     });
+  } catch {
+    return res.status(500).json({
+      success: false,
+      message: "Unexpected server error.",
+    });
+  }
+};
+
+export const exportStudents = async (req: Request, res: Response) => {
+  try {
+    const studentQuery = buildStudentQueryOptions(req.query);
+
+    if (studentQuery.response) {
+      return res
+        .status(studentQuery.response.status)
+        .json(studentQuery.response.body);
+    }
+
+    if (!studentQuery.options) {
+      return res.status(500).json({
+        success: false,
+        message: "Unexpected server error.",
+      });
+    }
+
+    const { filter, sort } = studentQuery.options;
+    const students = await User.find(filter)
+      .select(STUDENT_EXPORT_FIELDS)
+      .sort(sort)
+      .exec();
+
+    if (students.length === 0) {
+      return res.status(404).json({
+        success: false,
+        code: "NO_STUDENTS_FOUND",
+        message: "No students match the selected filters.",
+      });
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = "HackerEarth Hub NMAMIT";
+    workbook.created = new Date();
+    const worksheet = workbook.addWorksheet("Students", {
+      views: [{ state: "frozen", ySplit: 1 }],
+    });
+
+    worksheet.columns = [
+      { header: "Sl. No.", key: "slNo", width: 10 },
+      { header: "Name", key: "name", width: 28 },
+      { header: "Email", key: "email", width: 34 },
+      { header: "USN", key: "usn", width: 18 },
+      { header: "Contact Number", key: "contactNumber", width: 18 },
+      { header: "Branch", key: "branch", width: 16 },
+      { header: "Year", key: "year", width: 10 },
+      { header: "Enrolled Domains", key: "enrolledDomains", width: 34 },
+      { header: "Account Status", key: "accountStatus", width: 16 },
+      { header: "Email Verified", key: "emailVerified", width: 18 },
+      { header: "Registration Date", key: "registrationDate", width: 20 },
+    ];
+
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).alignment = { vertical: "middle" };
+    worksheet.autoFilter = {
+      from: "A1",
+      to: "K1",
+    };
+
+    students.forEach((student, index) => {
+      worksheet.addRow({
+        slNo: index + 1,
+        name: student.name,
+        email: student.email,
+        usn: student.usn,
+        contactNumber: student.contactNumber,
+        branch: student.branch,
+        year: student.year,
+        enrolledDomains: student.enrolledDomains.join(", "),
+        accountStatus: student.isActive ? "Active" : "Inactive",
+        emailVerified: student.emailVerified ? "Verified" : "Not Verified",
+        registrationDate: student.createdAt,
+      });
+    });
+
+    worksheet.getColumn("registrationDate").numFmt = "yyyy-mm-dd hh:mm";
+
+    const filename = createSafeExportFilename(req.query);
+    const buffer = await workbook.xlsx.writeBuffer();
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${filename}"`
+    );
+
+    return res.status(200).send(Buffer.from(buffer));
   } catch {
     return res.status(500).json({
       success: false,

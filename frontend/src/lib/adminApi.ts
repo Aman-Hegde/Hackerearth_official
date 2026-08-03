@@ -1,4 +1,4 @@
-import { apiRequest } from './api';
+import { API_BASE_URL, ApiError, apiRequest } from './api';
 
 export interface AdminOverview {
   totalStudents: number;
@@ -76,8 +76,13 @@ export interface StudentListParams {
   search?: string;
   branch?: string;
   year?: number;
+  domain?: 'Web Development' | 'DSA' | 'Aptitude';
   status?: 'active' | 'inactive';
+  sortBy?: 'createdAt' | 'name' | 'usn';
+  sortOrder?: 'asc' | 'desc';
 }
+
+export type StudentExportParams = Omit<StudentListParams, 'page' | 'limit'>;
 
 export const getAdminOverview = (signal?: AbortSignal) =>
   apiRequest<OverviewResponse>('/api/admin/overview', {
@@ -97,12 +102,99 @@ export const getAdminStudents = (
   if (params.search?.trim()) query.set('search', params.search.trim());
   if (params.branch?.trim()) query.set('branch', params.branch.trim());
   if (params.year) query.set('year', String(params.year));
+  if (params.domain) query.set('domain', params.domain);
   if (params.status) query.set('status', params.status);
+  if (params.sortBy) query.set('sortBy', params.sortBy);
+  if (params.sortOrder) query.set('sortOrder', params.sortOrder);
 
   return apiRequest<StudentsResponse>(`/api/admin/students?${query.toString()}`, {
     credentials: 'include',
     signal,
   });
+};
+
+const getErrorMessage = (data: unknown): string => {
+  if (
+    data &&
+    typeof data === 'object' &&
+    'message' in data &&
+    typeof data.message === 'string'
+  ) {
+    return data.message;
+  }
+
+  return 'Request failed. Please try again.';
+};
+
+const getErrorCode = (data: unknown): string | undefined => {
+  if (
+    data &&
+    typeof data === 'object' &&
+    'code' in data &&
+    typeof data.code === 'string'
+  ) {
+    return data.code;
+  }
+
+  return undefined;
+};
+
+const parseJsonSafely = async (response: Response): Promise<unknown> => {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+};
+
+const getFilenameFromContentDisposition = (contentDisposition: string | null) => {
+  if (!contentDisposition) return null;
+
+  const utf8Match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
+  if (utf8Match?.[1]) return decodeURIComponent(utf8Match[1].replace(/"/g, ''));
+
+  const filenameMatch = contentDisposition.match(/filename="?([^";]+)"?/i);
+  return filenameMatch?.[1] ?? null;
+};
+
+export const downloadAdminStudentsExcel = async (
+  params: StudentExportParams,
+): Promise<{ blob: Blob; filename: string }> => {
+  const query = new URLSearchParams();
+
+  if (params.search?.trim()) query.set('search', params.search.trim());
+  if (params.branch?.trim()) query.set('branch', params.branch.trim());
+  if (params.year) query.set('year', String(params.year));
+  if (params.domain) query.set('domain', params.domain);
+  if (params.status) query.set('status', params.status);
+  if (params.sortBy) query.set('sortBy', params.sortBy);
+  if (params.sortOrder) query.set('sortOrder', params.sortOrder);
+
+  const queryString = query.toString();
+  const response = await fetch(
+    `${API_BASE_URL}/api/admin/students/export${queryString ? `?${queryString}` : ''}`,
+    {
+      method: 'GET',
+      credentials: 'include',
+    },
+  );
+
+  if (!response.ok) {
+    const data = await parseJsonSafely(response);
+    throw new ApiError({
+      status: response.status,
+      code: getErrorCode(data),
+      message: getErrorMessage(data),
+      data,
+    });
+  }
+
+  const filename =
+    getFilenameFromContentDisposition(response.headers.get('Content-Disposition')) ??
+    'hackerearth_students.xlsx';
+  const blob = await response.blob();
+
+  return { blob, filename };
 };
 
 export const updateAdminStudentStatus = (
