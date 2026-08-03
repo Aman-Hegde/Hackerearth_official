@@ -9,28 +9,69 @@ import PastEvents from "./pages/Events";
 import Team from "./pages/Team";
 import Domains from "./pages/Domains";
 import BlogPostPage from "./pages/BlogPostPage";
-import Leaderboard from "./pages/Leaderboard";
+import StudentDashboard from "./pages/StudentDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 // import About from "./pages/About";
 import Contact from "./pages/Contact";
 import LoginPage from "./pages/Login";
+import RegisterPage from "./pages/Register";
+import RegisterOtpPage from "./pages/RegisterOtp";
+import ForgotPasswordPage from "./pages/ForgotPassword";
+import ForgotPasswordOtpPage from "./pages/ForgotPasswordOtp";
+import ChangeForgottenPasswordPage from "./pages/ChangeForgottenPassword";
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./context/AuthContext";
-import { ThemeProvider, useTheme } from "./context/ThemeContext"; 
+import { ThemeProvider } from "./context/ThemeContext";
 import ScrollToTop from "./components/ScrollTop";
 import Sidebar from "./components/Sidebar";
 import SpotlightCursor from "./components/CustomCursor";
+import type { UserRole } from "./context/AuthContext";
 
 function AppWrapper() {
   const location = useLocation();
-  const { isDark } = useTheme(); // <-- Get the theme state
-  const isAuthPage = location.pathname === "/login";
+  const isAuthPage =
+    location.pathname === "/login" ||
+    location.pathname === "/register" ||
+    location.pathname === "/register/verify-otp" ||
+    location.pathname.startsWith("/forgot-password");
   const isDomainPage = location.pathname.startsWith("/domains");
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const AuthLoadingState = () => (
+    <div
+      className="flex min-h-screen items-center justify-center bg-canvas px-4 text-ink"
+      role="status"
+      aria-live="polite"
+    >
+      <span className="rounded-control border border-line bg-surface px-4 py-3 text-sm font-semibold shadow-soft">
+        Checking your session...
+      </span>
+    </div>
+  );
+
   const ProtectedRoute = () => {
-  const { isAuthenticated } = useAuth();
-  return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
-};
+    const { isAuthenticated, isLoading } = useAuth();
+
+    if (isLoading) return <AuthLoadingState />;
+    return isAuthenticated ? <Outlet /> : <Navigate to="/login" replace />;
+  };
+
+  const RoleRoute = ({ allowedRoles }: { allowedRoles: UserRole[] }) => {
+    const { user, isAuthenticated, isLoading } = useAuth();
+
+    if (isLoading) return <AuthLoadingState />;
+    if (!isAuthenticated || !user) return <Navigate to="/login" replace />;
+    if (!allowedRoles.includes(user.role)) {
+      return (
+        <Navigate
+          to={user.role === "admin" ? "/admin/dashboard" : "/student/dashboard"}
+          replace
+        />
+      );
+    }
+
+    return <Outlet />;
+  };
 
   useEffect(() => {
     setSidebarOpen(false); // close sidebar on route change
@@ -64,10 +105,21 @@ function AppWrapper() {
             <Route path="/domains" element={<Domains />} />
             <Route path="/domains/:slug" element={<BlogPostPage />} />
           </Route>
-          <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/leaderboard" element={<Navigate to="/" replace />} />
           {/* <Route path="/about" element={<About />} /> */}
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/register/verify-otp" element={<RegisterOtpPage />} />
+          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <Route path="/forgot-password/verify-otp" element={<ForgotPasswordOtpPage />} />
+          <Route path="/forgot-password/change-password" element={<ChangeForgottenPasswordPage />} />
+          <Route element={<RoleRoute allowedRoles={["student"]} />}>
+            <Route path="/student/dashboard/*" element={<StudentDashboard />} />
+          </Route>
+          <Route element={<RoleRoute allowedRoles={["admin"]} />}>
+            <Route path="/admin/dashboard/*" element={<AdminDashboard />} />
+          </Route>
         </Routes>
       </main>
 

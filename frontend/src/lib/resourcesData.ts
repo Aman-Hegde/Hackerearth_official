@@ -39,43 +39,45 @@ export interface BlogPost {
 }
 
 const createContentSection = (title: string, content: string) => `
-  <div class="bg-white/60 dark:bg-gray-800/60 backdrop-blur-md p-6 rounded-xl border border-white/20 dark:border-gray-700/30 shadow-lg mb-6">
-    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">${title}</h3>
-    <div class="text-gray-700 dark:text-gray-300 leading-relaxed">
+  <div class="mb-6 w-full rounded-card border border-line bg-surface-muted/70 p-5 shadow-soft sm:p-6">
+    <h3 class="mb-4 text-xl font-semibold text-ink">${title}</h3>
+    <div class="leading-relaxed text-ink-muted">
       ${content}
     </div>
   </div>
 `;
 
 const createCodeBlock = (code: string, language = 'javascript') => `
-  <div class="bg-gray-900/90 dark:bg-gray-950/90 backdrop-blur-sm p-5 rounded-xl border border-gray-700/50 dark:border-gray-600/50 shadow-lg mb-6">
-    <pre class="text-sm text-gray-100 dark:text-gray-300 overflow-x-auto font-mono"><code class="language-${language}">${code}</code></pre>
+  <div class="mb-6 w-full rounded-card border border-line-strong bg-ink p-5 shadow-soft">
+    <pre class="overflow-x-auto font-mono text-sm text-canvas"><code class="language-${language}">${code}</code></pre>
   </div>
 `;
 
 const createFeatureList = (items: string[]) => `
-  <div class="grid gap-3 mb-6">
+  <div class="mb-6 grid w-full gap-3">
     ${items.map(item => `
-      <div class="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm p-4 rounded-lg border border-white/20 dark:border-gray-700/30 shadow-sm hover:shadow-md transition-all duration-300 hover:translate-y-[-2px]">
-        <div class="text-gray-700 dark:text-gray-300">${item}</div>
+      <div class="w-full rounded-control border border-line bg-surface-muted p-4 shadow-soft transition-colors duration-200 hover:border-line-strong motion-reduce:transition-none">
+        <div class="text-ink-muted">${item}</div>
       </div>
     `).join('')}
   </div>
 `;
 
+// Retained for future resource groups; current posts use structured ResourceSection data.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const createResourceList = (resources: Array<{title: string, link: string, type: string, emoji?: string}>) => `
-  <div class="grid gap-4 mb-6">
+  <div class="mb-6 grid w-full gap-4">
     ${resources.map(resource => `
-      <div class="bg-white/60 dark:bg-gray-800/60 backdrop-blur-md p-5 rounded-xl border border-white/20 dark:border-gray-700/30 shadow-lg hover:shadow-xl transition-all duration-300 hover:translate-y-[-2px] group">
+      <div class="group w-full rounded-card border border-line bg-surface-muted/70 p-5 shadow-soft transition-colors duration-200 hover:border-line-strong motion-reduce:transition-none">
         <div class="flex items-start justify-between">
           <div class="flex-1">
             <div class="flex items-center gap-3 mb-2">
               ${resource.emoji ? `<span class="text-lg">${resource.emoji}</span>` : ''}
-              <h4 class="font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">${resource.title}</h4>
+              <h4 class="font-semibold text-ink transition-colors group-hover:text-primary-text">${resource.title}</h4>
             </div>
-            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">${resource.type}</p>
+            <p class="mb-3 text-sm text-ink-muted">${resource.type}</p>
           </div>
-          <a href="${resource.link}" target="_blank" class="inline-flex items-center px-4 py-2 bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/30 text-blue-700 dark:text-blue-300 text-sm rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-lg backdrop-blur-sm">
+          <a href="${resource.link}" target="_blank" rel="noopener noreferrer" class="inline-flex min-h-11 items-center rounded-control border border-primary/30 bg-primary/10 px-4 py-2 text-sm font-semibold text-primary-text transition-colors hover:bg-primary/20 focus-visible:outline-offset-2 motion-reduce:transition-none">
             Visit →
           </a>
         </div>
@@ -763,11 +765,11 @@ export const blogPosts: BlogPost[] = [
       
       ${createContentSection('HTML5 Semantic Elements', 'These elements provide meaning to your web content and improve accessibility:')}
       ${createFeatureList([
-        '<code class="text-blue-600 dark:text-blue-400">&lt;header&gt;</code> - Contains introductory content and navigation',
-        '<code class="text-blue-600 dark:text-blue-400">&lt;nav&gt;</code> - Defines navigation links and menus',
-        '<code class="text-blue-600 dark:text-blue-400">&lt;main&gt;</code> - Specifies the main content of the document',
-        '<code class="text-blue-600 dark:text-blue-400">&lt;article&gt;</code> - Represents independent, self-contained content',
-        '<code class="text-blue-600 dark:text-blue-400">&lt;section&gt;</code> - Groups related content thematically'
+        '<code class="text-technical-text">&lt;header&gt;</code> - Contains introductory content and navigation',
+        '<code class="text-technical-text">&lt;nav&gt;</code> - Defines navigation links and menus',
+        '<code class="text-technical-text">&lt;main&gt;</code> - Specifies the main content of the document',
+        '<code class="text-technical-text">&lt;article&gt;</code> - Represents independent, self-contained content',
+        '<code class="text-technical-text">&lt;section&gt;</code> - Groups related content thematically'
       ])}
     `,
     slug: 'html5-semantics-flexbox',

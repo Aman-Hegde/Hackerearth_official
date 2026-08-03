@@ -1,23 +1,30 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import { motion, Variants  } from "framer-motion";
+import { useState, useEffect } from "react";
+import { motion, useReducedMotion, type Variants } from "framer-motion";
 import { Github, Linkedin, Mail } from "lucide-react";
-import { useTheme } from "../context/ThemeContext";
 import Loader from "../components/Loader";
 
 // --- Animation Variants ---
-const fadeInUp: Variants = {
-  initial: { opacity: 0, y: 50 },
+const getFadeInUp = (shouldReduceMotion: boolean | null): Variants => ({
+  initial: shouldReduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 18 },
   animate: {
     opacity: 1,
     y: 0,
-    transition: { duration: 0.6, ease: [0.6, -0.05, 0.01, 0.99] },
+    transition: {
+      duration: shouldReduceMotion ? 0 : 0.5,
+      ease: [0.16, 1, 0.3, 1],
+    },
   },
-};
-const staggerContainer = {
-  animate: { transition: { staggerChildren: 0.1 } },
-};
+});
+
+const getStaggerContainer = (shouldReduceMotion: boolean | null): Variants => ({
+  animate: {
+    transition: {
+      staggerChildren: shouldReduceMotion ? 0 : 0.08,
+    },
+  },
+});
 
 // --- TEAM DATA (EXCEL STRUCTURE) ---
 const coreTeam = [
@@ -289,101 +296,204 @@ const graphicsTeam = [
   }
 ];
 
+type TeamMember = (typeof coreTeam)[number];
+
+const teamSections: Array<{ title: string; data: TeamMember[] }> = [
+  { title: "Core Committee", data: coreTeam },
+  { title: "Web Team", data: webTeam },
+  { title: "Tech Leads", data: techLeads },
+  { title: "Documentation Team", data: documentationTeam },
+  { title: "Publicity Team", data: publicityTeam },
+  { title: "Social Media Team", data: socialMediaTeam },
+  { title: "Graphics Team", data: graphicsTeam },
+];
+
+type TeamAccent = "primary" | "technical" | "creative" | "success";
+
+const teamSectionAccents: TeamAccent[] = [
+  "primary",
+  "technical",
+  "creative",
+  "success",
+  "primary",
+  "technical",
+  "creative",
+];
+
+const teamAccentStyles: Record<
+  TeamAccent,
+  {
+    card: string;
+    topBorder: string;
+    line: string;
+    label: string;
+    role: string;
+    skill: string;
+    social: string;
+  }
+> = {
+  primary: {
+    card: "border-primary/25 hover:border-primary/45",
+    topBorder: "top-border-accent-primary",
+    line: "via-primary/70",
+    label: "text-primary-text",
+    role: "text-primary-text",
+    skill: "border-primary/20 bg-primary/5",
+    social: "border-primary/20 text-primary-text hover:border-primary/40",
+  },
+  technical: {
+    card: "border-technical/25 hover:border-technical/45",
+    topBorder: "top-border-accent-cyan",
+    line: "via-technical/70",
+    label: "text-technical-text",
+    role: "text-technical-text",
+    skill: "border-technical/20 bg-technical/5",
+    social: "border-technical/20 text-technical-text hover:border-technical/40",
+  },
+  creative: {
+    card: "border-creative/25 hover:border-creative/45",
+    topBorder: "top-border-accent-violet",
+    line: "via-creative/70",
+    label: "text-creative-text",
+    role: "text-creative-text",
+    skill: "border-creative/20 bg-creative/5",
+    social: "border-creative/20 text-creative-text hover:border-creative/40",
+  },
+  success: {
+    card: "border-success/25 hover:border-success/45",
+    topBorder: "top-border-accent-emerald",
+    line: "via-success/70",
+    label: "text-success-text",
+    role: "text-success-text",
+    skill: "border-success/20 bg-success/5",
+    social: "border-success/20 text-success-text hover:border-success/40",
+  },
+};
+
 // --- Reusable Team Member Card Component ---
-const TeamMemberCard = ({ member }: { member: any }) => {
+const TeamMemberCard = ({
+  member,
+  accent,
+  entranceVariants,
+  shouldReduceMotion,
+}: {
+  member: TeamMember;
+  accent: (typeof teamAccentStyles)[TeamAccent];
+  entranceVariants: Variants;
+  shouldReduceMotion: boolean | null;
+}) => {
   return (
-    <motion.div
-      variants={fadeInUp}
-      className="w-full max-w-xs mx-auto flex flex-col items-center"
+    <motion.article
+      variants={entranceVariants}
+      whileHover={shouldReduceMotion ? undefined : { y: -4 }}
+      className={`ui-card group mx-auto flex h-full w-full max-w-sm flex-col overflow-hidden transition-colors duration-300 hover:shadow-surface ${accent.card} ${accent.topBorder}`}
     >
-      {/* Slightly Smaller Card with More Spacing */}
-      <div className="group w-full h-[420px] relative">
-        <div className="card w-full h-full rounded-2xl shadow-xl overflow-hidden relative">
-          {/* Image */}
-          <img
-            src={member.image}
-            alt={member.name}
-            className="h-full w-full object-cover"
-          />
+      <div className="relative aspect-[4/5] overflow-hidden border-b border-line bg-surface-muted">
+        <img
+          src={member.image}
+          alt={member.name}
+          loading="lazy"
+          decoding="async"
+          className="size-full object-cover object-[center_20%]"
+        />
+        <div
+          className="pointer-events-none absolute inset-0 bg-gradient-to-t from-ink/10 via-transparent to-transparent"
+          aria-hidden="true"
+        />
+        <div
+          className={`pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-transparent to-transparent ${accent.line}`}
+          aria-hidden="true"
+        />
+      </div>
 
-          {/* Text Overlay (always visible) */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent flex flex-col justify-end p-5">
-            <h3 className="text-xl font-bold text-white tracking-tight mb-1">
-              {member.name}
-            </h3>
-            <p
-              className={`text-sm font-semibold bg-gradient-to-r ${member.gradient || "from-gray-400 to-gray-200"
-                } bg-clip-text text-transparent mb-2`}
+      <div className="flex flex-1 flex-col p-5 sm:p-6">
+        <h3 className="font-display text-xl font-semibold leading-tight text-ink">
+          {member.name}
+        </h3>
+        <p className={`mt-2 font-mono text-xs font-semibold uppercase tracking-[0.12em] ${accent.role}`}>
+          {member.position}
+        </p>
+
+        {member.slogan && (
+          <p className="mt-4 text-sm italic leading-relaxed text-ink-muted">
+            "{member.slogan}"
+          </p>
+        )}
+
+        <div className="mt-5 flex flex-wrap gap-2">
+          {member.skills.length > 0 ? (
+            member.skills.slice(0, 3).map((skill: string) => (
+              <span
+                key={skill}
+                className={`rounded-full border px-3 py-1 font-mono text-xs font-semibold text-ink-muted ${accent.skill}`}
+              >
+                {skill}
+              </span>
+            ))
+          ) : (
+            <span className="text-sm italic text-ink-subtle">Skills to be updated</span>
+          )}
+        </div>
+
+        <div className="mt-auto flex flex-wrap items-center gap-2 pt-6">
+          {member.github && (
+            <a
+              href={member.github}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`btn btn-ghost btn-icon group/social bg-surface-muted focus-visible:outline-offset-2 ${accent.social}`}
+              aria-label={`GitHub profile for ${member.name}`}
             >
-              {member.position}
-            </p>
-            {member.slogan && (
-              <p className="text-sm text-white/80 italic leading-tight">
-                "{member.slogan}"
-              </p>
-            )}
-          </div>
-
-          {/* Hover Overlay with Social Links */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col justify-center items-center p-6">
-            {/* Social Links */}
-            <div className="flex space-x-6 mb-4">
-              {member.github && (
-                <a
-                  href={member.github}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all duration-300"
-                >
-                  <Github size={20} />
-                </a>
-              )}
-              {member.linkedin && (
-                <a
-                  href={member.linkedin}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all duration-300"
-                >
-                  <Linkedin size={20} />
-                </a>
-              )}
-              {member.email && (
-                <a
-                  href={`mailto:${member.email}`}
-                  className="w-12 h-12 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all duration-300"
-                >
-                  <Mail size={20} />
-                </a>
-              )}
-            </div>
-
-            {/* Skills */}
-            <div className="flex flex-wrap gap-2 justify-center">
-              {member.skills.length > 0 ? (
-                member.skills.slice(0, 3).map((skill: string) => (
-                  <span
-                    key={skill}
-                    className="px-3 py-1 text-xs font-semibold rounded-full bg-white/20 text-white backdrop-blur-sm"
-                  >
-                    {skill}
-                  </span>
-                ))
-              ) : (
-                <span className="text-white/70 text-sm italic">Skills to be updated</span>
-              )}
-            </div>
-          </div>
+              <Github
+                className={`size-5 transition-transform duration-200 ${
+                  shouldReduceMotion ? "" : "group-hover/social:translate-x-0.5"
+                }`}
+                aria-hidden="true"
+              />
+            </a>
+          )}
+          {member.linkedin && (
+            <a
+              href={member.linkedin}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`btn btn-ghost btn-icon group/social bg-surface-muted focus-visible:outline-offset-2 ${accent.social}`}
+              aria-label={`LinkedIn profile for ${member.name}`}
+            >
+              <Linkedin
+                className={`size-5 transition-transform duration-200 ${
+                  shouldReduceMotion ? "" : "group-hover/social:translate-x-0.5"
+                }`}
+                aria-hidden="true"
+              />
+            </a>
+          )}
+          {member.email && (
+            <a
+              href={`mailto:${member.email}`}
+              className={`btn btn-ghost btn-icon group/social bg-surface-muted focus-visible:outline-offset-2 ${accent.social}`}
+              aria-label={`Email ${member.name}`}
+            >
+              <Mail
+                className={`size-5 transition-transform duration-200 ${
+                  shouldReduceMotion ? "" : "group-hover/social:translate-x-0.5"
+                }`}
+                aria-hidden="true"
+              />
+            </a>
+          )}
         </div>
       </div>
-    </motion.div>
+    </motion.article>
   );
 };
 
 // --- Main Team Page Component ---
 const Team = () => {
-  const { isDark } = useTheme();
   const [loading, setLoading] = useState(true);
+  const shouldReduceMotion = useReducedMotion();
+  const fadeInUp = getFadeInUp(shouldReduceMotion);
+  const staggerContainer = getStaggerContainer(shouldReduceMotion);
 
   useEffect(() => {
     // Simulate loading time for better UX
@@ -396,7 +506,7 @@ const Team = () => {
 
   if (loading) {
     return (
-      <div className={`flex flex-col justify-center items-center min-h-screen ${isDark ? "bg-black text-white" : "bg-slate-50 text-gray-900"}`}>
+      <div className="flex min-h-screen flex-col items-center justify-center bg-canvas px-4 text-ink transition-colors duration-500">
         <Loader size={80} />
         <p className="mt-4 text-lg font-medium">Loading Team...</p>
       </div>
@@ -404,184 +514,70 @@ const Team = () => {
   }
 
   return (
-    <div
-      className={`min-h-screen pt-24 pb-20 overflow-hidden ${isDark ? "bg-black" : "bg-slate-50"
-        }`}
-    >
-      <style jsx>{`
-        @keyframes fadeInUp {
-          0% {
-            opacity: 0;
-            transform: translateY(50px);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        .card {
-          background: linear-gradient(
-            45deg,
-            rgba(100, 207, 226, 0.15) 40%,
-            rgba(6, 100, 252, 0.15),
-            rgba(6, 100, 252, 0.1) 60%,
-            transparent
-          );
-          opacity: 1;
-          background-size: 200% 200%;
-          background-position: 100% 0;
-          transition: all 0.4s ease-in-out;
-        }
-
-        .card.animate-in {
-          animation: fadeInUp 0.6s forwards;
-        }
-
-        .card:hover {
-          background-position: 0% 100%;
-          transform: translateY(-5px);
-          box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
-        }
-      `}</style>
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <main className="section-glow-subtle min-h-screen overflow-hidden bg-canvas text-ink transition-colors duration-500">
+      <div className="site-container-wide section-space pt-28 sm:pt-32">
         {/* Header */}
         <motion.div
           initial="initial"
           animate="animate"
           variants={staggerContainer}
-          className="text-center mb-16"
+          className="mx-auto max-w-3xl text-center"
         >
-          <motion.h1
-            variants={fadeInUp}
-            className={`text-5xl font-bold tracking-tighter md:text-[72px] md:leading-[80px] pb-2 ${
-              isDark 
-                ? "bg-gradient-to-r from-gray-400 via-white to-gray-400 bg-clip-text text-transparent" 
-                : "text-gray-900"
-            }`}
-          >
-            Meet Our Team
+          <motion.h1 variants={fadeInUp} className="section-heading">
+            <span className="text-gradient-subtle">Meet Our Team</span>
           </motion.h1>
-          <motion.p
-            variants={fadeInUp}
-            className="text-lg md:text-xl max-w-3xl mx-auto mt-4 text-gray-400"
-          >
-          </motion.p>
         </motion.div>
 
         {/* Sections */}
-        {[
-          { title: "Core Committee", data: coreTeam },
-          { title: "Web Team", data: webTeam },
-          { title: "Tech Leads", data: techLeads },
-          { title: "Documentation Team", data: documentationTeam },
-          { title: "Publicity Team", data: publicityTeam },
-          { title: "Social Media Team", data: socialMediaTeam },
-          { title: "Graphics Team", data: graphicsTeam },
-        ].map((section, idx) => (
-          <div className="mb-20" key={section.title}>
-            <motion.h2
-              initial={{ opacity: 0 }}
-              whileInView={{ opacity: 1 }}
-              viewport={{ once: true }}
-              className={`mt-5 mb-20 pb-2 text-center text-4xl font-semibold italic tracking-tighter md:text-[54px] md:leading-[60px] ${isDark ? "text-gray-300" : "text-gray-800"}`}
-            >
-              {section.title.includes('Core Committee') ? (
-                <>
-                  <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Core</span>
-                  {' Committee'}
-                </>
-              ) : section.title.includes('Web Team') ? (
-                <>
-                  <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Web</span>
-                  {' Team'}
-                </>
-              ) : section.title.includes('Tech Leads') ? (
-                <>
-                  <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Tech</span>
-                  {' Leads'}
-                </>
-              ) : section.title.includes('Documentation Team') ? (
-                <>
-                  <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Documentation</span>
-                  {' Team'}
-                </>
-              ) : section.title.includes('Publicity Team') ? (
-                <>
-                  <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Publicity</span>
-                  {' Team'}
-                </>
-              ) : section.title.includes('Social Media Team') ? (
-                <>
-                  <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Social</span>
-                  {' Media Team'}
-                </>
-              ) : section.title.includes('Graphics Team') ? (
-                <>
-                  <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">Graphics</span>
-                  {' Team'}
-                </>
-              ) : (
-                section.title
-              )}
-            </motion.h2>
-            <motion.div
-              initial="initial"
-              whileInView="animate"
-              variants={staggerContainer}
-              viewport={{ once: true, amount: 0.2 }}
-              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-y-16 gap-x-12"
-            >
-              {section.data.map((member: any) => (
-                <TeamMemberCard
-                  key={member.name}
-                  member={member}
-                />
-              ))}
-            </motion.div>
-          </div>
-        ))}
+        <div className="mt-16 space-y-20 sm:mt-20 sm:space-y-24">
+          {teamSections.map((section, idx) => {
+            const accent = teamAccentStyles[teamSectionAccents[idx]];
 
-        {/* Intersection Observer for Card Animations */}
-        <script dangerouslySetInnerHTML={{
-          __html: `
-            document.addEventListener('DOMContentLoaded', function() {
-              const cards = document.querySelectorAll('.card');
+            return (
+              <section
+                className="scroll-mt-24"
+                key={section.title}
+                aria-labelledby={`team-section-${idx}`}
+              >
+                <motion.h2
+                  id={`team-section-${idx}`}
+                  initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{
+                    duration: shouldReduceMotion ? 0 : 0.5,
+                    ease: [0.16, 1, 0.3, 1],
+                  }}
+                  viewport={{ once: true, amount: 0.3 }}
+                  className="mb-8 text-center font-display text-title text-ink sm:mb-10"
+                >
+                  <span className={`inline-flex px-4 pt-3 ${accent.label} ${accent.topBorder}`}>
+                    {section.title}
+                  </span>
+                </motion.h2>
 
-              // Fallback: animate all cards in after a short delay
-              setTimeout(() => {
-                cards.forEach((card, index) => {
-                  if (!card.classList.contains('animate-in')) {
-                    setTimeout(() => {
-                      card.classList.add('animate-in');
-                    }, index * 100);
-                  }
-                });
-              }, 500);
-
-              const observer = new IntersectionObserver(
-                (entries) => {
-                  entries.forEach((entry, index) => {
-                    if (entry.isIntersecting) {
-                      setTimeout(() => {
-                        entry.target.classList.add('animate-in');
-                      }, index * 100);
-                    }
-                  });
-                },
-                {
-                  threshold: 0.1,
-                },
-              );
-
-              cards.forEach((card) => {
-                observer.observe(card);
-              });
-            });
-          `
-        }} />
+                <motion.div
+                  initial="initial"
+                  whileInView="animate"
+                  variants={staggerContainer}
+                  viewport={{ once: true, amount: 0.2 }}
+                  className="grid grid-cols-1 items-stretch gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:gap-8"
+                >
+                  {section.data.map((member) => (
+                    <TeamMemberCard
+                      key={member.name}
+                      member={member}
+                      accent={accent}
+                      entranceVariants={fadeInUp}
+                      shouldReduceMotion={shouldReduceMotion}
+                    />
+                  ))}
+                </motion.div>
+              </section>
+            );
+          })}
+        </div>
       </div>
-    </div>
+    </main>
   );
 };
 

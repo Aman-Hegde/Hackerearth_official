@@ -1,5 +1,7 @@
-import { motion } from 'framer-motion';
-import { ExternalLink, Play, Book, Video, FileText, Zap, Code, Laptop } from 'lucide-react';
+import { useMemo } from 'react';
+import { motion, useReducedMotion } from 'framer-motion';
+import { ExternalLink, Play, Book, Video, FileText, Zap, Laptop } from 'lucide-react';
+import { blogPosts, type BlogPost } from '../lib/resourcesData';
 
 interface Resource {
   title: string;
@@ -20,147 +22,154 @@ interface ResourceDisplayProps {
   resourceSections: ResourceSection[];
 }
 
-// Style configuration for different section types
-const getSectionStyleConfig = (sectionType: ResourceSection['sectionType']) => {
-  const styles = {
-    'core-tutorials': {
-      icon: <Book size={20} />,
-      iconClass: 'bg-blue-100 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400',
-      textClass: 'text-blue-600 dark:text-blue-400',
-      borderClass: 'border-blue-200/50 dark:border-blue-800/30',
-      bgClass: 'bg-blue-50/50 dark:bg-blue-900/5 hover:bg-blue-100/70 dark:hover:bg-blue-900/15'
-    },
-    'video-courses': {
-      icon: <Video size={20} />,
-      iconClass: 'bg-purple-100 text-purple-600 dark:bg-purple-900/30 dark:text-purple-400',
-      textClass: 'text-purple-600 dark:text-purple-400',
-      borderClass: 'border-purple-200/50 dark:border-purple-800/30',
-      bgClass: 'bg-purple-50/50 dark:bg-purple-900/5 hover:bg-purple-100/70 dark:hover:bg-purple-900/15'
-    },
-    'docs': {
-      icon: <FileText size={20} />,
-      iconClass: 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30 dark:text-emerald-400',
-      textClass: 'text-emerald-600 dark:text-emerald-400',
-      borderClass: 'border-emerald-200/50 dark:border-emerald-800/30',
-      bgClass: 'bg-emerald-50/50 dark:bg-emerald-900/5 hover:bg-emerald-100/70 dark:hover:bg-emerald-900/15'
-    },
-    'es6-features': {
-      icon: <Zap size={20} />,
-      iconClass: 'bg-amber-100 text-amber-600 dark:bg-amber-900/30 dark:text-amber-400',
-      textClass: 'text-amber-600 dark:text-amber-400',
-      borderClass: 'border-amber-200/50 dark:border-amber-800/30',
-      bgClass: 'bg-amber-50/50 dark:bg-amber-900/5 hover:bg-amber-100/70 dark:hover:bg-amber-900/15'
-    },
-    'practice': {
-      icon: <Laptop size={20} />,
-      iconClass: 'bg-green-100 text-green-600 dark:bg-green-900/30 dark:text-green-400',
-      textClass: 'text-green-600 dark:text-green-400',
-      borderClass: 'border-green-200/50 dark:border-green-800/30',
-      bgClass: 'bg-green-50/50 dark:bg-green-900/5 hover:bg-green-100/70 dark:hover:bg-green-900/15'
-    },
-    'reading': {
-      icon: <Book size={20} />,
-      iconClass: 'bg-indigo-100 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400',
-      textClass: 'text-indigo-600 dark:text-indigo-400',
-      borderClass: 'border-indigo-200/50 dark:border-indigo-800/30',
-      bgClass: 'bg-indigo-50/50 dark:bg-indigo-900/5 hover:bg-indigo-100/70 dark:hover:bg-indigo-900/15'
-    }
+const categoryAccentStyles: Record<BlogPost['category'], {
+  card: string;
+  icon: string;
+  text: string;
+}> = {
+  general: {
+    card: 'border-primary/30 top-border-accent-primary',
+    icon: 'border-primary/25 bg-primary/10 text-primary-text',
+    text: 'text-primary-text',
+  },
+  web: {
+    card: 'border-technical/30 top-border-accent-cyan',
+    icon: 'border-technical/25 bg-technical/10 text-technical-text',
+    text: 'text-technical-text',
+  },
+  dsa: {
+    card: 'border-creative/30 top-border-accent-violet',
+    icon: 'border-creative/25 bg-creative/10 text-creative-text',
+    text: 'text-creative-text',
+  },
+  aptitude: {
+    card: 'border-highlight/30 top-border-accent-amber',
+    icon: 'border-highlight/25 bg-highlight/10 text-highlight-text',
+    text: 'text-highlight-text',
+  },
+};
+
+const getSectionIcon = (sectionType: ResourceSection['sectionType']) => {
+  const icons = {
+    'core-tutorials': <Book size={20} />,
+    'video-courses': <Video size={20} />,
+    'docs': <FileText size={20} />,
+    'es6-features': <Zap size={20} />,
+    'practice': <Laptop size={20} />,
+    'reading': <Book size={20} />,
   };
-  
-  return styles[sectionType] || styles['core-tutorials'];
+
+  return icons[sectionType] || icons['core-tutorials'];
 };
 
 // Resource Item Component
-const ResourceItem = ({ resource, index, sectionType }: { resource: Resource; index: number; sectionType: ResourceSection['sectionType'] }) => {
-  const style = getSectionStyleConfig(sectionType);
-
+const ResourceItem = ({
+  resource,
+  index,
+  accent,
+  shouldReduceMotion,
+}: {
+  resource: Resource;
+  index: number;
+  accent: (typeof categoryAccentStyles)[BlogPost['category']];
+  shouldReduceMotion: boolean;
+}) => {
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
+    <motion.article
+      initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4, delay: index * 0.05 }}
-      className={`group relative p-5 rounded-xl border backdrop-blur-sm transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5 ${style.bgClass} ${style.borderClass}`}
+      whileHover={shouldReduceMotion ? undefined : { y: -4 }}
+      transition={{
+        duration: shouldReduceMotion ? 0 : 0.5,
+        delay: shouldReduceMotion ? 0 : index * 0.05,
+        ease: [0.16, 1, 0.3, 1],
+      }}
+      className={`ui-card group relative flex h-full min-w-0 flex-col overflow-hidden p-5 transition duration-300 ease-out-expo hover:shadow-surface ${accent.card}`}
     >
-      {/* Subtle background accent */}
-      <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-gradient-to-br from-white/20 to-transparent dark:from-black/10 rounded-xl" />
-      
-      <div className="relative z-10">
-        {/* Header with icon and title */}
-        <div className="flex items-start justify-between mb-3">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className={`p-2 rounded-lg flex-shrink-0 ${style.iconClass}`}>
-              <span className="text-sm">{resource.emoji}</span>
-            </div>
-            <div className="min-w-0 flex-1">
-              <h3 className="font-semibold text-slate-800 dark:text-slate-200 text-base leading-tight">
-                {resource.title}
-              </h3>
-              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-                {resource.type}
-              </p>
-            </div>
+      <div className="flex items-start justify-between gap-3">
+        <div className="flex min-w-0 flex-1 items-start gap-3">
+          <div className={`flex size-10 shrink-0 items-center justify-center rounded-control border ${accent.icon}`}>
+            <span className="text-sm">{resource.emoji}</span>
           </div>
-          
-          {/* External link indicator */}
-          <motion.div
-            animate={{ rotate: 0 }}
-            whileHover={{ rotate: 45 }}
-            transition={{ duration: 0.2 }}
-            className={`p-1.5 rounded-full flex-shrink-0 ml-3 ${style.textClass} opacity-60 group-hover:opacity-100`}
-          >
-            <ExternalLink size={14} />
-          </motion.div>
+          <div className="min-w-0 flex-1">
+            <h3 className="font-display text-base font-semibold leading-tight text-ink">
+              {resource.title}
+            </h3>
+            <p className="mt-1 text-sm leading-relaxed text-ink-muted">
+              {resource.type}
+            </p>
+          </div>
         </div>
-        
-        {/* Visit link with animation */}
-        <div className="flex items-center justify-between pt-3 border-t border-slate-200/50 dark:border-slate-700/30">
-          <span className="text-xs font-medium text-slate-500 dark:text-slate-500">
-            {resource.type.split('•')[0].trim()}
-          </span>
-          
-          <motion.a
-            href={resource.link}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={`group/visit inline-flex items-center gap-1.5 text-sm font-medium ${style.textClass}`}
-            whileHover={{ x: 2 }}
-            transition={{ type: "spring", stiffness: 400, damping: 10 }}
-          >
-            <span>Visit</span>
-            <motion.div
-              initial={{ x: 0 }}
-              whileHover={{ x: 3 }}
-              transition={{ duration: 0.2 }}
-            >
-              <Play size={12} />
-            </motion.div>
-          </motion.a>
-        </div>
+
+        {/* External link indicator */}
+        <motion.div
+          whileHover={shouldReduceMotion ? undefined : { x: 2 }}
+          transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
+          className={`ml-2 shrink-0 rounded-full p-1.5 opacity-70 transition-opacity group-hover:opacity-100 ${accent.text}`}
+          aria-hidden="true"
+        >
+          <ExternalLink size={14} />
+        </motion.div>
       </div>
-    </motion.div>
+
+      {/* Visit link with animation */}
+      <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
+        <span className="text-xs font-medium text-ink-subtle">
+          {resource.type.split('\u2022')[0].trim()}
+        </span>
+
+        <motion.a
+          href={resource.link}
+          target="_blank"
+          rel="noopener noreferrer"
+          className={`btn btn-ghost min-h-11 px-3 py-2 text-sm ${accent.text}`}
+          whileHover={shouldReduceMotion ? undefined : { x: 2 }}
+          transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
+          aria-label={`Visit ${resource.title}`}
+        >
+          <span>Visit</span>
+          <span aria-hidden="true">
+            <Play size={12} />
+          </span>
+        </motion.a>
+      </div>
+    </motion.article>
   );
 };
 
 // Section Header Component
-const SectionHeader = ({ title, description, sectionType }: { title: string; description: string; sectionType: ResourceSection['sectionType'] }) => {
-  const style = getSectionStyleConfig(sectionType);
-
+const SectionHeader = ({
+  title,
+  description,
+  sectionType,
+  accent,
+  shouldReduceMotion,
+}: {
+  title: string;
+  description: string;
+  sectionType: ResourceSection['sectionType'];
+  accent: (typeof categoryAccentStyles)[BlogPost['category']];
+  shouldReduceMotion: boolean;
+}) => {
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 10 }}
+    <motion.div
+      initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="mb-8"
+      transition={{
+        duration: shouldReduceMotion ? 0 : 0.5,
+        ease: [0.16, 1, 0.3, 1],
+      }}
+      className="mb-6 sm:mb-8"
     >
-      <div className="flex items-center gap-3 mb-3">
-        <div className={`p-2 rounded-xl ${style.iconClass}`}>
-          {style.icon}
+      <div className="flex items-center gap-3">
+        <div className={`flex size-10 shrink-0 items-center justify-center rounded-control border ${accent.icon}`}>
+          {getSectionIcon(sectionType)}
         </div>
-        <h2 className="text-2xl font-bold text-slate-800 dark:text-slate-200">
+        <h2 className="font-display text-2xl font-semibold text-ink">
           {title}
         </h2>
       </div>
-      <p className="text-slate-600 dark:text-slate-400 max-w-2xl leading-relaxed">
+      <p className="mt-3 max-w-2xl leading-relaxed text-ink-muted">
         {description}
       </p>
     </motion.div>
@@ -169,23 +178,33 @@ const SectionHeader = ({ title, description, sectionType }: { title: string; des
 
 // Main Resource Display Component
 export const ResourceDisplay = ({ resourceSections }: ResourceDisplayProps) => {
+  const shouldReduceMotion = useReducedMotion() ?? false;
+  const category = useMemo(
+    () => blogPosts.find((post) => post.resourceSections === resourceSections)?.category ?? 'general',
+    [resourceSections],
+  );
+  const accent = categoryAccentStyles[category] || categoryAccentStyles.general;
+
   return (
-    <div className="space-y-16">
+    <div className="w-full space-y-12 sm:space-y-16">
       {resourceSections.map((section, sectionIndex) => (
-        <section key={sectionIndex}>
+        <section key={sectionIndex} className="w-full">
           <SectionHeader
             title={section.title}
             description={section.description}
             sectionType={section.sectionType}
+            accent={accent}
+            shouldReduceMotion={shouldReduceMotion}
           />
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+          <div className="grid grid-cols-1 items-stretch gap-4 md:grid-cols-2 xl:grid-cols-3">
             {section.resources.map((resource, resourceIndex) => (
               <ResourceItem
                 key={resourceIndex}
                 resource={resource}
                 index={resourceIndex}
-                sectionType={section.sectionType}
+                accent={accent}
+                shouldReduceMotion={shouldReduceMotion}
               />
             ))}
           </div>

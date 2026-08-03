@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Sun, Moon, User, LogOut, PanelLeftOpen } from 'lucide-react';
+import { useEffect, useRef, useState, type FC, type FocusEvent } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { motion, useReducedMotion } from 'framer-motion';
+import { Home, LogOut, Menu, Moon, Sun, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import logo from '../assets/image.png';
@@ -10,279 +10,331 @@ interface NavbarProps {
   onToggleSidebar: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ onToggleSidebar }) => {
+const navItems = [
+  { name: 'Events', href: '/events' },
+  { name: 'Leaderboard', disabled: true },
+  { name: 'Team', href: '/team' },
+  { name: 'Domains', href: '/domains' },
+  { name: 'Contact', href: '/contact' },
+] as const;
+
+const adminNavItems = [
+  { name: 'Events', href: '/events' },
+  { name: 'Leaderboard', disabled: true },
+  { name: 'Team', href: '/team' },
+  { name: 'Admin', href: '/admin/dashboard' },
+  { name: 'Contact', href: '/contact' },
+] as const;
+
+const studentDashboardNavItems = [
+  { name: 'Home', href: '/' },
+  { name: 'Dashboard', target: 'student-dashboard-top' },
+  { name: 'Events & Tasks', target: 'student-events-tasks' },
+  { name: 'Resources', target: 'student-resources' },
+  { name: 'My Domains', target: 'student-domains' },
+  { name: 'Leaderboard', disabled: true },
+  { name: 'Contact', href: '/contact' },
+] as const;
+
+const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
   const [scrolled, setScrolled] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
   const [hidden, setHidden] = useState(false);
-  const [lastScrollY, setLastScrollY] = useState(0);
+  const [containsFocus, setContainsFocus] = useState(false);
+  const [activeDashboardSection, setActiveDashboardSection] = useState('student-dashboard-top');
+  const lastScrollY = useRef(0);
+  const navRef = useRef<HTMLElement>(null);
+  const shouldReduceMotion = useReducedMotion() ?? false;
   const navigate = useNavigate();
   const { user, logout, isAuthenticated } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const { pathname } = useLocation();
-  const navRef = useRef<HTMLElement>(null);
+  const displayedUsername = user?.name || user?.email?.split('@')[0];
+  const isStudentDashboard = pathname === '/student/dashboard';
+  const mainNavItems = user?.role === 'admin' ? adminNavItems : navItems;
 
   useEffect(() => {
+    const scrollContainer = document.getElementById('scroll-container');
+    const scrollTarget: HTMLElement | Window = scrollContainer ?? window;
+    const getScrollPosition = () => scrollContainer?.scrollTop ?? window.scrollY;
+
     const handleScroll = () => {
-      const currentScrollY = window.scrollY;
+      const currentScrollY = getScrollPosition();
+      setScrolled(currentScrollY > 12);
 
-      // Set scrolled state for background change
-      setScrolled(currentScrollY > 10);
-
-      // Hide/show navbar logic
-      if (currentScrollY > lastScrollY && currentScrollY > 100) {
-        // Scrolling down - hide navbar
+      if (currentScrollY > lastScrollY.current && currentScrollY > 120) {
         setHidden(true);
-      } else if (currentScrollY < lastScrollY) {
-        // Scrolling up - show navbar
+      } else if (currentScrollY < lastScrollY.current) {
         setHidden(false);
       }
 
-      setLastScrollY(currentScrollY);
+      lastScrollY.current = currentScrollY;
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, [lastScrollY]);
+    handleScroll();
+    scrollTarget.addEventListener('scroll', handleScroll, { passive: true });
+    return () => scrollTarget.removeEventListener('scroll', handleScroll);
+  }, []);
 
-  const navItems = [
-    { name: "Events", href: "/events" },
-    { name: "Leaderboard", href: "/leaderboard" },
-    { name: "Team", href: "/team" },
-    { name: "Domains", href: "/domains" },
-    // { name: "About us", href: "/about" },
-    { name: "Contact", href: "/contact" },
-  ];
+  useEffect(() => {
+    setHidden(false);
+  }, [pathname]);
 
-  const handleMobileLinkClick = () => {
-    setIsOpen(false);
+  const isActive = (href: string) =>
+    href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
   };
 
-  const handleLogout = () => {
-    logout();
-    setIsOpen(false);
-    navigate('/');
+  const scrollToDashboardSection = (target: string) => {
+    setActiveDashboardSection(target);
+    document.getElementById(target)?.scrollIntoView({
+      behavior: shouldReduceMotion ? 'auto' : 'smooth',
+      block: 'start',
+    });
   };
+
+  const handleBlurCapture = (event: FocusEvent<HTMLElement>) => {
+    const nextTarget = event.relatedTarget;
+    if (!(nextTarget instanceof Node) || !event.currentTarget.contains(nextTarget)) {
+      setContainsFocus(false);
+    }
+  };
+
+  const effectivelyHidden = hidden && !containsFocus;
+  const hoverLiftClass = shouldReduceMotion ? '' : 'hover:-translate-y-0.5';
+
+  const controlSurfaceClass = scrolled
+    ? 'border-line-strong/80 bg-surface/95 shadow-soft backdrop-blur-md'
+    : 'border-line/80 bg-surface/90 shadow-soft backdrop-blur-md';
+
+  const inactivePillClass = `border-transparent bg-transparent text-ink-muted ${hoverLiftClass} hover:border-line hover:bg-surface hover:text-ink`;
+  const activePillClass =
+    'border-primary/60 bg-primary/10 text-primary-text shadow-soft';
 
   return (
     <motion.nav
       ref={navRef}
-      className={`fixed top-0 left-0 right-0 w-full z-50 transition-all duration-300 ${scrolled
-        ? isDark
-          ? "bg-black/70 backdrop-blur-md border-gray-800/30"
-          : "bg-white/70 backdrop-blur-md border-gray-200/30"
-        : isDark
-          ? "bg-transparent backdrop-blur-sm"
-          : "bg-transparent backdrop-blur-sm"
-        }`}
-      initial={{ y: 0 }}
-      animate={{ y: hidden ? -100 : 0 }}
-      transition={{ duration: 0.3, ease: "easeInOut" }}
-      style={{ transform: hidden ? 'translateY(-100%)' : 'translateY(0)' }}
+      aria-label="Primary navigation"
+      className="pointer-events-none fixed inset-x-0 top-0 z-50 w-full"
+      initial={false}
+      animate={{ y: effectivelyHidden ? -96 : 0 }}
+      transition={{
+        duration: shouldReduceMotion || containsFocus ? 0 : 0.3,
+        ease: [0.16, 1, 0.3, 1],
+      }}
+      onFocusCapture={() => setContainsFocus(true)}
+      onBlurCapture={handleBlurCapture}
     >
-      <div className="max-w-5xl my-1 mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center h-16">
-          {/* Logo */}
+      <div className="site-container-wide py-2 lg:py-3">
+        <div className="flex min-w-0 items-center justify-between gap-2 sm:gap-3 lg:rounded-3xl lg:border lg:border-line-strong/80 lg:bg-surface/95 lg:px-3 lg:py-2.5 lg:shadow-surface lg:backdrop-blur-xl xl:px-4">
           <Link
             to="/"
-            className="flex items-center space-x-2"
-            aria-label="Home"
+            className="group pointer-events-auto flex min-w-0 flex-1 items-center gap-2 rounded-full focus-visible:outline-offset-4 sm:gap-3 lg:flex-none"
+            aria-label="HackerEarth Hub-NMAMIT home"
           >
-            <img
-              src={logo}
-              alt="HackerEarth Logo"
-              className="
-          w-10 h-10 
-          sm:w-12 sm:h-12 
-          md:w-14 md:h-14 
-          lg:w-16 lg:h-16 
-          rounded-full object-cover 
-          drop-shadow-xl border
-          transition-transform duration-300 
-          hover:scale-105
-        "
-            />
-            <div
-              className="
-          hidden xs:flex sm:flex items-center space-x-1 px-2 py-1 
-          bg-white dark:bg-black rounded-md shadow-md 
-          transition-colors duration-300
-        "
+            <span
+              className={`flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-line bg-white p-0.5 shadow-soft transition duration-300 group-hover:border-technical/50 sm:size-12 lg:size-12 lg:bg-surface ${
+                shouldReduceMotion ? '' : 'group-hover:-translate-y-0.5'
+              }`}
             >
-              <span
-                className="
-            text-gray-800 dark:text-white 
-            text-[0.7rem] sm:text-xs md:text-sm 
-            font-semibold whitespace-nowrap
-          "
-              >
-                HackerEarth Hub-NMAMIT
-              </span>
-            </div>
+              <img
+                src={logo}
+                alt="HackerEarth Logo"
+                className="size-full rounded-full object-cover"
+              />
+            </span>
+            <span className="min-w-0 max-w-full font-display text-[0.68rem] font-semibold leading-[1.1] tracking-[-0.02em] text-ink sm:text-sm lg:max-w-36 lg:truncate lg:whitespace-nowrap xl:max-w-none xl:text-base">
+              HackerEarth Hub-NMAMIT
+            </span>
           </Link>
 
-          <div className="hidden md:flex items-center space-x-4">
-            {/* Sidebar Toggle */}
-            <button
-              onClick={onToggleSidebar}
-              aria-label="Toggle Sidebar"
-              className={`p-2 rounded-lg transition-all duration-300 hover:scale-105 ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'
-                }`}
-              type="button"
-            >
-              <PanelLeftOpen className="w-5 h-5" />
-            </button>
-
-            {/* Theme Toggle */}
-            <button
-              onClick={toggleTheme}
-              aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              className={`p-2 rounded-lg transition-all duration-300 hover:scale-105 ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'
-                }`}
-              type="button"
-            >
-              {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </button>
-
-            {isAuthenticated ? (
-              <>
-                <div
-                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${isDark ? 'bg-gray-800/50' : 'bg-gray-100/70'
-                    }`}
-                >
-                  <User
-                    className={`w-4 h-4 ${isDark ? 'text-white' : 'text-gray-700'}`}
-                  />
-                  <span
-                    className={`text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'
-                      }`}
-                  >
-                    {user?.name || user?.email?.split('@')[0]}
-                  </span>
-                </div>
-                <button
-                  onClick={handleLogout}
-                  className={`flex items-center space-x-1 px-3 py-2 rounded-lg ${isDark
-                    ? 'text-gray-300 hover:text-red-400 hover:bg-gray-800/50'
-                    : 'text-gray-700 hover:text-red-600 hover:bg-gray-100/50'
-                    }`}
-                >
-                  <LogOut className="w-4 h-4" /> <span>Logout</span>
-                </button>
-              </>
-            ) : (
-              <Link
-                to="/login"
-                className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:from-blue-700 hover:to-purple-700 transition-all duration-300"
-              >
-                Login
-              </Link>
-            )}
-          </div>
-
-          {/* Mobile actions */}
-          <div className="flex md:hidden items-center space-x-3">
-            {/* Theme Toggle */}
-            <button
-              onClick={toggleTheme}
-              aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-              className={`p-2 rounded-lg transition-all duration-300 hover:scale-105 ${isDark ? 'text-gray-300 hover:text-white' : 'text-gray-700 hover:text-gray-900'
-                }`}
-              type="button"
-            >
-              {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </button>
-
-            {/* Hamburger */}
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className={`${isDark ? 'text-gray-300' : 'text-gray-700'} p-2`}
-              aria-label="Toggle menu"
-            >
-              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Mobile Dropdown (slide from below) */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            className={`md:hidden absolute top-full left-0 right-0 backdrop-blur-md border-b ${isDark
-                ? "bg-black/80 border-gray-800"
-                : "bg-white/80 border-gray-200"
-              }`}
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3 }}
+          <div
+            className={`pointer-events-auto ml-auto min-w-0 items-center gap-2 xl:gap-3 ${
+              isStudentDashboard ? 'hidden xl:flex' : 'hidden lg:flex'
+            }`}
           >
-            <div className="px-4 py-6 space-y-4">
+            {isStudentDashboard ? (
+              <div className="flex min-w-0 shrink items-center gap-0.5 rounded-2xl border border-line bg-surface-muted/80 p-1 shadow-soft">
+                {studentDashboardNavItems.map((item) => {
+                  const isDisabled = 'disabled' in item && item.disabled;
+                  const isSectionItem = 'target' in item;
+                  const active = !isDisabled && isSectionItem && activeDashboardSection === item.target;
+                  const className = `relative flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-xl border px-2 py-2 text-[0.625rem] font-semibold transition duration-200 focus-visible:outline-offset-2 xl:px-3 xl:text-xs ${
+                    isDisabled
+                      ? 'cursor-not-allowed select-none border-transparent text-ink-subtle opacity-60'
+                      : active
+                        ? activePillClass
+                        : inactivePillClass
+                  }`;
+
+                  return isDisabled ? (
+                    <span
+                      key={item.name}
+                      aria-disabled="true"
+                      title="Temporarily unavailable"
+                      className={className}
+                    >
+                      {item.name}
+                    </span>
+                  ) : isSectionItem ? (
+                    <button
+                      key={item.name}
+                      type="button"
+                      onClick={() => scrollToDashboardSection(item.target)}
+                      aria-current={active ? 'location' : undefined}
+                      className={className}
+                    >
+                      {item.name}
+                      {active && (
+                        <span
+                          className="absolute -bottom-0.5 left-1/2 h-[3px] w-6 -translate-x-1/2 rounded-full bg-technical shadow-soft"
+                          aria-hidden="true"
+                        />
+                      )}
+                    </button>
+                  ) : (
+                    <Link key={item.name} to={item.href} className={className}>
+                      {item.name}
+                    </Link>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="flex min-w-0 shrink items-center gap-0.5 rounded-2xl border border-line bg-surface-muted/80 p-1 shadow-soft xl:gap-1">
+                <Link
+                  to="/"
+                  aria-label="Home"
+                  title="Home"
+                  aria-current={isActive('/') ? 'page' : undefined}
+                  className={`relative flex size-11 shrink-0 items-center justify-center rounded-xl border transition duration-200 focus-visible:outline-offset-2 ${
+                    isActive('/') ? activePillClass : inactivePillClass
+                  }`}
+                >
+                  <Home className="size-4" aria-hidden="true" />
+                  {isActive('/') && (
+                    <span
+                      className="absolute -bottom-0.5 left-1/2 h-[3px] w-6 -translate-x-1/2 rounded-full bg-technical shadow-soft"
+                      aria-hidden="true"
+                    />
+                  )}
+                </Link>
+
+                {mainNavItems.map((item) => {
+                  const isDisabled = 'disabled' in item && item.disabled;
+                  if (isDisabled) {
+                    return (
+                      <span
+                        key={item.name}
+                        aria-disabled="true"
+                        title="Temporarily unavailable"
+                        className="relative flex min-h-11 shrink-0 cursor-not-allowed select-none items-center whitespace-nowrap rounded-xl border border-transparent px-2.5 py-2 text-[0.6875rem] font-semibold text-ink-subtle opacity-60 xl:px-4 xl:text-sm"
+                      >
+                        {item.name}
+                      </span>
+                    );
+                  }
+
+                  const active = isActive(item.href);
+                  return (
+                    <Link
+                      key={item.name}
+                      to={item.href}
+                      aria-current={active ? 'page' : undefined}
+                      className={`relative flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-xl border px-2.5 py-2 text-[0.6875rem] font-semibold transition duration-200 focus-visible:outline-offset-2 xl:px-4 xl:text-sm ${
+                        active ? activePillClass : inactivePillClass
+                      }`}
+                    >
+                      {item.name}
+                      {active && (
+                        <span
+                          className="absolute -bottom-0.5 left-1/2 h-[3px] w-6 -translate-x-1/2 rounded-full bg-technical shadow-soft"
+                          aria-hidden="true"
+                        />
+                      )}
+                    </Link>
+                  );
+                })}
+              </div>
+            )}
+
+            <div className="flex min-w-0 shrink-0 items-center gap-2">
+              <button
+                onClick={toggleTheme}
+                aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                className={`flex size-11 shrink-0 items-center justify-center rounded-full border text-ink-muted transition duration-200 ${hoverLiftClass} hover:border-technical/40 hover:bg-surface-muted hover:text-ink focus-visible:outline-offset-2 ${controlSurfaceClass}`}
+                type="button"
+              >
+                {isDark ? (
+                  <Sun className="size-5" aria-hidden="true" />
+                ) : (
+                  <Moon className="size-5" aria-hidden="true" />
+                )}
+              </button>
+
               {isAuthenticated ? (
                 <>
-                  <div className={`flex items-center space-x-2 px-3 py-2 rounded-lg ${isDark
-                      ? 'bg-gray-800/50'
-                      : 'bg-gray-100/70 border border-gray-200'
-                    }`}>
-                    <User className={`w-4 h-4 ${isDark ? 'text-white' : 'text-gray-700'}`} />
-                    <span className={`text-sm font-medium ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
-                      {user?.name || user?.email?.split('@')[0]}
+                  <div className={`flex h-11 min-w-0 max-w-32 items-center gap-1.5 rounded-full border px-3 text-ink xl:max-w-44 ${controlSurfaceClass}`}>
+                    <User className="size-4 shrink-0 text-primary-text" aria-hidden="true" />
+                    <span className="truncate text-xs font-semibold xl:text-sm" title={displayedUsername}>
+                      {displayedUsername}
                     </span>
                   </div>
                   <button
                     onClick={handleLogout}
-                    className={`w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-colors duration-200 ${isDark
-                        ? 'text-gray-300 hover:text-red-400 hover:bg-gray-800/50'
-                        : 'text-gray-700 hover:text-red-600 hover:bg-gray-100/50'
-                      }`}
+                    className={`flex size-11 shrink-0 items-center justify-center gap-2 rounded-full border text-ink-muted transition duration-200 ${hoverLiftClass} hover:border-technical/40 hover:bg-surface-muted hover:text-technical-text focus-visible:outline-offset-2 xl:w-auto xl:px-4 ${controlSurfaceClass}`}
+                    type="button"
+                    aria-label="Logout"
+                    title="Logout"
                   >
-                    <LogOut className="w-5 h-5" /> <span>Logout</span>
+                    <LogOut className="size-4" aria-hidden="true" />
+                    <span className="hidden xl:inline">Logout</span>
                   </button>
                 </>
               ) : (
                 <Link
                   to="/login"
-                  onClick={handleMobileLinkClick}
-                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white px-6 py-3 rounded-lg text-center font-semibold hover:from-blue-700 hover:to-purple-700 transition-all duration-200"
+                  className={`inline-flex min-h-11 shrink-0 items-center justify-center rounded-full border border-primary/60 bg-gradient-to-r from-primary to-technical px-4 text-xs font-semibold text-ink-inverse shadow-soft transition duration-200 ${hoverLiftClass} hover:brightness-105 focus-visible:outline-offset-2 xl:px-5 xl:text-sm`}
                 >
                   Login
                 </Link>
               )}
-
-              {navItems.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  onClick={handleMobileLinkClick}
-                  className={`flex items-center space-x-2 text-base font-medium transition-colors duration-200 ${pathname === item.href
-                      ? 'text-blue-500 dark:text-blue-400'
-                      : isDark
-                        ? 'text-gray-300 hover:text-white'
-                        : 'text-gray-700 hover:text-gray-900'
-                    }`}
-                >
-                  <span>{item.name}</span>
-                </Link>
-              ))}
-
-              <div className={`pt-4 ${isDark ? 'border-t border-gray-700' : 'border-t border-gray-200'}`}>
-                <button
-                  onClick={toggleTheme}
-                  aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
-                  className={`w-full flex items-center justify-center space-x-2 px-6 py-3 rounded-lg font-medium transition-all duration-300 ${isDark
-                      ? 'text-gray-300 hover:text-white hover:bg-gray-800/50'
-                      : 'text-gray-700 hover:text-gray-900 hover:bg-gray-100/50'
-                    }`}
-                  type="button"
-                >
-                  {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-                  <span>{isDark ? 'Light Mode' : 'Dark Mode'}</span>
-                </button>
-              </div>
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          </div>
+
+          <div
+            className={`pointer-events-auto shrink-0 items-center gap-2 ${
+              isStudentDashboard ? 'flex xl:hidden' : 'flex lg:hidden'
+            }`}
+          >
+            <button
+              onClick={toggleTheme}
+              aria-label={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+              className={`flex size-11 shrink-0 items-center justify-center rounded-full border text-ink-muted transition duration-200 hover:border-technical/40 hover:bg-surface-muted hover:text-ink focus-visible:outline-offset-2 ${controlSurfaceClass}`}
+              type="button"
+            >
+              {isDark ? (
+                <Sun className="size-5" aria-hidden="true" />
+              ) : (
+                <Moon className="size-5" aria-hidden="true" />
+              )}
+            </button>
+
+            <button
+              onClick={onToggleSidebar}
+              className={`flex size-11 shrink-0 items-center justify-center rounded-full border text-ink-muted transition duration-200 hover:border-technical/40 hover:bg-surface-muted hover:text-ink focus-visible:outline-offset-2 ${controlSurfaceClass}`}
+              aria-label="Open navigation menu"
+              aria-controls="sidebar-navigation"
+              aria-haspopup="dialog"
+              title="Menu"
+              type="button"
+            >
+              <Menu className="size-5" aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+      </div>
     </motion.nav>
   );
 };

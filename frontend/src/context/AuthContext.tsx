@@ -1,15 +1,47 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
+import { ApiError, apiRequest } from "../lib/api";
 
-interface User {
-  email: string;
+export type UserRole = "student" | "admin";
+export type EnrolledDomain = "Web Development" | "DSA" | "Aptitude";
+
+export interface User {
+  id: string;
   name: string;
+  email: string;
+  usn: string;
+  contactNumber: string;
+  branch: string;
+  year: number;
+  enrolledDomains: EnrolledDomain[];
+  role: UserRole;
+  emailVerified: boolean;
+  isActive?: boolean;
 }
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, name: string) => void;
-  logout: () => void;
   isAuthenticated: boolean;
+  isLoading: boolean;
+  login: (email: string, password: string) => Promise<User>;
+  logout: () => Promise<void>;
+  refreshUser: () => Promise<User | null>;
+}
+
+interface UserResponse {
+  success: boolean;
+  user: User;
+}
+
+interface LoginResponse extends UserResponse {
+  message: string;
+  redirectTo: string;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -17,38 +49,87 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 };
 
-export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  useEffect(() => {
-    // Check if user is stored in localStorage
-    const storedUser = localStorage.getItem('hackerearth_user');
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
+  const refreshUser = useCallback(async (): Promise<User | null> => {
+    try {
+      const data = await apiRequest<UserResponse>("/api/auth/me");
+      setUser(data.user);
+      return data.user;
+    } catch (error) {
+      if (error instanceof ApiError && error.status === 401) {
+        setUser(null);
+        return null;
+      }
+
+      setUser(null);
+      return null;
     }
   }, []);
 
-  const login = (email: string, name: string) => {
-    const userData = { email, name };
-    setUser(userData);
-    localStorage.setItem('hackerearth_user', JSON.stringify(userData));
-  };
+  useEffect(() => {
+    let isMounted = true;
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('hackerearth_user');
-  };
+    const loadSession = async () => {
+      try {
+        await refreshUser();
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
 
-  const isAuthenticated = !!user;
+    void loadSession();
 
-  return (
-    <AuthContext.Provider value={{ user, login, logout, isAuthenticated }}>
-      {children}
-    </AuthContext.Provider>
+    return () => {
+      isMounted = false;
+    };
+  }, [refreshUser]);
+
+  const login = useCallback(
+    async (email: string, password: string): Promise<User> => {
+      const data = await apiRequest<LoginResponse>("/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password }),
+      });
+
+      setUser(data.user);
+      return data.user;
+    },
+    []
   );
+
+  const logout = useCallback(async (): Promise<void> => {
+    try {
+      await apiRequest<{ success: boolean; message: string }>("/api/auth/logout", {
+        method: "POST",
+      });
+    } finally {
+      setUser(null);
+    }
+  }, []);
+
+  const value = useMemo(
+    () => ({
+      user,
+      isAuthenticated: Boolean(user),
+      isLoading,
+      login,
+      logout,
+      refreshUser,
+    }),
+    [isLoading, login, logout, refreshUser, user]
+  );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

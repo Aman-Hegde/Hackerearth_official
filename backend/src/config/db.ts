@@ -1,26 +1,21 @@
-// backend/src/config/db.ts
-import { Sequelize } from 'sequelize';
-import dotenv from 'dotenv';
+import mongoose from "mongoose";
 
-dotenv.config(); // Load environment variables
+export const connectDatabase = async (): Promise<void> => {
+  const mongoUri = process.env.MONGODB_URI;
 
-const sequelize = new Sequelize(
-  process.env.NEON_DB_NAME!,     // Supabase database name
-  process.env.NEON_DB_USER!,     // Supabase database username
-  process.env.NEON_DB_PASSWORD!, // Supabase database password
-  {
-    host: process.env.NEON_DB_HOST || 'localhost',
-    port: Number(process.env.NEON_DB_PORT) || 5432,
-    dialect: 'postgres',
-    logging: false,
-    dialectOptions: {
-      ssl: {
-        require: true,               // Supabase requires SSL
-        rejectUnauthorized: false,    // Stricter SSL check for Supabase
-      },
-    },
+  if (!mongoUri) {
+    throw new Error("MONGODB_URI is not defined in the environment variables.");
   }
-);
 
-export default sequelize;
+  try {
+    await mongoose.connect(mongoUri);
+    console.log("MongoDB connected successfully.");
+  } catch (error) {
+    console.error("MongoDB connection failed:", error);
+    throw error;
+  }
+};
 
+mongoose.connection.on("disconnected", () => {
+  console.warn("MongoDB disconnected.");
+});
