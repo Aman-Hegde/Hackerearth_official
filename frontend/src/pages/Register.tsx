@@ -2,7 +2,7 @@ import { FormEvent, useMemo, useState } from "react";
 import type { ChangeEvent, FocusEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, GraduationCap, Mail, Phone, User } from "lucide-react";
+import { ArrowRight, Mail, Phone, User } from "lucide-react";
 import AuthInput from "../components/auth/AuthInput";
 import AuthShell from "../components/auth/AuthShell";
 import AuthThemeToggle from "../components/auth/AuthThemeToggle";
@@ -44,6 +44,19 @@ const passwordRules = [
   { label: "1 number", test: (value: string) => /\d/.test(value) },
   { label: "1 special character", test: (value: string) => /[^A-Za-z0-9]/.test(value) },
 ];
+const branchOptions = [
+  { value: "CSE", label: "Computer Science and Engineering (CSE)" },
+  { value: "ISE", label: "Information Science and Engineering (ISE)" },
+  { value: "AIML", label: "Artificial Intelligence and Machine Learning (AIML)" },
+  { value: "AIDS", label: "Artificial Intelligence and Data Science (AIDS)" },
+  { value: "ECE", label: "Electronics and Communication Engineering (ECE)" },
+  { value: "EEE", label: "Electrical and Electronics Engineering (EEE)" },
+  { value: "ME", label: "Mechanical Engineering (ME)" },
+  { value: "CV", label: "Civil Engineering (CV)" },
+  { value: "BT", label: "Biotechnology (BT)" },
+  { value: "CC", label: "Computer Communication (CC)" },
+] as const;
+const validBranchCodes = new Set<string>(branchOptions.map((option) => option.value));
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState<RegisterForm>(initialForm);
@@ -81,7 +94,10 @@ export default function RegisterPage() {
       if (!fieldValue.trim()) return "Contact number is required.";
       if (!/^\d{10}$/.test(fieldValue)) return "Contact number must contain exactly 10 digits.";
     }
-    if (name === "branch" && !fieldValue.trim()) return "Branch is required.";
+    if (name === "branch") {
+      if (!fieldValue) return "Branch is required.";
+      if (!validBranchCodes.has(fieldValue)) return "Select a valid branch.";
+    }
     if (name === "year") {
       const year = Number(fieldValue);
       if (!fieldValue) return "Year is required.";
@@ -274,10 +290,41 @@ export default function RegisterPage() {
           <form className="mt-6 space-y-4" onSubmit={handleSubmit} noValidate aria-busy={isLoading}>
             <div className="grid gap-4 md:grid-cols-2">
               <AuthInput id="name" name="name" label="Name" value={formData.name} error={errors.name} onChange={handleChange} onBlur={handleBlur} autoComplete="name" icon={<User className="h-4 w-4" aria-hidden="true" />} />
-              <AuthInput id="email" name="email" label="Email ID" type="email" value={formData.email} error={errors.email} onChange={handleChange} onBlur={handleBlur} autoComplete="email" icon={<Mail className="h-4 w-4" aria-hidden="true" />} />
+              <AuthInput id="email" name="email" label="Email ID" type="email" placeholder="yourname@nmamit.in" value={formData.email} error={errors.email} onChange={handleChange} onBlur={handleBlur} autoComplete="email" icon={<Mail className="h-4 w-4" aria-hidden="true" />} />
               <AuthInput id="usn" name="usn" label="USN" value={formData.usn} error={errors.usn} onChange={handleChange} onBlur={handleBlur} autoComplete="off" />
               <AuthInput id="contactNumber" name="contactNumber" label="Contact Number" inputMode="numeric" value={formData.contactNumber} error={errors.contactNumber} onChange={handleChange} onBlur={handleBlur} autoComplete="tel" icon={<Phone className="h-4 w-4" aria-hidden="true" />} />
-              <AuthInput id="branch" name="branch" label="Branch" value={formData.branch} error={errors.branch} onChange={handleChange} onBlur={handleBlur} autoComplete="organization-title" icon={<GraduationCap className="h-4 w-4" aria-hidden="true" />} />
+              <div className="min-w-0 space-y-2">
+                <label htmlFor="branch" className="block text-[0.95rem] font-medium text-ink">
+                  Branch
+                </label>
+                <select
+                  id="branch"
+                  name="branch"
+                  value={formData.branch}
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  aria-invalid={Boolean(errors.branch)}
+                  aria-describedby={errors.branch ? "branch-error" : undefined}
+                  className={cn(
+                    "min-h-11 w-full min-w-0 rounded-control border bg-surface px-4 py-3 text-sm text-ink shadow-soft transition-colors duration-200 focus-visible:border-focus focus-visible:ring-2 focus-visible:ring-technical/30",
+                    errors.branch
+                      ? "border-highlight focus-visible:border-highlight focus-visible:ring-highlight/30"
+                      : "border-line-strong hover:border-technical",
+                  )}
+                >
+                  <option value="">Select your branch</option>
+                  {branchOptions.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+                {errors.branch && (
+                  <p id="branch-error" className="text-sm font-medium text-highlight-text" role="alert">
+                    {errors.branch}
+                  </p>
+                )}
+              </div>
               <div className="space-y-2">
                 <label htmlFor="year" className="block text-[0.95rem] font-medium text-ink">
                   Year

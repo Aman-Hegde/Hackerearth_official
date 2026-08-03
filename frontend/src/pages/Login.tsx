@@ -15,13 +15,11 @@ import logo from "../assets/image.png";
 interface LoginForm {
   email: string;
   password: string;
-  rememberMe: boolean;
 }
 
 const initialForm: LoginForm = {
   email: "",
   password: "",
-  rememberMe: false,
 };
 
 const getDashboardPath = (role: "student" | "admin") =>
@@ -38,7 +36,7 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const shouldReduceMotion = useReducedMotion();
 
-  const validateField = (name: keyof LoginForm, value: string | boolean) => {
+  const validateField = (name: keyof LoginForm, value: string) => {
     if (name === "email") {
       const email = String(value).trim().toLowerCase();
       if (!email) return "Email is required.";
@@ -65,17 +63,16 @@ export default function LoginPage() {
   };
 
   const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = event.target;
+    const { name, value } = event.target;
     const fieldName = name as keyof LoginForm;
-    const nextValue = type === "checkbox" ? checked : value;
 
-    setFormData((current) => ({ ...current, [fieldName]: nextValue }));
+    setFormData((current) => ({ ...current, [fieldName]: value }));
     setAuthError("");
 
     if (hasSubmitted || touched[fieldName]) {
       setErrors((current) => ({
         ...current,
-        [fieldName]: validateField(fieldName, nextValue),
+        [fieldName]: validateField(fieldName, value),
       }));
     }
   };
@@ -190,16 +187,7 @@ export default function LoginPage() {
               />
 
               <div className="flex flex-col gap-3 text-sm sm:flex-row sm:items-center sm:justify-between">
-                <label className="inline-flex min-h-11 items-center gap-2 text-ink-muted">
-                  <input
-                    type="checkbox"
-                    name="rememberMe"
-                    checked={formData.rememberMe}
-                    onChange={handleChange}
-                    className="size-5 rounded border-line-strong bg-surface-muted text-primary focus:ring-technical"
-                  />
-                  Secure session lasts up to 7 days
-                </label>
+                <p className="text-ink-muted">Your secure session lasts up to 7 days.</p>
                 <Link
                   to="/forgot-password"
                   className="inline-flex min-h-11 items-center font-semibold text-primary-text underline underline-offset-4 transition-colors hover:text-technical-text focus-visible:outline-offset-2"
