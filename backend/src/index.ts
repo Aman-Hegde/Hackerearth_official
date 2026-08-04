@@ -11,10 +11,12 @@ dotenv.config();
 const app = express();
 
 const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "https://hackerearth-official.vercel.app",
   "https://hackerearth-hub-nmamit.in",
   "http://localhost:3000",
   "http://localhost:5173",
-];
+].filter((origin): origin is string => Boolean(origin));
 
 const corsOptions: CorsOptions = {
   origin: (
