@@ -25,6 +25,7 @@ import { ThemeProvider } from "./context/ThemeContext";
 import ScrollToTop from "./components/ScrollTop";
 import Sidebar from "./components/Sidebar";
 import SpotlightCursor from "./components/CustomCursor";
+import { ToastProvider } from "./components/ToastProvider";
 import type { UserRole } from "./context/AuthContext";
 
 function AppWrapper() {
@@ -133,8 +134,10 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         <Router>
-          <ScrollToTop />
-          <AppWrapper />
+          <ToastProvider>
+            <ScrollToTop />
+            <AppWrapper />
+          </ToastProvider>
         </Router>
       </AuthProvider>
     </ThemeProvider>

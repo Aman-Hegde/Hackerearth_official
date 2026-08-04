@@ -10,6 +10,7 @@ import AuthVisual from "../components/auth/AuthVisual";
 import DomainSelector from "../components/auth/DomainSelector";
 import type { Domain } from "../components/auth/DomainSelector";
 import PasswordInput from "../components/auth/PasswordInput";
+import { useToast } from "../components/ToastProvider";
 import { cn } from "../lib/utils";
 import logo from "../assets/image.png";
 
@@ -67,9 +68,9 @@ export default function RegisterPage() {
   const [touched, setTouched] = useState<Partial<Record<keyof RegisterForm | "domains", boolean>>>({});
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [statusMessage, setStatusMessage] = useState("");
   const shouldReduceMotion = useReducedMotion();
   const navigate = useNavigate();
+  const { showToast } = useToast();
 
   const passedPasswordRules = useMemo(() => passwordRules.filter((rule) => rule.test(formData.password)).length, [formData.password]);
   const strengthLabel = ["Very weak", "Weak", "Fair", "Good", "Strong", "Excellent"][passedPasswordRules];
@@ -147,7 +148,6 @@ export default function RegisterPage() {
           : {}),
       }));
     }
-    setStatusMessage("");
   };
 
   const handleBlur = (event: FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -158,7 +158,6 @@ export default function RegisterPage() {
 
   const handleDomainChange = (domains: Domain[]) => {
     setSelectedDomains(domains);
-    setStatusMessage("");
     if (hasSubmitted || touched.domains) {
       setErrors((current) => ({ ...current, domains: validateField("domains", domains) }));
     }
@@ -192,7 +191,6 @@ export default function RegisterPage() {
       confirmPassword: true,
       domains: true,
     });
-    setStatusMessage("");
     if (!validateForm()) return;
 
     setIsLoading(true);
@@ -220,7 +218,30 @@ export default function RegisterPage() {
       const data = await parseResponseJson(response);
 
       if (!response.ok || data.success === false) {
-        setStatusMessage(typeof data.message === "string" ? data.message : "Unable to request OTP. Please try again.");
+        const backendMessage =
+          typeof data.message === "string"
+            ? data.message
+            : "Unable to request OTP. Please try again.";
+        const backendCode = typeof data.code === "string" ? data.code : "";
+        const isEmailAlreadyRegistered =
+          backendCode === "EMAIL_ALREADY_REGISTERED" ||
+          backendMessage.toLowerCase().includes("email is already registered");
+
+        showToast({
+          variant: isEmailAlreadyRegistered ? "warning" : "error",
+          title: isEmailAlreadyRegistered ? "Email already registered" : "Registration failed",
+          message: isEmailAlreadyRegistered
+            ? "This email is already registered. Please log in instead."
+            : backendMessage,
+          action: isEmailAlreadyRegistered ? (
+            <Link
+              to="/login"
+              className="inline-flex min-h-9 items-center rounded-control border border-amber-400/45 bg-amber-400/15 px-3 text-sm font-semibold text-amber-800 transition hover:bg-amber-400/25 focus-visible:outline-offset-2 dark:text-amber-100"
+            >
+              Login
+            </Link>
+          ) : undefined,
+        });
         return;
       }
 
@@ -232,7 +253,11 @@ export default function RegisterPage() {
         },
       });
     } catch {
-      setStatusMessage("Unable to connect to the server. Please try again.");
+      showToast({
+        variant: "error",
+        title: "Connection failed",
+        message: "Unable to connect to the server. Please try again.",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -382,17 +407,6 @@ export default function RegisterPage() {
               </div>
 
               <DomainSelector selectedDomains={selectedDomains} onChange={handleDomainChange} onBlur={handleDomainBlur} error={errors.domains} />
-
-              {statusMessage && (
-                <p
-                  className="rounded-control border border-highlight/40 bg-highlight/10 px-4 py-3 text-sm font-medium text-highlight-text"
-                  role="status"
-                  aria-live="polite"
-                  aria-atomic="true"
-                >
-                  {statusMessage}
-                </p>
-              )}
 
               <button
                 type="submit"
