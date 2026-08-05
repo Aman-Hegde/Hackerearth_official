@@ -196,7 +196,7 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/register/request-otp`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -221,7 +221,7 @@ export default function RegisterPage() {
         const backendMessage =
           typeof data.message === "string"
             ? data.message
-            : "Unable to request OTP. Please try again.";
+            : "Unable to create account. Please try again.";
         const backendCode = typeof data.code === "string" ? data.code : "";
         const isEmailAlreadyRegistered =
           backendCode === "EMAIL_ALREADY_REGISTERED" ||
@@ -245,13 +245,12 @@ export default function RegisterPage() {
         return;
       }
 
-      navigate("/register/verify-otp", {
-        state: {
-          email: typeof data.email === "string" ? data.email : formData.email.trim().toLowerCase(),
-          expiresInSeconds: typeof data.expiresInSeconds === "number" ? data.expiresInSeconds : 600,
-          resendAvailableInSeconds: typeof data.resendAvailableInSeconds === "number" ? data.resendAvailableInSeconds : 60,
-        },
+      showToast({
+        variant: "success",
+        title: "Account created",
+        message: "Account created successfully. You can now log in.",
       });
+      navigate("/login");
     } catch {
       showToast({
         variant: "error",
@@ -413,7 +412,7 @@ export default function RegisterPage() {
                 disabled={isLoading}
                 className="btn btn-primary group w-full sm:w-auto sm:px-8"
               >
-                {isLoading ? "Sending OTP..." : "Submit registration details"}
+                {isLoading ? "Creating account..." : "Create account"}
                 <ArrowRight
                   className={cn(
                     "h-4 w-4",

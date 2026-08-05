@@ -1,91 +1,13 @@
-import { FormEvent, useState } from "react";
-import type { ChangeEvent, FocusEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowRight, Mail } from "lucide-react";
-import AuthInput from "../components/auth/AuthInput";
+import { ArrowLeft, MailX } from "lucide-react";
 import AuthShell from "../components/auth/AuthShell";
 import AuthThemeToggle from "../components/auth/AuthThemeToggle";
 import AuthVisual from "../components/auth/AuthVisual";
-import { ApiError, apiRequest } from "../lib/api";
 import logo from "../assets/image.png";
 
-interface ForgotPasswordResponse {
-  success: boolean;
-  message: string;
-}
-
 export default function ForgotPasswordPage() {
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
-  const [message, setMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasTouched, setHasTouched] = useState(false);
-  const navigate = useNavigate();
   const shouldReduceMotion = useReducedMotion();
-
-  const validateEmail = (value: string) => {
-    const normalizedEmail = value.trim().toLowerCase();
-    if (!normalizedEmail) return "Email is required.";
-    if (!normalizedEmail.endsWith("@nmamit.in")) {
-      return "Use your official @nmamit.in email address.";
-    }
-    return "";
-  };
-
-  const handleChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const nextEmail = event.target.value;
-    setEmail(nextEmail);
-    setMessage("");
-    if (hasTouched) {
-      setError(validateEmail(nextEmail));
-    }
-  };
-
-  const handleBlur = (_event: FocusEvent<HTMLInputElement>) => {
-    setHasTouched(true);
-    setError(validateEmail(email));
-  };
-
-  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    setHasTouched(true);
-    setMessage("");
-
-    const nextError = validateEmail(email);
-    setError(nextError);
-    if (nextError) return;
-
-    const normalizedEmail = email.trim().toLowerCase();
-    setIsLoading(true);
-
-    try {
-      const data = await apiRequest<ForgotPasswordResponse>(
-        "/api/auth/forgot-password/request-otp",
-        {
-          method: "POST",
-          body: JSON.stringify({ email: normalizedEmail }),
-        }
-      );
-
-      setMessage(data.message);
-      navigate("/forgot-password/verify-otp", {
-        state: {
-          email: normalizedEmail,
-          expiresInSeconds: 600,
-          resendAvailableInSeconds: 60,
-        },
-      });
-    } catch (requestError) {
-      if (requestError instanceof ApiError) {
-        setMessage(requestError.message);
-      } else {
-        setMessage("Unable to connect to the server. Please try again.");
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   return (
     <AuthShell>
@@ -118,7 +40,6 @@ export default function ForgotPasswordPage() {
             initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: shouldReduceMotion ? 0 : 0.45, ease: "easeOut" }}
-            aria-busy={isLoading}
           >
             <div className="space-y-2">
               <p className="text-sm font-medium uppercase tracking-[0.2em] text-technical-text">
@@ -128,48 +49,28 @@ export default function ForgotPasswordPage() {
                 Forgot password
               </h2>
               <p className="break-words text-sm leading-6 text-ink-muted">
-                Enter your NMAMIT email address. If an account exists, we will send a verification OTP.
+                Password reset by email is temporarily unavailable. Please contact a HackerEarth Hub administrator.
               </p>
             </div>
 
-            <form className="mt-8 space-y-5" onSubmit={handleSubmit} noValidate>
-              <AuthInput
-                id="forgotEmail"
-                name="email"
-                label="NMAMIT email"
-                type="email"
-                autoComplete="email"
-                value={email}
-                error={error}
-                onChange={handleChange}
-                onBlur={handleBlur}
-                icon={<Mail className="h-4 w-4" aria-hidden="true" />}
-              />
+            <div className="mt-8 rounded-card border border-technical/30 bg-technical/10 p-5 text-ink shadow-soft">
+              <div className="flex items-start gap-3">
+                <span className="flex size-11 shrink-0 items-center justify-center rounded-control bg-technical/15 text-technical-text">
+                  <MailX className="size-5" aria-hidden="true" />
+                </span>
+                <div className="min-w-0">
+                  <p className="font-semibold text-ink">Email reset unavailable</p>
+                  <p className="mt-2 text-sm leading-6 text-ink-muted">
+                    Password reset by email is temporarily unavailable. Please contact a HackerEarth Hub administrator.
+                  </p>
+                </div>
+              </div>
+            </div>
 
-              {message && (
-                <p
-                  className="rounded-control border border-line bg-surface-muted px-4 py-3 text-sm font-medium text-ink-muted"
-                  role="status"
-                  aria-live="polite"
-                  aria-atomic="true"
-                >
-                  {message}
-                </p>
-              )}
-
-              <button type="submit" className="btn btn-primary w-full" disabled={isLoading}>
-                {isLoading && (
-                  <span
-                    className={`size-4 rounded-full border-2 border-ink-inverse/40 border-b-ink-inverse ${
-                      shouldReduceMotion ? "" : "animate-spin"
-                    }`}
-                    aria-hidden="true"
-                  />
-                )}
-                {isLoading ? "Sending OTP..." : "Send OTP"}
-                {!isLoading && <ArrowRight className="h-4 w-4" aria-hidden="true" />}
-              </button>
-            </form>
+            <Link to="/login" className="btn btn-primary mt-8 w-full">
+              <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+              Back to login
+            </Link>
 
             <p className="mt-6 break-words text-center text-sm text-ink-muted">
               Remembered it?{" "}

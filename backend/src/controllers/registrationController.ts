@@ -178,6 +178,103 @@ const secondsUntil = (date: Date): number => {
   return Math.max(0, Math.ceil((date.getTime() - Date.now()) / 1000));
 };
 
+export const registerStudent = async (
+  req: Request<unknown, unknown, RegistrationRequestBody>,
+  res: Response
+) => {
+  try {
+    const normalized = normalizeRegistrationInput(req.body);
+
+    if (!normalized.data) {
+      return res.status(400).json({
+        success: false,
+        message: normalized.message,
+      });
+    }
+
+    const registration = normalized.data;
+
+    const existingUser = await User.findOne({
+      $or: [{ email: registration.email }, { usn: registration.usn }],
+    })
+      .select("email usn")
+      .lean();
+
+    if (existingUser?.email === registration.email) {
+      return res.status(409).json({
+        success: false,
+        code: "EMAIL_ALREADY_REGISTERED",
+        message: "Email is already registered.",
+      });
+    }
+
+    if (existingUser?.usn === registration.usn) {
+      return res.status(409).json({
+        success: false,
+        code: "USN_ALREADY_REGISTERED",
+        message: "USN is already registered.",
+      });
+    }
+
+    const passwordHash = await bcrypt.hash(
+      registration.password,
+      PASSWORD_SALT_ROUNDS
+    );
+
+    const user = await User.create({
+      name: registration.name,
+      email: registration.email,
+      usn: registration.usn,
+      contactNumber: registration.contactNumber,
+      branch: registration.branch,
+      year: registration.year,
+      passwordHash,
+      enrolledDomains: registration.enrolledDomains,
+      role: "student",
+      emailVerified: true,
+      isActive: true,
+    });
+
+    return res.status(201).json({
+      success: true,
+      message: "Account created successfully. You can now log in.",
+      user: {
+        id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+        usn: user.usn,
+        contactNumber: user.contactNumber,
+        branch: user.branch,
+        year: user.year,
+        enrolledDomains: user.enrolledDomains,
+        role: user.role,
+        emailVerified: user.emailVerified,
+        isActive: user.isActive,
+      },
+    });
+  } catch (error) {
+    const duplicateMessage = getDuplicateKeyMessage(error);
+
+    if (duplicateMessage) {
+      return res.status(409).json({
+        success: false,
+        code:
+          duplicateMessage === "Email is already registered."
+            ? "EMAIL_ALREADY_REGISTERED"
+            : duplicateMessage === "USN is already registered."
+              ? "USN_ALREADY_REGISTERED"
+              : "REGISTRATION_ALREADY_EXISTS",
+        message: duplicateMessage,
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Unexpected server error.",
+    });
+  }
+};
+
 export const requestRegistrationOtp = async (
   req: Request<unknown, unknown, RegistrationRequestBody>,
   res: Response
