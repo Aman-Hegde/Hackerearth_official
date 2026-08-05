@@ -28,8 +28,7 @@ const adminNavItems = [
 ] as const;
 
 const studentDashboardNavItems = [
-  { name: 'Home', href: '/' },
-  { name: 'Dashboard', target: 'student-dashboard-top' },
+  { name: 'Dashboard', href: '/student/dashboard' },
   { name: 'Events & Tasks', target: 'student-events-tasks' },
   { name: 'Resources', target: 'student-resources' },
   { name: 'My Domains', target: 'student-domains' },
@@ -48,8 +47,13 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
   const { user, isAuthenticated } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const { pathname } = useLocation();
-  const isStudentDashboard = pathname === '/student/dashboard';
+  const isStudentDashboard = pathname.startsWith('/student/dashboard');
   const mainNavItems = user?.role === 'admin' ? adminNavItems : navItems;
+  const brandHref = isAuthenticated
+    ? user?.role === 'admin'
+      ? '/admin/dashboard'
+      : '/student/dashboard'
+    : '/';
 
   useEffect(() => {
     const scrollContainer = document.getElementById('scroll-container');
@@ -124,7 +128,7 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
       <div className="site-container-wide py-2 lg:py-3">
         <div className="flex min-w-0 items-center justify-between gap-2 sm:gap-3 lg:rounded-3xl lg:border lg:border-line-strong/80 lg:bg-surface/95 lg:px-3 lg:py-2.5 lg:shadow-surface lg:backdrop-blur-xl xl:px-4">
           <Link
-            to="/"
+            to={brandHref}
             className="group pointer-events-auto flex min-w-0 flex-1 items-center gap-2 rounded-full focus-visible:outline-offset-4 sm:gap-3 lg:flex-none"
             aria-label="HackerEarth Hub-NMAMIT home"
           >
@@ -154,7 +158,11 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
                 {studentDashboardNavItems.map((item) => {
                   const isDisabled = 'disabled' in item && item.disabled;
                   const isSectionItem = 'target' in item;
-                  const active = !isDisabled && isSectionItem && activeDashboardSection === item.target;
+                  const active =
+                    !isDisabled &&
+                    (isSectionItem
+                      ? activeDashboardSection === item.target
+                      : isActive(item.href));
                   const className = `relative flex min-h-11 shrink-0 items-center whitespace-nowrap rounded-xl border px-2 py-2 text-[0.625rem] font-semibold transition duration-200 focus-visible:outline-offset-2 xl:px-3 xl:text-xs ${
                     isDisabled
                       ? 'cursor-not-allowed select-none border-transparent text-ink-subtle opacity-60'
@@ -197,23 +205,25 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
               </div>
             ) : (
               <div className="flex min-w-0 shrink items-center gap-0.5 rounded-2xl border border-line bg-surface-muted/80 p-1 shadow-soft xl:gap-1">
-                <Link
-                  to="/"
-                  aria-label="Home"
-                  title="Home"
-                  aria-current={isActive('/') ? 'page' : undefined}
-                  className={`relative flex size-11 shrink-0 items-center justify-center rounded-xl border transition duration-200 focus-visible:outline-offset-2 ${
-                    isActive('/') ? activePillClass : inactivePillClass
-                  }`}
-                >
-                  <Home className="size-4" aria-hidden="true" />
-                  {isActive('/') && (
-                    <span
-                      className="absolute -bottom-0.5 left-1/2 h-[3px] w-6 -translate-x-1/2 rounded-full bg-technical shadow-soft"
-                      aria-hidden="true"
-                    />
-                  )}
-                </Link>
+                {!isAuthenticated && (
+                  <Link
+                    to="/"
+                    aria-label="Home"
+                    title="Home"
+                    aria-current={isActive('/') ? 'page' : undefined}
+                    className={`relative flex size-11 shrink-0 items-center justify-center rounded-xl border transition duration-200 focus-visible:outline-offset-2 ${
+                      isActive('/') ? activePillClass : inactivePillClass
+                    }`}
+                  >
+                    <Home className="size-4" aria-hidden="true" />
+                    {isActive('/') && (
+                      <span
+                        className="absolute -bottom-0.5 left-1/2 h-[3px] w-6 -translate-x-1/2 rounded-full bg-technical shadow-soft"
+                        aria-hidden="true"
+                      />
+                    )}
+                  </Link>
+                )}
 
                 {mainNavItems.map((item) => {
                   const isDisabled = 'disabled' in item && item.disabled;

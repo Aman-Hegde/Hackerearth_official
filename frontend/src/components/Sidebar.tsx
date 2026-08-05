@@ -32,7 +32,6 @@ const navItems = [
 ] as const;
 
 const adminNavItems = [
-  { name: 'Home', path: '/', icon: Home },
   { name: 'Events', path: '/events', icon: Calendar },
   { name: 'Leaderboard', disabled: true, icon: Award },
   { name: 'Team', path: '/team', icon: Users },
@@ -41,8 +40,7 @@ const adminNavItems = [
 ] as const;
 
 const studentDashboardNavItems = [
-  { name: 'Home', path: '/', icon: Home },
-  { name: 'Dashboard', target: 'student-dashboard-top', icon: LayoutDashboard },
+  { name: 'Dashboard', path: '/student/dashboard', icon: LayoutDashboard },
   { name: 'Events & Tasks', target: 'student-events-tasks', icon: CalendarCheck },
   { name: 'Resources', target: 'student-resources', icon: BookOpen },
   { name: 'My Domains', target: 'student-domains', icon: Shapes },
@@ -68,7 +66,7 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
   const sidebarRef = useRef<HTMLElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const shouldReduceMotion = useReducedMotion() ?? false;
-  const isStudentDashboard = pathname === '/student/dashboard';
+  const isStudentDashboard = pathname.startsWith('/student/dashboard');
   const displayedNavItems = isStudentDashboard
     ? studentDashboardNavItems
     : user?.role === 'admin'
