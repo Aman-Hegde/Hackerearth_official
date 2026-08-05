@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState, type FC, type FocusEvent } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Home, LogOut, Menu, Moon, Sun, User } from 'lucide-react';
+import { Home, Menu, Moon, Sun } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import UserMenu from './UserMenu';
 import logo from '../assets/image.png';
 
 interface NavbarProps {
@@ -44,11 +45,9 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
   const lastScrollY = useRef(0);
   const navRef = useRef<HTMLElement>(null);
   const shouldReduceMotion = useReducedMotion() ?? false;
-  const navigate = useNavigate();
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const { isDark, toggleTheme } = useTheme();
   const { pathname } = useLocation();
-  const displayedUsername = user?.name || user?.email?.split('@')[0];
   const isStudentDashboard = pathname === '/student/dashboard';
   const mainNavItems = user?.role === 'admin' ? adminNavItems : navItems;
 
@@ -81,11 +80,6 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
 
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
 
   const scrollToDashboardSection = (target: string) => {
     setActiveDashboardSection(target);
@@ -274,24 +268,9 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
               </button>
 
               {isAuthenticated ? (
-                <>
-                  <div className={`flex h-11 min-w-0 max-w-32 items-center gap-1.5 rounded-full border px-3 text-ink xl:max-w-44 ${controlSurfaceClass}`}>
-                    <User className="size-4 shrink-0 text-primary-text" aria-hidden="true" />
-                    <span className="truncate text-xs font-semibold xl:text-sm" title={displayedUsername}>
-                      {displayedUsername}
-                    </span>
-                  </div>
-                  <button
-                    onClick={handleLogout}
-                    className={`flex size-11 shrink-0 items-center justify-center gap-2 rounded-full border text-ink-muted transition duration-200 ${hoverLiftClass} hover:border-technical/40 hover:bg-surface-muted hover:text-technical-text focus-visible:outline-offset-2 xl:w-auto xl:px-4 ${controlSurfaceClass}`}
-                    type="button"
-                    aria-label="Logout"
-                    title="Logout"
-                  >
-                    <LogOut className="size-4" aria-hidden="true" />
-                    <span className="hidden xl:inline">Logout</span>
-                  </button>
-                </>
+                <UserMenu
+                  triggerClassName={`max-w-32 xl:max-w-48 ${controlSurfaceClass} ${hoverLiftClass}`}
+                />
               ) : (
                 <Link
                   to="/login"

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FC } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   Award,
   BookOpen,
@@ -8,15 +8,14 @@ import {
   Code,
   Home,
   LayoutDashboard,
-  LogOut,
   Mail,
   Shapes,
-  User,
   Users,
   X,
 } from 'lucide-react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import UserMenu from './UserMenu';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -65,8 +64,7 @@ const restoreSidebarToggleFocus = () => {
 const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
   const { pathname } = useLocation();
   const [activeDashboardSection, setActiveDashboardSection] = useState('student-dashboard-top');
-  const navigate = useNavigate();
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const sidebarRef = useRef<HTMLElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const shouldReduceMotion = useReducedMotion() ?? false;
@@ -151,12 +149,6 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
       scrollTarget.style.overflow = previousOverflow;
     };
   }, [isOpen, isStudentDashboard, setIsOpen]);
-
-  const handleLogout = async () => {
-    await logout();
-    setIsOpen(false);
-    navigate('/login');
-  };
 
   const scrollToDashboardSection = (target: string) => {
     setActiveDashboardSection(target);
@@ -340,24 +332,12 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
 
               <div className="mx-2 mb-4 border-t border-line pt-4">
                 {isAuthenticated ? (
-                  <div className="grid gap-3">
-                    <div className="ui-card-muted flex items-center gap-3 rounded-control p-3 shadow-none">
-                      <span className="flex size-9 items-center justify-center rounded-control bg-primary/10 text-primary-text">
-                        <User className="size-4" aria-hidden="true" />
-                      </span>
-                      <span className="min-w-0 truncate text-sm font-semibold">
-                        {user?.name || user?.email?.split('@')[0]}
-                      </span>
-                    </div>
-                    <button
-                      onClick={handleLogout}
-                      className="btn btn-secondary w-full hover:border-red-400 hover:text-red-600 dark:hover:text-red-400"
-                      type="button"
-                    >
-                      <LogOut className="size-4" aria-hidden="true" />
-                      <span>Logout</span>
-                    </button>
-                  </div>
+                  <UserMenu
+                    fullWidth
+                    triggerClassName="rounded-control border-line bg-surface-muted/80 p-3 shadow-none"
+                    menuClassName="bottom-[calc(100%+0.5rem)] top-auto"
+                    onAfterAction={() => setIsOpen(false)}
+                  />
                 ) : (
                   <Link
                     to="/login"
