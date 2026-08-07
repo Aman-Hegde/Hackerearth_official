@@ -17,6 +17,8 @@ export interface IUser extends Document {
   role: UserRole;
   emailVerified: boolean;
   isActive: boolean;
+  passwordResetRequestMonth?: string;
+  passwordResetRequestCount: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -102,6 +104,18 @@ const userSchema = new Schema<IUser>(
     isActive: {
       type: Boolean,
       default: true,
+    },
+
+    passwordResetRequestMonth: {
+      type: String,
+      trim: true,
+      match: [/^\d{4}-\d{2}$/, "Password reset request month must use YYYY-MM format"],
+    },
+
+    passwordResetRequestCount: {
+      type: Number,
+      default: 0,
+      min: 0,
     },
   },
   {

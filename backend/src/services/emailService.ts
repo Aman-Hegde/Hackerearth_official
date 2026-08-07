@@ -13,6 +13,18 @@ interface PasswordResetOtpEmailInput {
   otp: string;
 }
 
+interface PasswordResetOtpInput {
+  to: string;
+  name: string;
+  otp: string;
+}
+
+interface BrevoConfig {
+  apiKey: string;
+  fromName: string;
+  fromAddress: string;
+}
+
 interface SmtpConfig {
   host: string;
   port: number;
@@ -32,6 +44,15 @@ const requiredEnvVars = [
   "EMAIL_FROM_NAME",
   "EMAIL_FROM_ADDRESS",
 ] as const;
+
+const requiredBrevoEnvVars = [
+  "BREVO_API_KEY",
+  "EMAIL_FROM_NAME",
+  "EMAIL_FROM_ADDRESS",
+] as const;
+
+const BREVO_TRANSACTIONAL_EMAIL_URL =
+  "https://api.brevo.com/v3/smtp/email";
 
 let transporter: Transporter | null = null;
 
@@ -177,11 +198,17 @@ export const sendPasswordResetOtpEmail = async ({
     text: [
       `Hi ${recipientName},`,
       "",
-      `Your HackerEarth Hub NMAMIT password reset OTP is ${otp}.`,
+      "Your HackerEarth Hub NMAMIT password reset OTP is:",
+      "",
+      otp,
+      "",
       `This OTP expires in ${OTP_EXPIRY_MINUTES} minutes.`,
       "",
+      "If you did not request a password reset, please ignore this email.",
+      "",
       "Do not share this OTP with anyone.",
-      "If you did not request a password change, please ignore this email.",
+      "",
+      "HackerEarth Hub NMAMIT",
     ].join("\n"),
     html: `
       <div style="font-family: Arial, sans-serif; color: #0f172a; line-height: 1.6;">
@@ -189,9 +216,129 @@ export const sendPasswordResetOtpEmail = async ({
         <p>Your HackerEarth Hub NMAMIT password reset OTP is:</p>
         <p style="font-size: 24px; font-weight: 700; letter-spacing: 6px;">${otp}</p>
         <p>This OTP expires in ${OTP_EXPIRY_MINUTES} minutes.</p>
+        <p>If you did not request a password reset, please ignore this email.</p>
         <p>Do not share this OTP with anyone.</p>
-        <p>If you did not request a password change, please ignore this email.</p>
+        <p>HackerEarth Hub NMAMIT</p>
       </div>
     `,
   });
+};
+
+const getRequiredBrevoEnv = (
+  key: (typeof requiredBrevoEnvVars)[number]
+): string => {
+  const value = process.env[key];
+
+  if (!value) {
+    throw new Error(`${key} is required for Brevo email delivery.`);
+  }
+
+  return value;
+};
+
+const parseBrevoConfig = (): BrevoConfig => {
+  const missingVars = requiredBrevoEnvVars.filter((key) => !process.env[key]);
+
+  if (missingVars.length > 0) {
+    throw new Error(
+      `Missing Brevo environment variables: ${missingVars.join(", ")}`
+    );
+  }
+
+  return {
+    apiKey: getRequiredBrevoEnv("BREVO_API_KEY"),
+    fromName: getRequiredBrevoEnv("EMAIL_FROM_NAME"),
+    fromAddress: getRequiredBrevoEnv("EMAIL_FROM_ADDRESS"),
+  };
+};
+
+const getEmailProvider = (): string => {
+  return (process.env.EMAIL_PROVIDER ?? "brevo").trim().toLowerCase();
+};
+
+export const sendPasswordResetOtp = async ({
+  to,
+  name,
+  otp,
+}: PasswordResetOtpInput): Promise<void> => {
+  const provider = getEmailProvider();
+
+  if (provider !== "brevo") {
+    throw new Error(`Unsupported email provider: ${provider}`);
+  }
+
+  const config = parseBrevoConfig();
+  const safeRecipientName = escapeHtml(name);
+  const textContent = [
+    `Hi ${name},`,
+    "",
+    "Your HackerEarth Hub NMAMIT password reset OTP is:",
+    "",
+    otp,
+    "",
+    `This OTP expires in ${OTP_EXPIRY_MINUTES} minutes.`,
+    "",
+    "Do not share this OTP with anyone.",
+    "",
+    "If you did not request a password reset, please ignore this email.",
+    "",
+    "HackerEarth Hub NMAMIT",
+  ].join("\n");
+  const htmlContent = `
+    <div style="margin:0; padding:0; background:#f8fafc; font-family:Arial, sans-serif; color:#0f172a;">
+      <div style="max-width:560px; margin:0 auto; padding:32px 20px;">
+        <div style="border:1px solid #dbeafe; border-radius:18px; overflow:hidden; background:#ffffff;">
+          <div style="background:#0f172a; padding:22px 24px; color:#ffffff;">
+            <p style="margin:0; font-size:12px; letter-spacing:1.8px; text-transform:uppercase; color:#93c5fd;">HackerEarth Hub NMAMIT</p>
+            <h1 style="margin:8px 0 0; font-size:22px; line-height:1.3;">Password Reset OTP</h1>
+          </div>
+          <div style="padding:24px;">
+            <p style="margin:0 0 16px;">Hi ${safeRecipientName},</p>
+            <p style="margin:0 0 12px;">Your HackerEarth Hub NMAMIT password reset OTP is:</p>
+            <p style="margin:0 0 18px; display:inline-block; padding:14px 18px; border-radius:12px; background:#eff6ff; border:1px solid #bfdbfe; color:#1d4ed8; font-size:28px; font-weight:700; letter-spacing:7px;">${otp}</p>
+            <p style="margin:0 0 12px;">This OTP expires in ${OTP_EXPIRY_MINUTES} minutes.</p>
+            <p style="margin:0 0 12px;">Do not share this OTP with anyone.</p>
+            <p style="margin:0 0 20px; color:#475569;">If you did not request a password reset, please ignore this email.</p>
+            <p style="margin:0; font-weight:700;">HackerEarth Hub NMAMIT</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+
+  let response: Response;
+
+  try {
+    response = await fetch(BREVO_TRANSACTIONAL_EMAIL_URL, {
+      method: "POST",
+      headers: {
+        accept: "application/json",
+        "content-type": "application/json",
+        "api-key": config.apiKey,
+      },
+      body: JSON.stringify({
+        sender: {
+          name: config.fromName,
+          email: config.fromAddress,
+        },
+        to: [
+          {
+            email: to,
+            name,
+          },
+        ],
+        subject: "HackerEarth Hub NMAMIT - Password Reset OTP",
+        htmlContent,
+        textContent,
+      }),
+    });
+  } catch {
+    throw new Error("Brevo password reset email request failed.");
+  }
+
+  if (!response.ok) {
+    throw new Error(
+      `Brevo password reset email delivery failed with status ${response.status}.`
+    );
+  }
 };
