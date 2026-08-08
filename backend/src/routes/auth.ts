@@ -3,6 +3,7 @@ import {
   adminAccessTest,
   studentAccessTest,
 } from "../controllers/accessTestController";
+import { changePassword } from "../controllers/accountController";
 import { loginUser } from "../controllers/loginController";
 import {
   requestRegistrationOtp,
@@ -52,6 +53,8 @@ router.post("/login", loginUser);
 router.post("/logout", logoutUser);
 
 router.get("/me", authenticate, getCurrentUser);
+
+router.post("/change-password", authenticate, changePassword);
 
 router.get(
   "/test/student",

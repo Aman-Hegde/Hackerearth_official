@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type FC, type FocusEvent } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
-import { Home, LogOut, Menu, Moon, Sun, User } from 'lucide-react';
+import { ChevronDown, ChevronUp, Home, LogOut, Menu, Moon, Settings, Sun, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
 import logo from '../assets/image.png';
@@ -41,8 +41,10 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
   const [hidden, setHidden] = useState(false);
   const [containsFocus, setContainsFocus] = useState(false);
   const [activeDashboardSection, setActiveDashboardSection] = useState('student-dashboard-top');
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const lastScrollY = useRef(0);
   const navRef = useRef<HTMLElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
   const shouldReduceMotion = useReducedMotion() ?? false;
   const navigate = useNavigate();
   const { user, logout, isAuthenticated } = useAuth();
@@ -77,14 +79,54 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
 
   useEffect(() => {
     setHidden(false);
+    setIsUserMenuOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (!isUserMenuOpen) return;
+
+    const handlePointerDown = (event: PointerEvent) => {
+      if (
+        userMenuRef.current &&
+        event.target instanceof Node &&
+        !userMenuRef.current.contains(event.target)
+      ) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('pointerdown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isUserMenuOpen]);
 
   const isActive = (href: string) =>
     href === '/' ? pathname === '/' : pathname === href || pathname.startsWith(`${href}/`);
 
   const handleLogout = async () => {
+    setIsUserMenuOpen(false);
     await logout();
     navigate('/login');
+  };
+
+  const handleProfileClick = () => {
+    setIsUserMenuOpen(false);
+    navigate(user?.role === 'admin' ? '/admin/dashboard' : '/student/dashboard');
+  };
+
+  const handleSettingsClick = () => {
+    setIsUserMenuOpen(false);
+    navigate('/settings');
   };
 
   const scrollToDashboardSection = (target: string) => {
@@ -274,24 +316,60 @@ const Navbar: FC<NavbarProps> = ({ onToggleSidebar }) => {
               </button>
 
               {isAuthenticated ? (
-                <>
-                  <div className={`flex h-11 min-w-0 max-w-32 items-center gap-1.5 rounded-full border px-3 text-ink xl:max-w-44 ${controlSurfaceClass}`}>
+                <div ref={userMenuRef} className="relative">
+                  <button
+                    type="button"
+                    onClick={() => setIsUserMenuOpen((current) => !current)}
+                    aria-expanded={isUserMenuOpen}
+                    aria-haspopup="menu"
+                    className={`flex h-11 min-w-0 max-w-40 items-center gap-1.5 rounded-full border px-3 text-ink transition duration-200 ${hoverLiftClass} hover:border-technical/40 hover:bg-surface-muted hover:text-technical-text focus-visible:outline-offset-2 xl:max-w-56 ${controlSurfaceClass}`}
+                  >
                     <User className="size-4 shrink-0 text-primary-text" aria-hidden="true" />
                     <span className="truncate text-xs font-semibold xl:text-sm" title={displayedUsername}>
                       {displayedUsername}
                     </span>
-                  </div>
-                  <button
-                    onClick={handleLogout}
-                    className={`flex size-11 shrink-0 items-center justify-center gap-2 rounded-full border text-ink-muted transition duration-200 ${hoverLiftClass} hover:border-technical/40 hover:bg-surface-muted hover:text-technical-text focus-visible:outline-offset-2 xl:w-auto xl:px-4 ${controlSurfaceClass}`}
-                    type="button"
-                    aria-label="Logout"
-                    title="Logout"
-                  >
-                    <LogOut className="size-4" aria-hidden="true" />
-                    <span className="hidden xl:inline">Logout</span>
+                    {isUserMenuOpen ? (
+                      <ChevronUp className="size-4 shrink-0 text-ink-muted" aria-hidden="true" />
+                    ) : (
+                      <ChevronDown className="size-4 shrink-0 text-ink-muted" aria-hidden="true" />
+                    )}
                   </button>
-                </>
+
+                  {isUserMenuOpen && (
+                    <div
+                      role="menu"
+                      className="absolute right-0 top-full mt-2 w-52 overflow-hidden rounded-card border border-line-strong bg-surface/95 p-1.5 text-ink shadow-surface backdrop-blur-xl"
+                    >
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={handleProfileClick}
+                        className="flex min-h-11 w-full items-center gap-2 rounded-control px-3 text-left text-sm font-semibold text-ink-muted transition hover:bg-surface-muted hover:text-technical-text focus-visible:outline-offset-2"
+                      >
+                        <User className="size-4" aria-hidden="true" />
+                        Profile
+                      </button>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        onClick={handleSettingsClick}
+                        className="flex min-h-11 w-full items-center gap-2 rounded-control px-3 text-left text-sm font-semibold text-ink-muted transition hover:bg-surface-muted hover:text-technical-text focus-visible:outline-offset-2"
+                      >
+                        <Settings className="size-4" aria-hidden="true" />
+                        Settings
+                      </button>
+                      <button
+                        onClick={handleLogout}
+                        className="flex min-h-11 w-full items-center gap-2 rounded-control px-3 text-left text-sm font-semibold text-ink-muted transition hover:bg-rose/10 hover:text-rose-text focus-visible:outline-offset-2"
+                        type="button"
+                        role="menuitem"
+                      >
+                        <LogOut className="size-4" aria-hidden="true" />
+                        Logout
+                      </button>
+                    </div>
+                  )}
+                </div>
               ) : (
                 <Link
                   to="/login"

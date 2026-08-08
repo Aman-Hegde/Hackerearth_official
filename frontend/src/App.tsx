@@ -19,6 +19,7 @@ import RegisterOtpPage from "./pages/RegisterOtp";
 import ForgotPasswordPage from "./pages/ForgotPassword";
 import ForgotPasswordOtpPage from "./pages/ForgotPasswordOtp";
 import ChangeForgottenPasswordPage from "./pages/ChangeForgottenPassword";
+import SettingsPage from "./pages/Settings";
 import { AuthProvider } from "./context/AuthContext";
 import { useAuth } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
@@ -105,6 +106,7 @@ function AppWrapper() {
           <Route element={<ProtectedRoute />}>
             <Route path="/domains" element={<Domains />} />
             <Route path="/domains/:slug" element={<BlogPostPage />} />
+            <Route path="/settings" element={<SettingsPage />} />
           </Route>
           <Route path="/leaderboard" element={<Navigate to="/" replace />} />
           {/* <Route path="/about" element={<About />} /> */}
