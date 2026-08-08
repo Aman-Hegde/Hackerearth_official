@@ -1,12 +1,13 @@
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { motion, useScroll, useTransform, AnimatePresence, useReducedMotion } from "framer-motion";
+import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Users, Trophy, Calendar, Rocket, ChevronRight, FolderOpen, Quote } from "lucide-react";
-import { useTheme } from "../context/ThemeContext";
 import TypingHero from "../components/TypingHero";
-import hackerEarthMark from "../assets/hackerearth-h-mark.png";
 import { Code, Brain, Lightbulb, Puzzle, Calculator, TrendingUp } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import HackerEarthGlassEmblem from "../components/ui/HackerEarthGlassEmblem";
+import PageTransition from "../components/ui/PageTransition";
+import SectionReveal from "../components/ui/SectionReveal";
 // import CurvedHorizonGlow from '../components/CurvedHorizonGlow';
 // import CurvedSectionTransition from '../components/CurvedSectionTransition';
 
@@ -36,8 +37,8 @@ const EventCard = ({ event, index }: { event: EventItem; index: number }) => {
           ease: [0.16, 1, 0.3, 1],
         }}
         viewport={{ once: true, amount: 0.3 }}
-        className={`ui-card top-border-accent-primary flex h-full min-w-0 flex-col overflow-hidden border-primary/25 transition duration-300 group-hover:border-primary/45 group-hover:shadow-surface ${
-          shouldReduceMotion ? "" : "group-hover:-translate-y-1"
+        className={`ui-card-glass top-border-accent-primary flex h-full min-w-0 flex-col overflow-hidden border-dream/25 transition duration-300 group-hover:border-dream/50 group-hover:shadow-glow ${
+          shouldReduceMotion ? "" : "group-hover:-translate-y-1 group-hover:scale-[1.01]"
         }`}
       >
         <div className="relative aspect-[4/3] overflow-hidden border-b border-line bg-surface-muted">
@@ -156,14 +157,14 @@ const TestimonialCard = ({
         ease: [0.16, 1, 0.3, 1],
       }}
       viewport={{ once: true, amount: 0.2 }}
-      className={`relative min-w-0 overflow-hidden p-5 transition-colors duration-300 sm:p-6 ${
+      className={`ui-card-glass relative min-w-0 overflow-hidden p-5 transition-colors duration-300 sm:p-6 ${
         isCyanAccent
-          ? "ui-card-accent-cyan top-border-accent-cyan hover:border-technical/50"
-          : "ui-card-accent-violet top-border-accent-violet hover:border-creative/50"
+          ? "top-border-accent-cyan hover:border-technical/50"
+          : "top-border-accent-violet hover:border-creative/50"
       }`}
     >
       <div
-        className={`pointer-events-none absolute -left-12 -top-12 size-36 rounded-full blur-3xl ${
+        className={`pointer-events-none absolute -left-12 -top-12 size-36 rounded-full opacity-50 ${
           isCyanAccent ? "bg-technical/10" : "bg-creative/10"
         }`}
         aria-hidden="true"
@@ -284,7 +285,7 @@ type DomainAccent = "cyan" | "violet" | "amber";
 const domainAccentStyles = [
   {
     accent: "cyan" as DomainAccent,
-    card: "ui-card-accent-cyan top-border-accent-cyan",
+    card: "ui-card-glass top-border-accent-cyan border-technical/25 hover:border-technical/45",
     line: "via-technical/70",
     icon: "border-technical/25 bg-technical/10 text-technical-text",
     tag: "border-technical/25 bg-technical/5 text-technical-text",
@@ -292,7 +293,7 @@ const domainAccentStyles = [
   },
   {
     accent: "violet" as DomainAccent,
-    card: "ui-card-accent-violet top-border-accent-violet",
+    card: "ui-card-glass top-border-accent-violet border-creative/25 hover:border-creative/45",
     line: "via-creative/70",
     icon: "border-creative/25 bg-creative/10 text-creative-text",
     tag: "border-creative/25 bg-creative/5 text-creative-text",
@@ -300,7 +301,7 @@ const domainAccentStyles = [
   },
   {
     accent: "amber" as DomainAccent,
-    card: "ui-card-accent-amber top-border-accent-amber",
+    card: "ui-card-glass top-border-accent-amber border-highlight/25 hover:border-highlight/45",
     line: "via-highlight/70",
     icon: "border-highlight/25 bg-highlight/10 text-highlight-text",
     tag: "border-highlight/25 bg-highlight/5 text-highlight-text",
@@ -321,19 +322,9 @@ function ServiceUIGraphic({
   feature: DomainFeature;
   accent: DomainAccent;
 }) {
-  const shouldReduceMotion = useReducedMotion();
-
   return (
     <div className="relative w-full min-w-0">
-      <motion.div
-        className={`absolute inset-0 rounded-3xl blur-3xl ${serviceGlowClass[accent]}`}
-        animate={shouldReduceMotion ? { scale: 1 } : { scale: [1, 1.05, 1] }}
-        transition={
-          shouldReduceMotion
-            ? { duration: 0 }
-            : { duration: 5, repeat: Infinity, ease: "easeInOut" }
-        }
-      />
+      <div className={`absolute inset-4 rounded-3xl opacity-60 ${serviceGlowClass[accent]}`} />
 
       {/* The graphics are rendered directly for an open, integrated feel */}
       <div className="relative flex min-w-0 items-center justify-center py-2 sm:py-4">
@@ -408,22 +399,7 @@ function WebDevelopmentGraphic() {
               <span className={line.color2}> {line.text.split(' ').slice(1).join(' ')}</span>
             </motion.p>
           ))}
-          <motion.div
-            className="mt-1 h-4 w-0.5 bg-technical"
-            variants={{
-              initial: { opacity: 0 },
-              animate: { opacity: shouldReduceMotion ? 1 : [0, 1, 0] },
-            }}
-            transition={
-              shouldReduceMotion
-                ? { duration: 0 }
-                : {
-                    duration: 1.2,
-                    repeat: Infinity,
-                    delay: codeLines.length * 0.12 + 0.5,
-                  }
-            }
-          />
+          <div className="mt-1 h-4 w-0.5 bg-technical" aria-hidden="true" />
         </motion.div>
       </motion.div>
     </motion.div>
@@ -435,49 +411,20 @@ function WebDevelopmentGraphic() {
 function DSAGraphic() {
   const shouldReduceMotion = useReducedMotion();
   const visualizations = [
-    { title: "Pathfinding Algorithm", component: <PathfindingViz shouldReduceMotion={shouldReduceMotion} /> },
+    { title: "Pathfinding Algorithm", component: <PathfindingViz /> },
     { title: "Sorting Algorithm", component: <SortingViz shouldReduceMotion={shouldReduceMotion} /> },
-    { title: "Graph Traversal", component: <GraphTraversalViz shouldReduceMotion={shouldReduceMotion} /> },
+    { title: "Graph Traversal", component: <GraphTraversalViz /> },
   ];
 
-  const [index, setIndex] = useState(0);
-
-  useEffect(() => {
-    if (shouldReduceMotion) return;
-
-    const interval = setInterval(() => {
-      setIndex((prevIndex) => (prevIndex + 1) % visualizations.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [shouldReduceMotion, visualizations.length]);
+  const activeVisualization = visualizations[0];
 
   return (
     <div className="w-full flex flex-col items-center justify-center space-y-4">
-      <AnimatePresence mode="wait">
-        <motion.h3
-          key={visualizations[index].title}
-          className="text-sm font-medium text-creative-text"
-          initial={shouldReduceMotion ? false : { opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={shouldReduceMotion ? undefined : { opacity: 0, y: 10 }}
-          transition={{ duration: shouldReduceMotion ? 0 : 0.4, ease: "easeInOut" }}
-        >
-          {visualizations[index].title}
-        </motion.h3>
-      </AnimatePresence>
+      <h3 className="text-sm font-medium text-creative-text">
+        {activeVisualization.title}
+      </h3>
       <div className="relative w-full h-48 max-w-sm">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={index}
-            initial={shouldReduceMotion ? false : { opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={shouldReduceMotion ? undefined : { opacity: 0, scale: 0.95 }}
-            transition={{ duration: shouldReduceMotion ? 0 : 0.5, ease: "easeInOut" }}
-            className="absolute inset-0"
-          >
-            {visualizations[index].component}
-          </motion.div>
-        </AnimatePresence>
+        <div className="absolute inset-0">{activeVisualization.component}</div>
       </div>
       <div className="flex justify-center space-x-3">
         {["O(n log n)", "O(n²)", "O(V+E)"].map((complexity) => (
@@ -491,15 +438,12 @@ function DSAGraphic() {
 }
 
 // Sub-components for the DSA Carousel
-const PathfindingViz = ({ shouldReduceMotion }: { shouldReduceMotion: boolean | null }) => {
+const PathfindingViz = () => {
   const path = "M 20,50 C 60,0, 140,100, 180,50";
   return (
     <svg className="w-full h-full" viewBox="0 0 200 100" aria-hidden="true" focusable="false">
       <path d={path} fill="none" stroke="rgb(var(--color-border))" strokeWidth="2" strokeDasharray="5 5" />
-      <motion.circle r="6" fill="rgb(var(--color-creative))"
-        style={{ offsetPath: `path("${path}")` }}
-        animate={{ offsetDistance: shouldReduceMotion ? "0%" : "100%" }}
-        transition={shouldReduceMotion ? { duration: 0 } : { duration: 4, repeat: Infinity, ease: "linear" }} />
+      <circle cx="100" cy="50" r="6" fill="rgb(var(--color-creative))" />
     </svg>
   );
 };
@@ -516,7 +460,7 @@ const SortingViz = ({ shouldReduceMotion }: { shouldReduceMotion: boolean | null
     ))}
   </div>
 );
-const GraphTraversalViz = ({ shouldReduceMotion }: { shouldReduceMotion: boolean | null }) => {
+const GraphTraversalViz = () => {
   const nodes = [{ x: 50, y: 50 }, { x: 100, y: 20 }, { x: 150, y: 50 }, { x: 100, y: 80 }];
   const edges = [{ from: 0, to: 1 }, { from: 1, to: 2 }, { from: 2, to: 3 }, { from: 3, to: 0 }];
   return (
@@ -527,17 +471,7 @@ const GraphTraversalViz = ({ shouldReduceMotion }: { shouldReduceMotion: boolean
       {nodes.map((node, i) => (
         <circle key={i} cx={node.x} cy={node.y} r="5" fill="rgb(var(--color-creative) / 0.45)" />
       ))}
-      <motion.circle r="6" fill="rgb(var(--color-creative))"
-        animate={
-          shouldReduceMotion
-            ? { cx: nodes[0].x, cy: nodes[0].y }
-            : { cx: nodes.map(n => n.x), cy: nodes.map(n => n.y) }
-        }
-        transition={
-          shouldReduceMotion
-            ? { duration: 0 }
-            : { duration: 4, repeat: Infinity, ease: "easeInOut", times: [0, 0.25, 0.5, 0.75] }
-        } />
+      <circle cx={nodes[0].x} cy={nodes[0].y} r="6" fill="rgb(var(--color-creative))" />
     </svg>
   );
 };
@@ -557,40 +491,25 @@ function AptitudeGraphic() {
           <div className="h-48 w-48 rounded-full bg-highlight/10 blur-xl"></div>
         </div>
 
-        <motion.div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <motion.div
-            className="flex h-20 w-20 items-center justify-center rounded-full bg-highlight shadow-soft"
-            animate={shouldReduceMotion ? { scale: 1 } : { scale: [1, 1.05, 1] }}
-            transition={shouldReduceMotion ? { duration: 0 } : { duration: 5, repeat: Infinity, ease: "easeInOut" }}
-          >
+        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
+          <div className="flex h-20 w-20 items-center justify-center rounded-full bg-highlight shadow-soft">
             <Brain className="h-9 w-9 text-ink-inverse" />
-          </motion.div>
-        </motion.div>
+          </div>
+        </div>
 
         {[
-          { icon: Calculator, duration: 28, delay: 0 },
-          { icon: TrendingUp, duration: 22, delay: 1.5 },
-          { icon: Lightbulb, duration: 25, delay: 0.5 },
-          { icon: Puzzle, duration: 30, delay: 1.0 },
-        ].map(({ icon: Icon, duration, delay }, i) => (
+          { icon: Calculator },
+          { icon: TrendingUp },
+          { icon: Lightbulb },
+          { icon: Puzzle },
+        ].map(({ icon: Icon }, i) => (
           <motion.div
             key={i}
             className="absolute top-1/2 left-1/2"
-            style={{ x: -20, y: -20 }} // Center the icon origin
-            animate={
-              shouldReduceMotion
-                ? {
-                    rotate: 0,
-                    x: [orbitRadius, 0, -orbitRadius, 0][i] - 20,
-                    y: [0, orbitRadius, 0, -orbitRadius][i] - 20,
-                  }
-                : {
-                    rotate: 360,
-                    x: [orbitRadius, 0, -orbitRadius, 0, orbitRadius].map(v => v - 20),
-                    y: [0, orbitRadius, 0, -orbitRadius, 0].map(v => v - 20),
-                  }
-            }
-            transition={shouldReduceMotion ? { duration: 0 } : { duration, repeat: Infinity, ease: "linear", delay }}
+            style={{
+              x: [orbitRadius, 0, -orbitRadius, 0][i] - 20,
+              y: [0, orbitRadius, 0, -orbitRadius][i] - 20,
+            }}
           >
             <motion.div
               className="flex h-10 w-10 items-center justify-center rounded-full bg-highlight shadow-soft"
@@ -642,20 +561,10 @@ const features: DomainFeature[] = [
   },
 ];
 const StatsSection = () => {
-  const sectionRef = useRef(null);
   const shouldReduceMotion = useReducedMotion();
-
-  const { scrollYProgress } = useScroll({
-    target: sectionRef,
-    offset: ["start end", "end start"]
-  });
-
-  const glowScaleX = useTransform(scrollYProgress, [0, 0.5, 1], [0, 1, 0]);
-  const glowOpacity = useTransform(scrollYProgress, [0, 0.1, 0.9, 1], [0, 1, 1, 0]);
 
   return (
     <motion.section
-      ref={sectionRef}
       initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
       whileInView={{ opacity: 1, y: 0 }}
       transition={{
@@ -663,15 +572,14 @@ const StatsSection = () => {
         ease: [0.16, 1, 0.3, 1],
       }}
       viewport={{ once: true }}
-      className="section-space-sm relative overflow-hidden border-y border-line bg-canvas-subtle"
+      className="section-space-sm relative mx-3 overflow-hidden rounded-panel border border-line/70 bg-surface/80 shadow-soft sm:mx-5 lg:mx-8"
     >
       <motion.div
         className="pointer-events-none absolute inset-x-0 top-0 z-0 h-20"
         style={{
-          opacity: shouldReduceMotion ? 1 : glowOpacity,
+          opacity: 1,
           background:
             "radial-gradient(ellipse at top center, rgb(var(--color-primary) / 0.16) 0%, rgb(var(--color-success) / 0.07) 38%, transparent 72%)",
-          scaleX: shouldReduceMotion ? 1 : glowScaleX,
           transformOrigin: "center",
         }}
         aria-hidden="true"
@@ -708,7 +616,7 @@ const StatsSection = () => {
               key={stat.title}
               variants={fadeIn}
               whileHover={shouldReduceMotion ? undefined : { y: -4 }}
-              className="ui-card top-border-accent-primary flex min-w-0 flex-col items-center border-primary/25 p-4 text-center transition-colors duration-300 hover:border-success/35 hover:shadow-surface sm:p-5 lg:p-6"
+              className="ui-card-glass top-border-accent-primary flex min-w-0 flex-col items-center border-primary/25 p-4 text-center transition-colors duration-300 hover:border-dream/45 hover:shadow-glow sm:p-5 lg:p-6"
             >
               <motion.div
                 className="mb-3 flex size-11 items-center justify-center rounded-control border border-success/25 bg-success/10 text-success-text sm:mb-4 sm:size-12"
@@ -731,22 +639,7 @@ const StatsSection = () => {
   );
 };
 
-const heroStars = Array.from({ length: 36 }, (_, index) => ({
-  left: `${((index * 29 + 7) % 96) + 2}%`,
-  top: `${((index * 47 + 5) % 72) + 4}%`,
-  animationDelay: `${(index % 9) * 0.37}s`,
-  animationDuration: `${2.4 + (index % 5) * 0.45}s`,
-}));
-
-const heroAccentStars = Array.from({ length: 8 }, (_, index) => ({
-  left: `${((index * 41 + 13) % 90) + 5}%`,
-  top: `${((index * 31 + 9) % 62) + 6}%`,
-  animationDelay: `${(index % 5) * 0.65}s`,
-  animationDuration: `${3.4 + (index % 4) * 0.55}s`,
-}));
-
 const Home = () => {
-  const { isDark } = useTheme();
   const shouldReduceMotion = useReducedMotion();
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
@@ -793,16 +686,9 @@ const Home = () => {
   };
 
   return (
-    <div className="overflow-hidden bg-canvas text-ink transition-colors duration-500">
-      <div className="pointer-events-none fixed inset-0 z-0 opacity-50"
-        style={{
-          backgroundImage: `radial-gradient(circle at 20% 50%, rgb(var(--color-primary) / 0.05) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgb(var(--color-technical) / 0.05) 0%, transparent 50%)`,
-          backgroundRepeat: "no-repeat",
-          backgroundSize: "cover",
-        }}
-      />
+    <PageTransition className="relative isolate overflow-hidden bg-transparent text-ink transition-colors duration-300">
 
-  <div className="fixed left-3 top-1/2 z-20 hidden w-8 -translate-y-1/2 flex-col items-center gap-1 lg:flex xl:left-6">
+  <div className="fixed left-8 top-1/2 z-20 hidden w-8 -translate-y-1/2 flex-col items-center gap-1 lg:flex">
     {features.map((_, idx) => (
       <button
         key={idx}
@@ -831,7 +717,7 @@ const Home = () => {
     ))}
   </div>
 
-      <section className="hero-crescent relative isolate flex min-h-[100svh] items-center overflow-hidden bg-canvas pb-section-sm pt-28 text-ink sm:pt-32 lg:pt-36">
+      <section className="hero-crescent relative isolate flex min-h-[100svh] items-center overflow-hidden bg-transparent pb-section-sm pt-28 text-ink sm:pt-32 lg:pt-36">
         <div className="pointer-events-none absolute inset-0 z-0" aria-hidden="true">
           <div
             className="absolute inset-0 opacity-60 dark:opacity-40"
@@ -843,93 +729,70 @@ const Home = () => {
               maskImage: "linear-gradient(to bottom, black, transparent 88%)",
             }}
           />
-          <div className="absolute left-1/2 top-[12%] h-[30rem] w-[min(52rem,120vw)] -translate-x-1/2 rounded-full bg-primary/10 blur-3xl dark:bg-primary/15" />
-          <div className="absolute -right-24 top-1/3 size-72 rounded-full bg-technical/10 blur-3xl" />
-          <div className="absolute -left-20 bottom-16 size-64 rounded-full bg-primary/5 blur-3xl" />
           <div className="absolute inset-x-0 top-[4.5rem] h-px bg-gradient-to-r from-transparent via-line-strong/70 to-transparent" />
         </div>
 
-        {isDark && (
-          <div
-            className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
-            aria-hidden="true"
-          >
-            {heroStars.map((star, index) => (
-              <span
-                key={index}
-                className="absolute size-1 animate-twinkle rounded-full bg-ink/70"
-                style={{
-                  ...star,
-                  filter: "blur(0.5px)",
-                }}
-              />
-            ))}
-            {heroAccentStars.map((star, index) => (
-              <span
-                key={`accent-${index}`}
-                className="absolute size-1.5 animate-float rounded-full bg-technical/80 shadow-soft"
-                style={{
-                  ...star,
-                  filter: "blur(0.35px)",
-                }}
-              />
-            ))}
-          </div>
-        )}
-
-        <div className="relative z-20 mx-auto w-full max-w-[100rem] px-4 sm:px-6 lg:px-8 xl:px-10">
+        <div className="site-container-wide relative z-20 w-full">
           <motion.div
-            className="grid w-full min-w-0 items-center gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(18rem,2fr)] lg:gap-8 xl:gap-10"
+            className="grid w-full min-w-0 items-center gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.8fr)] lg:gap-10 xl:gap-14"
             initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: shouldReduceMotion ? 0 : 0.55, ease: [0.16, 1, 0.3, 1] }}
           >
-            <div className="grid min-w-0 lg:grid-cols-[2rem_minmax(0,1fr)] lg:gap-5 xl:grid-cols-[2.5rem_minmax(0,1fr)] xl:gap-6">
-              <div className="hidden lg:block" aria-hidden="true" />
+            <div className="min-w-0 max-w-4xl">
+              <SectionReveal variant="fade" delay={0.08}>
+                <span className="eyebrow border-dream/35 bg-glass/65 text-dream-text shadow-soft">
+                  <span className="size-1.5 rounded-full bg-rose shadow-glow" aria-hidden="true" />
+                  HackerEarth Hub · NMAMIT
+                </span>
+              </SectionReveal>
 
-              <div className="min-w-0 max-w-3xl xl:max-w-4xl">
+              <SectionReveal variant="slide-up" delay={0.14} className="relative mt-6">
                 <div className="relative">
-                  <div
-                    className="pointer-events-none absolute -inset-x-8 -top-10 h-48 rounded-full bg-gradient-to-r from-primary/15 via-technical/15 to-transparent blur-3xl"
-                    aria-hidden="true"
-                  />
+                  <div className="pointer-events-none absolute -inset-x-5 -top-8 h-40 rounded-full bg-gradient-to-r from-dream/12 via-technical/10 to-transparent opacity-70" aria-hidden="true" />
                   <div className="relative">
                     <TypingHero />
                   </div>
                 </div>
+              </SectionReveal>
 
+              <SectionReveal
+                variant="slide-left"
+                delay={0.22}
+                className="my-6 flex w-40 items-center justify-start gap-2 sm:my-7"
+              >
                 <div
-                  className="my-6 flex w-36 items-center justify-start gap-2 sm:my-7"
+                  className="flex w-full items-center justify-start gap-2"
                   aria-hidden="true"
                 >
-                  <span className="h-px flex-1 bg-gradient-to-r from-transparent to-primary/80" />
-                  <span className="size-1.5 rotate-45 border border-technical bg-canvas shadow-soft" />
+                  <span className="h-px flex-1 bg-gradient-to-r from-transparent to-dream/80" />
+                  <span className="size-1.5 rotate-45 border border-rose/70 bg-glass shadow-glow" />
                   <span className="h-px flex-1 bg-gradient-to-l from-transparent to-technical/80" />
                 </div>
+              </SectionReveal>
 
+              <SectionReveal variant="slide-up" delay={0.28}>
                 <p className="max-w-2xl text-left text-base font-medium leading-relaxed text-ink sm:text-lg lg:text-xl">
                   We are a community of developers, designers, and innovators focused on hands-on creation. Join us to collaborate on real-world projects, hone your skills, and build a portfolio that stands out.
                 </p>
+              </SectionReveal>
 
+              <SectionReveal variant="slide-up" delay={0.36}>
                 <div className="mt-7 flex flex-col items-stretch gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:gap-4">
                   <button
                     type="button"
                     onClick={handleServicesClick}
-                    className={`group inline-flex min-h-11 w-full items-center justify-center rounded-xl border border-technical/50 bg-gradient-to-r from-technical/10 to-primary/10 px-6 py-3 text-sm font-semibold text-ink shadow-soft hover:border-technical hover:shadow-glow focus-visible:outline-offset-4 sm:w-auto sm:text-base ${
-                      shouldReduceMotion ? "transition-none" : "transition duration-200 hover:-translate-y-0.5"
-                    }`}
+                    className="btn btn-secondary group w-full border-dream/35 bg-glass/65 px-6 focus-visible:outline-offset-4 sm:w-auto sm:text-base"
                   >
                     <span>Services</span>
                   </button>
 
                   <Link
                     to="/login"
-                    className={`group inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border border-primary/50 bg-gradient-to-r from-primary/15 to-technical/10 px-6 py-3 text-sm font-semibold text-ink shadow-soft hover:border-primary hover:shadow-glow focus-visible:outline-offset-4 sm:w-auto sm:text-base ${
-                      shouldReduceMotion ? "transition-none" : "transition duration-200 hover:-translate-y-0.5"
-                    }`}
+                    className="btn btn-primary group w-full px-6 focus-visible:outline-offset-4 sm:w-auto sm:text-base"
                   >
                     <ArrowRight
-                      className={`size-4 text-technical-text ${
+                      className={`size-4 ${
                         shouldReduceMotion ? "" : "transition-transform duration-200 group-hover:translate-x-0.5"
                       }`}
                       aria-hidden="true"
@@ -937,46 +800,26 @@ const Home = () => {
                     <span>Join Our Community</span>
                   </Link>
                 </div>
-              </div>
+              </SectionReveal>
             </div>
 
-            <div className="relative flex w-full items-center justify-center py-4 lg:min-h-[24rem] lg:py-0">
-              <div
-                className="pointer-events-none absolute size-72 rounded-full bg-primary/15 blur-3xl"
-                aria-hidden="true"
-              />
-              <div
-                className="pointer-events-none absolute right-[18%] top-[18%] size-40 rounded-full bg-technical/15 blur-2xl"
-                aria-hidden="true"
-              />
-              <div
-                className={`relative aspect-square w-52 max-w-full overflow-hidden rounded-[26%] border border-technical/40 bg-surface shadow-surface hover:border-technical hover:shadow-glow sm:w-64 lg:w-[19rem] xl:w-[21rem] ${
-                  shouldReduceMotion
-                    ? "transition-none"
-                    : "transition duration-300 hover:-translate-y-1 hover:scale-[1.01]"
-                }`}
-              >
-                <img
-                  src={hackerEarthMark}
-                  alt="HackerEarth Hub symbol"
-                  className="size-full object-contain"
-                  loading="eager"
-                  decoding="async"
-                />
-              </div>
-            </div>
+            <SectionReveal
+              variant="scale"
+              delay={0.32}
+              className="relative flex w-full items-center justify-center py-4 lg:min-h-[24rem] lg:py-0"
+            >
+              <HackerEarthGlassEmblem />
+            </SectionReveal>
           </motion.div>
         </div>
       </section>
 
-      <section className="section-glow-cyan section-space relative z-[9] overflow-x-clip bg-canvas">
+      <section className="section-glow-cyan section-space relative z-[9] overflow-x-clip bg-gradient-to-b from-transparent via-dream-soft/20 to-transparent">
         <div className="site-container-wide">
-          <motion.div
+          <SectionReveal
+            variant="slide-up"
             className="relative z-10 mx-auto max-w-3xl text-center"
-            initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: shouldReduceMotion ? 0 : 0.55, ease: [0.16, 1, 0.3, 1] }}
-            viewport={{ once: true, amount: 0.3 }}
+            amount={0.3}
           >
             <div className="flex justify-center">
               <span className="eyebrow group relative overflow-hidden">
@@ -996,7 +839,7 @@ const Home = () => {
             <p className="section-lead mx-auto text-center">
               Comprehensive learning paths designed to accelerate career growth and technical transformation.
             </p>
-          </motion.div>
+          </SectionReveal>
 
           <div className="relative mt-12 space-y-6 sm:mt-16 sm:space-y-8">
             {features.map((feature, idx) => (
@@ -1086,14 +929,12 @@ const Home = () => {
       <StatsSection />
 
       {/* events */}
-      <section className="section-glow-amber section-space relative bg-canvas">
+      <section className="section-glow-amber section-space relative bg-gradient-to-b from-transparent via-rose/5 to-transparent">
         <div className="site-container-wide">
-          <motion.div
+          <SectionReveal
+            variant="slide-right"
             className="mx-auto max-w-3xl text-center"
-            initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: shouldReduceMotion ? 0 : 0.55, ease: [0.16, 1, 0.3, 1] }}
-            viewport={{ once: true, amount: 0.3 }}
+            amount={0.3}
           >
             <div className="flex justify-center">
               <span className="eyebrow group relative overflow-hidden">
@@ -1108,7 +949,7 @@ const Home = () => {
             <p className="section-lead mx-auto text-center">
               Take a look at some of our past events and initiatives
             </p>
-          </motion.div>
+          </SectionReveal>
 
           <div className="mt-12 grid grid-cols-1 gap-5 sm:grid-cols-2 sm:gap-6 xl:grid-cols-4">
             {events.map((event, index) => (
@@ -1119,14 +960,12 @@ const Home = () => {
       </section>
 
       {/* Testimonials Section */}
-      <section className="section-space relative bg-canvas-subtle">
+      <section className="section-space relative bg-gradient-to-b from-dream-soft/20 via-surface-muted/45 to-transparent">
         <div className="site-container-wide">
-          <motion.div
+          <SectionReveal
+            variant="slide-left"
             className="mx-auto max-w-3xl text-center"
-            initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: shouldReduceMotion ? 0 : 0.55, ease: [0.16, 1, 0.3, 1] }}
-            viewport={{ once: true, amount: 0.3 }}
+            amount={0.3}
           >
             <div className="flex justify-center">
               <span className="eyebrow group relative overflow-hidden">
@@ -1141,7 +980,7 @@ const Home = () => {
             <p className="section-lead mx-auto text-center">
               Voices from our community, hear what our members have to say about their journey..
             </p>
-          </motion.div>
+          </SectionReveal>
 
           <div className="mt-12 grid items-start gap-5 md:grid-cols-2 md:gap-6 xl:grid-cols-3">
             {testimonials.map((testimonial, index) => (
@@ -1163,24 +1002,16 @@ const Home = () => {
         </div>
       </section>
 
-      <section className="section-space relative overflow-hidden bg-canvas transition-colors duration-500">
+      <section className="section-space relative overflow-hidden bg-transparent transition-colors duration-500">
         <div className="site-container">
-          <motion.div
-            initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: shouldReduceMotion ? 0 : 0.55, ease: [0.16, 1, 0.3, 1] }}
-            viewport={{ once: true, amount: 0.25 }}
-            className="ui-card top-border-accent-violet relative isolate overflow-hidden border-primary/25 bg-gradient-to-br from-primary/10 via-surface to-creative/10 px-5 py-12 sm:px-8 sm:py-16 lg:px-12 lg:py-20"
+          <SectionReveal
+            variant="scale"
+            amount={0.25}
+            className="ui-panel-glass top-border-accent-violet relative isolate overflow-hidden border-dream/30 bg-gradient-to-br from-primary/10 via-glass/75 to-creative/10 px-5 py-12 sm:px-8 sm:py-16 lg:px-12 lg:py-20"
           >
             {/* Background effects */}
-            <div
-              className="pointer-events-none absolute -left-24 -top-32 size-72 rounded-full bg-primary/15 blur-3xl"
-              aria-hidden="true"
-            />
-            <div
-              className="pointer-events-none absolute -bottom-36 -right-24 size-80 rounded-full bg-creative/10 blur-3xl"
-              aria-hidden="true"
-            />
+            <div className="pointer-events-none absolute -left-24 -top-32 size-72 rounded-full bg-primary/10" aria-hidden="true" />
+            <div className="pointer-events-none absolute -bottom-36 -right-24 size-80 rounded-full bg-creative/10" aria-hidden="true" />
             <div
               className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-creative/70 to-transparent"
               aria-hidden="true"
@@ -1247,10 +1078,10 @@ const Home = () => {
             >
               HackerEarth
             </h1>
-          </motion.div>
+          </SectionReveal>
         </div>
       </section>
-    </div>
+    </PageTransition>
   );
 };
 

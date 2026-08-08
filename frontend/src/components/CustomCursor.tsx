@@ -1,34 +1,45 @@
-// src/components/CustomCursor.tsx
-
-import React, { useState, useEffect } from 'react';
-import { useTheme } from '../context/ThemeContext'; // Make sure this path is correct
+import { useEffect, useRef } from 'react';
 
 const SpotlightCursor = () => {
-  const { isDark } = useTheme();
-  const [position, setPosition] = useState({ x: -100, y: -100 });
+  const spotlightRef = useRef<HTMLDivElement>(null);
+  const frameRef = useRef<number | null>(null);
+  const latestPosition = useRef({ x: -100, y: -100 });
 
   useEffect(() => {
-    const updateMousePosition = (e: MouseEvent) => {
-      setPosition({ x: e.clientX, y: e.clientY });
+    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const finePointer = window.matchMedia('(pointer: fine)').matches;
+    if (reducedMotion || !finePointer) return;
+
+    const updateMousePosition = (event: MouseEvent) => {
+      latestPosition.current = { x: event.clientX, y: event.clientY };
+      if (frameRef.current !== null) return;
+
+      frameRef.current = window.requestAnimationFrame(() => {
+        if (spotlightRef.current) {
+          spotlightRef.current.style.transform = `translate3d(${latestPosition.current.x - 48}px, ${latestPosition.current.y - 48}px, 0)`;
+        }
+        frameRef.current = null;
+      });
     };
 
-    window.addEventListener('mousemove', updateMousePosition);
+    window.addEventListener('mousemove', updateMousePosition, { passive: true });
 
     return () => {
       window.removeEventListener('mousemove', updateMousePosition);
+      if (frameRef.current !== null) window.cancelAnimationFrame(frameRef.current);
     };
   }, []);
 
-  // UPDATED: The light mode color is now more opaque for better visibility.
-  const spotlightColor = isDark
-    ? 'rgba(29, 78, 216, 0.15)' // Blue glow for dark mode
-    : 'rgba(41, 89, 222, 0.1)';    // A slightly stronger dark shadow for light mode
-
   return (
     <div
-      className="fixed inset-0 pointer-events-none z-[9999] transition-colors duration-300"
+      ref={spotlightRef}
+      aria-hidden="true"
+      className="pointer-events-none fixed left-0 top-0 z-[45] hidden size-24 rounded-full opacity-70 lg:block"
       style={{
-        background: `radial-gradient(600px at ${position.x}px ${position.y}px, ${spotlightColor}, transparent 80%)`
+        transform: 'translate3d(-100px, -100px, 0)',
+        willChange: 'transform',
+        background:
+          'radial-gradient(circle, rgb(var(--color-dream) / 0.12), rgb(var(--color-rose) / 0.04) 42%, transparent 72%)',
       }}
     />
   );

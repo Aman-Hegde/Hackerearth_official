@@ -1,8 +1,9 @@
 import { Request, Response } from "express";
 import bcrypt from "bcryptjs";
-import PasswordReset from "../models/passwordReset";
+import { Types } from "mongoose";
+import PasswordReset, { IPasswordReset } from "../models/passwordReset";
 import User from "../models/user";
-import { sendPasswordResetOtpEmail } from "../services/emailService";
+import { sendPasswordResetOtp } from "../services/emailService";
 import {
   compareOtp,
   createOtpExpiry,
@@ -27,6 +28,9 @@ import {
 const EMAIL_DOMAIN = "@nmamit.in";
 const PASSWORD_SALT_ROUNDS = 12;
 const RESET_CLEANUP_MINUTES = 30;
+const MAX_PASSWORD_RESET_SENDS_PER_MONTH = 2;
+const MONTHLY_LIMIT_MESSAGE =
+  "You have reached the maximum of 2 password recovery requests for this month. Please contact the HackerEarth Hub team if you need further assistance.";
 const GENERAL_REQUEST_MESSAGE =
   "If an account exists with this email, an OTP has been sent.";
 const GENERAL_RESEND_MESSAGE =
@@ -60,6 +64,18 @@ const isNmamitEmail = (email: string): boolean => {
 
 const createCleanupAt = (): Date => {
   return new Date(Date.now() + RESET_CLEANUP_MINUTES * 60 * 1000);
+};
+
+const getCurrentCalendarMonth = (date = new Date()): string => {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+  }).formatToParts(date);
+  const year = parts.find((part) => part.type === "year")?.value;
+  const month = parts.find((part) => part.type === "month")?.value;
+
+  return `${year}-${month}`;
 };
 
 const secondsUntil = (date: Date): number => {
@@ -97,6 +113,130 @@ const validateForgotPasswordEmail = (email: string, res: Response) => {
   return null;
 };
 
+const monthlyLimitResponse = (res: Response) => {
+  return res.status(429).json({
+    success: false,
+    code: "PASSWORD_RESET_MONTHLY_LIMIT",
+    message: MONTHLY_LIMIT_MESSAGE,
+  });
+};
+
+const toObjectId = (value: unknown): Types.ObjectId => {
+  return value instanceof Types.ObjectId
+    ? value
+    : new Types.ObjectId(String(value));
+};
+
+const reserveMonthlyPasswordResetSend = async (userId: Types.ObjectId) => {
+  const currentMonth = getCurrentCalendarMonth();
+
+  return User.findOneAndUpdate(
+    {
+      _id: userId,
+      isActive: true,
+      $or: [
+        { passwordResetRequestMonth: { $ne: currentMonth } },
+        { passwordResetRequestMonth: { $exists: false } },
+        { passwordResetRequestCount: { $lt: MAX_PASSWORD_RESET_SENDS_PER_MONTH } },
+      ],
+    },
+    [
+      {
+        $set: {
+          passwordResetRequestMonth: currentMonth,
+          passwordResetRequestCount: {
+            $cond: [
+              { $eq: ["$passwordResetRequestMonth", currentMonth] },
+              { $add: [{ $ifNull: ["$passwordResetRequestCount", 0] }, 1] },
+              1,
+            ],
+          },
+        },
+      },
+    ],
+    {
+      new: true,
+      updatePipeline: true,
+    }
+  )
+    .select("passwordResetRequestMonth passwordResetRequestCount")
+    .exec();
+};
+
+const releaseMonthlyPasswordResetSend = async (userId: Types.ObjectId) => {
+  const currentMonth = getCurrentCalendarMonth();
+
+  await User.updateOne(
+    {
+      _id: userId,
+      passwordResetRequestMonth: currentMonth,
+      passwordResetRequestCount: { $gt: 0 },
+    },
+    {
+      $inc: { passwordResetRequestCount: -1 },
+    }
+  );
+};
+
+const restorePreviousResetRequest = async (
+  email: string,
+  previousResetRequest: IPasswordReset | null
+) => {
+  if (!previousResetRequest) {
+    await PasswordReset.deleteOne({ email });
+    return;
+  }
+
+  await PasswordReset.replaceOne(
+    { _id: previousResetRequest._id },
+    previousResetRequest.toObject(),
+    { runValidators: true }
+  );
+};
+
+const upsertPasswordResetOtp = async ({
+  userId,
+  email,
+  otpHash,
+  otpExpiresAt,
+  resendAvailableAt,
+  cleanupAt,
+}: {
+  userId: Types.ObjectId;
+  email: string;
+  otpHash: string;
+  otpExpiresAt: Date;
+  resendAvailableAt: Date;
+  cleanupAt: Date;
+}) => {
+  await PasswordReset.findOneAndUpdate(
+    { email },
+    {
+      $set: {
+        userId,
+        email,
+        otpHash,
+        otpExpiresAt,
+        otpAttempts: 0,
+        resendAvailableAt,
+        passwordChangeAuthorized: false,
+        cleanupAt,
+      },
+      $unset: {
+        resetTokenHash: "",
+        resetTokenExpiresAt: "",
+      },
+      $setOnInsert: {
+        createdAt: new Date(),
+      },
+    },
+    {
+      upsert: true,
+      runValidators: true,
+    }
+  );
+};
+
 export const requestForgotPasswordOtp = async (
   req: Request<unknown, unknown, EmailRequestBody>,
   res: Response
@@ -111,7 +251,6 @@ export const requestForgotPasswordOtp = async (
 
     const user = await User.findOne({
       email,
-      emailVerified: true,
       isActive: true,
     }).exec();
 
@@ -120,11 +259,18 @@ export const requestForgotPasswordOtp = async (
     }
 
     const existingReset = await PasswordReset.findOne({ email }).select(
-      "resendAvailableAt"
+      "+otpHash +resetTokenHash"
     );
 
     if (existingReset && existingReset.resendAvailableAt > new Date()) {
       return generalForgotPasswordResponse(res);
+    }
+
+    const userId = toObjectId(user._id);
+    const monthlyReservation = await reserveMonthlyPasswordResetSend(userId);
+
+    if (!monthlyReservation) {
+      return monthlyLimitResponse(res);
     }
 
     const otp = generateOtp();
@@ -133,45 +279,32 @@ export const requestForgotPasswordOtp = async (
     const resendAvailableAt = createResendAvailableAt();
     const cleanupAt = createCleanupAt();
 
+    await upsertPasswordResetOtp({
+      userId,
+      email: user.email,
+      otpHash,
+      otpExpiresAt,
+      resendAvailableAt,
+      cleanupAt,
+    });
+
     try {
-      await sendPasswordResetOtpEmail({
-        recipientEmail: user.email,
-        recipientName: user.name,
+      await sendPasswordResetOtp({
+        to: user.email,
+        name: user.name,
         otp,
       });
     } catch {
+      await Promise.all([
+        releaseMonthlyPasswordResetSend(userId),
+        restorePreviousResetRequest(email, existingReset),
+      ]);
+
       return res.status(502).json({
         success: false,
         message: "Unable to send password reset email. Please try again later.",
       });
     }
-
-    await PasswordReset.findOneAndUpdate(
-      { email },
-      {
-        $set: {
-          userId: user._id,
-          email: user.email,
-          otpHash,
-          otpExpiresAt,
-          otpAttempts: 0,
-          resendAvailableAt,
-          passwordChangeAuthorized: false,
-          cleanupAt,
-        },
-        $unset: {
-          resetTokenHash: "",
-          resetTokenExpiresAt: "",
-        },
-        $setOnInsert: {
-          createdAt: new Date(),
-        },
-      },
-      {
-        upsert: true,
-        runValidators: true,
-      }
-    );
 
     return generalForgotPasswordResponse(res);
   } catch {
@@ -194,7 +327,9 @@ export const resendForgotPasswordOtp = async (
       return emailError;
     }
 
-    const resetRequest = await PasswordReset.findOne({ email }).exec();
+    const resetRequest = await PasswordReset.findOne({ email })
+      .select("+otpHash +resetTokenHash")
+      .exec();
 
     if (!resetRequest) {
       return generalForgotPasswordResponse(res, GENERAL_RESEND_MESSAGE);
@@ -212,12 +347,18 @@ export const resendForgotPasswordOtp = async (
     const user = await User.findOne({
       _id: resetRequest.userId,
       email,
-      emailVerified: true,
       isActive: true,
     }).exec();
 
     if (!user) {
       return generalForgotPasswordResponse(res, GENERAL_RESEND_MESSAGE);
+    }
+
+    const userId = toObjectId(user._id);
+    const monthlyReservation = await reserveMonthlyPasswordResetSend(userId);
+
+    if (!monthlyReservation) {
+      return monthlyLimitResponse(res);
     }
 
     const otp = generateOtp();
@@ -226,37 +367,32 @@ export const resendForgotPasswordOtp = async (
     const resendAvailableAt = createResendAvailableAt();
     const cleanupAt = createCleanupAt();
 
+    await upsertPasswordResetOtp({
+      userId,
+      email: user.email,
+      otpHash,
+      otpExpiresAt,
+      resendAvailableAt,
+      cleanupAt,
+    });
+
     try {
-      await sendPasswordResetOtpEmail({
-        recipientEmail: user.email,
-        recipientName: user.name,
+      await sendPasswordResetOtp({
+        to: user.email,
+        name: user.name,
         otp,
       });
     } catch {
+      await Promise.all([
+        releaseMonthlyPasswordResetSend(userId),
+        restorePreviousResetRequest(email, resetRequest),
+      ]);
+
       return res.status(502).json({
         success: false,
         message: "Unable to send password reset email. Please try again later.",
       });
     }
-
-    await PasswordReset.updateOne(
-      { _id: resetRequest._id },
-      {
-        $set: {
-          otpHash,
-          otpExpiresAt,
-          otpAttempts: 0,
-          resendAvailableAt,
-          passwordChangeAuthorized: false,
-          cleanupAt,
-        },
-        $unset: {
-          resetTokenHash: "",
-          resetTokenExpiresAt: "",
-        },
-      },
-      { runValidators: true }
-    );
 
     return res.status(200).json({
       success: true,
@@ -366,6 +502,8 @@ export const verifyForgotPasswordOtp = async (
           resetTokenExpiresAt: createPasswordResetTokenExpiry(),
           passwordChangeAuthorized: true,
           cleanupAt: createCleanupAt(),
+          otpExpiresAt: new Date(0),
+          otpAttempts: MAX_OTP_ATTEMPTS,
         },
       },
       { runValidators: true }

@@ -51,14 +51,6 @@ export const loginUser = async (
       return invalidCredentialsResponse(res);
     }
 
-    if (!user.emailVerified) {
-      return res.status(403).json({
-        success: false,
-        code: "EMAIL_NOT_VERIFIED",
-        message: "Please verify your email before logging in.",
-      });
-    }
-
     if (!user.isActive) {
       return res.status(403).json({
         success: false,

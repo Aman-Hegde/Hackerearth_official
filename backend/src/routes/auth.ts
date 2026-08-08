@@ -6,25 +6,20 @@ import {
 import { loginUser } from "../controllers/loginController";
 import {
   registerStudent,
-  requestRegistrationOtp,
-  resendRegistrationOtp,
-  verifyRegistrationOtp,
 } from "../controllers/registrationController";
+import {
+  changeForgottenPassword,
+  requestForgotPasswordOtp,
+  resendForgotPasswordOtp,
+  verifyForgotPasswordOtp,
+} from "../controllers/passwordController";
 import { getCurrentUser, logoutUser } from "../controllers/sessionController";
 import { authenticate } from "../middleware/authenticate";
 import { authorize } from "../middleware/authorize";
+import { forgotPasswordRateLimit } from "../middleware/forgotPasswordRateLimit";
 import { requireRegistrationOpen } from "../middleware/requireRegistrationOpen";
 
 const router = Router();
-
-const passwordResetUnavailable = (_req: Request, res: Response) => {
-  return res.status(503).json({
-    success: false,
-    code: "PASSWORD_RESET_TEMPORARILY_UNAVAILABLE",
-    message:
-      "Password reset by email is temporarily unavailable. Please contact a HackerEarth Hub administrator.",
-  });
-};
 
 router.post("/google", (_req: Request, res: Response) => {
   return res.status(501).json({
@@ -36,22 +31,24 @@ router.post("/google", (_req: Request, res: Response) => {
 router.post("/register", requireRegistrationOpen, registerStudent);
 
 router.post(
-  "/register/request-otp",
-  requireRegistrationOpen,
-  requestRegistrationOtp
+  "/forgot-password/request-otp",
+  forgotPasswordRateLimit,
+  requestForgotPasswordOtp
 );
 
-router.post("/register/resend-otp", resendRegistrationOtp);
+router.post(
+  "/forgot-password/resend-otp",
+  forgotPasswordRateLimit,
+  resendForgotPasswordOtp
+);
 
-router.post("/register/verify-otp", verifyRegistrationOtp);
+router.post(
+  "/forgot-password/verify-otp",
+  forgotPasswordRateLimit,
+  verifyForgotPasswordOtp
+);
 
-router.post("/forgot-password/request-otp", passwordResetUnavailable);
-
-router.post("/forgot-password/resend-otp", passwordResetUnavailable);
-
-router.post("/forgot-password/verify-otp", passwordResetUnavailable);
-
-router.post("/forgot-password/change-password", passwordResetUnavailable);
+router.post("/forgot-password/change-password", changeForgottenPassword);
 
 router.post("/login", loginUser);
 

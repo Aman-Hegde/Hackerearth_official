@@ -9,6 +9,10 @@ interface StudentStatusBody {
   isActive?: unknown;
 }
 
+interface PasswordResetLimitBody {
+  clear?: unknown;
+}
+
 interface RegistrationSettingsBody {
   studentRegistrationOpen?: unknown;
   registrationMessage?: unknown;
@@ -264,6 +268,7 @@ export const getAdminOverview = async (_req: Request, res: Response) => {
       User.countDocuments({ role: "student", isActive: true }),
       User.countDocuments({ role: "student", isActive: false }),
       User.countDocuments({ role: "admin" }),
+      // Legacy compatibility: emailVerified is no longer proof of registration OTP verification.
       User.countDocuments({ role: "student", emailVerified: true }),
       getSystemSettings(),
     ]);
@@ -478,6 +483,75 @@ export const updateStudentStatus = async (
     return res.status(200).json({
       success: true,
       message: "Student status updated successfully.",
+      student: toSafeStudent(student),
+    });
+  } catch {
+    return res.status(500).json({
+      success: false,
+      message: "Unexpected server error.",
+    });
+  }
+};
+
+const getCurrentCalendarMonth = (date = new Date()): string => {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "2-digit",
+  }).formatToParts(date);
+  const year = parts.find((part) => part.type === "year")?.value;
+  const month = parts.find((part) => part.type === "month")?.value;
+
+  return `${year}-${month}`;
+};
+
+export const clearStudentPasswordResetLimit = async (
+  req: Request<{ studentId: string }, unknown, PasswordResetLimitBody>,
+  res: Response
+) => {
+  try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.studentId)) {
+      return res.status(400).json({
+        success: false,
+        code: "INVALID_STUDENT_ID",
+        message: "A valid student id is required.",
+      });
+    }
+
+    if (req.body.clear !== true) {
+      return res.status(400).json({
+        success: false,
+        code: "INVALID_REQUEST",
+        message: "clear must be true.",
+      });
+    }
+
+    const currentMonth = getCurrentCalendarMonth();
+    const student = await User.findOneAndUpdate(
+      { _id: req.params.studentId, role: "student" },
+      {
+        $set: {
+          passwordResetRequestMonth: currentMonth,
+          passwordResetRequestCount: 0,
+        },
+      },
+      {
+        new: true,
+        runValidators: true,
+      }
+    ).select(STUDENT_SAFE_FIELDS);
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        code: "STUDENT_NOT_FOUND",
+        message: "Student not found.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Password reset request limit cleared for this month.",
       student: toSafeStudent(student),
     });
   } catch {
