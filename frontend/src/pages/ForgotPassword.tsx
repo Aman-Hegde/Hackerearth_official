@@ -1,13 +1,107 @@
-import { Link } from "react-router-dom";
+import { FormEvent, useState } from "react";
+import type { ChangeEvent, FocusEvent } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
-import { ArrowLeft, MailX } from "lucide-react";
+import { ArrowLeft, ArrowRight, Mail } from "lucide-react";
+import AuthInput from "../components/auth/AuthInput";
 import AuthShell from "../components/auth/AuthShell";
 import AuthThemeToggle from "../components/auth/AuthThemeToggle";
 import AuthVisual from "../components/auth/AuthVisual";
 import logo from "../assets/image.png";
 
+const API_BASE_URL = import.meta.env.VITE_API_URL;
+
+const parseResponseJson = async (response: Response): Promise<Record<string, unknown>> => {
+  try {
+    const data = await response.json();
+    return data && typeof data === "object" ? data : {};
+  } catch {
+    return {};
+  }
+};
+
 export default function ForgotPasswordPage() {
+  const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [message, setMessage] = useState("");
+  const [messageKind, setMessageKind] = useState<"error" | "info">("info");
+  const [hasTouchedEmail, setHasTouchedEmail] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const shouldReduceMotion = useReducedMotion();
+  const navigate = useNavigate();
+
+  const validateEmail = (value: string) => {
+    const normalizedEmail = value.trim().toLowerCase();
+
+    if (!normalizedEmail) return "Email is required.";
+    if (!normalizedEmail.endsWith("@nmamit.in")) {
+      return "Use your official @nmamit.in email address.";
+    }
+
+    return "";
+  };
+
+  const handleEmailChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const nextEmail = event.target.value;
+    setEmail(nextEmail);
+    setMessage("");
+
+    if (hasTouchedEmail) {
+      setEmailError(validateEmail(nextEmail));
+    }
+  };
+
+  const handleEmailBlur = (_event: FocusEvent<HTMLInputElement>) => {
+    setHasTouchedEmail(true);
+    setEmailError(validateEmail(email));
+  };
+
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setHasTouchedEmail(true);
+    setMessage("");
+
+    const validationMessage = validateEmail(email);
+    setEmailError(validationMessage);
+
+    if (validationMessage) return;
+
+    const normalizedEmail = email.trim().toLowerCase();
+    setIsSubmitting(true);
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/auth/forgot-password/request-otp`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({ email: normalizedEmail }),
+      });
+      const data = await parseResponseJson(response);
+
+      if (!response.ok || data.success === false) {
+        setMessageKind("error");
+        setMessage(
+          typeof data.message === "string"
+            ? data.message
+            : "Unable to request password reset OTP. Please try again."
+        );
+        return;
+      }
+
+      navigate("/forgot-password/verify-otp", {
+        state: {
+          email: normalizedEmail,
+        },
+      });
+    } catch {
+      setMessageKind("error");
+      setMessage("Unable to connect to the server. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <AuthShell waveClassName="opacity-30">
@@ -49,25 +143,55 @@ export default function ForgotPasswordPage() {
                 Forgot password
               </h2>
               <p className="break-words text-sm leading-6 text-ink-muted">
-                Password reset by email is temporarily unavailable. Please contact a HackerEarth Hub administrator.
+                Enter your NMAMIT email address and we will send a six-digit OTP if an account exists.
               </p>
             </div>
 
-            <div className="mt-8 rounded-card border border-highlight/35 bg-gradient-to-br from-highlight/10 via-rose/5 to-dream/10 p-5 text-ink shadow-soft">
-              <div className="flex items-start gap-3">
-                <span className="flex size-11 shrink-0 items-center justify-center rounded-control border border-highlight/20 bg-highlight/10 text-highlight-text">
-                  <MailX className="size-5" aria-hidden="true" />
-                </span>
-                <div className="min-w-0">
-                  <p className="font-semibold text-ink">Email reset unavailable</p>
-                  <p className="mt-2 text-sm leading-6 text-ink-muted">
-                    Password reset by email is temporarily unavailable. Please contact a HackerEarth Hub administrator.
-                  </p>
-                </div>
-              </div>
-            </div>
+            <form className="mt-8 space-y-5" onSubmit={handleSubmit} noValidate aria-busy={isSubmitting}>
+              <AuthInput
+                id="forgotPasswordEmail"
+                name="email"
+                label="NMAMIT email"
+                type="email"
+                autoComplete="email"
+                placeholder="yourusn@nmamit.in"
+                value={email}
+                error={emailError}
+                onChange={handleEmailChange}
+                onBlur={handleEmailBlur}
+                icon={<Mail className="h-4 w-4" aria-hidden="true" />}
+              />
 
-            <Link to="/login" className="btn btn-primary mt-8 w-full">
+              {message && (
+                <p
+                  className={`rounded-control border px-4 py-3 text-sm font-medium ${
+                    messageKind === "error"
+                      ? "border-highlight/40 bg-highlight/10 text-highlight-text"
+                      : "border-dream/35 bg-dream/10 text-dream-text"
+                  }`}
+                  role={messageKind === "error" ? "alert" : "status"}
+                  aria-live={messageKind === "error" ? "assertive" : "polite"}
+                  aria-atomic="true"
+                >
+                  {message}
+                </p>
+              )}
+
+              <button type="submit" className="btn btn-primary w-full" disabled={isSubmitting}>
+                {isSubmitting && (
+                  <span
+                    className={`size-4 rounded-full border-2 border-ink-inverse/40 border-b-ink-inverse ${
+                      shouldReduceMotion ? "" : "animate-spin"
+                    }`}
+                    aria-hidden="true"
+                  />
+                )}
+                {isSubmitting ? "Sending OTP..." : "Send OTP"}
+                {!isSubmitting && <ArrowRight className="h-4 w-4" aria-hidden="true" />}
+              </button>
+            </form>
+
+            <Link to="/login" className="btn btn-secondary mt-4 w-full">
               <ArrowLeft className="h-4 w-4" aria-hidden="true" />
               Back to login
             </Link>
