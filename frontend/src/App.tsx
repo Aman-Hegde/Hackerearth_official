@@ -27,6 +27,7 @@ import Sidebar from "./components/Sidebar";
 import SpotlightCursor from "./components/CustomCursor";
 import { ToastProvider } from "./components/ToastProvider";
 import type { UserRole } from "./context/AuthContext";
+import GlobalVideoBackground from "./components/ui/GlobalVideoBackground";
 
 function AppWrapper() {
   const location = useLocation();
@@ -90,41 +91,48 @@ function AppWrapper() {
   return (
     <div
       id="scroll-container"
-      className="min-h-screen h-full w-full overflow-y-auto bg-slate-50 dark:bg-gray-950 transition-colors duration-300"
+      className="relative h-full min-h-screen w-full overflow-y-auto text-ink transition-colors duration-300"
     >
-      <SpotlightCursor /> {/* <-- Add the cursor component here */}
-      
-      {!isAuthPage && <Navbar onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />}
-      {!isAuthPage && <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />}
+      <div className="relative z-10 min-h-screen">
+        <SpotlightCursor />
 
-      <main className="pt-0 transition-all duration-300 ease-in-out">
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/events" element={<PastEvents />} />
-          <Route path="/team" element={<Team />} />
-          <Route element={<ProtectedRoute />}>
-            <Route path="/domains" element={<Domains />} />
-            <Route path="/domains/:slug" element={<BlogPostPage />} />
-          </Route>
-          <Route path="/leaderboard" element={<Navigate to="/" replace />} />
-          {/* <Route path="/about" element={<About />} /> */}
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
-          <Route path="/register/verify-otp" element={<RegisterOtpPage />} />
-          <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-          <Route path="/forgot-password/verify-otp" element={<ForgotPasswordOtpPage />} />
-          <Route path="/forgot-password/change-password" element={<ChangeForgottenPasswordPage />} />
-          <Route element={<RoleRoute allowedRoles={["student"]} />}>
-            <Route path="/student/dashboard/*" element={<StudentDashboard />} />
-          </Route>
-          <Route element={<RoleRoute allowedRoles={["admin"]} />}>
-            <Route path="/admin/dashboard/*" element={<AdminDashboard />} />
-          </Route>
-        </Routes>
-      </main>
+        {!isAuthPage && (
+          <Navbar
+            sidebarOpen={sidebarOpen}
+            onToggleSidebar={() => setSidebarOpen((prev) => !prev)}
+          />
+        )}
+        {!isAuthPage && <Sidebar isOpen={sidebarOpen} setIsOpen={setSidebarOpen} />}
 
-      {!isAuthPage && !isDomainPage && <Footer />}
+        <main className="pt-0 transition-all duration-300 ease-in-out">
+          <Routes>
+            <Route path="/" element={<Home />} />
+            <Route path="/events" element={<PastEvents />} />
+            <Route path="/team" element={<Team />} />
+            <Route element={<ProtectedRoute />}>
+              <Route path="/domains" element={<Domains />} />
+              <Route path="/domains/:slug" element={<BlogPostPage />} />
+            </Route>
+            <Route path="/leaderboard" element={<Navigate to="/" replace />} />
+            {/* <Route path="/about" element={<About />} /> */}
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/register" element={<RegisterPage />} />
+            <Route path="/register/verify-otp" element={<RegisterOtpPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/forgot-password/verify-otp" element={<ForgotPasswordOtpPage />} />
+            <Route path="/forgot-password/change-password" element={<ChangeForgottenPasswordPage />} />
+            <Route element={<RoleRoute allowedRoles={["student"]} />}>
+              <Route path="/student/dashboard/*" element={<StudentDashboard />} />
+            </Route>
+            <Route element={<RoleRoute allowedRoles={["admin"]} />}>
+              <Route path="/admin/dashboard/*" element={<AdminDashboard />} />
+            </Route>
+          </Routes>
+        </main>
+
+        {!isAuthPage && !isDomainPage && <Footer />}
+      </div>
     </div>
   );
 }
@@ -132,6 +140,7 @@ function AppWrapper() {
 export default function App() { 
   return (
     <ThemeProvider>
+      <GlobalVideoBackground />
       <AuthProvider>
         <Router>
           <ToastProvider>

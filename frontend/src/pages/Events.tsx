@@ -1,10 +1,8 @@
-import { useState, useEffect } from 'react';
 import { Calendar, ArrowRight } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
-import Loader from '../components/Loader';
+import PageTransition from '../components/ui/PageTransition';
+import SectionReveal from '../components/ui/SectionReveal';
 
 const pastEvents = [
   {
@@ -12,7 +10,6 @@ const pastEvents = [
     title: "MindMesh 2025",
     date: "2025-10-11",
     image: "/images/MindMesh.jpeg",
-    gradient: "from-gray-500 to-gray-100",
     link: "",
   },
   {
@@ -20,7 +17,6 @@ const pastEvents = [
     title: "Git & Github Workshop",
     date: "2025-09-06",
     image: "/images/workshop1.jpg",
-    gradient: "from-purple-300 to-purple-600",
     link: "https://drive.google.com/drive/folders/1cKVk40LXLwJVtkqSQy5FfbbPWqI8zG7n",
   },
 ];
@@ -41,28 +37,30 @@ const EventCard = ({ event, index }: { event: EventItem; index: number }) => {
         ease: [0.16, 1, 0.3, 1],
       }}
       viewport={{ once: true, amount: 0.25 }}
-      className="ui-card top-border-accent-primary group flex h-full min-w-0 flex-col overflow-hidden border-primary/25 transition-colors duration-300 hover:border-primary/45 hover:shadow-surface"
+      className="ui-card-glass top-border-accent-primary group flex h-full min-w-0 flex-col overflow-hidden border-dream/25 transition duration-300 hover:border-dream/50 hover:shadow-glow"
     >
-      <div className="relative aspect-[16/10] overflow-hidden border-b border-line bg-surface-muted">
+      <div className="relative m-3 mb-0 aspect-[16/10] overflow-hidden rounded-[1.35rem] border border-line/70 bg-surface-muted shadow-soft sm:m-4 sm:mb-0">
         <img
           src={event.image}
           alt={event.title}
           loading="lazy"
           decoding="async"
-          className="size-full object-contain"
+          className={`size-full object-contain transition-transform duration-500 ${
+            shouldReduceMotion ? '' : 'group-hover:scale-[1.02]'
+          }`}
         />
         <div
           className="pointer-events-none absolute inset-0 bg-gradient-to-t from-primary/10 via-transparent to-transparent"
           aria-hidden="true"
         />
         <div
-          className="pointer-events-none absolute inset-x-0 top-0 h-1 bg-gradient-to-r from-primary via-primary to-technical"
+          className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-rose/70 to-transparent"
           aria-hidden="true"
         />
       </div>
 
       <div className="flex flex-1 flex-col p-5 sm:p-6">
-        <div className="flex w-fit items-center gap-2 rounded-control border border-highlight/20 bg-highlight/5 px-3 py-2 text-sm font-medium text-highlight-text">
+        <div className="flex w-fit items-center gap-2 rounded-full border border-highlight/25 bg-highlight/10 px-3 py-2 text-sm font-semibold text-highlight-text shadow-soft">
           <Calendar className="icon-accent-amber size-4 shrink-0" aria-hidden="true" />
           <time dateTime={event.date}>
             {new Date(event.date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
@@ -75,7 +73,7 @@ const EventCard = ({ event, index }: { event: EventItem; index: number }) => {
 
         <Link
           to={event.link}
-          className="btn btn-secondary group/button mt-6 w-full justify-center border-line-strong text-primary-text hover:border-technical focus-visible:outline-offset-4 sm:w-fit"
+          className="btn btn-primary group/button mt-6 w-full justify-center focus-visible:outline-offset-4 sm:w-fit"
         >
           <span>View Highlights</span>
           <ArrowRight
@@ -91,54 +89,30 @@ const EventCard = ({ event, index }: { event: EventItem; index: number }) => {
 };
 
 const Events = () => {
-  const [loading, setLoading] = useState(true);
-  const shouldReduceMotion = useReducedMotion();
-
-  useEffect(() => {
-    const timer = setTimeout(() => setLoading(false), 1500);
-    return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    AOS.init({ duration: 600, once: true });
-  }, []);
-
-  if (loading) {
-    return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-canvas px-4 text-ink transition-colors duration-500">
-        <Loader size={80} />
-        <p className="mt-4 text-lg font-medium">Loading Events...</p>
-      </div>
-    );
-  }
-
   return (
-    <main className="min-h-screen bg-canvas text-ink transition-colors duration-500">
-      <section className="section-glow-subtle section-space overflow-x-clip pt-28 sm:pt-32">
+    <PageTransition className="relative isolate min-h-screen overflow-hidden bg-transparent text-ink transition-colors duration-500">
+      <main className="min-h-screen">
+      <section className="section-glow-subtle section-space relative overflow-x-clip pt-28 sm:pt-32">
         <div className="site-container">
-          <motion.div
+          <SectionReveal
+            variant="slide-up"
             className="mx-auto mb-12 max-w-3xl text-center sm:mb-14 lg:mb-16"
-            initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: shouldReduceMotion ? 0 : 0.55,
-              ease: [0.16, 1, 0.3, 1],
-            }}
-            viewport={{ once: true, amount: 0.3 }}
+            amount={0.3}
           >
             <h1 className="section-heading">
               <span className="text-gradient-subtle">EVENTS</span>
             </h1>
-          </motion.div>
+          </SectionReveal>
 
-          <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 md:grid-cols-2 lg:gap-8">
+          <div className="mx-auto grid max-w-5xl grid-cols-1 gap-6 rounded-panel border border-line/50 bg-glass/30 p-3 shadow-glass sm:p-5 md:grid-cols-2 lg:gap-8 lg:p-7">
             {pastEvents.map((event, index) => (
               <EventCard key={event.id} event={event} index={index} />
             ))}
           </div>
         </div>
       </section>
-    </main>
+      </main>
+    </PageTransition>
   );
 };
 

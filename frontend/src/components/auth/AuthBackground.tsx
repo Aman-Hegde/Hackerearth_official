@@ -1,48 +1,35 @@
-import { motion, useReducedMotion } from "framer-motion";
-
 const codeTokens = ["</>", "{}", "01", "const", "git", "fn", "API"];
 
 export default function AuthBackground() {
-  const shouldReduceMotion = useReducedMotion();
-
   return (
     <div
       className="pointer-events-none absolute inset-0 overflow-hidden"
       aria-hidden="true"
     >
-      <div className="absolute inset-0 bg-canvas" />
+      <div className="absolute inset-0 bg-canvas/35 dark:bg-canvas/25" />
       <div
-        className="absolute inset-0 opacity-60 dark:opacity-40"
+        className="absolute inset-0 opacity-35 dark:opacity-25"
         style={{
           backgroundImage:
             "linear-gradient(rgb(var(--color-border) / 0.22) 1px, transparent 1px), linear-gradient(90deg, rgb(var(--color-border) / 0.22) 1px, transparent 1px)",
           backgroundSize: "44px 44px",
         }}
       />
-      <div className="absolute -left-28 top-10 h-80 w-80 rounded-full bg-primary/15 blur-3xl" />
-      <div className="absolute right-[-8rem] top-1/3 h-96 w-96 rounded-full bg-creative/15 blur-3xl" />
-      <div className="absolute bottom-[-10rem] left-1/3 h-96 w-96 rounded-full bg-technical/15 blur-3xl" />
+      <div className="absolute -left-28 top-10 h-64 w-64 rounded-full bg-dream/10" />
+      <div className="absolute bottom-[-8rem] right-[-6rem] h-72 w-72 rounded-full bg-rose/8" />
       <div
         className="absolute inset-0"
         style={{
           backgroundImage:
-            "radial-gradient(circle at 50% 0%, rgb(var(--color-surface) / 0.88), transparent 36%)",
+            "radial-gradient(circle at 50% 0%, rgb(var(--color-glass) / 0.7), transparent 38%)",
         }}
       />
 
-      <motion.div
-        className="absolute inset-0 hidden sm:block"
-        animate={shouldReduceMotion ? undefined : { y: [-8, 8, -8] }}
-        transition={
-          shouldReduceMotion
-            ? { duration: 0 }
-            : { duration: 28, repeat: Infinity, ease: "easeInOut" }
-        }
-      >
+      <div className="absolute inset-0 hidden sm:block">
         {codeTokens.map((token, index) => (
           <span
             key={token}
-            className="absolute rounded-full border border-primary/20 bg-surface/40 px-3 py-1 font-mono text-xs text-primary-text/40 backdrop-blur"
+            className="absolute rounded-full border border-dream/20 bg-glass/35 px-3 py-1 font-mono text-xs text-dream-text/35"
             style={{
               left: `${8 + index * 13}%`,
               top: `${14 + (index % 4) * 19}%`,
@@ -51,7 +38,7 @@ export default function AuthBackground() {
             {token}
           </span>
         ))}
-      </motion.div>
+      </div>
     </div>
   );
 }
