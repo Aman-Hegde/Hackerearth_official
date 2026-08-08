@@ -10,14 +10,14 @@ export default function ForgotPasswordPage() {
   const shouldReduceMotion = useReducedMotion();
 
   return (
-    <AuthShell>
+    <AuthShell waveClassName="opacity-30">
       <Link
         to="/"
         aria-label="Go to HackerEarth Hub-NMAMIT home page"
-        className="group absolute left-4 top-4 z-20 flex min-h-11 max-w-[calc(100%-5.5rem)] min-w-0 items-center gap-2 rounded-full border border-line-strong bg-surface/95 p-1 pr-3 text-ink shadow-soft backdrop-blur-xl transition-colors hover:border-technical hover:text-technical-text focus-visible:outline-offset-2 sm:left-6 sm:top-6 sm:gap-3"
+        className="group absolute left-4 top-4 z-20 flex min-h-11 max-w-[calc(100%-5.5rem)] min-w-0 items-center gap-2 rounded-full border border-dream/30 bg-glass/80 p-1 pr-3 text-ink shadow-glass backdrop-blur-lg transition hover:border-dream/55 hover:text-primary-text focus-visible:outline-offset-2 sm:left-6 sm:top-6 sm:gap-3"
       >
         <span
-          className={`flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-line bg-white p-0.5 transition duration-200 group-hover:border-technical/50 sm:size-11 ${
+          className={`flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-dream/30 bg-glass p-0.5 transition duration-200 group-hover:border-rose/50 sm:size-11 ${
             shouldReduceMotion ? "" : "group-hover:-translate-y-0.5"
           }`}
         >
@@ -32,17 +32,17 @@ export default function ForgotPasswordPage() {
         <AuthThemeToggle />
       </div>
 
-      <div className="relative mt-20 grid w-full min-w-0 max-w-5xl grid-cols-[minmax(0,1fr)] gap-4 overflow-hidden rounded-[2rem] border border-line-strong bg-surface/80 p-3 shadow-surface backdrop-blur-2xl sm:mt-24 lg:grid-cols-[1fr_0.95fr]">
-        <AuthVisual variant="login" />
+      <div className="ui-panel-glass relative mt-20 grid w-full min-w-0 max-w-5xl grid-cols-[minmax(0,1fr)] gap-4 overflow-hidden border-dream/25 bg-glass/45 p-3 sm:mt-24 lg:grid-cols-[1fr_0.95fr]">
+        <AuthVisual variant="login" className="order-2 lg:order-1" />
 
-        <div className="min-w-0 overflow-hidden rounded-[1.55rem] border border-line-strong bg-surface/95 p-4 shadow-surface backdrop-blur-xl sm:p-8 lg:p-10">
+        <div className="ui-panel-glass order-1 min-w-0 overflow-hidden border-dream/30 bg-glass/80 p-5 sm:p-8 lg:order-2 lg:p-10">
           <motion.section
             initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: shouldReduceMotion ? 0 : 0.45, ease: "easeOut" }}
           >
             <div className="space-y-2">
-              <p className="text-sm font-medium uppercase tracking-[0.2em] text-technical-text">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-dream-text">
                 Account recovery
               </p>
               <h2 className="break-words text-3xl font-bold tracking-tight text-ink">
@@ -53,9 +53,9 @@ export default function ForgotPasswordPage() {
               </p>
             </div>
 
-            <div className="mt-8 rounded-card border border-technical/30 bg-technical/10 p-5 text-ink shadow-soft">
+            <div className="mt-8 rounded-card border border-highlight/35 bg-gradient-to-br from-highlight/10 via-rose/5 to-dream/10 p-5 text-ink shadow-soft">
               <div className="flex items-start gap-3">
-                <span className="flex size-11 shrink-0 items-center justify-center rounded-control bg-technical/15 text-technical-text">
+                <span className="flex size-11 shrink-0 items-center justify-center rounded-control border border-highlight/20 bg-highlight/10 text-highlight-text">
                   <MailX className="size-5" aria-hidden="true" />
                 </span>
                 <div className="min-w-0">
@@ -76,7 +76,7 @@ export default function ForgotPasswordPage() {
               Remembered it?{" "}
               <Link
                 to="/login"
-                className="inline-flex min-h-11 items-center font-semibold text-primary-text underline underline-offset-4 transition-colors hover:text-technical-text focus-visible:outline-offset-2"
+                className="inline-flex min-h-11 items-center font-semibold text-primary-text underline decoration-rose/35 underline-offset-4 transition-colors hover:text-rose-text focus-visible:outline-offset-2"
               >
                 Back to login
               </Link>

@@ -1,30 +1,23 @@
-import React from 'react';
-import { useTheme } from '../context/ThemeContext';
+import type { CSSProperties, FC } from 'react';
+import { cn } from '../lib/utils';
 
 interface LoaderProps {
   className?: string;
   size?: number;
 }
 
-const Loader: React.FC<LoaderProps> = ({ className = "", size = 54 }) => {
-  const { isDark } = useTheme();
+interface LoaderStyle extends CSSProperties {
+  '--loader-size': string;
+}
+
+const Loader: FC<LoaderProps> = ({ className, size = 54 }) => {
+  const style: LoaderStyle = { '--loader-size': `${size}px` };
 
   return (
-    <div
-      className={`loader ${className}`}
-      style={{ width: size, height: size }}
-    >
-      {Array.from({ length: 12 }, (_, i) => (
-        <div
-          key={i}
-          className={`bar${i + 1}`}
-          style={{
-            background: isDark
-              ? `linear-gradient(45deg, #8B5CF6, #A855F7, #C084FC, #DDD6FE)`
-              : `linear-gradient(45deg, #7C3AED, #8B5CF6, #A855F7, #C084FC)`,
-          }}
-        />
-      ))}
+    <div className={cn('dream-loader', className)} style={style} role="status" aria-label="Loading">
+      <span className="dream-loader__ring" aria-hidden="true" />
+      <span className="dream-loader__ring dream-loader__ring--inner" aria-hidden="true" />
+      <span className="dream-loader__core" aria-hidden="true" />
     </div>
   );
 };
