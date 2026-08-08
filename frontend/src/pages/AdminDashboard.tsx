@@ -42,6 +42,7 @@ const OPEN_REGISTRATION_MESSAGE = 'Student registration is currently open.';
 const CLOSED_REGISTRATION_MESSAGE = 'Student registration is currently closed.';
 
 type StatusFilter = '' | 'active' | 'inactive';
+type DomainFilter = '' | 'Web Development' | 'DSA' | 'Aptitude';
 type AdminErrorKind = 'unauthorized' | 'forbidden' | 'network' | 'server' | 'api';
 
 interface AdminRequestError {
@@ -55,6 +56,13 @@ const emptyPagination: StudentPagination = {
   total: 0,
   totalPages: 0,
 };
+
+const domainFilterOptions: Array<{ value: DomainFilter; label: string }> = [
+  { value: '', label: 'All Domains' },
+  { value: 'Web Development', label: 'Web Development' },
+  { value: 'DSA', label: 'DSA' },
+  { value: 'Aptitude', label: 'Aptitude' },
+];
 
 const statAccents = {
   primary: {
@@ -238,6 +246,7 @@ const AdminDashboard = () => {
   const [branch, setBranch] = useState('');
   const [year, setYear] = useState('');
   const [status, setStatus] = useState<StatusFilter>('');
+  const [domain, setDomain] = useState<DomainFilter>('');
   const [page, setPage] = useState(1);
 
   const debouncedSearch = useDebouncedValue(search, 300);
@@ -305,6 +314,7 @@ const AdminDashboard = () => {
         branch: debouncedBranch,
         year: year ? Number(year) : undefined,
         status: status || undefined,
+        domain: domain || undefined,
       },
       controller.signal,
     )
@@ -327,7 +337,7 @@ const AdminDashboard = () => {
       });
 
     return () => controller.abort();
-  }, [debouncedBranch, debouncedSearch, page, status, studentRefreshToken, year]);
+  }, [debouncedBranch, debouncedSearch, domain, page, status, studentRefreshToken, year]);
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
@@ -337,6 +347,12 @@ const AdminDashboard = () => {
 
   const handleBranchChange = (event: ChangeEvent<HTMLSelectElement>) => {
     setBranch(event.target.value);
+    setPage(1);
+    setStudentsNotice(null);
+  };
+
+  const handleDomainChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    setDomain(event.target.value as DomainFilter);
     setPage(1);
     setStudentsNotice(null);
   };
@@ -418,6 +434,7 @@ const AdminDashboard = () => {
         branch: debouncedBranch,
         year: year ? Number(year) : undefined,
         status: status || undefined,
+        domain: domain || undefined,
       });
       const downloadUrl = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
@@ -452,7 +469,7 @@ const AdminDashboard = () => {
 
   const registrationOpensAt = formatDateTime(registration?.registrationOpensAt);
   const registrationClosesAt = formatDateTime(registration?.registrationClosesAt);
-  const filtersActive = Boolean(search.trim() || branch.trim() || year || status);
+  const filtersActive = Boolean(search.trim() || branch.trim() || year || status || domain);
 
   return (
     <PageTransition>
@@ -670,7 +687,7 @@ const AdminDashboard = () => {
           </div>
 
           <div className="min-w-0 rounded-card border border-line/80 bg-surface/90 p-4 shadow-soft sm:p-5">
-            <div className="grid min-w-0 gap-4 md:grid-cols-2 lg:grid-cols-[minmax(15rem,1fr)_minmax(10rem,0.45fr)_9rem_10rem]">
+            <div className="grid min-w-0 gap-4 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-[minmax(15rem,1fr)_minmax(10rem,0.5fr)_9rem_10rem_minmax(12rem,0.6fr)]">
               <label className="min-w-0 md:col-span-2 lg:col-span-1">
                 <span className="mb-2 block text-sm font-semibold text-ink">Search students</span>
                 <span className="relative block">
@@ -721,6 +738,21 @@ const AdminDashboard = () => {
                   <option value="">All statuses</option>
                   <option value="active">Active</option>
                   <option value="inactive">Inactive</option>
+                </select>
+              </label>
+
+              <label>
+                <span className="mb-2 block text-sm font-semibold text-ink">Domain</span>
+                <select
+                  value={domain}
+                  onChange={handleDomainChange}
+                  className="min-h-11 w-full rounded-control border border-line-strong bg-glass/70 px-3 py-2 text-sm text-ink shadow-soft focus:border-rose/60 focus:ring-2 focus:ring-rose/20"
+                >
+                  {domainFilterOptions.map((option) => (
+                    <option key={option.label} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
                 </select>
               </label>
             </div>
