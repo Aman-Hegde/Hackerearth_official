@@ -32,7 +32,7 @@ export default function DomainSelector({ selectedDomains, onChange, onBlur, erro
 
   return (
     <fieldset className="space-y-3" aria-describedby={error ? "domains-error" : undefined}>
-      <legend className="text-[0.95rem] font-medium text-ink">Domain interest</legend>
+      <legend className="text-[0.95rem] font-semibold text-ink">Domain interest</legend>
       <div className="grid gap-3 sm:grid-cols-3">
         {domains.map(({ name, description, icon: Icon }) => {
           const isSelected = selectedDomains.includes(name);
@@ -48,23 +48,23 @@ export default function DomainSelector({ selectedDomains, onChange, onBlur, erro
               whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
               transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
               className={cn(
-                "group flex min-h-28 flex-col justify-between rounded-card border p-3.5 text-left text-ink transition-colors duration-200 focus-visible:outline-offset-2",
+                "group flex min-h-28 flex-col justify-between rounded-card border bg-glass/55 p-3.5 text-left text-ink shadow-soft transition duration-200 focus-visible:outline-offset-2",
                 isSelected
                   ? cn(
-                      "border-technical bg-technical/10 shadow-soft",
+                      "border-dream/60 bg-gradient-to-br from-dream/15 via-rose/5 to-technical/10 shadow-glow",
                       !shouldReduceMotion && "scale-[1.015]",
                     )
-                  : "border-line-strong bg-surface/80 hover:border-technical hover:bg-surface-muted"
+                  : "border-dream/25 hover:border-dream/50 hover:bg-glass/80"
               )}
             >
               <span className="flex items-start justify-between gap-3">
-                <span className="rounded-control bg-gradient-to-br from-primary/15 to-creative/15 p-2 text-primary-text">
+                <span className="rounded-control bg-gradient-to-br from-dream/20 to-rose/10 p-2 text-dream-text">
                   <Icon className="h-5 w-5" aria-hidden="true" />
                 </span>
                 <CheckCircle2
                   className={cn(
                     "h-5 w-5 transition-opacity",
-                    isSelected ? "text-technical-text opacity-100" : "text-ink-muted opacity-60",
+                    isSelected ? "text-rose-text opacity-100" : "text-ink-muted opacity-60",
                   )}
                   aria-hidden="true"
                 />
@@ -78,7 +78,7 @@ export default function DomainSelector({ selectedDomains, onChange, onBlur, erro
         })}
       </div>
       {error && (
-        <p id="domains-error" className="text-sm font-medium text-red-600 dark:text-red-300" role="alert">
+        <p id="domains-error" className="text-sm font-semibold text-rose-text" role="alert">
           {error}
         </p>
       )}
