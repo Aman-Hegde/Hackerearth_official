@@ -4,6 +4,7 @@ import {
   getRegistrationSettings,
   getStudents,
   exportStudents,
+  clearStudentPasswordResetLimit,
   updateRegistrationSettings,
   updateStudentStatus,
 } from "../controllers/adminController";
@@ -18,6 +19,10 @@ router.get("/overview", getAdminOverview);
 router.get("/students", getStudents);
 router.get("/students/export", exportStudents);
 router.patch("/students/:studentId/status", updateStudentStatus);
+router.patch(
+  "/students/:studentId/password-reset-limit",
+  clearStudentPasswordResetLimit
+);
 router.get("/settings/registration", getRegistrationSettings);
 router.patch("/settings/registration", updateRegistrationSettings);
 

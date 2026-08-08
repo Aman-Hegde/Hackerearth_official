@@ -12,6 +12,7 @@ import type { Domain } from "../components/auth/DomainSelector";
 import PasswordInput from "../components/auth/PasswordInput";
 import { useToast } from "../components/ToastProvider";
 import { cn } from "../lib/utils";
+import { registrationBranchOptions } from "../lib/registrationBranches";
 import logo from "../assets/image.png";
 
 interface RegisterForm {
@@ -45,21 +46,7 @@ const passwordRules = [
   { label: "1 number", test: (value: string) => /\d/.test(value) },
   { label: "1 special character", test: (value: string) => /[^A-Za-z0-9]/.test(value) },
 ];
-const branchOptions = [
-  { value: "CSE", label: "Computer Science and Engineering (CSE)" },
-  { value: "ISE", label: "Information Science and Engineering (ISE)" },
-  { value: "AIML", label: "Artificial Intelligence and Machine Learning (AIML)" },
-  { value: "AIDS", label: "Artificial Intelligence and Data Science (AIDS)" },
-  { value: "ECE", label: "Electronics and Communication Engineering (ECE)" },
-  { value: "EEE", label: "Electrical and Electronics Engineering (EEE)" },
-  { value: "ME", label: "Mechanical Engineering (ME)" },
-  { value: "CV", label: "Civil Engineering (CV)" },
-  { value: "BT", label: "Biotechnology (BT)" },
-  { value: "CC", label: "Computer Communication Engineering (CCE)" },
-  { value: "RAI", label: "Robotics and Artificial Intelligence (RAI)" },
-  { value: "CSE-FSD", label: "Computer Science (Full Stack Development) (CSE-FSD)" },
-] as const;
-const validBranchCodes = new Set<string>(branchOptions.map((option) => option.value));
+const validBranchCodes = new Set<string>(registrationBranchOptions.map((option) => option.value));
 
 export default function RegisterPage() {
   const [formData, setFormData] = useState<RegisterForm>(initialForm);
@@ -196,7 +183,7 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/register/request-otp`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -221,7 +208,7 @@ export default function RegisterPage() {
         const backendMessage =
           typeof data.message === "string"
             ? data.message
-            : "Unable to request OTP. Please try again.";
+            : "Unable to create account. Please try again.";
         const backendCode = typeof data.code === "string" ? data.code : "";
         const isEmailAlreadyRegistered =
           backendCode === "EMAIL_ALREADY_REGISTERED" ||
@@ -236,7 +223,7 @@ export default function RegisterPage() {
           action: isEmailAlreadyRegistered ? (
             <Link
               to="/login"
-              className="inline-flex min-h-9 items-center rounded-control border border-amber-400/45 bg-amber-400/15 px-3 text-sm font-semibold text-amber-800 transition hover:bg-amber-400/25 focus-visible:outline-offset-2 dark:text-amber-100"
+              className="inline-flex min-h-9 items-center rounded-control border border-highlight/40 bg-highlight/10 px-3 text-sm font-semibold text-highlight-text transition hover:bg-highlight/20 focus-visible:outline-offset-2"
             >
               Login
             </Link>
@@ -245,13 +232,12 @@ export default function RegisterPage() {
         return;
       }
 
-      navigate("/register/verify-otp", {
-        state: {
-          email: typeof data.email === "string" ? data.email : formData.email.trim().toLowerCase(),
-          expiresInSeconds: typeof data.expiresInSeconds === "number" ? data.expiresInSeconds : 600,
-          resendAvailableInSeconds: typeof data.resendAvailableInSeconds === "number" ? data.resendAvailableInSeconds : 60,
-        },
+      showToast({
+        variant: "success",
+        title: "Account created",
+        message: "Account created successfully. You can now log in.",
       });
+      navigate("/login");
     } catch {
       showToast({
         variant: "error",
@@ -264,14 +250,14 @@ export default function RegisterPage() {
   };
 
   return (
-    <AuthShell>
+    <AuthShell waveClassName="opacity-50">
       <Link
         to="/"
         aria-label="Go to HackerEarth Hub-NMAMIT home page"
-        className="group absolute left-4 top-4 z-20 flex min-h-11 max-w-[calc(100%-5.5rem)] min-w-0 items-center gap-2 rounded-full border border-line-strong bg-surface/95 p-1 pr-3 text-ink shadow-soft backdrop-blur-xl transition-colors hover:border-technical hover:text-technical-text focus-visible:outline-offset-2 sm:left-6 sm:top-6 sm:gap-3"
+        className="group absolute left-4 top-4 z-20 flex min-h-11 max-w-[calc(100%-5.5rem)] min-w-0 items-center gap-2 rounded-full border border-dream/30 bg-glass/80 p-1 pr-3 text-ink shadow-glass backdrop-blur-lg transition hover:border-dream/55 hover:text-primary-text focus-visible:outline-offset-2 sm:left-6 sm:top-6 sm:gap-3"
       >
         <span
-          className={`flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-line bg-white p-0.5 transition duration-200 group-hover:border-technical/50 sm:size-11 ${shouldReduceMotion ? "" : "group-hover:-translate-y-0.5"
+          className={`flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-dream/30 bg-glass p-0.5 transition duration-200 group-hover:border-rose/50 sm:size-11 ${shouldReduceMotion ? "" : "group-hover:-translate-y-0.5"
             }`}
         >
           <img
@@ -289,12 +275,12 @@ export default function RegisterPage() {
         <AuthThemeToggle />
       </div>
 
-      <div className="relative mt-20 grid w-full min-w-0 max-w-7xl grid-cols-[minmax(0,1fr)] gap-4 overflow-hidden rounded-[2rem] border border-line-strong bg-surface/80 p-3 shadow-surface backdrop-blur-2xl sm:mt-24 lg:grid-cols-[0.78fr_1.22fr] lg:items-start">
-        <div className="min-w-0 lg:sticky lg:top-8 lg:h-[calc(100vh-4rem)] lg:self-start">
+      <div className="ui-panel-glass relative mt-20 grid w-full min-w-0 max-w-7xl grid-cols-[minmax(0,1fr)] gap-4 overflow-hidden border-dream/25 bg-glass/45 p-3 sm:mt-24 lg:grid-cols-[0.78fr_1.22fr] lg:items-start">
+        <div className="order-2 min-w-0 lg:order-1 lg:sticky lg:top-8 lg:h-[calc(100vh-4rem)] lg:self-start">
           <AuthVisual variant="register" />
         </div>
 
-        <div className="min-w-0 overflow-hidden rounded-[1.55rem] border border-line-strong bg-surface/95 p-4 shadow-surface backdrop-blur-xl sm:p-6 lg:p-7">
+        <div className="ui-panel-glass order-1 min-w-0 overflow-hidden border-dream/30 bg-glass/80 p-5 sm:p-6 lg:order-2 lg:p-7">
           <motion.section
             initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
@@ -303,12 +289,12 @@ export default function RegisterPage() {
             <div className="flex flex-col gap-5 md:flex-row md:items-start md:justify-between">
               <div className="space-y-3">
                 <div>
-                  <p className="text-sm font-medium uppercase tracking-[0.2em] text-technical-text">Student registration</p>
+                  <p className="text-sm font-semibold uppercase tracking-[0.2em] text-dream-text">Student registration</p>
                   <h2 className="mt-2 break-words text-3xl font-bold tracking-tight text-ink">Create your account</h2>
                   <p className="mt-2 max-w-2xl break-words text-sm leading-6 text-ink-muted">Tell us who you are and which tracks you want to grow in.</p>
                 </div>
               </div>
-              <div className="hidden rounded-card border border-technical/30 bg-gradient-to-br from-technical/10 to-creative/10 px-4 py-3 font-mono text-xs text-ink-muted md:block">
+              <div className="hidden rounded-card border border-dream/30 bg-gradient-to-br from-dream/10 via-rose/5 to-technical/10 px-4 py-3 font-mono text-xs text-ink-muted shadow-soft md:block">
                 const member = ready;
               </div>
             </div>
@@ -332,21 +318,21 @@ export default function RegisterPage() {
                     aria-invalid={Boolean(errors.branch)}
                     aria-describedby={errors.branch ? "branch-error" : undefined}
                     className={cn(
-                      "min-h-11 w-full min-w-0 rounded-control border bg-surface px-4 py-3 text-sm text-ink shadow-soft transition-colors duration-200 focus-visible:border-focus focus-visible:ring-2 focus-visible:ring-technical/30",
+                      "min-h-12 w-full min-w-0 rounded-control border bg-glass/65 px-4 py-3 text-sm text-ink shadow-soft transition duration-200 hover:bg-glass/80 focus-visible:border-primary focus-visible:bg-glass focus-visible:shadow-glow [&>option]:bg-surface [&>option]:text-ink",
                       errors.branch
-                        ? "border-highlight focus-visible:border-highlight focus-visible:ring-highlight/30"
-                        : "border-line-strong hover:border-technical",
+                        ? "border-rose/70 bg-rose/5"
+                        : "border-dream/30 hover:border-dream/55",
                     )}
                   >
                     <option value="">Select your branch</option>
-                    {branchOptions.map((option) => (
+                    {registrationBranchOptions.map((option) => (
                       <option key={option.value} value={option.value}>
                         {option.label}
                       </option>
                     ))}
                   </select>
                   {errors.branch && (
-                    <p id="branch-error" className="text-sm font-medium text-highlight-text" role="alert">
+                    <p id="branch-error" className="text-sm font-semibold text-rose-text" role="alert">
                       {errors.branch}
                     </p>
                   )}
@@ -364,18 +350,17 @@ export default function RegisterPage() {
                     aria-invalid={Boolean(errors.year)}
                     aria-describedby={errors.year ? "year-error" : undefined}
                     className={cn(
-                      "w-full rounded-control border bg-surface/90 px-4 py-3.5 text-sm text-ink shadow-soft outline-none transition focus:border-technical focus:ring-2 focus:ring-technical/30",
-                      errors.year ? "border-highlight focus:border-highlight focus:ring-highlight/30" : "border-line-strong hover:border-technical/40",
+                      "min-h-12 w-full rounded-control border bg-glass/65 px-4 py-3 text-sm text-ink shadow-soft transition hover:bg-glass/80 focus-visible:border-primary focus-visible:bg-glass focus-visible:shadow-glow [&>option]:bg-surface [&>option]:text-ink",
+                      errors.year ? "border-rose/70 bg-rose/5" : "border-dream/30 hover:border-dream/55",
                     )}
                   >
                     <option value="">Select year</option>
-                    <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
                     <option value="4">4</option>
                   </select>
                   {errors.year && (
-                    <p id="year-error" className="text-sm text-highlight-text">
+                    <p id="year-error" className="text-sm font-semibold text-rose-text" role="alert">
                       {errors.year}
                     </p>
                   )}
@@ -413,7 +398,7 @@ export default function RegisterPage() {
                 disabled={isLoading}
                 className="btn btn-primary group w-full sm:w-auto sm:px-8"
               >
-                {isLoading ? "Sending OTP..." : "Submit registration details"}
+                {isLoading ? "Creating account..." : "Create account"}
                 <ArrowRight
                   className={cn(
                     "h-4 w-4",
@@ -426,7 +411,7 @@ export default function RegisterPage() {
 
             <p className="mt-5 text-center text-sm text-ink-muted">
               Already registered?{" "}
-              <Link to="/login" className="inline-flex min-h-11 items-center font-semibold text-primary-text underline underline-offset-4 transition-colors hover:text-technical-text focus-visible:outline-offset-2">
+              <Link to="/login" className="inline-flex min-h-11 items-center font-semibold text-primary-text underline decoration-rose/35 underline-offset-4 transition-colors hover:text-rose-text focus-visible:outline-offset-2">
                 Login
               </Link>
             </p>

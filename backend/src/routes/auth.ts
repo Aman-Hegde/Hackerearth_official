@@ -6,9 +6,7 @@ import {
 import { changePassword } from "../controllers/accountController";
 import { loginUser } from "../controllers/loginController";
 import {
-  requestRegistrationOtp,
-  resendRegistrationOtp,
-  verifyRegistrationOtp,
+  registerStudent,
 } from "../controllers/registrationController";
 import {
   changeForgottenPassword,
@@ -19,6 +17,7 @@ import {
 import { getCurrentUser, logoutUser } from "../controllers/sessionController";
 import { authenticate } from "../middleware/authenticate";
 import { authorize } from "../middleware/authorize";
+import { forgotPasswordRateLimit } from "../middleware/forgotPasswordRateLimit";
 import { requireRegistrationOpen } from "../middleware/requireRegistrationOpen";
 
 const router = Router();
@@ -30,21 +29,25 @@ router.post("/google", (_req: Request, res: Response) => {
   });
 });
 
+router.post("/register", requireRegistrationOpen, registerStudent);
+
 router.post(
-  "/register/request-otp",
-  requireRegistrationOpen,
-  requestRegistrationOtp
+  "/forgot-password/request-otp",
+  forgotPasswordRateLimit,
+  requestForgotPasswordOtp
 );
 
-router.post("/register/resend-otp", resendRegistrationOtp);
+router.post(
+  "/forgot-password/resend-otp",
+  forgotPasswordRateLimit,
+  resendForgotPasswordOtp
+);
 
-router.post("/register/verify-otp", verifyRegistrationOtp);
-
-router.post("/forgot-password/request-otp", requestForgotPasswordOtp);
-
-router.post("/forgot-password/resend-otp", resendForgotPasswordOtp);
-
-router.post("/forgot-password/verify-otp", verifyForgotPasswordOtp);
+router.post(
+  "/forgot-password/verify-otp",
+  forgotPasswordRateLimit,
+  verifyForgotPasswordOtp
+);
 
 router.post("/forgot-password/change-password", changeForgottenPassword);
 

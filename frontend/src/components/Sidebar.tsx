@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FC } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import {
   Award,
   BookOpen,
@@ -8,15 +8,14 @@ import {
   Code,
   Home,
   LayoutDashboard,
-  LogOut,
   Mail,
   Shapes,
-  User,
   Users,
   X,
 } from 'lucide-react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { useAuth } from '../context/AuthContext';
+import UserMenu from './UserMenu';
 
 interface SidebarProps {
   isOpen: boolean;
@@ -33,7 +32,6 @@ const navItems = [
 ] as const;
 
 const adminNavItems = [
-  { name: 'Home', path: '/', icon: Home },
   { name: 'Events', path: '/events', icon: Calendar },
   { name: 'Leaderboard', disabled: true, icon: Award },
   { name: 'Team', path: '/team', icon: Users },
@@ -42,8 +40,7 @@ const adminNavItems = [
 ] as const;
 
 const studentDashboardNavItems = [
-  { name: 'Home', path: '/', icon: Home },
-  { name: 'Dashboard', target: 'student-dashboard-top', icon: LayoutDashboard },
+  { name: 'Dashboard', path: '/student/dashboard', icon: LayoutDashboard },
   { name: 'Events & Tasks', target: 'student-events-tasks', icon: CalendarCheck },
   { name: 'Resources', target: 'student-resources', icon: BookOpen },
   { name: 'My Domains', target: 'student-domains', icon: Shapes },
@@ -65,12 +62,11 @@ const restoreSidebarToggleFocus = () => {
 const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
   const { pathname } = useLocation();
   const [activeDashboardSection, setActiveDashboardSection] = useState('student-dashboard-top');
-  const navigate = useNavigate();
-  const { user, logout, isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const sidebarRef = useRef<HTMLElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
   const shouldReduceMotion = useReducedMotion() ?? false;
-  const isStudentDashboard = pathname === '/student/dashboard';
+  const isStudentDashboard = pathname.startsWith('/student/dashboard');
   const displayedNavItems = isStudentDashboard
     ? studentDashboardNavItems
     : user?.role === 'admin'
@@ -152,12 +148,6 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
     };
   }, [isOpen, isStudentDashboard, setIsOpen]);
 
-  const handleLogout = async () => {
-    await logout();
-    setIsOpen(false);
-    navigate('/login');
-  };
-
   const scrollToDashboardSection = (target: string) => {
     setActiveDashboardSection(target);
     closeSidebar();
@@ -175,7 +165,7 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
         {isOpen && (
           <motion.div
             aria-hidden="true"
-            className={`fixed inset-0 z-[55] bg-canvas/70 backdrop-blur-sm ${
+            className={`fixed inset-0 z-[55] bg-canvas/65 backdrop-blur-sm ${
               isStudentDashboard ? 'xl:hidden' : 'lg:hidden'
             }`}
             initial={shouldReduceMotion ? { opacity: 1 } : { opacity: 0 }}
@@ -196,7 +186,7 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
             aria-modal="true"
             aria-labelledby="sidebar-heading"
             tabIndex={-1}
-            className={`fixed inset-y-0 left-0 z-[60] w-[min(19rem,88vw)] flex-col overflow-hidden rounded-r-card border-r border-line bg-surface/95 text-ink shadow-surface backdrop-blur-xl ${
+            className={`fixed inset-y-0 left-0 z-[60] w-[min(19rem,88vw)] flex-col overflow-hidden rounded-r-panel border-r border-dream/30 bg-glass/90 text-ink shadow-glass backdrop-blur-xl ${
               isStudentDashboard ? 'flex xl:hidden' : 'flex lg:hidden'
             }`}
             initial={shouldReduceMotion ? { x: 0 } : { x: '-100%' }}
@@ -208,11 +198,16 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
             }}
           >
             <div
-              className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-technical/80 to-transparent"
+              className="pointer-events-none absolute inset-x-5 top-0 h-px bg-gradient-to-r from-transparent via-dream/80 to-rose/40"
               aria-hidden="true"
             />
 
-            <div className="flex h-16 shrink-0 items-center justify-between border-b border-line/80 px-3">
+            <div
+              className="pointer-events-none absolute -left-24 top-16 size-64 rounded-full bg-dream/15 blur-3xl"
+              aria-hidden="true"
+            />
+
+            <div className="relative flex h-16 shrink-0 items-center justify-between border-b border-line/70 px-3">
               <motion.div
                 className="min-w-0"
                 initial={shouldReduceMotion ? { opacity: 1, x: 0 } : { opacity: 0, x: -8 }}
@@ -251,33 +246,23 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
                     const Icon = item.icon;
                     const isDisabled = 'disabled' in item && item.disabled;
                     const isSectionItem = 'target' in item;
+                    const isPathItem = 'path' in item;
                     const active = isDisabled
                       ? false
                       : isSectionItem
                         ? activeDashboardSection === item.target
-                        : isActive(item.path);
-                    const itemClassName = `group relative flex min-h-12 w-full items-center overflow-hidden rounded-control border px-3 text-left transition duration-200 ${
+                        : isPathItem
+                          ? isActive(item.path)
+                          : false;
+                    const itemClassName = `group relative flex min-h-12 w-full items-center overflow-hidden rounded-control border px-3 text-left shadow-none transition duration-200 ${
                       isDisabled
                         ? 'cursor-not-allowed select-none border-transparent text-ink-subtle opacity-60'
                         : active
-                        ? 'border-primary bg-primary/10 text-primary-text'
-                        : 'border-transparent text-ink-muted hover:border-line hover:bg-surface-muted hover:text-ink'
+                        ? 'border-dream/40 bg-gradient-to-r from-primary/15 via-dream/10 to-technical/10 text-primary-text shadow-soft'
+                        : 'border-transparent text-ink-muted hover:border-dream/25 hover:bg-dream-soft/30 hover:text-ink'
                     }`;
                     const itemContent = (
                       <>
-                        {active && (
-                          <motion.span
-                            layoutId="sidebar-active"
-                            className="absolute bottom-2 left-0 top-2 w-0.5 rounded-r-full bg-gradient-to-b from-primary to-technical"
-                            transition={
-                              shouldReduceMotion
-                                ? { duration: 0 }
-                                : { type: 'spring', stiffness: 380, damping: 32 }
-                            }
-                            aria-hidden="true"
-                          />
-                        )}
-
                         <span
                           className={`relative z-10 flex size-8 shrink-0 items-center justify-center rounded-lg transition ${
                             isDisabled
@@ -321,7 +306,7 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
                           >
                             {itemContent}
                           </button>
-                        ) : (
+                        ) : isPathItem ? (
                           <Link
                             to={item.path}
                             onClick={() => closeSidebar()}
@@ -331,6 +316,8 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
                           >
                             {itemContent}
                           </Link>
+                        ) : (
+                          null
                         )}
                       </motion.li>
                     );
@@ -340,24 +327,12 @@ const Sidebar: FC<SidebarProps> = ({ isOpen, setIsOpen }) => {
 
               <div className="mx-2 mb-4 border-t border-line pt-4">
                 {isAuthenticated ? (
-                  <div className="grid gap-3">
-                    <div className="ui-card-muted flex items-center gap-3 rounded-control p-3 shadow-none">
-                      <span className="flex size-9 items-center justify-center rounded-control bg-primary/10 text-primary-text">
-                        <User className="size-4" aria-hidden="true" />
-                      </span>
-                      <span className="min-w-0 truncate text-sm font-semibold">
-                        {user?.name || user?.email?.split('@')[0]}
-                      </span>
-                    </div>
-                    <button
-                      onClick={handleLogout}
-                      className="btn btn-secondary w-full hover:border-red-400 hover:text-red-600 dark:hover:text-red-400"
-                      type="button"
-                    >
-                      <LogOut className="size-4" aria-hidden="true" />
-                      <span>Logout</span>
-                    </button>
-                  </div>
+                  <UserMenu
+                    fullWidth
+                    triggerClassName="rounded-control border-dream/25 bg-dream-soft/25 p-3 shadow-soft"
+                    menuClassName="bottom-[calc(100%+0.5rem)] top-auto"
+                    onAfterAction={() => setIsOpen(false)}
+                  />
                 ) : (
                   <Link
                     to="/login"

@@ -6,6 +6,7 @@ type AuthVisualVariant = "login" | "register";
 
 interface AuthVisualProps {
   variant: AuthVisualVariant;
+  className?: string;
 }
 
 const terminalLines = [
@@ -14,17 +15,17 @@ const terminalLines = [
   { prompt: ">", text: "status: ready_to_build", color: "text-success-text" },
 ];
 
-export default function AuthVisual({ variant }: AuthVisualProps) {
+export default function AuthVisual({ variant, className }: AuthVisualProps) {
   const isLogin = variant === "login";
 
   return (
-    <section className="relative isolate flex h-full min-w-0 flex-col justify-center gap-6 overflow-hidden rounded-[1.6rem] border border-line-strong bg-canvas-subtle p-5 text-ink shadow-surface sm:min-h-[300px] sm:gap-8 sm:p-8 lg:min-h-[420px] lg:rounded-[1.8rem] lg:p-10">
+    <section className={cn("ui-panel-glass relative isolate flex min-h-52 min-w-0 flex-col justify-center gap-6 overflow-hidden border-dream/25 bg-gradient-to-br from-dream-soft/40 via-glass/65 to-rose/10 p-5 text-ink sm:min-h-[300px] sm:gap-8 sm:p-8 lg:min-h-[420px] lg:p-10", className)}>
       <div
-        className="pointer-events-none absolute -left-20 -top-24 size-72 rounded-full bg-technical/20 blur-3xl"
+        className="pointer-events-none absolute -left-20 -top-24 size-72 rounded-full bg-dream/10"
         aria-hidden="true"
       />
       <div
-        className="pointer-events-none absolute -bottom-24 -right-20 size-72 rounded-full bg-creative/20 blur-3xl"
+        className="pointer-events-none absolute -bottom-24 -right-20 size-72 rounded-full bg-rose/10"
         aria-hidden="true"
       />
       <div
@@ -38,7 +39,7 @@ export default function AuthVisual({ variant }: AuthVisualProps) {
       />
 
       <div className="relative z-10">
-        <div className="inline-flex items-center gap-2 rounded-full border border-technical/40 bg-surface/70 px-3 py-1.5 text-xs font-medium text-technical-text backdrop-blur">
+        <div className="inline-flex items-center gap-2 rounded-full border border-dream/35 bg-glass/60 px-3 py-1.5 text-xs font-semibold text-dream-text shadow-soft backdrop-blur-sm">
           {isLogin ? <Terminal className="h-4 w-4" aria-hidden="true" /> : <BadgeCheck className="h-4 w-4" aria-hidden="true" />}
           {isLogin ? "Member Portal" : "Open Registration"}
         </div>
@@ -69,7 +70,7 @@ function TerminalVisual() {
   const shouldReduceMotion = useReducedMotion();
 
   return (
-    <div className="min-w-0 overflow-hidden rounded-card border border-line bg-surface/80 p-4 shadow-surface backdrop-blur">
+    <div className="min-w-0 overflow-hidden rounded-card border border-dream/25 bg-glass/60 p-4 shadow-glass backdrop-blur-sm">
       <div className="mb-4 flex items-center gap-2 border-b border-line pb-3">
         <span className="h-2.5 w-2.5 rounded-full bg-primary" aria-hidden="true" />
         <span className="h-2.5 w-2.5 rounded-full bg-highlight" aria-hidden="true" />
@@ -91,14 +92,8 @@ function TerminalVisual() {
             <span className="text-creative-text">{line.prompt}</span>
             <span className={cn("min-w-0 truncate", line.color)}>{line.text}</span>
             {index === terminalLines.length - 1 && (
-              <motion.span
+              <span
                 className="h-5 w-2 rounded-sm bg-technical"
-                animate={shouldReduceMotion ? { opacity: 1 } : { opacity: [1, 0.15, 1] }}
-                transition={
-                  shouldReduceMotion
-                    ? { duration: 0 }
-                    : { duration: 1.2, repeat: Infinity, ease: "easeInOut" }
-                }
                 aria-hidden="true"
               />
             )}
@@ -107,7 +102,7 @@ function TerminalVisual() {
       </div>
       <div className="mt-5 grid grid-cols-[repeat(3,minmax(0,1fr))] gap-2 text-center text-[0.68rem] text-ink-muted">
         {["DSA", "WEB", "APT"].map((item) => (
-          <div key={item} className="min-w-0 rounded-lg border border-line bg-surface-muted px-2 py-2">
+          <div key={item} className="min-w-0 rounded-lg border border-dream/20 bg-dream-soft/25 px-2 py-2">
             {item}
           </div>
         ))}
@@ -117,7 +112,6 @@ function TerminalVisual() {
 }
 
 function NetworkVisual() {
-  const shouldReduceMotion = useReducedMotion();
   const nodes = [
     "left-[12%] top-[36%]",
     "left-[34%] top-[18%]",
@@ -127,40 +121,28 @@ function NetworkVisual() {
   ];
 
   return (
-    <div className="relative h-56 min-w-0 overflow-hidden rounded-card border border-line bg-surface/80 p-4 shadow-surface backdrop-blur">
+    <div className="relative h-56 min-w-0 overflow-hidden rounded-card border border-dream/25 bg-glass/60 p-4 shadow-glass backdrop-blur-sm">
       {[
         "left-[18%] right-[20%] top-1/2 -rotate-12 from-technical/10 via-technical/70 to-creative/10",
         "left-[35%] right-[16%] top-[42%] rotate-[22deg] from-creative/10 via-creative/70 to-primary/10",
         "bottom-[28%] left-[16%] right-[18%] from-primary/10 via-primary/70 to-technical/10",
       ].map((line) => (
-        <motion.div
+        <div
           key={line}
           className={cn("absolute h-px bg-gradient-to-r", line)}
-          animate={shouldReduceMotion ? { opacity: 1 } : { opacity: [0.55, 1, 0.55] }}
-          transition={
-            shouldReduceMotion
-              ? { duration: 0 }
-              : { duration: 5.5, repeat: Infinity, ease: "easeInOut" }
-          }
           aria-hidden="true"
         />
       ))}
       {nodes.map((position, index) => (
-        <motion.div
+        <div
           key={position}
-          className={cn("absolute flex h-11 w-11 items-center justify-center rounded-2xl border border-technical/30 bg-surface/80 text-technical-text shadow-soft backdrop-blur", position)}
-          animate={shouldReduceMotion ? { y: 0 } : { y: [0, index % 2 ? 4 : -4, 0] }}
-          transition={
-            shouldReduceMotion
-              ? { duration: 0 }
-              : { duration: 6 + index, repeat: Infinity, ease: "easeInOut" }
-          }
+          className={cn("absolute flex h-11 w-11 items-center justify-center rounded-2xl border border-dream/30 bg-glass/70 text-dream-text shadow-soft backdrop-blur-sm", position)}
           aria-hidden="true"
         >
           {index % 2 === 0 ? <Braces className="h-5 w-5" aria-hidden="true" /> : <GitBranch className="h-5 w-5" aria-hidden="true" />}
-        </motion.div>
+        </div>
       ))}
-      <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between rounded-control border border-line bg-surface/80 px-3 py-2 text-xs text-ink-muted">
+      <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between rounded-control border border-dream/20 bg-glass/70 px-3 py-2 text-xs text-ink-muted">
         <span className="inline-flex items-center gap-2">
           <Network className="h-4 w-4 text-technical-text" aria-hidden="true" />
           domain graph

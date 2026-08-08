@@ -16,10 +16,10 @@ const WeekFilter: FC<WeekFilterProps> = ({
 
   return (
     <div
-      className="-mx-4 overflow-x-auto px-4 pb-2 sm:mx-0 sm:px-0"
+      className="w-full"
       data-color-scheme={isDark ? 'dark' : 'light'}
     >
-      <div className="flex min-w-max gap-2" role="group" aria-label="Filter resources by week">
+      <div className="flex flex-wrap gap-2" role="group" aria-label="Filter resources by week">
         {allWeeks.map((week) => {
           const isActive = activeWeek === week;
           return (
@@ -29,8 +29,8 @@ const WeekFilter: FC<WeekFilterProps> = ({
               onClick={() => onWeekChange(week)}
               aria-pressed={isActive}
               className={isActive
-                ? 'btn btn-primary min-h-11 shrink-0 border-2 px-3 py-2 text-xs shadow-soft sm:px-4 sm:text-sm'
-                : 'btn btn-secondary min-h-11 shrink-0 px-3 py-2 text-xs sm:px-4 sm:text-sm'
+                ? 'btn min-h-11 rounded-full border border-primary/50 bg-primary/10 px-3 py-2 text-xs text-primary-text shadow-glow sm:px-4 sm:text-sm'
+                : 'btn min-h-11 rounded-full border border-line/80 bg-glass/70 px-3 py-2 text-xs text-ink-muted shadow-soft backdrop-blur-md hover:border-line-strong hover:bg-surface sm:px-4 sm:text-sm'
               }
             >
               {week === 0 ? 'All Weeks' : `Week ${week}`}

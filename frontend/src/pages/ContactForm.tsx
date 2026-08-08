@@ -46,11 +46,11 @@ export function ContactForm() {
     <form
       ref={form}
       onSubmit={handleSubmit}
-      className="space-y-5"
+      className="space-y-6"
       aria-busy={isSubmitting}
     >
       {/* NAME */}
-      <div className="space-y-2">
+      <div className="space-y-2.5">
         <label htmlFor="name" className="block text-sm font-semibold text-ink">
           Your name
         </label>
@@ -61,13 +61,13 @@ export function ContactForm() {
           value={formData.name}
           onChange={handleChange}
           placeholder="What's your good name?"
-          className="min-h-11 w-full rounded-control border border-line-strong bg-surface px-4 py-3 text-ink transition-colors duration-200 placeholder:text-ink-muted hover:border-technical focus-visible:border-focus"
+          className="min-h-12 w-full rounded-control border border-dream/30 bg-glass/65 px-4 py-3 text-ink shadow-soft transition duration-200 placeholder:text-ink-subtle hover:border-dream/50 focus-visible:border-primary focus-visible:bg-glass"
           required
         />
       </div>
 
       {/* EMAIL */}
-      <div className="space-y-2">
+      <div className="space-y-2.5">
         <label htmlFor="email" className="block text-sm font-semibold text-ink">
           Your email
         </label>
@@ -78,13 +78,13 @@ export function ContactForm() {
           value={formData.email}
           onChange={handleChange}
           placeholder="What's your email address?"
-          className="min-h-11 w-full rounded-control border border-line-strong bg-surface px-4 py-3 text-ink transition-colors duration-200 placeholder:text-ink-muted hover:border-technical focus-visible:border-focus"
+          className="min-h-12 w-full rounded-control border border-dream/30 bg-glass/65 px-4 py-3 text-ink shadow-soft transition duration-200 placeholder:text-ink-subtle hover:border-dream/50 focus-visible:border-primary focus-visible:bg-glass"
           required
         />
       </div>
 
       {/* MESSAGE */}
-      <div className="space-y-2">
+      <div className="space-y-2.5">
         <label htmlFor="message" className="block text-sm font-semibold text-ink">
           Your message
         </label>
@@ -95,13 +95,13 @@ export function ContactForm() {
           onChange={handleChange}
           placeholder="How can we help you?"
           rows={5}
-          className="w-full resize-none rounded-control border border-line-strong bg-surface px-4 py-3 text-ink transition-colors duration-200 placeholder:text-ink-muted hover:border-technical focus-visible:border-focus"
+          className="w-full resize-none rounded-control border border-dream/30 bg-glass/65 px-4 py-3 text-ink shadow-soft transition duration-200 placeholder:text-ink-subtle hover:border-dream/50 focus-visible:border-primary focus-visible:bg-glass"
           required
         />
       </div>
 
       {/* SUBMIT BUTTON */}
-      <button type="submit" disabled={isSubmitting} className="btn btn-primary w-full">
+      <button type="submit" disabled={isSubmitting} className="btn btn-primary w-full shadow-glow">
         {isSubmitting ? "Sending..." : "Send Message"}
       </button>
 
@@ -111,7 +111,7 @@ export function ContactForm() {
           <p
             className={statusMessage.includes("Success")
               ? "rounded-control border border-success/30 bg-success/10 px-3 py-2 text-center text-sm font-semibold text-success-text"
-              : "rounded-control border border-line-strong bg-surface px-3 py-2 text-center text-sm font-semibold text-red-600 dark:text-red-300"
+              : "rounded-control border border-rose/30 bg-rose/10 px-3 py-2 text-center text-sm font-semibold text-rose-text"
             }
           >
             {statusMessage}

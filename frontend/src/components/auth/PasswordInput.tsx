@@ -44,7 +44,7 @@ export default function PasswordInput({
       <button
         type="button"
         onClick={() => setIsVisible((current) => !current)}
-        className="absolute right-1 top-8 flex size-11 items-center justify-center rounded-control text-ink-muted transition-colors hover:bg-surface-muted hover:text-technical-text focus-visible:outline-offset-2"
+        className="absolute right-1 top-[2.15rem] flex size-11 items-center justify-center rounded-control border border-transparent text-ink-muted transition hover:border-dream/25 hover:bg-dream-soft/35 hover:text-primary-text focus-visible:outline-offset-2"
         aria-label={isVisible ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
         aria-pressed={isVisible}
       >

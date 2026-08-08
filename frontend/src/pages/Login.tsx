@@ -114,14 +114,14 @@ export default function LoginPage() {
   };
 
   return (
-    <AuthShell>
+    <AuthShell waveClassName="opacity-70">
       <Link
         to="/"
         aria-label="Go to HackerEarth Hub-NMAMIT home page"
-        className="group absolute left-4 top-4 z-20 flex min-h-11 max-w-[calc(100%-5.5rem)] min-w-0 items-center gap-2 rounded-full border border-line-strong bg-surface/95 p-1 pr-3 text-ink shadow-soft backdrop-blur-xl transition-colors hover:border-technical hover:text-technical-text focus-visible:outline-offset-2 sm:left-6 sm:top-6 sm:gap-3"
+        className="group absolute left-4 top-4 z-20 flex min-h-11 max-w-[calc(100%-5.5rem)] min-w-0 items-center gap-2 rounded-full border border-dream/30 bg-glass/80 p-1 pr-3 text-ink shadow-glass backdrop-blur-lg transition hover:border-dream/55 hover:text-primary-text focus-visible:outline-offset-2 sm:left-6 sm:top-6 sm:gap-3"
       >
         <span
-          className={`flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-line bg-white p-0.5 transition duration-200 group-hover:border-technical/50 sm:size-11 ${
+          className={`flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full border border-dream/30 bg-glass p-0.5 transition duration-200 group-hover:border-rose/50 sm:size-11 ${
             shouldReduceMotion ? "" : "group-hover:-translate-y-0.5"
           }`}
         >
@@ -140,10 +140,10 @@ export default function LoginPage() {
         <AuthThemeToggle />
       </div>
 
-      <div className="relative mt-20 grid w-full min-w-0 max-w-6xl grid-cols-[minmax(0,1fr)] gap-4 overflow-hidden rounded-[2rem] border border-line-strong bg-surface/80 p-3 shadow-surface backdrop-blur-2xl sm:mt-24 lg:grid-cols-[1.05fr_0.95fr]">
-        <AuthVisual variant="login" />
+      <div className="ui-panel-glass relative mt-20 grid w-full min-w-0 max-w-6xl grid-cols-[minmax(0,1fr)] gap-4 overflow-hidden border-dream/25 bg-glass/45 p-3 sm:mt-24 lg:grid-cols-[1.05fr_0.95fr]">
+        <AuthVisual variant="login" className="order-2 lg:order-1" />
 
-        <div className="min-w-0 overflow-hidden rounded-[1.55rem] border border-line-strong bg-surface/95 p-4 shadow-surface backdrop-blur-xl sm:p-8 lg:p-10">
+        <div className="ui-panel-glass order-1 min-w-0 overflow-hidden border-dream/30 bg-glass/80 p-5 sm:p-8 lg:order-2 lg:p-10">
           <motion.section
             initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
@@ -151,7 +151,7 @@ export default function LoginPage() {
             aria-busy={isLoading}
           >
             <div className="space-y-2">
-              <p className="text-sm font-medium uppercase tracking-[0.2em] text-technical-text">
+              <p className="text-sm font-semibold uppercase tracking-[0.2em] text-dream-text">
                 Portal access
               </p>
               <h2 className="break-words text-3xl font-bold tracking-tight text-ink">
@@ -190,7 +190,7 @@ export default function LoginPage() {
                 <p className="text-ink-muted">Your secure session lasts up to 7 days.</p>
                 <Link
                   to="/forgot-password"
-                  className="inline-flex min-h-11 items-center font-semibold text-primary-text underline underline-offset-4 transition-colors hover:text-technical-text focus-visible:outline-offset-2"
+                  className="inline-flex min-h-11 items-center font-semibold text-primary-text underline decoration-rose/35 underline-offset-4 transition-colors hover:text-rose-text focus-visible:outline-offset-2"
                 >
                   Forgot Password?
                 </Link>
@@ -198,7 +198,7 @@ export default function LoginPage() {
 
               {authError && (
                 <p
-                  className="rounded-control border border-highlight/40 bg-highlight/10 px-4 py-3 text-sm font-medium text-highlight-text"
+                  className="rounded-control border border-rose/40 bg-rose/10 px-4 py-3 text-sm font-semibold text-rose-text shadow-soft"
                   role="alert"
                   aria-live="assertive"
                   aria-atomic="true"
@@ -233,7 +233,7 @@ export default function LoginPage() {
               New member?{" "}
               <Link
                 to="/register"
-                className="inline-flex min-h-11 items-center font-semibold text-primary-text underline underline-offset-4 transition-colors hover:text-technical-text focus-visible:outline-offset-2"
+                className="inline-flex min-h-11 items-center font-semibold text-primary-text underline decoration-rose/35 underline-offset-4 transition-colors hover:text-rose-text focus-visible:outline-offset-2"
               >
                 Create an account
               </Link>

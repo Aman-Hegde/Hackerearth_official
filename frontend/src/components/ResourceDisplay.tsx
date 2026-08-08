@@ -26,26 +26,36 @@ const categoryAccentStyles: Record<BlogPost['category'], {
   card: string;
   icon: string;
   text: string;
+  cta: string;
+  glow: string;
 }> = {
   general: {
-    card: 'border-primary/30 top-border-accent-primary',
-    icon: 'border-primary/25 bg-primary/10 text-primary-text',
-    text: 'text-primary-text',
+    card: 'border-rose/30 top-border-accent-primary',
+    icon: 'border-rose/25 bg-rose/10 text-rose-text',
+    text: 'text-rose-text',
+    cta: 'border-rose/30 bg-rose/10 text-rose-text hover:bg-rose/20',
+    glow: 'bg-rose/20',
   },
   web: {
     card: 'border-technical/30 top-border-accent-cyan',
     icon: 'border-technical/25 bg-technical/10 text-technical-text',
     text: 'text-technical-text',
+    cta: 'border-technical/30 bg-technical/10 text-technical-text hover:bg-technical/20',
+    glow: 'bg-technical/20',
   },
   dsa: {
     card: 'border-creative/30 top-border-accent-violet',
     icon: 'border-creative/25 bg-creative/10 text-creative-text',
     text: 'text-creative-text',
+    cta: 'border-creative/30 bg-creative/10 text-creative-text hover:bg-creative/20',
+    glow: 'bg-creative/20',
   },
   aptitude: {
-    card: 'border-highlight/30 top-border-accent-amber',
-    icon: 'border-highlight/25 bg-highlight/10 text-highlight-text',
-    text: 'text-highlight-text',
+    card: 'border-dream/30 top-border-accent-primary',
+    icon: 'border-dream/25 bg-dream/10 text-dream-text',
+    text: 'text-dream-text',
+    cta: 'border-dream/30 bg-dream/10 text-dream-text hover:bg-dream/20',
+    glow: 'bg-dream/20',
   },
 };
 
@@ -77,16 +87,21 @@ const ResourceItem = ({
   return (
     <motion.article
       initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
-      animate={{ opacity: 1, y: 0 }}
+      whileInView={{ opacity: 1, y: 0 }}
       whileHover={shouldReduceMotion ? undefined : { y: -4 }}
       transition={{
         duration: shouldReduceMotion ? 0 : 0.5,
         delay: shouldReduceMotion ? 0 : index * 0.05,
         ease: [0.16, 1, 0.3, 1],
       }}
-      className={`ui-card group relative flex h-full min-w-0 flex-col overflow-hidden p-5 transition duration-300 ease-out-expo hover:shadow-surface ${accent.card}`}
+      viewport={{ once: true, amount: 0.2 }}
+      className={`ui-card-glass group relative flex h-full min-w-0 flex-col overflow-hidden p-5 transition duration-300 ease-out-expo hover:scale-[1.012] hover:shadow-glow motion-reduce:transform-none motion-reduce:transition-none ${accent.card}`}
     >
-      <div className="flex items-start justify-between gap-3">
+      <div
+        aria-hidden="true"
+        className={`pointer-events-none absolute -right-12 -top-12 size-28 rounded-full opacity-60 blur-3xl ${accent.glow}`}
+      />
+      <div className="relative flex items-start justify-between gap-3">
         <div className="flex min-w-0 flex-1 items-start gap-3">
           <div className={`flex size-10 shrink-0 items-center justify-center rounded-control border ${accent.icon}`}>
             <span className="text-sm">{resource.emoji}</span>
@@ -113,8 +128,8 @@ const ResourceItem = ({
       </div>
 
       {/* Visit link with animation */}
-      <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-line pt-4">
-        <span className="text-xs font-medium text-ink-subtle">
+      <div className="relative mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-line/80 pt-4">
+        <span className="rounded-full border border-line/80 bg-surface-muted/70 px-2.5 py-1 text-xs font-medium text-ink-muted">
           {resource.type.split('\u2022')[0].trim()}
         </span>
 
@@ -122,7 +137,7 @@ const ResourceItem = ({
           href={resource.link}
           target="_blank"
           rel="noopener noreferrer"
-          className={`btn btn-ghost min-h-11 px-3 py-2 text-sm ${accent.text}`}
+          className={`btn min-h-11 rounded-full border px-4 py-2 text-sm ${accent.cta}`}
           whileHover={shouldReduceMotion ? undefined : { x: 2 }}
           transition={{ duration: shouldReduceMotion ? 0 : 0.2 }}
           aria-label={`Visit ${resource.title}`}
@@ -154,18 +169,19 @@ const SectionHeader = ({
   return (
     <motion.div
       initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
-      animate={{ opacity: 1, y: 0 }}
+      whileInView={{ opacity: 1, y: 0 }}
       transition={{
         duration: shouldReduceMotion ? 0 : 0.5,
         ease: [0.16, 1, 0.3, 1],
       }}
+      viewport={{ once: true, amount: 0.3 }}
       className="mb-6 sm:mb-8"
     >
       <div className="flex items-center gap-3">
         <div className={`flex size-10 shrink-0 items-center justify-center rounded-control border ${accent.icon}`}>
           {getSectionIcon(sectionType)}
         </div>
-        <h2 className="font-display text-2xl font-semibold text-ink">
+        <h2 className="break-words font-display text-2xl font-semibold text-ink">
           {title}
         </h2>
       </div>
@@ -188,7 +204,7 @@ export const ResourceDisplay = ({ resourceSections }: ResourceDisplayProps) => {
   return (
     <div className="w-full space-y-12 sm:space-y-16">
       {resourceSections.map((section, sectionIndex) => (
-        <section key={sectionIndex} className="w-full">
+        <section key={sectionIndex} className="ui-panel-glass w-full overflow-hidden p-4 sm:p-6 lg:p-8">
           <SectionHeader
             title={section.title}
             description={section.description}

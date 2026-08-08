@@ -1,5 +1,6 @@
 import authRoutes from "./routes/auth";
 import adminRoutes from "./routes/admin";
+import studentRoutes from "./routes/student";
 import { connectDatabase } from "./config/db";
 import express, { Request, Response } from "express";
 import cors, { CorsOptions } from "cors";
@@ -11,10 +12,12 @@ dotenv.config();
 const app = express();
 
 const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  "https://hackerearth-official.vercel.app",
   "https://hackerearth-hub-nmamit.in",
   "http://localhost:3000",
   "http://localhost:5173",
-];
+].filter((origin): origin is string => Boolean(origin));
 
 const corsOptions: CorsOptions = {
   origin: (
@@ -45,6 +48,7 @@ app.get("/api/health", (_req: Request, res: Response) => {
 
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
+app.use("/api/student", studentRoutes);
 
 const PORT = Number(process.env.PORT) || 5000;
 
