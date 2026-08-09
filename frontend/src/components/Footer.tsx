@@ -66,20 +66,19 @@ const Footer = () => {
             </h3>
             <div className="mt-4 space-y-2 text-sm">
               <a
-                href="mailto:Hackerearth.Nmamit@Nitte.edu.in"
+                href="mailto:hackerearth.nmamit@nitte.edu.in"
                 className="group flex min-h-11 min-w-0 items-center gap-3 rounded-control px-2 py-2 text-ink-muted transition-colors duration-200 hover:bg-surface-muted hover:text-technical-text focus-visible:bg-surface focus-visible:text-technical-text focus-visible:outline-offset-2"
               >
                 <span
-                  className={`flex size-8 shrink-0 items-center justify-center rounded-control border border-technical/25 bg-surface text-technical-text ${
-                    shouldReduceMotion
-                      ? ''
-                      : 'transition-transform duration-200 group-hover:translate-x-0.5'
-                  }`}
+                  className={`flex size-8 shrink-0 items-center justify-center rounded-control border border-technical/25 bg-surface text-technical-text ${shouldReduceMotion
+                    ? ''
+                    : 'transition-transform duration-200 group-hover:translate-x-0.5'
+                    }`}
                 >
                   <Mail className="size-4" aria-hidden="true" />
                 </span>
                 <span className="min-w-0 break-words underline decoration-line underline-offset-4 group-hover:decoration-technical/60">
-                  hackerearth@nmamit.in
+                  hackerearth.nmamit@nitte.edu.in
                 </span>
               </a>
               <a
@@ -89,11 +88,10 @@ const Footer = () => {
                 className="group flex min-h-11 min-w-0 items-center gap-3 rounded-control px-2 py-2 text-ink-muted transition-colors duration-200 hover:bg-surface-muted hover:text-technical-text focus-visible:bg-surface focus-visible:text-technical-text focus-visible:outline-offset-2"
               >
                 <span
-                  className={`flex size-8 shrink-0 items-center justify-center rounded-control border border-technical/25 bg-surface text-technical-text ${
-                    shouldReduceMotion
-                      ? ''
-                      : 'transition-transform duration-200 group-hover:translate-x-0.5'
-                  }`}
+                  className={`flex size-8 shrink-0 items-center justify-center rounded-control border border-technical/25 bg-surface text-technical-text ${shouldReduceMotion
+                    ? ''
+                    : 'transition-transform duration-200 group-hover:translate-x-0.5'
+                    }`}
                 >
                   <MapPin className="size-4" aria-hidden="true" />
                 </span>
@@ -102,20 +100,19 @@ const Footer = () => {
                 </span>
               </a>
               <a
-                href="tel:+917619545988"
+                href="tel:8792051545"
                 className="group flex min-h-11 min-w-0 items-center gap-3 rounded-control px-2 py-2 text-ink-muted transition-colors duration-200 hover:bg-surface-muted hover:text-technical-text focus-visible:bg-surface focus-visible:text-technical-text focus-visible:outline-offset-2"
               >
                 <span
-                  className={`flex size-8 shrink-0 items-center justify-center rounded-control border border-technical/25 bg-surface text-technical-text ${
-                    shouldReduceMotion
-                      ? ''
-                      : 'transition-transform duration-200 group-hover:translate-x-0.5'
-                  }`}
+                  className={`flex size-8 shrink-0 items-center justify-center rounded-control border border-technical/25 bg-surface text-technical-text ${shouldReduceMotion
+                    ? ''
+                    : 'transition-transform duration-200 group-hover:translate-x-0.5'
+                    }`}
                 >
                   <Phone className="size-4" aria-hidden="true" />
                 </span>
                 <span className="min-w-0 break-words underline decoration-line underline-offset-4 group-hover:decoration-technical/60">
-                  +91 76195 45988
+                  +91 8792051545
                 </span>
               </a>
             </div>
@@ -134,19 +131,17 @@ const Footer = () => {
                 href={social.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`btn btn-ghost btn-icon group border-line bg-surface text-ink-muted focus-visible:border-primary/50 focus-visible:text-primary-text focus-visible:outline-offset-2 ${
-                  social.label === "LinkedIn"
-                    ? 'hover:border-creative/40 hover:text-creative-text'
-                    : 'hover:border-technical/40 hover:text-technical-text'
-                }`}
+                className={`btn btn-ghost btn-icon group border-line bg-surface text-ink-muted focus-visible:border-primary/50 focus-visible:text-primary-text focus-visible:outline-offset-2 ${social.label === "LinkedIn"
+                  ? 'hover:border-creative/40 hover:text-creative-text'
+                  : 'hover:border-technical/40 hover:text-technical-text'
+                  }`}
                 aria-label={social.label}
               >
                 <social.icon
-                  className={`size-5 ${
-                    shouldReduceMotion
-                      ? ''
-                      : 'transition-transform duration-200 group-hover:-translate-y-0.5'
-                  }`}
+                  className={`size-5 ${shouldReduceMotion
+                    ? ''
+                    : 'transition-transform duration-200 group-hover:-translate-y-0.5'
+                    }`}
                   aria-hidden="true"
                 />
               </a>
