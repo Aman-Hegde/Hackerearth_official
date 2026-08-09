@@ -96,7 +96,7 @@ const Footer = () => {
                   <MapPin className="size-4" aria-hidden="true" />
                 </span>
                 <span className="min-w-0 break-words underline decoration-line underline-offset-4 group-hover:decoration-technical/60">
-                  NMAMIT, Nitte College
+                  Nitte Mahalinga Adyantaya Memorial Institute of Technology - NMAMIT, Nitte, Karkala Taluk, Udupi District, Karnataka - 574110, India
                 </span>
               </a>
               <a
