@@ -47,8 +47,8 @@ const Contact = () => {
       icon: MapPin,
       title: "Visit Us",
       label: "Visit Us",
-      contact: "Room 301, CS Building, NMAMIT",
-      href: "https://www.google.com/maps/search/?api=1&query=Room+301+CS+Building+NMAMIT",
+      contact: "Nitte Mahalinga Adyantaya Memorial Institute of Technology - NMAMIT, Nitte, Karkala Taluk, Udupi District, Karnataka - 574110, India",
+      href: "https://www.google.com/maps/search/?api=1&query=Nitte+Mahalinga+Adyantaya+Memorial+Institute+of+Technology+NMAMIT+Nitte+Karnataka+574110",
     }
   ];
 

@@ -392,10 +392,10 @@ export default function SettingsPage() {
                   </span>
                   <div>
                     <p className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-technical-text">
-                      Project policy
+                      Site policy
                     </p>
                     <h2 id="policy-heading" className="mt-1 font-display text-2xl font-semibold text-ink">
-                      HackerEarth Hub NMAMIT – Project Policy
+                      HackerEarth Hub NMAMIT – Site Policy
                     </h2>
                   </div>
                 </div>
