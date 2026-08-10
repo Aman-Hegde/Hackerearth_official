@@ -5,6 +5,8 @@ export const registrationBranchOptions = [
   { value: "AIML", label: "Artificial Intelligence and Machine Learning (AIML)" },
   { value: "AIDS", label: "Artificial Intelligence and Data Science (AIDS)" },
   { value: "ECE", label: "Electronics and Communication Engineering (ECE)" },
+  { value: "VLSI", label: "Electronics Engineering (VLSI Design & Technology)" },
+  { value: "ACT", label: "Electronics & Communication (ACT)" },
   { value: "EEE", label: "Electrical and Electronics Engineering (EEE)" },
   { value: "ME", label: "Mechanical Engineering (ME)" },
   { value: "CV", label: "Civil Engineering (CV)" },
