@@ -7,11 +7,14 @@ import {
 } from 'react';
 import {
   AlertCircle,
+  Brain,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  Code2,
   DoorOpen,
   FileSpreadsheet,
+  GitBranch,
   Loader2,
   RefreshCw,
   Search,
@@ -543,20 +546,39 @@ const AdminDashboard = () => {
           ) : overviewError && !overview ? (
             <InlineFeedback kind="error">{overviewError.message}</InlineFeedback>
           ) : overview ? (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-              <SectionReveal delay={0.02} duration={0.38} className="h-full">
-                <StatCard label="Total Students" value={overview.totalStudents} icon={<Users className="size-5" aria-hidden="true" />} detail={`${overview.verifiedStudents} email verified`} accent={statAccents.primary} />
-              </SectionReveal>
-              <SectionReveal delay={0.05} duration={0.38} className="h-full">
-                <StatCard label="Active Students" value={overview.activeStudents} icon={<UserCheck className="size-5" aria-hidden="true" />} accent={statAccents.dream} />
-              </SectionReveal>
-              <SectionReveal delay={0.08} duration={0.38} className="h-full">
-                <StatCard label="Inactive Students" value={overview.inactiveStudents} icon={<UserX className="size-5" aria-hidden="true" />} accent={statAccents.rose} />
-              </SectionReveal>
-              <SectionReveal delay={0.11} duration={0.38} className="h-full">
-                <StatCard label="Registration Status" value={overview.registrationOpen ? 'OPEN' : 'CLOSED'} icon={<DoorOpen className="size-5" aria-hidden="true" />} detail="Live registration availability" accent={statAccents.technical} />
-              </SectionReveal>
-            </div>
+            <>
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                <SectionReveal delay={0.02} duration={0.38} className="h-full">
+                  <StatCard label="Total Students" value={overview.totalStudents} icon={<Users className="size-5" aria-hidden="true" />} detail={`${overview.verifiedStudents} email verified`} accent={statAccents.primary} />
+                </SectionReveal>
+                <SectionReveal delay={0.05} duration={0.38} className="h-full">
+                  <StatCard label="Active Students" value={overview.activeStudents} icon={<UserCheck className="size-5" aria-hidden="true" />} accent={statAccents.dream} />
+                </SectionReveal>
+                <SectionReveal delay={0.08} duration={0.38} className="h-full">
+                  <StatCard label="Inactive Students" value={overview.inactiveStudents} icon={<UserX className="size-5" aria-hidden="true" />} accent={statAccents.rose} />
+                </SectionReveal>
+                <SectionReveal delay={0.11} duration={0.38} className="h-full">
+                  <StatCard label="Registration Status" value={overview.registrationOpen ? 'OPEN' : 'CLOSED'} icon={<DoorOpen className="size-5" aria-hidden="true" />} detail="Live registration availability" accent={statAccents.technical} />
+                </SectionReveal>
+              </div>
+
+              <div className="mt-6 border-t border-line/80 pt-6">
+                <h3 className="font-display text-xl font-semibold text-ink">
+                  Domain Registrations
+                </h3>
+                <div className="mt-4 grid gap-4 md:grid-cols-3">
+                  <SectionReveal delay={0.14} duration={0.38} className="h-full">
+                    <StatCard label="Web Development" value={overview.domainCounts.webDevelopment} icon={<Code2 className="size-5" aria-hidden="true" />} detail="Registered students" accent={statAccents.technical} />
+                  </SectionReveal>
+                  <SectionReveal delay={0.17} duration={0.38} className="h-full">
+                    <StatCard label="DSA" value={overview.domainCounts.dsa} icon={<GitBranch className="size-5" aria-hidden="true" />} detail="Registered students" accent={statAccents.dream} />
+                  </SectionReveal>
+                  <SectionReveal delay={0.2} duration={0.38} className="h-full">
+                    <StatCard label="Aptitude" value={overview.domainCounts.aptitude} icon={<Brain className="size-5" aria-hidden="true" />} detail="Registered students" accent={statAccents.primary} />
+                  </SectionReveal>
+                </div>
+              </div>
+            </>
           ) : null}
         </section>
         </SectionReveal>
