@@ -7,6 +7,11 @@ export interface AdminOverview {
   totalAdmins: number;
   verifiedStudents: number;
   registrationOpen: boolean;
+  domainCounts: {
+    webDevelopment: number;
+    dsa: number;
+    aptitude: number;
+  };
 }
 
 export interface AdminStudent {
