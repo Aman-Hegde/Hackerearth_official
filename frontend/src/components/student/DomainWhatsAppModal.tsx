@@ -94,7 +94,7 @@ export default function DomainWhatsAppModal({
             role="dialog"
             aria-modal="true"
             aria-labelledby="domain-whatsapp-modal-title"
-            className="relative w-full max-w-4xl overflow-x-hidden rounded-panel border border-dream/40 bg-glass/95 p-5 text-ink shadow-glass backdrop-blur-2xl sm:p-6 lg:p-7"
+            className="relative h-fit min-h-0 w-full max-w-4xl overflow-hidden rounded-panel border border-dream/40 bg-glass/95 p-5 text-ink shadow-glass backdrop-blur-2xl sm:p-6 lg:p-7"
             initial={
               shouldReduceMotion
                 ? { opacity: 0 }
@@ -114,10 +114,6 @@ export default function DomainWhatsAppModal({
             <span
               aria-hidden="true"
               className="pointer-events-none absolute -right-20 -top-24 size-72 rounded-full bg-dream/25 blur-2xl"
-            />
-            <span
-              aria-hidden="true"
-              className="pointer-events-none absolute -bottom-28 left-8 size-64 rounded-full bg-creative/15 blur-2xl"
             />
             <span
               aria-hidden="true"
@@ -153,7 +149,7 @@ export default function DomainWhatsAppModal({
                 notices.
               </p>
             </div>
-            <div className="relative mt-5 grid gap-3">
+            <div className="relative mt-5 grid gap-3 pb-0">
               {groups.map((group, index) => {
                 const accent = modalAccents[index % modalAccents.length];
 
