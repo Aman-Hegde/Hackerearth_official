@@ -1,6 +1,13 @@
 import { useEffect, useRef } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { ExternalLink, MessageCircle, X } from "lucide-react";
+import {
+  ExternalLink,
+  Megaphone,
+  MessageCircle,
+  ShieldCheck,
+  Sparkles,
+  X,
+} from "lucide-react";
 import type { DomainCommunity } from "../../lib/studentApi";
 
 interface DomainWhatsAppModalProps {
@@ -19,15 +26,15 @@ export const domainCommunityDescriptions: Record<DomainCommunity["domain"], stri
 
 const modalAccents = [
   {
-    card: "border-technical/25",
+    card: "border-technical/30 shadow-technical/10",
     icon: "border-technical/25 bg-technical/10 text-technical-text",
   },
   {
-    card: "border-creative/25",
+    card: "border-creative/30 shadow-creative/10",
     icon: "border-creative/25 bg-creative/10 text-creative-text",
   },
   {
-    card: "border-dream/25",
+    card: "border-dream/35 shadow-dream/10",
     icon: "border-dream/25 bg-dream/10 text-dream-text",
   },
 ] as const;
@@ -80,7 +87,7 @@ export default function DomainWhatsAppModal({
     <AnimatePresence>
       {isOpen && groups.length > 0 && (
         <motion.div
-          className="fixed inset-0 z-[95] flex items-center justify-center bg-ink/55 p-4 backdrop-blur-md dark:bg-canvas/70 sm:p-6"
+          className="fixed inset-0 z-[95] flex items-center justify-center bg-ink/65 p-4 backdrop-blur-lg dark:bg-canvas/80 sm:p-6"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -90,7 +97,7 @@ export default function DomainWhatsAppModal({
             role="dialog"
             aria-modal="true"
             aria-labelledby="domain-whatsapp-modal-title"
-            className="relative max-h-[min(42rem,calc(100vh-2rem))] w-full max-w-3xl overflow-y-auto rounded-panel border border-dream/30 bg-glass/95 p-5 text-ink shadow-glass backdrop-blur-2xl sm:p-6 lg:p-7"
+            className="relative max-h-[min(44rem,calc(100vh-2rem))] w-full max-w-4xl overflow-y-auto rounded-panel border border-dream/40 bg-glass/95 p-5 text-ink shadow-glass backdrop-blur-2xl sm:p-6 lg:p-7"
             initial={
               shouldReduceMotion
                 ? { opacity: 0 }
@@ -102,41 +109,88 @@ export default function DomainWhatsAppModal({
                 ? { opacity: 0 }
                 : { opacity: 0, y: 14, scale: 0.98 }
             }
-            transition={{ duration: shouldReduceMotion ? 0 : 0.28, ease: [0.16, 1, 0.3, 1] }}
+            transition={{
+              duration: shouldReduceMotion ? 0 : 0.28,
+              ease: [0.16, 1, 0.3, 1],
+            }}
           >
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute -right-20 -top-24 size-64 rounded-full bg-dream/15"
+              className="pointer-events-none absolute -right-20 -top-24 size-72 rounded-full bg-dream/25 blur-2xl"
             />
             <span
               aria-hidden="true"
-              className="pointer-events-none absolute -bottom-28 left-8 size-56 rounded-full bg-technical/10"
+              className="pointer-events-none absolute -bottom-28 left-8 size-64 rounded-full bg-creative/15 blur-2xl"
+            />
+            <span
+              aria-hidden="true"
+              className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-dream/15 to-transparent"
             />
 
             <button
               ref={closeButtonRef}
               type="button"
-              className="btn btn-ghost btn-icon absolute right-4 top-4 z-10 border-line/80 bg-surface/80 text-ink-muted shadow-soft hover:text-ink focus-visible:outline-offset-2"
+              className="btn btn-ghost btn-icon absolute right-4 top-4 z-10 rounded-full border border-dream/35 bg-glass/90 text-ink-muted shadow-glass backdrop-blur-xl hover:border-dream/60 hover:bg-dream/10 hover:text-ink focus-visible:outline-offset-2"
               onClick={onClose}
               aria-label="Close community popup"
             >
               <X className="size-5" aria-hidden="true" />
             </button>
 
-            <div className="relative pr-12">
-              <span className="inline-flex items-center gap-2 rounded-full border border-dream/30 bg-dream/10 px-3 py-1.5 font-mono text-xs font-semibold uppercase tracking-[0.16em] text-dream-text">
-                <MessageCircle className="size-4" aria-hidden="true" />
-                HackerEarth Hub • NMAMIT
-              </span>
-              <h2
-                id="domain-whatsapp-modal-title"
-                className="mt-5 font-display text-2xl font-semibold tracking-tight text-ink sm:text-3xl"
-              >
-                Join Your HackerEarth Communities
-              </h2>
-              <p className="mt-3 max-w-2xl text-sm leading-6 text-ink-muted sm:text-base">
-                Stay connected with your learning communities. Join your official domain WhatsApp groups for announcements, resources, session updates, and important notices.
-              </p>
+            <div className="relative grid gap-6 border-b border-dream/20 pb-6 pr-12 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,0.48fr)] lg:items-center">
+              <div>
+                <span className="inline-flex items-center gap-2 rounded-full border border-dream/35 bg-dream/10 px-3 py-1.5 font-mono text-xs font-semibold uppercase tracking-[0.16em] text-dream-text shadow-soft">
+                  <MessageCircle className="size-4" aria-hidden="true" />
+                  HackerEarth Hub • NMAMIT
+                </span>
+                <h2
+                  id="domain-whatsapp-modal-title"
+                  className="mt-5 max-w-2xl font-display text-2xl font-semibold tracking-tight text-ink sm:text-3xl lg:text-4xl"
+                >
+                  Join Your HackerEarth Communities
+                </h2>
+                <p className="mt-3 max-w-2xl text-sm leading-6 text-ink-muted sm:text-base">
+                  Stay connected with your learning communities. Join your official domain WhatsApp groups for announcements, resources, session updates, and important notices.
+                </p>
+              </div>
+
+              <div className="relative max-w-xs rounded-card border border-dream/35 bg-surface/70 p-4 shadow-glass backdrop-blur-xl sm:p-5">
+                <span
+                  aria-hidden="true"
+                  className="absolute -right-4 -top-4 size-16 rounded-full bg-dream/20 blur-xl"
+                />
+                <span
+                  aria-hidden="true"
+                  className="absolute -bottom-5 left-8 size-20 rounded-full bg-technical/15 blur-xl"
+                />
+                <div className="relative flex items-start gap-3">
+                  <span className="flex size-12 shrink-0 items-center justify-center rounded-control border border-dream/35 bg-dream/15 text-dream-text shadow-soft">
+                    <Megaphone className="size-6" aria-hidden="true" />
+                  </span>
+                  <div>
+                    <p className="font-display text-lg font-semibold leading-6 text-ink">
+                      STAY UPDATED,
+                      <br />
+                      STAY AHEAD!
+                    </p>
+                    <p className="mt-2 text-xs leading-5 text-ink-muted">
+                      Official notices, resources, and session alerts in one place.
+                    </p>
+                  </div>
+                </div>
+                <div className="relative mt-4 flex items-center gap-2 rounded-control border border-line/70 bg-glass/70 px-3 py-2 text-xs font-semibold text-technical-text">
+                  <Sparkles className="size-4" aria-hidden="true" />
+                  Community signal live
+                </div>
+                <span
+                  aria-hidden="true"
+                  className="absolute right-6 top-5 size-2 rounded-full bg-rose"
+                />
+                <span
+                  aria-hidden="true"
+                  className="absolute bottom-7 right-12 size-1.5 rounded-full bg-technical"
+                />
+              </div>
             </div>
 
             <div className="relative mt-6 grid gap-3">
@@ -146,7 +200,7 @@ export default function DomainWhatsAppModal({
                 return (
                   <article
                     key={group.domain}
-                    className={`rounded-card border bg-surface/80 p-4 shadow-soft ${accent.card}`}
+                    className={`rounded-card border bg-surface/80 p-4 shadow-soft transition-with-motion hover:-translate-y-0.5 hover:shadow-glow motion-reduce:transform-none ${accent.card}`}
                   >
                     <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
                       <div className="flex min-w-0 items-start gap-3">
@@ -179,17 +233,12 @@ export default function DomainWhatsAppModal({
               })}
             </div>
 
-            <div className="relative mt-6 flex flex-col gap-3 border-t border-line/70 pt-5 sm:flex-row sm:items-center sm:justify-between">
+            <div className="relative mt-6 flex items-start gap-3 border-t border-dream/20 pt-5">
+              <ShieldCheck className="mt-0.5 size-5 shrink-0 text-dream-text" aria-hidden="true" />
               <p className="text-sm leading-6 text-ink-muted">
-                You can access these groups anytime from your dashboard.
+                You can access these groups anytime from your{" "}
+                <span className="font-semibold text-dream-text">dashboard</span>.
               </p>
-              <button
-                type="button"
-                className="btn btn-secondary w-full justify-center sm:w-auto"
-                onClick={onClose}
-              >
-                Maybe Later
-              </button>
             </div>
           </motion.section>
         </motion.div>
