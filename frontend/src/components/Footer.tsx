@@ -32,7 +32,7 @@ const Footer = () => {
               <img
                 src="/branding/hackerearth-club-logo-with-name.svg"
                 alt="HackerEarth Hub NMAMIT"
-                className="h-14 w-44 rounded-control border border-primary/25 bg-white object-contain p-2 shadow-soft dark:bg-surface"
+                className="h-14 w-44 rounded-control border border-primary/25 bg-white object-contain p-2 shadow-soft"
               />
             </div>
             <p className="mt-5 max-w-md text-sm leading-relaxed text-ink-muted">

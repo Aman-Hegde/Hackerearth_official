@@ -520,7 +520,7 @@ const Home = () => {
                   <div className="pointer-events-none absolute -right-12 -top-16 size-40 rounded-full bg-technical/10" aria-hidden="true" />
                   <div className="pointer-events-none absolute -bottom-16 -left-10 size-36 rounded-full bg-dream/10" aria-hidden="true" />
                   <div className="relative grid gap-4">
-                    <div className="rounded-card border border-line/80 bg-white/90 p-4 shadow-soft dark:bg-surface/90">
+                    <div className="rounded-card border border-line/80 bg-white/90 p-4 shadow-soft">
                       <img
                         src="/branding/hackerearth-club-logo-with-name.svg"
                         alt="HackerEarth Hub NMAMIT"
@@ -538,7 +538,7 @@ const Home = () => {
                           Built for NMAMIT students to learn, compete, and create together.
                         </p>
                       </div>
-                      <div className="flex size-24 items-center justify-center rounded-card border border-line/80 bg-white/95 p-3 shadow-soft dark:bg-surface/90">
+                      <div className="flex size-24 items-center justify-center rounded-card border border-line/80 bg-white/95 p-3 shadow-soft">
                         <img
                           src="/branding/nmamit-logo-blue.svg"
                           alt="NMAMIT"
