@@ -80,11 +80,20 @@ const StudentDashboard = () => {
   const [domainGroups, setDomainGroups] = useState<DomainCommunity[]>([]);
   const [isLoadingDomainGroups, setIsLoadingDomainGroups] = useState(true);
   const [domainGroupsError, setDomainGroupsError] = useState("");
+  const enrolledDomainKey = user?.enrolledDomains.join("|") ?? "";
 
   useEffect(() => {
     let isMounted = true;
 
     const loadDomainGroups = async () => {
+      if (!user) {
+        if (isMounted) {
+          setDomainGroups([]);
+          setIsLoadingDomainGroups(false);
+        }
+        return;
+      }
+
       try {
         setIsLoadingDomainGroups(true);
         setDomainGroupsError("");
@@ -114,7 +123,7 @@ const StudentDashboard = () => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [enrolledDomainKey, user?.id]);
 
   if (!user) return null;
 
