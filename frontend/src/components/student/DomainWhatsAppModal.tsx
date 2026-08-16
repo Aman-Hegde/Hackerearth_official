@@ -3,7 +3,6 @@ import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   ExternalLink,
   MessageCircle,
-  ShieldCheck,
   X,
 } from "lucide-react";
 import type { DomainCommunity } from "../../lib/studentApi";
@@ -85,7 +84,7 @@ export default function DomainWhatsAppModal({
     <AnimatePresence>
       {isOpen && groups.length > 0 && (
         <motion.div
-          className="fixed inset-0 z-[95] flex items-start justify-center overflow-y-auto bg-ink/65 px-4 pb-4 pt-28 backdrop-blur-lg dark:bg-canvas/80 sm:px-6 sm:pb-6 sm:pt-32"
+          className="fixed inset-0 z-[95] flex items-start justify-center overflow-hidden bg-ink/65 px-4 pb-4 pt-28 backdrop-blur-lg dark:bg-canvas/80 sm:px-6 sm:pb-6 sm:pt-32"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -192,14 +191,6 @@ export default function DomainWhatsAppModal({
                   </article>
                 );
               })}
-            </div>
-
-            <div className="relative mt-6 flex items-start gap-3 border-t border-dream/20 pt-5">
-              <ShieldCheck className="mt-0.5 size-5 shrink-0 text-dream-text" aria-hidden="true" />
-              <p className="text-sm leading-6 text-ink-muted">
-                You can access these groups anytime from your{" "}
-                <span className="font-semibold text-dream-text">dashboard</span>.
-              </p>
             </div>
           </motion.section>
         </motion.div>
