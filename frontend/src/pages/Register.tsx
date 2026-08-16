@@ -11,6 +11,7 @@ import DomainSelector from "../components/auth/DomainSelector";
 import type { Domain } from "../components/auth/DomainSelector";
 import PasswordInput from "../components/auth/PasswordInput";
 import { useToast } from "../components/ToastProvider";
+import { useAuth } from "../context/AuthContext";
 import { cn } from "../lib/utils";
 import { registrationBranchOptions } from "../lib/registrationBranches";
 import logo from "../assets/image.png";
@@ -58,6 +59,7 @@ export default function RegisterPage() {
   const shouldReduceMotion = useReducedMotion();
   const navigate = useNavigate();
   const { showToast } = useToast();
+  const { login } = useAuth();
 
   const passedPasswordRules = useMemo(() => passwordRules.filter((rule) => rule.test(formData.password)).length, [formData.password]);
   const strengthLabel = ["Very weak", "Weak", "Fair", "Good", "Strong", "Excellent"][passedPasswordRules];
@@ -183,6 +185,7 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
+      const normalizedEmail = formData.email.trim().toLowerCase();
       const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: "POST",
         headers: {
@@ -191,7 +194,7 @@ export default function RegisterPage() {
         credentials: "include",
         body: JSON.stringify({
           name: formData.name.trim(),
-          email: formData.email.trim().toLowerCase(),
+          email: normalizedEmail,
           usn: formData.usn.trim().toUpperCase(),
           contactNumber: formData.contactNumber,
           branch: formData.branch.trim(),
@@ -235,9 +238,22 @@ export default function RegisterPage() {
       showToast({
         variant: "success",
         title: "Account created",
-        message: "Account created successfully. You can now log in.",
+        message: "Account created successfully. Opening your dashboard...",
       });
-      navigate("/login");
+
+      try {
+        const user = await login(normalizedEmail, formData.password);
+        navigate(user.role === "admin" ? "/admin/dashboard" : "/student/dashboard", {
+          replace: true,
+        });
+      } catch {
+        showToast({
+          variant: "info",
+          title: "Registration successful",
+          message: "Registration successful. Please log in to continue.",
+        });
+        navigate("/login", { replace: true });
+      }
     } catch {
       showToast({
         variant: "error",
@@ -355,6 +371,7 @@ export default function RegisterPage() {
                     )}
                   >
                     <option value="">Select year</option>
+                    <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
                     <option value="4">4</option>

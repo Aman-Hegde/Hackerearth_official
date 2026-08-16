@@ -746,7 +746,7 @@ const AdminDashboard = () => {
                   className="min-h-11 w-full rounded-control border border-line-strong bg-glass/70 px-3 py-2 text-sm text-ink shadow-soft focus:border-rose/60 focus:ring-2 focus:ring-rose/20"
                 >
                   <option value="">All years</option>
-                  {[2, 3, 4].map((value) => <option key={value} value={value}>{value}</option>)}
+                  {[1, 2, 3, 4].map((value) => <option key={value} value={value}>{value}</option>)}
                 </select>
               </label>
 
