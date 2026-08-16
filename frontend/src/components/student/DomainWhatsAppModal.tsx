@@ -2,10 +2,8 @@ import { useEffect, useRef } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import {
   ExternalLink,
-  Megaphone,
   MessageCircle,
   ShieldCheck,
-  Sparkles,
   X,
 } from "lucide-react";
 import type { DomainCommunity } from "../../lib/studentApi";
@@ -137,82 +135,26 @@ export default function DomainWhatsAppModal({
               <X className="size-5" aria-hidden="true" />
             </button>
 
-            <div className="relative grid gap-6 border-b border-dream/20 pb-6 pr-12 lg:grid-cols-[minmax(0,1fr)_minmax(16rem,0.48fr)] lg:items-center">
-              <div>
-                <span className="inline-flex items-center gap-2 rounded-full border border-dream/35 bg-dream/10 px-3 py-1.5 font-mono text-xs font-semibold uppercase tracking-[0.16em] text-dream-text shadow-soft">
-                  <MessageCircle className="size-4" aria-hidden="true" />
-                  HackerEarth Hub • NMAMIT
-                </span>
-                <h2
-                  id="domain-whatsapp-modal-title"
-                  className="mt-5 max-w-2xl font-display text-2xl font-semibold tracking-tight text-ink sm:text-3xl lg:text-4xl"
-                >
-                  Join Your HackerEarth Communities
-                </h2>
-                <p className="mt-3 max-w-2xl text-sm leading-6 text-ink-muted sm:text-base">
-                  Stay connected with your learning communities. Join your official domain WhatsApp groups for announcements, resources, session updates, and important notices.
-                </p>
-              </div>
+            <div className="relative border-b border-dream/20 pb-5 pr-12">
+              <span className="inline-flex items-center gap-2 rounded-full border border-dream/35 bg-dream/10 px-3 py-1.5 font-mono text-xs font-semibold uppercase tracking-[0.16em] text-dream-text shadow-soft">
+                <MessageCircle className="size-4" aria-hidden="true" />
+                HackerEarth Hub • NMAMIT
+              </span>
 
-              <div className="relative min-h-56 w-full max-w-sm overflow-hidden rounded-card border border-dream/35 bg-gradient-to-br from-dream/20 via-creative/10 to-technical/10 p-5 shadow-glass backdrop-blur-xl sm:min-h-60 sm:p-6">
-                <span
-                  aria-hidden="true"
-                  className="absolute -right-12 -top-10 size-36 rounded-full bg-dream/30 blur-2xl"
-                />
-                <span
-                  aria-hidden="true"
-                  className="absolute -bottom-14 left-4 size-40 rounded-full bg-creative/20 blur-2xl"
-                />
-                <span
-                  aria-hidden="true"
-                  className="absolute left-6 top-6 size-2 rounded-full bg-rose"
-                />
-                <span
-                  aria-hidden="true"
-                  className="absolute right-12 top-8 size-1.5 rounded-full bg-technical"
-                />
-                <Sparkles
-                  className="absolute right-7 top-14 size-5 text-dream-text"
-                  aria-hidden="true"
-                />
-                <Sparkles
-                  className="absolute bottom-20 left-8 size-4 text-creative-text"
-                  aria-hidden="true"
-                />
+              <h2
+                id="domain-whatsapp-modal-title"
+                className="mt-4 max-w-2xl font-display text-2xl font-semibold tracking-tight text-ink sm:text-3xl"
+              >
+                Join Your HackerEarth Communities
+              </h2>
 
-                <div className="relative flex min-h-36 items-center justify-center">
-                  <span
-                    aria-hidden="true"
-                    className="absolute left-[52%] top-5 h-9 w-12 rounded-r-full border-y-2 border-r-2 border-dream/45"
-                  />
-                  <span
-                    aria-hidden="true"
-                    className="absolute left-[58%] top-12 h-12 w-16 rounded-r-full border-y-2 border-r-2 border-creative/35"
-                  />
-                  <span
-                    aria-hidden="true"
-                    className="absolute left-[64%] top-20 h-9 w-12 rounded-r-full border-y-2 border-r-2 border-technical/35"
-                  />
-                  <div className="absolute right-2 top-6 rounded-control border border-line/70 bg-glass/80 px-3 py-2 text-xs font-semibold text-ink shadow-soft backdrop-blur-md">
-                    New update
-                  </div>
-                  <span className="relative flex size-28 rotate-[-10deg] items-center justify-center rounded-[2rem] border border-dream/40 bg-glass/80 text-dream-text shadow-glass backdrop-blur-xl sm:size-32">
-                    <span
-                      aria-hidden="true"
-                      className="absolute inset-3 rounded-[1.5rem] bg-dream/10"
-                    />
-                    <Megaphone className="relative size-16 sm:size-20" aria-hidden="true" />
-                  </span>
-                </div>
-                <p className="relative mx-auto mt-1 max-w-56 text-center font-display text-xl font-semibold leading-7 text-ink sm:text-2xl sm:leading-8">
-                  STAY UPDATED,
-                  <br />
-                  STAY AHEAD!
-                </p>
-              </div>
+              <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-muted sm:text-base">
+                Stay connected with your learning communities. Join your official domain
+                WhatsApp groups for announcements, resources, session updates, and important
+                notices.
+              </p>
             </div>
-
-            <div className="relative mt-6 grid gap-3">
+            <div className="relative mt-5 grid gap-3">
               {groups.map((group, index) => {
                 const accent = modalAccents[index % modalAccents.length];
 
