@@ -97,7 +97,7 @@ export default function DomainWhatsAppModal({
             role="dialog"
             aria-modal="true"
             aria-labelledby="domain-whatsapp-modal-title"
-            className="relative max-h-[min(44rem,calc(100vh-2rem))] w-full max-w-4xl overflow-y-auto rounded-panel border border-dream/40 bg-glass/95 p-5 text-ink shadow-glass backdrop-blur-2xl sm:p-6 lg:p-7"
+            className="relative max-h-[min(44rem,calc(100vh-2rem))] w-full max-w-4xl overflow-x-hidden overflow-y-auto rounded-panel border border-dream/40 bg-glass/95 p-5 text-ink shadow-glass backdrop-blur-2xl sm:p-6 lg:p-7"
             initial={
               shouldReduceMotion
                 ? { opacity: 0 }
@@ -154,42 +154,61 @@ export default function DomainWhatsAppModal({
                 </p>
               </div>
 
-              <div className="relative max-w-xs rounded-card border border-dream/35 bg-surface/70 p-4 shadow-glass backdrop-blur-xl sm:p-5">
+              <div className="relative min-h-56 w-full max-w-sm overflow-hidden rounded-card border border-dream/35 bg-gradient-to-br from-dream/20 via-creative/10 to-technical/10 p-5 shadow-glass backdrop-blur-xl sm:min-h-60 sm:p-6">
                 <span
                   aria-hidden="true"
-                  className="absolute -right-4 -top-4 size-16 rounded-full bg-dream/20 blur-xl"
+                  className="absolute -right-12 -top-10 size-36 rounded-full bg-dream/30 blur-2xl"
                 />
                 <span
                   aria-hidden="true"
-                  className="absolute -bottom-5 left-8 size-20 rounded-full bg-technical/15 blur-xl"
+                  className="absolute -bottom-14 left-4 size-40 rounded-full bg-creative/20 blur-2xl"
                 />
-                <div className="relative flex items-start gap-3">
-                  <span className="flex size-12 shrink-0 items-center justify-center rounded-control border border-dream/35 bg-dream/15 text-dream-text shadow-soft">
-                    <Megaphone className="size-6" aria-hidden="true" />
-                  </span>
-                  <div>
-                    <p className="font-display text-lg font-semibold leading-6 text-ink">
-                      STAY UPDATED,
-                      <br />
-                      STAY AHEAD!
-                    </p>
-                    <p className="mt-2 text-xs leading-5 text-ink-muted">
-                      Official notices, resources, and session alerts in one place.
-                    </p>
+                <span
+                  aria-hidden="true"
+                  className="absolute left-6 top-6 size-2 rounded-full bg-rose"
+                />
+                <span
+                  aria-hidden="true"
+                  className="absolute right-12 top-8 size-1.5 rounded-full bg-technical"
+                />
+                <Sparkles
+                  className="absolute right-7 top-14 size-5 text-dream-text"
+                  aria-hidden="true"
+                />
+                <Sparkles
+                  className="absolute bottom-20 left-8 size-4 text-creative-text"
+                  aria-hidden="true"
+                />
+
+                <div className="relative flex min-h-36 items-center justify-center">
+                  <span
+                    aria-hidden="true"
+                    className="absolute left-[52%] top-5 h-9 w-12 rounded-r-full border-y-2 border-r-2 border-dream/45"
+                  />
+                  <span
+                    aria-hidden="true"
+                    className="absolute left-[58%] top-12 h-12 w-16 rounded-r-full border-y-2 border-r-2 border-creative/35"
+                  />
+                  <span
+                    aria-hidden="true"
+                    className="absolute left-[64%] top-20 h-9 w-12 rounded-r-full border-y-2 border-r-2 border-technical/35"
+                  />
+                  <div className="absolute right-2 top-6 rounded-control border border-line/70 bg-glass/80 px-3 py-2 text-xs font-semibold text-ink shadow-soft backdrop-blur-md">
+                    New update
                   </div>
+                  <span className="relative flex size-28 rotate-[-10deg] items-center justify-center rounded-[2rem] border border-dream/40 bg-glass/80 text-dream-text shadow-glass backdrop-blur-xl sm:size-32">
+                    <span
+                      aria-hidden="true"
+                      className="absolute inset-3 rounded-[1.5rem] bg-dream/10"
+                    />
+                    <Megaphone className="relative size-16 sm:size-20" aria-hidden="true" />
+                  </span>
                 </div>
-                <div className="relative mt-4 flex items-center gap-2 rounded-control border border-line/70 bg-glass/70 px-3 py-2 text-xs font-semibold text-technical-text">
-                  <Sparkles className="size-4" aria-hidden="true" />
-                  Community signal live
-                </div>
-                <span
-                  aria-hidden="true"
-                  className="absolute right-6 top-5 size-2 rounded-full bg-rose"
-                />
-                <span
-                  aria-hidden="true"
-                  className="absolute bottom-7 right-12 size-1.5 rounded-full bg-technical"
-                />
+                <p className="relative mx-auto mt-1 max-w-56 text-center font-display text-xl font-semibold leading-7 text-ink sm:text-2xl sm:leading-8">
+                  STAY UPDATED,
+                  <br />
+                  STAY AHEAD!
+                </p>
               </div>
             </div>
 

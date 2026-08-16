@@ -13,14 +13,14 @@
 .team-flip-card {
   width: 23.75rem;
   max-width: min(90vw, 100%);
-  height: 35rem;
+  height: 29rem;
   min-width: 0;
   flex: 0 1 23.75rem;
   perspective: 1200px;
 }
 
 .team-flip-card__photo {
-  height: 21.25rem;
+  height: 17.25rem;
 }
 
 .team-flip-card__inner {
@@ -59,15 +59,37 @@
   .team-flip-card {
     width: 20rem;
     max-width: 20rem;
+    height: 28rem;
     flex-basis: 20rem;
+  }
+
+  .team-flip-card__photo {
+    height: 16rem;
   }
 }
 
 @media (min-width: 1200px) {
   .team-flip-card {
-    width: 26.25rem;
-    max-width: 26.25rem;
-    flex-basis: 26.25rem;
+    width: 24rem;
+    max-width: 24rem;
+    height: 29rem;
+    flex-basis: 24rem;
+  }
+
+  .team-flip-card__photo {
+    height: 17.25rem;
+  }
+
+  .team-card-grid--three {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 23.5rem));
+    justify-content: center;
+  }
+
+  .team-card-grid--three .team-flip-card {
+    width: 100%;
+    max-width: 23.5rem;
+    flex-basis: auto;
   }
 }
 

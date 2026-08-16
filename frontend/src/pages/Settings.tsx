@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { ChangeEvent, FocusEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Check, FileText, ShieldCheck, UserRound, X } from "lucide-react";
+import { ArrowRight, Check, FileText, Lock, ShieldCheck, UserRound, X } from "lucide-react";
 import PasswordInput from "../components/auth/PasswordInput";
 import { useAuth } from "../context/AuthContext";
 import type { EnrolledDomain, User } from "../context/AuthContext";
@@ -244,6 +244,10 @@ export default function SettingsPage() {
   };
 
   const handleProfileDomainToggle = (domain: EnrolledDomain) => {
+    if (user.enrolledDomains.includes(domain)) {
+      return;
+    }
+
     setProfileForm((current) => {
       if (!current) return current;
 
@@ -524,6 +528,12 @@ export default function SettingsPage() {
                         <div className="mt-3 grid gap-3 sm:grid-cols-3">
                           {validDomains.map((domain) => {
                             const selected = profileForm.enrolledDomains.includes(domain);
+                            const locked = user.enrolledDomains.includes(domain);
+                            const statusLabel = locked
+                              ? "Enrolled"
+                              : selected
+                                ? "Will be added"
+                                : "Available to add";
 
                             return (
                               <button
@@ -534,11 +544,20 @@ export default function SettingsPage() {
                                   "flex min-h-[5rem] items-start justify-between gap-3 rounded-card border p-3 text-left transition-with-motion focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
                                   selected
                                     ? "border-primary/70 bg-primary/10 shadow-glow"
-                                    : "border-line bg-surface-muted/70 hover:border-primary/45"
+                                    : "border-line bg-surface-muted/70 hover:border-primary/45",
+                                  locked && "cursor-not-allowed hover:border-primary/70"
                                 )}
                                 aria-pressed={selected}
+                                aria-disabled={locked}
+                                disabled={locked}
                               >
-                                <span className="font-semibold text-ink">{domain}</span>
+                                <span>
+                                  <span className="block font-semibold text-ink">{domain}</span>
+                                  <span className="mt-1 flex items-center gap-1.5 text-xs font-semibold text-ink-subtle">
+                                    {locked && <Lock className="size-3.5" aria-hidden="true" />}
+                                    {statusLabel}
+                                  </span>
+                                </span>
                                 <span
                                   className={cn(
                                     "flex size-6 shrink-0 items-center justify-center rounded-full border",

@@ -519,7 +519,9 @@ const Team = () => {
                       ease: [0.16, 1, 0.3, 1],
                     }}
                     viewport={{ once: true, amount: 0.12 }}
-                    className="team-card-grid"
+                    className={`team-card-grid ${
+                      section.data.length === 3 ? "team-card-grid--three" : ""
+                    }`}
                   >
                     {section.data.map((member) => (
                       <TeamMemberCard
