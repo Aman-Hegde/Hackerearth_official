@@ -49,6 +49,22 @@ const passwordRules = [
 ];
 const validBranchCodes = new Set<string>(registrationBranchOptions.map((option) => option.value));
 
+const getDigitsOnly = (value: string) => value.replace(/\D/g, "");
+
+const normalizeIndianMobileNumber = (value: string): string | null => {
+  const digits = getDigitsOnly(value);
+
+  if (/^\d{10}$/.test(digits)) {
+    return digits;
+  }
+
+  if (/^91\d{10}$/.test(digits)) {
+    return digits.slice(2);
+  }
+
+  return null;
+};
+
 export default function RegisterPage() {
   const [formData, setFormData] = useState<RegisterForm>(initialForm);
   const [selectedDomains, setSelectedDomains] = useState<Domain[]>([]);
@@ -83,8 +99,10 @@ export default function RegisterPage() {
     }
     if (name === "usn" && !fieldValue.trim()) return "USN is required.";
     if (name === "contactNumber") {
-      if (!fieldValue.trim()) return "Contact number is required.";
-      if (!/^\d{10}$/.test(fieldValue)) return "Contact number must contain exactly 10 digits.";
+      const digits = getDigitsOnly(fieldValue);
+      if (!digits) return "Contact number is required.";
+      if (digits.length === 12 && !digits.startsWith("91")) return "Contact number with country code must begin with 91.";
+      if (!normalizeIndianMobileNumber(digits)) return "Enter a valid Indian mobile number.";
     }
     if (name === "branch") {
       if (!fieldValue) return "Branch is required.";
@@ -124,7 +142,7 @@ export default function RegisterPage() {
   const handleChange = (event: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = event.target;
     const fieldName = name as keyof RegisterForm;
-    const nextValue = name === "contactNumber" ? value.replace(/\D/g, "").slice(0, 10) : value;
+    const nextValue = name === "contactNumber" ? getDigitsOnly(value).slice(0, 12) : value;
     const nextForm = { ...formData, [fieldName]: nextValue };
 
     setFormData(nextForm);
@@ -186,6 +204,17 @@ export default function RegisterPage() {
 
     try {
       const normalizedEmail = formData.email.trim().toLowerCase();
+      const normalizedContactNumber = normalizeIndianMobileNumber(formData.contactNumber);
+
+      if (!normalizedContactNumber) {
+        setErrors((current) => ({
+          ...current,
+          contactNumber: "Enter a valid Indian mobile number.",
+        }));
+        setIsLoading(false);
+        return;
+      }
+
       const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: "POST",
         headers: {
@@ -196,7 +225,7 @@ export default function RegisterPage() {
           name: formData.name.trim(),
           email: normalizedEmail,
           usn: formData.usn.trim().toUpperCase(),
-          contactNumber: formData.contactNumber,
+          contactNumber: normalizedContactNumber,
           branch: formData.branch.trim(),
           year: Number(formData.year),
           password: formData.password,
@@ -320,7 +349,40 @@ export default function RegisterPage() {
                 <AuthInput id="name" name="name" label="Name" value={formData.name} error={errors.name} onChange={handleChange} onBlur={handleBlur} autoComplete="name" icon={<User className="h-4 w-4" aria-hidden="true" />} />
                 <AuthInput id="email" name="email" label="Email ID" type="email" placeholder="yourusn@nmamit.in" value={formData.email} error={errors.email} onChange={handleChange} onBlur={handleBlur} autoComplete="email" icon={<Mail className="h-4 w-4" aria-hidden="true" />} />
                 <AuthInput id="usn" name="usn" label="USN" value={formData.usn} error={errors.usn} onChange={handleChange} onBlur={handleBlur} autoComplete="off" />
-                <AuthInput id="contactNumber" name="contactNumber" label="Contact Number" inputMode="numeric" value={formData.contactNumber} error={errors.contactNumber} onChange={handleChange} onBlur={handleBlur} autoComplete="tel" icon={<Phone className="h-4 w-4" aria-hidden="true" />} />
+                <div className="space-y-2">
+                  <label htmlFor="contactNumber" className="block text-[0.95rem] font-medium text-ink">
+                    Contact Number
+                  </label>
+                  <div className="relative">
+                    <Phone className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-muted" aria-hidden="true" />
+                    <span className="pointer-events-none absolute left-10 top-1/2 -translate-y-1/2 rounded-full border border-dream/25 bg-glass/80 px-2 py-0.5 text-xs font-semibold text-ink-muted shadow-soft">
+                      +91
+                    </span>
+                    <input
+                      id="contactNumber"
+                      name="contactNumber"
+                      inputMode="numeric"
+                      value={formData.contactNumber}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                      autoComplete="tel"
+                      placeholder="Enter mobile number"
+                      aria-invalid={Boolean(errors.contactNumber)}
+                      aria-describedby={errors.contactNumber ? "contactNumber-error" : undefined}
+                      className={cn(
+                        "min-h-12 w-full rounded-control border bg-glass/65 py-3 pl-24 pr-4 text-sm text-ink shadow-soft transition duration-200 placeholder:text-ink-muted hover:bg-glass/80 focus-visible:border-primary focus-visible:bg-glass focus-visible:shadow-glow",
+                        errors.contactNumber
+                          ? "border-rose/70 bg-rose/5"
+                          : "border-dream/30 hover:border-dream/55",
+                      )}
+                    />
+                  </div>
+                  {errors.contactNumber && (
+                    <p id="contactNumber-error" className="text-sm font-semibold text-rose-text" role="alert">
+                      {errors.contactNumber}
+                    </p>
+                  )}
+                </div>
                 <div className="min-w-0 space-y-2">
                   <label htmlFor="branch" className="block text-[0.95rem] font-medium text-ink">
                     Branch
