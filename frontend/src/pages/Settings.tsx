@@ -1,10 +1,12 @@
-import { FormEvent, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import type { ChangeEvent, FocusEvent } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, FileText, ShieldCheck, UserRound } from "lucide-react";
+import { ArrowRight, Check, FileText, ShieldCheck, UserRound, X } from "lucide-react";
 import PasswordInput from "../components/auth/PasswordInput";
 import { useAuth } from "../context/AuthContext";
+import type { EnrolledDomain, User } from "../context/AuthContext";
 import { ApiError, apiRequest } from "../lib/api";
+import { updateStudentProfile } from "../lib/studentApi";
 import { cn } from "../lib/utils";
 import { useToast } from "../components/ToastProvider";
 
@@ -19,11 +21,19 @@ interface ChangePasswordResponse {
   message: string;
 }
 
+interface ProfileForm {
+  name: string;
+  contactNumber: string;
+  enrolledDomains: EnrolledDomain[];
+}
+
 const initialForm: PasswordForm = {
   currentPassword: "",
   newPassword: "",
   confirmPassword: "",
 };
+
+const validDomains: EnrolledDomain[] = ["Web Development", "DSA", "Aptitude"];
 
 const passwordRules = [
   { label: "8 characters", test: (value: string) => value.length >= 8 },
@@ -32,6 +42,28 @@ const passwordRules = [
   { label: "1 number", test: (value: string) => /\d/.test(value) },
   { label: "1 special character", test: (value: string) => /[^A-Za-z0-9]/.test(value) },
 ];
+
+const getDigitsOnly = (value: string) => value.replace(/\D/g, "");
+
+const normalizeIndianMobileNumber = (value: string): string | null => {
+  const digits = getDigitsOnly(value);
+
+  if (/^\d{10}$/.test(digits)) {
+    return digits;
+  }
+
+  if (/^91\d{10}$/.test(digits)) {
+    return digits.slice(2);
+  }
+
+  return null;
+};
+
+const createProfileForm = (user: User): ProfileForm => ({
+  name: user.name,
+  contactNumber: user.contactNumber,
+  enrolledDomains: user.enrolledDomains,
+});
 
 const policySections = [
   {
@@ -114,7 +146,7 @@ const validatePasswordField = (
 };
 
 export default function SettingsPage() {
-  const { user, logout } = useAuth();
+  const { user, logout, refreshUser } = useAuth();
   const navigate = useNavigate();
   const { showToast } = useToast();
   const [formData, setFormData] = useState(initialForm);
@@ -124,6 +156,19 @@ export default function SettingsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileForm, setProfileForm] = useState<ProfileForm | null>(
+    user ? createProfileForm(user) : null
+  );
+  const [profileErrors, setProfileErrors] = useState<Partial<Record<keyof ProfileForm, string>>>({});
+  const [profileMessage, setProfileMessage] = useState("");
+  const [isProfileSubmitting, setIsProfileSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (user && !isEditingProfile) {
+      setProfileForm(createProfileForm(user));
+    }
+  }, [isEditingProfile, user]);
 
   const passedPasswordRules = useMemo(
     () => passwordRules.filter((rule) => rule.test(formData.newPassword)).length,
@@ -134,6 +179,130 @@ export default function SettingsPage() {
     passedPasswordRules <= 2 ? "bg-highlight" : passedPasswordRules <= 4 ? "bg-primary" : "bg-success";
 
   if (!user) return null;
+
+  const isStudent = user.role === "student";
+
+  const validateProfileForm = (form: ProfileForm) => {
+    const nextErrors: Partial<Record<keyof ProfileForm, string>> = {};
+    const normalizedContactNumber = normalizeIndianMobileNumber(form.contactNumber);
+
+    if (!form.name.trim()) {
+      nextErrors.name = "Name is required.";
+    } else if (form.name.trim().length < 2 || form.name.trim().length > 100) {
+      nextErrors.name = "Name must be between 2 and 100 characters.";
+    }
+
+    if (!form.contactNumber.trim()) {
+      nextErrors.contactNumber = "Contact number is required.";
+    } else if (!normalizedContactNumber) {
+      const digits = getDigitsOnly(form.contactNumber);
+      nextErrors.contactNumber =
+        digits.length === 12 && !digits.startsWith("91")
+          ? "Contact number with country code must begin with 91."
+          : "Enter a valid Indian mobile number.";
+    }
+
+    if (form.enrolledDomains.length === 0) {
+      nextErrors.enrolledDomains = "Select at least one domain.";
+    }
+
+    setProfileErrors(nextErrors);
+    return Object.keys(nextErrors).length === 0;
+  };
+
+  const handleProfileEdit = () => {
+    setProfileForm(createProfileForm(user));
+    setProfileErrors({});
+    setProfileMessage("");
+    setIsEditingProfile(true);
+  };
+
+  const handleProfileCancel = () => {
+    setProfileForm(createProfileForm(user));
+    setProfileErrors({});
+    setProfileMessage("");
+    setIsEditingProfile(false);
+  };
+
+  const handleProfileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target;
+
+    setProfileForm((current) => {
+      if (!current) return current;
+
+      const nextValue = name === "contactNumber" ? getDigitsOnly(value).slice(0, 12) : value;
+      const nextForm = { ...current, [name]: nextValue };
+
+      setProfileErrors((currentErrors) => ({
+        ...currentErrors,
+        [name]: undefined,
+      }));
+      setProfileMessage("");
+
+      return nextForm;
+    });
+  };
+
+  const handleProfileDomainToggle = (domain: EnrolledDomain) => {
+    setProfileForm((current) => {
+      if (!current) return current;
+
+      const isSelected = current.enrolledDomains.includes(domain);
+      const enrolledDomains = isSelected
+        ? current.enrolledDomains.filter((selectedDomain) => selectedDomain !== domain)
+        : [...current.enrolledDomains, domain];
+
+      setProfileErrors((currentErrors) => ({
+        ...currentErrors,
+        enrolledDomains: undefined,
+      }));
+      setProfileMessage("");
+
+      return { ...current, enrolledDomains };
+    });
+  };
+
+  const handleProfileSave = async () => {
+    if (!profileForm) return;
+
+    setProfileMessage("");
+
+    if (!validateProfileForm(profileForm)) {
+      return;
+    }
+
+    const normalizedContactNumber = normalizeIndianMobileNumber(profileForm.contactNumber);
+
+    if (!normalizedContactNumber) {
+      return;
+    }
+
+    setIsProfileSubmitting(true);
+
+    try {
+      const data = await updateStudentProfile({
+        name: profileForm.name.trim(),
+        contactNumber: normalizedContactNumber,
+        enrolledDomains: profileForm.enrolledDomains,
+      });
+
+      await refreshUser();
+      setIsEditingProfile(false);
+      setProfileErrors({});
+      setProfileMessage(data.message || "Profile updated successfully.");
+      showToast({ variant: "success", message: data.message || "Profile updated successfully." });
+    } catch (error) {
+      const errorMessage =
+        error instanceof ApiError
+          ? error.message
+          : "Unable to update profile right now. Please try again.";
+
+      setProfileMessage(errorMessage);
+      showToast({ variant: "error", message: errorMessage });
+    } finally {
+      setIsProfileSubmitting(false);
+    }
+  };
 
   const validateForm = () => {
     const nextErrors: Partial<Record<keyof PasswordForm, string>> = {};
@@ -272,30 +441,251 @@ export default function SettingsPage() {
                   </div>
                 </div>
 
-                <dl className="mt-6 grid gap-4 rounded-card border border-line/80 bg-surface/80 p-4 text-sm shadow-soft">
-                  <div>
-                    <dt className="font-mono text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-ink-subtle">
-                      Name
-                    </dt>
-                    <dd className="mt-1 break-words font-semibold text-ink">{user.name}</dd>
+                <div className="mt-6 rounded-card border border-line/80 bg-surface/80 p-4 text-sm shadow-soft">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h3 className="font-display text-lg font-semibold text-ink">
+                        Account Details
+                      </h3>
+                      <p className="mt-1 text-sm leading-6 text-ink-muted">
+                        Review your identity details and update student profile preferences.
+                      </p>
+                    </div>
+                    {isStudent && !isEditingProfile && (
+                      <button
+                        type="button"
+                        className="btn btn-secondary w-full sm:w-auto"
+                        onClick={handleProfileEdit}
+                      >
+                        Edit Profile
+                      </button>
+                    )}
                   </div>
-                  <div>
-                    <dt className="font-mono text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-ink-subtle">
-                      Email
-                    </dt>
-                    <dd className="mt-1 break-words font-semibold text-ink">{user.email}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-mono text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-ink-subtle">
-                      Role
-                    </dt>
-                    <dd className="mt-2">
-                      <span className="inline-flex rounded-full border border-dream/30 bg-dream/10 px-3 py-1.5 text-xs font-semibold capitalize text-dream-text">
-                        {user.role}
-                      </span>
-                    </dd>
-                  </div>
-                </dl>
+
+                  {isEditingProfile && profileForm ? (
+                    <div className="mt-5 grid gap-4">
+                      <div>
+                        <label htmlFor="profile-name" className="block text-sm font-semibold text-ink">
+                          Name
+                        </label>
+                        <input
+                          id="profile-name"
+                          name="name"
+                          type="text"
+                          value={profileForm.name}
+                          onChange={handleProfileChange}
+                          className={cn(
+                            "mt-2 w-full rounded-control border bg-surface px-4 py-3 text-sm font-medium text-ink outline-none transition focus:border-primary focus:ring-2 focus:ring-primary/30",
+                            profileErrors.name ? "border-rose/60" : "border-line"
+                          )}
+                          aria-invalid={Boolean(profileErrors.name)}
+                          aria-describedby={profileErrors.name ? "profile-name-error" : undefined}
+                        />
+                        {profileErrors.name && (
+                          <p id="profile-name-error" className="mt-2 text-sm font-semibold text-rose-text" role="alert">
+                            {profileErrors.name}
+                          </p>
+                        )}
+                      </div>
+
+                      <div>
+                        <label htmlFor="profile-contact-number" className="block text-sm font-semibold text-ink">
+                          Contact Number
+                        </label>
+                        <div className="mt-2 flex overflow-hidden rounded-control border border-line bg-surface transition-with-motion focus-within:border-primary focus-within:ring-2 focus-within:ring-primary/30">
+                          <span className="flex items-center border-r border-line bg-surface-muted px-3 text-sm font-semibold text-ink">
+                            +91
+                          </span>
+                          <input
+                            id="profile-contact-number"
+                            name="contactNumber"
+                            type="tel"
+                            inputMode="numeric"
+                            value={profileForm.contactNumber}
+                            onChange={handleProfileChange}
+                            maxLength={12}
+                            placeholder="Enter mobile number"
+                            className="min-w-0 flex-1 bg-transparent px-4 py-3 text-sm font-medium text-ink outline-none placeholder:text-ink-subtle"
+                            aria-invalid={Boolean(profileErrors.contactNumber)}
+                            aria-describedby={profileErrors.contactNumber ? "profile-contact-number-error" : undefined}
+                          />
+                        </div>
+                        {profileErrors.contactNumber && (
+                          <p id="profile-contact-number-error" className="mt-2 text-sm font-semibold text-rose-text" role="alert">
+                            {profileErrors.contactNumber}
+                          </p>
+                        )}
+                      </div>
+
+                      <fieldset>
+                        <legend className="text-sm font-semibold text-ink">
+                          Enrolled Domains
+                        </legend>
+                        <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                          {validDomains.map((domain) => {
+                            const selected = profileForm.enrolledDomains.includes(domain);
+
+                            return (
+                              <button
+                                key={domain}
+                                type="button"
+                                onClick={() => handleProfileDomainToggle(domain)}
+                                className={cn(
+                                  "flex min-h-[5rem] items-start justify-between gap-3 rounded-card border p-3 text-left transition-with-motion focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40",
+                                  selected
+                                    ? "border-primary/70 bg-primary/10 shadow-glow"
+                                    : "border-line bg-surface-muted/70 hover:border-primary/45"
+                                )}
+                                aria-pressed={selected}
+                              >
+                                <span className="font-semibold text-ink">{domain}</span>
+                                <span
+                                  className={cn(
+                                    "flex size-6 shrink-0 items-center justify-center rounded-full border",
+                                    selected
+                                      ? "border-primary/60 bg-primary text-ink-inverse"
+                                      : "border-line text-ink-subtle"
+                                  )}
+                                  aria-hidden="true"
+                                >
+                                  {selected && <Check className="size-4" />}
+                                </span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                        {profileErrors.enrolledDomains && (
+                          <p className="mt-2 text-sm font-semibold text-rose-text" role="alert">
+                            {profileErrors.enrolledDomains}
+                          </p>
+                        )}
+                      </fieldset>
+
+                      <div className="grid gap-3 border-t border-line/70 pt-4 sm:grid-cols-2">
+                        <div>
+                          <p className="font-mono text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-ink-subtle">
+                            Email
+                          </p>
+                          <p className="mt-1 break-words font-semibold text-ink">{user.email}</p>
+                        </div>
+                        <div>
+                          <p className="font-mono text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-ink-subtle">
+                            USN
+                          </p>
+                          <p className="mt-1 break-words font-semibold text-ink">{user.usn}</p>
+                        </div>
+                        <div>
+                          <p className="font-mono text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-ink-subtle">
+                            Branch
+                          </p>
+                          <p className="mt-1 break-words font-semibold text-ink">{user.branch}</p>
+                        </div>
+                        <div>
+                          <p className="font-mono text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-ink-subtle">
+                            Year
+                          </p>
+                          <p className="mt-1 font-semibold text-ink">{user.year}</p>
+                        </div>
+                      </div>
+
+                      {profileMessage && (
+                        <p className="rounded-control border border-highlight/40 bg-highlight/10 px-4 py-3 text-sm font-medium text-highlight-text" role="alert">
+                          {profileMessage}
+                        </p>
+                      )}
+
+                      <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                        <button
+                          type="button"
+                          className="btn btn-secondary"
+                          onClick={handleProfileCancel}
+                          disabled={isProfileSubmitting}
+                        >
+                          <X className="size-4" aria-hidden="true" />
+                          Cancel
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-primary"
+                          onClick={handleProfileSave}
+                          disabled={isProfileSubmitting}
+                        >
+                          {isProfileSubmitting && (
+                            <span
+                              className="size-4 rounded-full border-2 border-ink-inverse/40 border-b-ink-inverse animate-spin motion-reduce:animate-none"
+                              aria-hidden="true"
+                            />
+                          )}
+                          {isProfileSubmitting ? "Saving changes..." : "Save Changes"}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <dl className="mt-5 grid gap-4 sm:grid-cols-2">
+                      <div>
+                        <dt className="font-mono text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-ink-subtle">
+                          Name
+                        </dt>
+                        <dd className="mt-1 break-words font-semibold text-ink">{user.name}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-mono text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-ink-subtle">
+                          Email
+                        </dt>
+                        <dd className="mt-1 break-words font-semibold text-ink">{user.email}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-mono text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-ink-subtle">
+                          USN
+                        </dt>
+                        <dd className="mt-1 break-words font-semibold text-ink">{user.usn}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-mono text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-ink-subtle">
+                          Contact Number
+                        </dt>
+                        <dd className="mt-1 font-semibold text-ink">+91 {user.contactNumber}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-mono text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-ink-subtle">
+                          Branch
+                        </dt>
+                        <dd className="mt-1 break-words font-semibold text-ink">{user.branch}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-mono text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-ink-subtle">
+                          Year
+                        </dt>
+                        <dd className="mt-1 font-semibold text-ink">{user.year}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-mono text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-ink-subtle">
+                          Role
+                        </dt>
+                        <dd className="mt-2">
+                          <span className="inline-flex rounded-full border border-dream/30 bg-dream/10 px-3 py-1.5 text-xs font-semibold capitalize text-dream-text">
+                            {user.role}
+                          </span>
+                        </dd>
+                      </div>
+                      <div>
+                        <dt className="font-mono text-[0.68rem] font-semibold uppercase tracking-[0.14em] text-ink-subtle">
+                          Domains
+                        </dt>
+                        <dd className="mt-2 flex flex-wrap gap-2">
+                          {user.enrolledDomains.map((domain) => (
+                            <span
+                              key={domain}
+                              className="rounded-full border border-primary/25 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary-text"
+                            >
+                              {domain}
+                            </span>
+                          ))}
+                        </dd>
+                      </div>
+                    </dl>
+                  )}
+                </div>
 
                 <form className="mt-6 space-y-5" onSubmit={handleSubmit} noValidate>
                   <PasswordInput
