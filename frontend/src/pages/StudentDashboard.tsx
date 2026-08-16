@@ -8,15 +8,22 @@ import {
   Shapes,
   UserRound,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import PageTransition from "../components/ui/PageTransition";
 import SectionReveal from "../components/ui/SectionReveal";
 import ResourceCard from "../components/ResourceCard";
+import DomainWhatsAppModal, {
+  domainCommunityDescriptions,
+  WhatsAppIcon,
+} from "../components/student/DomainWhatsAppModal";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
-import { apiRequest } from "../lib/api";
 import { blogPosts } from "../lib/resourcesData";
+import {
+  getStudentDomainGroups,
+  type DomainCommunity,
+} from "../lib/studentApi";
 import {
   getEnrolledResourceCategories,
   studentResourceSearch,
@@ -41,38 +48,21 @@ const domainCardStyles = [
   },
 ] as const;
 
-type DomainCommunity = {
-  domain: "Web Development" | "DSA" | "Aptitude";
-  joinUrl: string;
+const hasDismissedCommunityModal = (key: string) => {
+  try {
+    return sessionStorage.getItem(key) === "dismissed";
+  } catch {
+    return true;
+  }
 };
 
-type DomainGroupsResponse = {
-  success: boolean;
-  groups: DomainCommunity[];
+const markCommunityModalDismissed = (key: string) => {
+  try {
+    sessionStorage.setItem(key, "dismissed");
+  } catch {
+    // If sessionStorage is unavailable, the in-memory open state still closes the modal.
+  }
 };
-
-const domainCommunityDescriptions: Record<DomainCommunity["domain"], string> = {
-  "Web Development":
-    "Connect with the Web Development community for updates, discussions and learning resources.",
-  DSA: "Connect with the DSA community for updates, discussions and learning resources.",
-  Aptitude:
-    "Connect with the Aptitude community for updates, discussions and learning resources.",
-};
-
-const WhatsAppIcon = ({ className = "" }: { className?: string }) => (
-  <svg
-    className={className}
-    viewBox="0 0 32 32"
-    role="img"
-    aria-label="WhatsApp"
-    fill="none"
-  >
-    <path
-      fill="currentColor"
-      d="M16.04 4C9.41 4 4.02 9.35 4.02 15.93c0 2.1.56 4.16 1.61 5.96L4 28l6.31-1.61A12.1 12.1 0 0 0 16.04 28C22.67 28 28 22.65 28 16.07 28 9.49 22.67 4 16.04 4Zm0 21.88c-1.84 0-3.64-.49-5.21-1.42l-.37-.22-3.74.95.99-3.62-.24-.38a9.72 9.72 0 0 1-1.49-5.26c0-5.4 4.51-9.79 10.06-9.79 5.53 0 10.01 4.45 10.01 9.93 0 5.41-4.49 9.81-10.01 9.81Zm5.51-7.35c-.3-.15-1.79-.87-2.07-.97-.28-.1-.48-.15-.68.15-.2.29-.78.97-.96 1.17-.18.2-.35.22-.65.07-.3-.15-1.27-.46-2.42-1.47-.89-.79-1.5-1.77-1.67-2.07-.17-.29-.02-.45.13-.6.13-.13.3-.35.45-.52.15-.17.2-.29.3-.49.1-.2.05-.37-.03-.52-.08-.15-.68-1.62-.93-2.22-.24-.58-.49-.5-.68-.51h-.58c-.2 0-.53.07-.8.37-.28.29-1.05 1.02-1.05 2.48 0 1.47 1.08 2.88 1.23 3.08.15.2 2.12 3.2 5.14 4.49.72.31 1.28.5 1.72.64.72.23 1.38.2 1.9.12.58-.09 1.79-.72 2.04-1.42.25-.69.25-1.29.18-1.42-.08-.12-.28-.2-.58-.34Z"
-    />
-  </svg>
-);
 
 const StudentDashboard = () => {
   const { user } = useAuth();
@@ -80,7 +70,18 @@ const StudentDashboard = () => {
   const [domainGroups, setDomainGroups] = useState<DomainCommunity[]>([]);
   const [isLoadingDomainGroups, setIsLoadingDomainGroups] = useState(true);
   const [domainGroupsError, setDomainGroupsError] = useState("");
+  const [isCommunityModalOpen, setIsCommunityModalOpen] = useState(false);
   const enrolledDomainKey = user?.enrolledDomains.join("|") ?? "";
+  const communityModalSessionKey = user
+    ? `hackerearth-hub:student-community-popup:${user.id}`
+    : "";
+
+  const dismissCommunityModal = useCallback(() => {
+    if (communityModalSessionKey) {
+      markCommunityModalDismissed(communityModalSessionKey);
+    }
+    setIsCommunityModalOpen(false);
+  }, [communityModalSessionKey]);
 
   useEffect(() => {
     let isMounted = true;
@@ -97,9 +98,7 @@ const StudentDashboard = () => {
       try {
         setIsLoadingDomainGroups(true);
         setDomainGroupsError("");
-        const data = await apiRequest<DomainGroupsResponse>(
-          "/api/student/domain-groups"
-        );
+        const data = await getStudentDomainGroups();
 
         if (isMounted) {
           setDomainGroups(data.groups);
@@ -124,6 +123,31 @@ const StudentDashboard = () => {
       isMounted = false;
     };
   }, [enrolledDomainKey, user?.id]);
+
+  useEffect(() => {
+    if (
+      !user ||
+      user.role !== "student" ||
+      isLoadingDomainGroups ||
+      domainGroupsError ||
+      domainGroups.length === 0 ||
+      !communityModalSessionKey
+    ) {
+      return;
+    }
+
+    if (hasDismissedCommunityModal(communityModalSessionKey)) {
+      return;
+    }
+
+    setIsCommunityModalOpen(true);
+  }, [
+    communityModalSessionKey,
+    domainGroups.length,
+    domainGroupsError,
+    isLoadingDomainGroups,
+    user?.role,
+  ]);
 
   if (!user) return null;
 
@@ -472,6 +496,11 @@ const StudentDashboard = () => {
             </SectionReveal>
           </div>
         </div>
+        <DomainWhatsAppModal
+          isOpen={isCommunityModalOpen}
+          groups={domainGroups}
+          onClose={dismissCommunityModal}
+        />
       </main>
     </PageTransition>
   );
