@@ -85,7 +85,7 @@ export default function DomainWhatsAppModal({
     <AnimatePresence>
       {isOpen && groups.length > 0 && (
         <motion.div
-          className="fixed inset-0 z-[95] flex items-center justify-center bg-ink/65 p-4 backdrop-blur-lg dark:bg-canvas/80 sm:p-6"
+          className="fixed inset-0 z-[95] flex items-start justify-center overflow-y-auto bg-ink/65 px-4 pb-4 pt-28 backdrop-blur-lg dark:bg-canvas/80 sm:px-6 sm:pb-6 sm:pt-32"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -95,7 +95,7 @@ export default function DomainWhatsAppModal({
             role="dialog"
             aria-modal="true"
             aria-labelledby="domain-whatsapp-modal-title"
-            className="relative max-h-[min(44rem,calc(100vh-2rem))] w-full max-w-4xl overflow-x-hidden overflow-y-auto rounded-panel border border-dream/40 bg-glass/95 p-5 text-ink shadow-glass backdrop-blur-2xl sm:p-6 lg:p-7"
+            className="relative w-full max-w-4xl overflow-x-hidden rounded-panel border border-dream/40 bg-glass/95 p-5 text-ink shadow-glass backdrop-blur-2xl sm:p-6 lg:p-7"
             initial={
               shouldReduceMotion
                 ? { opacity: 0 }
