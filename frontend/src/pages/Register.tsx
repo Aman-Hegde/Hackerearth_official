@@ -111,7 +111,8 @@ export default function RegisterPage() {
     if (name === "year") {
       const year = Number(fieldValue);
       if (!fieldValue) return "Year is required.";
-      if (!Number.isInteger(year) || year < 1 || year > 4) return "Year must be from 1 to 4.";
+      if (!Number.isInteger(year) || year < 2 || year > 4)
+        return "Year must be from 2 to 4.";
     }
     if (name === "password") {
       if (!fieldValue) return "Password is required.";
@@ -433,7 +434,6 @@ export default function RegisterPage() {
                     )}
                   >
                     <option value="">Select year</option>
-                    <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
                     <option value="4">4</option>
