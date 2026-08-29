@@ -71,7 +71,6 @@ interface FacetResult<TEntry> {
 interface StudentRankAggregationResult {
   _id: Types.ObjectId;
   totalPoints: number;
-  overallRank: number;
 }
 
 const parsePositiveInteger = (
@@ -292,7 +291,7 @@ export const getStudentOverallRank = async (
 
   const objectId = new Types.ObjectId(studentId);
 
-  const [rankResult, totalActiveStudents] = await Promise.all([
+  const [rankedStudents, totalActiveStudents] = await Promise.all([
     User.aggregate<StudentRankAggregationResult>([
       { $match: { role: "student", isActive: true } },
       {
@@ -319,27 +318,29 @@ export const getStudentOverallRank = async (
         },
       },
       {
-        $setWindowFields: {
-          sortBy: { totalPoints: -1, name: 1, email: 1, _id: 1 },
-          output: {
-            overallRank: { $documentNumber: {} },
-          },
-        },
+        $sort: { totalPoints: -1, name: 1, email: 1, _id: 1 },
       },
-      { $match: { _id: objectId } },
-      { $project: { totalPoints: 1, overallRank: 1 } },
+      { $project: { totalPoints: 1 } },
     ]).exec(),
     User.countDocuments({ role: "student", isActive: true }).exec(),
   ]);
 
-  const studentRank = rankResult[0];
+  const studentIndex = rankedStudents.findIndex(
+    (student) => student._id.toString() === objectId.toString()
+  );
+
+  if (studentIndex === -1) {
+    return null;
+  }
+
+  const studentRank = rankedStudents[studentIndex];
 
   if (!studentRank) {
     return null;
   }
 
   return {
-    overallRank: studentRank.overallRank,
+    overallRank: studentIndex + 1,
     totalPoints: studentRank.totalPoints,
     totalActiveStudents,
   };

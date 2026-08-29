@@ -1,5 +1,6 @@
 import {
   type ChangeEvent,
+  type FormEvent,
   type ReactNode,
   useCallback,
   useEffect,
@@ -15,23 +16,31 @@ import {
   DoorOpen,
   FileSpreadsheet,
   GitBranch,
+  History,
   Loader2,
+  PlusCircle,
   RefreshCw,
   Search,
   ShieldCheck,
+  Trophy,
   UserCheck,
   Users,
   UserX,
+  X,
 } from 'lucide-react';
 import PageTransition from '../components/ui/PageTransition';
 import SectionReveal from '../components/ui/SectionReveal';
 import { ApiError } from '../lib/api';
 import { registrationBranchOptions } from '../lib/registrationBranches';
 import {
+  awardStudentPoints,
   getAdminOverview,
   getAdminRegistrationSettings,
+  getAdminStudentPointHistory,
   getAdminStudents,
   downloadAdminStudentsExcel,
+  type AdminPointStudent,
+  type AdminPointTransaction,
   type AdminOverview,
   type AdminStudent,
   type RegistrationSettings,
@@ -154,6 +163,17 @@ const formatDateTime = (value?: string | null) => {
   }).format(date);
 };
 
+const formatShortDate = (value?: string | null) => {
+  if (!value) return 'Recently';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return 'Recently';
+
+  return new Intl.DateTimeFormat('en-IN', {
+    month: 'short',
+    day: 'numeric',
+  }).format(date);
+};
+
 const StatCard = ({
   label,
   value,
@@ -244,6 +264,20 @@ const AdminDashboard = () => {
   const [pendingStudentId, setPendingStudentId] = useState<string | null>(null);
   const [studentRefreshToken, setStudentRefreshToken] = useState(0);
   const [studentsExporting, setStudentsExporting] = useState(false);
+
+  const [awardSearchEmail, setAwardSearchEmail] = useState('');
+  const [awardSearchResults, setAwardSearchResults] = useState<AdminStudent[]>([]);
+  const [awardSearchLoading, setAwardSearchLoading] = useState(false);
+  const [awardSearchError, setAwardSearchError] = useState<AdminRequestError | null>(null);
+  const [selectedAwardStudent, setSelectedAwardStudent] = useState<AdminPointStudent | null>(null);
+  const [pointHistory, setPointHistory] = useState<AdminPointTransaction[]>([]);
+  const [pointHistoryLoading, setPointHistoryLoading] = useState(false);
+  const [awardPoints, setAwardPoints] = useState('');
+  const [awardDescription, setAwardDescription] = useState('');
+  const [awardError, setAwardError] = useState<AdminRequestError | null>(null);
+  const [awardNotice, setAwardNotice] = useState<string | null>(null);
+  const [awardSubmitting, setAwardSubmitting] = useState(false);
+  const [isAwardConfirmOpen, setIsAwardConfirmOpen] = useState(false);
 
   const [search, setSearch] = useState('');
   const [branch, setBranch] = useState('');
@@ -460,6 +494,138 @@ const AdminDashboard = () => {
     }
   };
 
+  const loadAwardStudentHistory = useCallback(async (studentId: string) => {
+    setPointHistoryLoading(true);
+    setAwardError(null);
+
+    try {
+      const response = await getAdminStudentPointHistory(studentId, 10);
+      setSelectedAwardStudent(response.student);
+      setPointHistory(response.transactions);
+    } catch (error) {
+      const requestError = classifyAdminError(error, 'Unable to load point activity.');
+      if (isGlobalAuthorizationError(requestError)) {
+        setGlobalAuthError(requestError);
+      } else {
+        setAwardError(requestError);
+      }
+    } finally {
+      setPointHistoryLoading(false);
+    }
+  }, []);
+
+  const handleAwardSearch = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const normalizedEmail = awardSearchEmail.trim().toLowerCase();
+
+    if (!normalizedEmail) {
+      setAwardSearchError({ kind: 'api', message: 'Enter a college email to search.' });
+      return;
+    }
+
+    setAwardSearchLoading(true);
+    setAwardSearchError(null);
+    setAwardNotice(null);
+    setAwardSearchResults([]);
+    setSelectedAwardStudent(null);
+    setPointHistory([]);
+
+    try {
+      const response = await getAdminStudents({
+        page: 1,
+        limit: 5,
+        search: normalizedEmail,
+        status: 'active',
+        sortBy: 'name',
+        sortOrder: 'asc',
+      });
+      setAwardSearchResults(response.students);
+      if (response.students.length === 0) {
+        setAwardSearchError({ kind: 'api', message: 'No active student matched that email.' });
+      }
+    } catch (error) {
+      const requestError = classifyAdminError(error, 'Unable to search students.');
+      if (isGlobalAuthorizationError(requestError)) {
+        setGlobalAuthError(requestError);
+      } else {
+        setAwardSearchError(requestError);
+      }
+    } finally {
+      setAwardSearchLoading(false);
+    }
+  };
+
+  const handleSelectAwardStudent = async (student: AdminStudent) => {
+    setAwardSearchResults([]);
+    setAwardError(null);
+    setAwardNotice(null);
+    await loadAwardStudentHistory(student.id);
+  };
+
+  const getAwardValidationMessage = () => {
+    const points = Number(awardPoints);
+    const description = awardDescription.trim();
+
+    if (!selectedAwardStudent) return 'Select an active student first.';
+    if (!awardPoints.trim() || !Number.isInteger(points) || points < 1 || points > 100000) {
+      return 'Points must be a whole number from 1 to 100000.';
+    }
+    if (!description) return 'A reason or activity description is required.';
+    if (description.length > 240) return 'Description cannot exceed 240 characters.';
+    return null;
+  };
+
+  const handleOpenAwardConfirm = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const validationMessage = getAwardValidationMessage();
+
+    if (validationMessage) {
+      setAwardError({ kind: 'api', message: validationMessage });
+      return;
+    }
+
+    setAwardError(null);
+    setIsAwardConfirmOpen(true);
+  };
+
+  const handleConfirmAward = async () => {
+    if (!selectedAwardStudent || awardSubmitting) return;
+
+    const validationMessage = getAwardValidationMessage();
+    if (validationMessage) {
+      setAwardError({ kind: 'api', message: validationMessage });
+      setIsAwardConfirmOpen(false);
+      return;
+    }
+
+    setAwardSubmitting(true);
+    setAwardError(null);
+    setAwardNotice(null);
+
+    try {
+      const response = await awardStudentPoints({
+        studentId: selectedAwardStudent.id,
+        points: Number(awardPoints),
+        description: awardDescription.trim(),
+      });
+      setSelectedAwardStudent(response.student);
+      setPointHistory((current) => [response.transaction, ...current].slice(0, 10));
+      setAwardNotice(`${response.transaction.points} points awarded to ${response.student.name}.`);
+      setAwardPoints('');
+      setAwardDescription('');
+      setIsAwardConfirmOpen(false);
+    } catch (error) {
+      const requestError = classifyAdminError(error, 'Unable to award points.');
+      if (isGlobalAuthorizationError(requestError)) {
+        setGlobalAuthError(requestError);
+      } else {
+        setAwardError(requestError);
+      }
+    } finally {
+      setAwardSubmitting(false);
+    }
+  };
+
   const handleGlobalRetry = () => {
     setGlobalAuthError(null);
     setOverviewError(null);
@@ -662,6 +828,221 @@ const AdminDashboard = () => {
                 ) : null}
               </div>
             )}
+          </div>
+        </section>
+        </SectionReveal>
+
+        <SectionReveal delay={0.06} duration={0.42}>
+        <section aria-labelledby="award-points-heading" className="overflow-hidden rounded-card border border-line/80 bg-surface/90 shadow-soft">
+          <div className="border-b border-line/80 bg-dream-soft/30 p-5 sm:p-6">
+            <p className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-technical-text">
+              Leaderboard Points
+            </p>
+            <h2 id="award-points-heading" className="mt-1 font-display text-2xl font-semibold text-ink">
+              Award Student Points
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-ink-muted">
+              Search by registered college email, verify the student, then record a new point transaction.
+            </p>
+          </div>
+
+          <div className="grid gap-5 p-5 sm:p-6 xl:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
+            <div className="space-y-4">
+              <form onSubmit={handleAwardSearch} className="rounded-card border border-line/80 bg-glass/60 p-4 shadow-soft">
+                <label htmlFor="award-student-email" className="block text-sm font-semibold text-ink">
+                  Search Student
+                </label>
+                <div className="mt-2 flex flex-col gap-3 sm:flex-row">
+                  <span className="relative min-w-0 flex-1">
+                    <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-subtle" aria-hidden="true" />
+                    <input
+                      id="award-student-email"
+                      type="email"
+                      value={awardSearchEmail}
+                      onChange={(event) => {
+                        setAwardSearchEmail(event.target.value);
+                        setAwardSearchError(null);
+                      }}
+                      placeholder="Search by college email"
+                      className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 py-2 pl-10 pr-3 text-sm text-ink shadow-soft placeholder:text-ink-subtle focus:border-technical/60 focus:ring-2 focus:ring-technical/20"
+                    />
+                  </span>
+                  <button type="submit" className="btn btn-primary shrink-0" disabled={awardSearchLoading}>
+                    {awardSearchLoading ? (
+                      <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+                    ) : (
+                      <Search className="size-4" aria-hidden="true" />
+                    )}
+                    {awardSearchLoading ? 'Searching...' : 'Search'}
+                  </button>
+                </div>
+              </form>
+
+              {awardSearchError && <InlineFeedback kind="error">{awardSearchError.message}</InlineFeedback>}
+
+              {awardSearchResults.length > 0 && (
+                <div className="rounded-card border border-line/80 bg-surface/80 p-3 shadow-soft">
+                  <p className="px-1 pb-2 font-mono text-xs font-semibold uppercase tracking-[0.14em] text-ink-subtle">
+                    Search Results
+                  </p>
+                  <div className="grid gap-2">
+                    {awardSearchResults.map((student) => (
+                      <button
+                        key={student.id}
+                        type="button"
+                        onClick={() => void handleSelectAwardStudent(student)}
+                        className="rounded-control border border-line/80 bg-glass/60 p-3 text-left transition hover:border-technical/45 hover:bg-technical/10 focus-visible:outline-offset-2"
+                      >
+                        <span className="block font-semibold text-ink">{student.name}</span>
+                        <span className="mt-1 block break-words text-sm text-ink-muted">{student.email}</span>
+                        <span className="mt-2 block font-mono text-xs font-semibold text-ink-subtle">
+                          {student.usn} • {student.branch} • Year {student.year}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {selectedAwardStudent && (
+                <div className="rounded-card border border-technical/25 bg-technical/10 p-4 shadow-soft">
+                  <div className="flex items-start gap-3">
+                    <span className="flex size-10 shrink-0 items-center justify-center rounded-control border border-technical/25 bg-technical/10 text-technical-text">
+                      <Trophy className="size-5" aria-hidden="true" />
+                    </span>
+                    <div className="min-w-0">
+                      <h3 className="font-display text-lg font-semibold text-ink">
+                        {selectedAwardStudent.name}
+                      </h3>
+                      <p className="mt-1 break-words text-sm text-ink-muted">
+                        {selectedAwardStudent.email}
+                      </p>
+                      <p className="mt-2 font-mono text-xs font-semibold text-ink-subtle">
+                        {selectedAwardStudent.usn} • {selectedAwardStudent.branch} • Year {selectedAwardStudent.year}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                    <div className="rounded-card border border-line/80 bg-surface/80 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-subtle">
+                        Current Points
+                      </p>
+                      <p className="mt-1 text-3xl font-semibold tabular-nums text-primary-text">
+                        {selectedAwardStudent.totalPoints}
+                      </p>
+                    </div>
+                    <div className="rounded-card border border-line/80 bg-surface/80 p-4">
+                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-subtle">
+                        Overall Rank
+                      </p>
+                      <p className="mt-1 text-3xl font-semibold tabular-nums text-primary-text">
+                        {selectedAwardStudent.overallRank ? `#${selectedAwardStudent.overallRank}` : 'N/A'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              <form onSubmit={handleOpenAwardConfirm} className="rounded-card border border-line/80 bg-glass/60 p-4 shadow-soft">
+                <div className="grid gap-4 sm:grid-cols-[minmax(0,0.45fr)_minmax(0,1fr)]">
+                  <label>
+                    <span className="mb-2 block text-sm font-semibold text-ink">Points to Award</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={100000}
+                      step={1}
+                      value={awardPoints}
+                      onChange={(event) => {
+                        setAwardPoints(event.target.value);
+                        setAwardError(null);
+                      }}
+                      placeholder="20"
+                      className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft placeholder:text-ink-subtle focus:border-technical/60 focus:ring-2 focus:ring-technical/20"
+                    />
+                  </label>
+
+                  <label>
+                    <span className="mb-2 block text-sm font-semibold text-ink">Reason / Activity</span>
+                    <input
+                      type="text"
+                      value={awardDescription}
+                      onChange={(event) => {
+                        setAwardDescription(event.target.value);
+                        setAwardError(null);
+                      }}
+                      maxLength={240}
+                      placeholder="Participated in HackerEarth workshop"
+                      className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft placeholder:text-ink-subtle focus:border-technical/60 focus:ring-2 focus:ring-technical/20"
+                    />
+                  </label>
+                </div>
+
+                <button
+                  type="submit"
+                  className="btn btn-primary mt-4 w-full justify-center sm:w-fit"
+                  disabled={!selectedAwardStudent || awardSubmitting}
+                >
+                  <PlusCircle className="size-4" aria-hidden="true" />
+                  Award Points
+                </button>
+              </form>
+
+              {(awardError || awardNotice) && (
+                awardError ? (
+                  <InlineFeedback kind="error">{awardError.message}</InlineFeedback>
+                ) : awardNotice ? (
+                  <InlineFeedback kind="success">{awardNotice}</InlineFeedback>
+                ) : null
+              )}
+
+              <div className="rounded-card border border-line/80 bg-surface/80 p-4 shadow-soft">
+                <div className="flex items-center gap-2">
+                  <History className="size-4 text-dream-text" aria-hidden="true" />
+                  <h3 className="font-display text-lg font-semibold text-ink">
+                    Recent Point Activity
+                  </h3>
+                </div>
+
+                {pointHistoryLoading ? (
+                  <div className="mt-4">
+                    <LoadingState label="Loading point activity..." />
+                  </div>
+                ) : selectedAwardStudent ? (
+                  pointHistory.length > 0 ? (
+                    <ul className="mt-4 divide-y divide-line/70">
+                      {pointHistory.map((transaction) => (
+                        <li key={transaction.id} className="flex gap-3 py-3">
+                          <span className="font-mono text-sm font-bold text-success-text">
+                            +{transaction.points}
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-sm font-semibold text-ink">
+                              {transaction.description || 'Point award'}
+                            </span>
+                            <span className="mt-1 block text-xs text-ink-subtle">
+                              {formatShortDate(transaction.createdAt)}
+                              {transaction.awardedBy?.name ? ` • by ${transaction.awardedBy.name}` : ''}
+                            </span>
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="mt-4 text-sm leading-6 text-ink-muted">
+                      No point activity yet.
+                    </p>
+                  )
+                ) : (
+                  <p className="mt-4 text-sm leading-6 text-ink-muted">
+                    Select a student to view recent manual point awards.
+                  </p>
+                )}
+              </div>
+            </div>
           </div>
         </section>
         </SectionReveal>
@@ -894,6 +1275,68 @@ const AdminDashboard = () => {
           </>
         )}
         </div>
+
+        {isAwardConfirmOpen && selectedAwardStudent && (
+          <div className="fixed inset-0 z-[90] flex items-center justify-center bg-canvas/70 p-4 backdrop-blur-md">
+            <section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="award-confirm-heading"
+              className="ui-panel-glass w-full max-w-lg border-dream/30 p-5 shadow-glass sm:p-6"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-dream-text">
+                    Confirm Award
+                  </p>
+                  <h2 id="award-confirm-heading" className="mt-1 font-display text-2xl font-semibold text-ink">
+                    Award {Number(awardPoints)} points to {selectedAwardStudent.name}?
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-icon shrink-0"
+                  onClick={() => setIsAwardConfirmOpen(false)}
+                  disabled={awardSubmitting}
+                  aria-label="Close award confirmation"
+                >
+                  <X className="size-5" aria-hidden="true" />
+                </button>
+              </div>
+
+              <div className="mt-5 rounded-card border border-line/80 bg-surface/80 p-4">
+                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-subtle">
+                  Reason
+                </p>
+                <p className="mt-2 text-sm leading-6 text-ink">
+                  {awardDescription.trim()}
+                </p>
+              </div>
+
+              <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <button
+                  type="button"
+                  className="btn btn-secondary"
+                  onClick={() => setIsAwardConfirmOpen(false)}
+                  disabled={awardSubmitting}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={() => void handleConfirmAward()}
+                  disabled={awardSubmitting}
+                >
+                  {awardSubmitting && (
+                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+                  )}
+                  {awardSubmitting ? 'Awarding...' : 'Confirm Award'}
+                </button>
+              </div>
+            </section>
+          </div>
+        )}
       </main>
     </PageTransition>
   );

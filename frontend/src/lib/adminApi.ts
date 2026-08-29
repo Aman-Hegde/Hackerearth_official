@@ -29,6 +29,30 @@ export interface AdminStudent {
   createdAt: string;
 }
 
+export interface AdminPointStudent {
+  id: string;
+  name: string;
+  email: string;
+  usn: string;
+  branch: string;
+  year: number;
+  totalPoints: number;
+  overallRank: number | null;
+}
+
+export interface AdminPointTransaction {
+  id: string;
+  points: number;
+  source: 'event' | 'weekly_contest' | 'admin_adjustment';
+  description?: string;
+  createdAt: string;
+  awardedBy?: {
+    id: string;
+    name?: string;
+    email?: string;
+  };
+}
+
 export interface StudentPagination {
   page: number;
   limit: number;
@@ -64,6 +88,19 @@ interface StudentStatusResponse {
   success: true;
   message: string;
   student: AdminStudent;
+}
+
+interface AwardStudentPointsResponse {
+  success: true;
+  message: string;
+  transaction: AdminPointTransaction;
+  student: AdminPointStudent;
+}
+
+interface StudentPointHistoryResponse {
+  success: true;
+  student: AdminPointStudent;
+  transactions: AdminPointTransaction[];
 }
 
 interface RegistrationSettingsResponse {
@@ -212,6 +249,34 @@ export const updateAdminStudentStatus = (
       method: 'PATCH',
       credentials: 'include',
       body: JSON.stringify({ isActive }),
+    },
+  );
+
+export const awardStudentPoints = ({
+  studentId,
+  points,
+  description,
+}: {
+  studentId: string;
+  points: number;
+  description: string;
+}) =>
+  apiRequest<AwardStudentPointsResponse>('/api/admin/leaderboard/points', {
+    method: 'POST',
+    credentials: 'include',
+    body: JSON.stringify({ studentId, points, description }),
+  });
+
+export const getAdminStudentPointHistory = (
+  studentId: string,
+  limit = 10,
+  signal?: AbortSignal,
+) =>
+  apiRequest<StudentPointHistoryResponse>(
+    `/api/admin/leaderboard/students/${encodeURIComponent(studentId)}/points?limit=${limit}`,
+    {
+      credentials: 'include',
+      signal,
     },
   );
 
