@@ -1,7 +1,7 @@
 import { Router } from "express";
 import {
-  getStudentDomainGroups,
   getStudentRank,
+  getStudentWeeklyStanding,
   updateStudentProfile,
 } from "../controllers/studentController";
 import { authenticate } from "../middleware/authenticate";
@@ -11,7 +11,7 @@ const router = Router();
 
 router.use(authenticate, authorize("student"));
 
-router.get("/domain-groups", getStudentDomainGroups);
+router.get("/weekly-rank", getStudentWeeklyStanding);
 router.get("/rank", getStudentRank);
 router.patch("/profile", updateStudentProfile);
 

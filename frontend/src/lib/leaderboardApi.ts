@@ -33,6 +33,13 @@ export interface StudentRank {
   totalActiveStudents: number;
 }
 
+export interface StudentWeeklyRank {
+  week: number;
+  weeklyRank: number | null;
+  weeklyPoints: number;
+  totalRankedStudents: number;
+}
+
 interface OverallLeaderboardResponse {
   success: boolean;
   leaderboard: OverallLeaderboardEntry[];
@@ -54,6 +61,11 @@ interface WeeklyContestWeeksResponse {
 interface StudentRankResponse {
   success: boolean;
   rank: StudentRank;
+}
+
+interface StudentWeeklyRankResponse {
+  success: boolean;
+  rank: StudentWeeklyRank;
 }
 
 const buildQueryString = (params: Record<string, string | number | undefined>) => {
@@ -93,3 +105,8 @@ export const getWeeklyContestWeeks = () =>
 
 export const getStudentRank = () =>
   apiRequest<StudentRankResponse>("/api/student/rank");
+
+export const getStudentWeeklyRank = (week: number) =>
+  apiRequest<StudentWeeklyRankResponse>(
+    `/api/student/weekly-rank${buildQueryString({ week })}`
+  );

@@ -5,26 +5,26 @@ import {
   CheckCircle2,
   ExternalLink,
   GraduationCap,
+  Medal,
   Shapes,
+  Trophy,
   UserRound,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import PageTransition from "../components/ui/PageTransition";
 import SectionReveal from "../components/ui/SectionReveal";
 import ResourceCard from "../components/ResourceCard";
-import DomainWhatsAppModal, {
-  domainCommunityDescriptions,
-  WhatsAppIcon,
-} from "../components/student/DomainWhatsAppModal";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { blogPosts } from "../lib/resourcesData";
-import { getStudentRank, type StudentRank } from "../lib/leaderboardApi";
 import {
-  getStudentDomainGroups,
-  type DomainCommunity,
-} from "../lib/studentApi";
+  getStudentRank,
+  getStudentWeeklyRank,
+  getWeeklyContestWeeks,
+  type StudentRank,
+  type StudentWeeklyRank,
+} from "../lib/leaderboardApi";
 import {
   getEnrolledResourceCategories,
   studentResourceSearch,
@@ -49,108 +49,17 @@ const domainCardStyles = [
   },
 ] as const;
 
-const hasDismissedCommunityModal = (key: string) => {
-  try {
-    return sessionStorage.getItem(key) === "dismissed";
-  } catch {
-    return true;
-  }
-};
-
-const markCommunityModalDismissed = (key: string) => {
-  try {
-    sessionStorage.setItem(key, "dismissed");
-  } catch {
-    // If sessionStorage is unavailable, the in-memory open state still closes the modal.
-  }
-};
-
 const StudentDashboard = () => {
   const { user } = useAuth();
   const { isDark } = useTheme();
-  const [domainGroups, setDomainGroups] = useState<DomainCommunity[]>([]);
-  const [isLoadingDomainGroups, setIsLoadingDomainGroups] = useState(true);
-  const [domainGroupsError, setDomainGroupsError] = useState("");
-  const [isCommunityModalOpen, setIsCommunityModalOpen] = useState(false);
   const [studentRank, setStudentRank] = useState<StudentRank | null>(null);
   const [studentRankError, setStudentRankError] = useState("");
-  const enrolledDomainKey = user?.enrolledDomains.join("|") ?? "";
-  const communityModalSessionKey = user
-    ? `hackerearth-hub:student-community-popup:${user.id}`
-    : "";
-
-  const dismissCommunityModal = useCallback(() => {
-    if (communityModalSessionKey) {
-      markCommunityModalDismissed(communityModalSessionKey);
-    }
-    setIsCommunityModalOpen(false);
-  }, [communityModalSessionKey]);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadDomainGroups = async () => {
-      if (!user) {
-        if (isMounted) {
-          setDomainGroups([]);
-          setIsLoadingDomainGroups(false);
-        }
-        return;
-      }
-
-      try {
-        setIsLoadingDomainGroups(true);
-        setDomainGroupsError("");
-        const data = await getStudentDomainGroups();
-
-        if (isMounted) {
-          setDomainGroups(data.groups);
-        }
-      } catch {
-        if (isMounted) {
-          setDomainGroups([]);
-          setDomainGroupsError(
-            "Domain communities could not be loaded right now."
-          );
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoadingDomainGroups(false);
-        }
-      }
-    };
-
-    void loadDomainGroups();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [enrolledDomainKey, user?.id]);
-
-  useEffect(() => {
-    if (
-      !user ||
-      user.role !== "student" ||
-      isLoadingDomainGroups ||
-      domainGroupsError ||
-      domainGroups.length === 0 ||
-      !communityModalSessionKey
-    ) {
-      return;
-    }
-
-    if (hasDismissedCommunityModal(communityModalSessionKey)) {
-      return;
-    }
-
-    setIsCommunityModalOpen(true);
-  }, [
-    communityModalSessionKey,
-    domainGroups.length,
-    domainGroupsError,
-    isLoadingDomainGroups,
-    user?.role,
-  ]);
+  const [availableWeeks, setAvailableWeeks] = useState<number[]>([]);
+  const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
+  const [weeklyRank, setWeeklyRank] = useState<StudentWeeklyRank | null>(null);
+  const [weeklyRankError, setWeeklyRankError] = useState("");
+  const [isLoadingWeeks, setIsLoadingWeeks] = useState(true);
+  const [isLoadingWeeklyRank, setIsLoadingWeeklyRank] = useState(false);
 
   useEffect(() => {
     if (!user) return;
@@ -179,6 +88,82 @@ const StudentDashboard = () => {
       isMounted = false;
     };
   }, [user?.id]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    let isMounted = true;
+
+    const loadWeeklyContestWeeks = async () => {
+      try {
+        setIsLoadingWeeks(true);
+        const data = await getWeeklyContestWeeks();
+
+        if (isMounted) {
+          const weeks = data.weeks;
+          const latestWeek = weeks.length > 0 ? weeks[weeks.length - 1] : null;
+          setAvailableWeeks(weeks);
+          setSelectedWeek((currentWeek) =>
+            currentWeek && weeks.includes(currentWeek) ? currentWeek : latestWeek
+          );
+          setWeeklyRankError("");
+        }
+      } catch {
+        if (isMounted) {
+          setAvailableWeeks([]);
+          setSelectedWeek(null);
+          setWeeklyRank(null);
+          setWeeklyRankError("Weekly rankings could not be loaded right now.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingWeeks(false);
+        }
+      }
+    };
+
+    void loadWeeklyContestWeeks();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user || selectedWeek === null) {
+      setWeeklyRank(null);
+      return;
+    }
+
+    let isMounted = true;
+
+    const loadWeeklyRank = async () => {
+      try {
+        setIsLoadingWeeklyRank(true);
+        setWeeklyRankError("");
+        const data = await getStudentWeeklyRank(selectedWeek);
+
+        if (isMounted) {
+          setWeeklyRank(data.rank);
+        }
+      } catch {
+        if (isMounted) {
+          setWeeklyRank(null);
+          setWeeklyRankError("Your weekly standing could not be loaded right now.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingWeeklyRank(false);
+        }
+      }
+    };
+
+    void loadWeeklyRank();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedWeek, user?.id]);
 
   if (!user) return null;
 
@@ -275,38 +260,6 @@ const StudentDashboard = () => {
                         </div>
                       </dl>
 
-                      <div className="mt-5 rounded-card border border-technical/25 bg-technical/10 p-4">
-                        <p className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-technical-text">
-                          Your Standing
-                        </p>
-                        {studentRank ? (
-                          <div className="mt-3 grid grid-cols-2 gap-3">
-                            <div>
-                              <p className="text-xs text-ink-subtle">Overall Rank</p>
-                              <p className="mt-1 text-2xl font-bold tabular-nums text-primary-text">
-                                #{studentRank.overallRank}
-                              </p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-ink-subtle">Total Points</p>
-                              <p className="mt-1 text-2xl font-bold tabular-nums text-ink">
-                                {studentRank.totalPoints}
-                              </p>
-                            </div>
-                          </div>
-                        ) : (
-                          <p className="mt-3 text-sm leading-6 text-ink-muted">
-                            {studentRankError || "Loading your standing..."}
-                          </p>
-                        )}
-                        <Link
-                          to="/leaderboard"
-                          className="btn btn-secondary mt-4 w-full justify-center"
-                        >
-                          View Leaderboard
-                          <ArrowRight className="size-4" aria-hidden="true" />
-                        </Link>
-                      </div>
                     </aside>
                   </div>
                 </div>
@@ -315,101 +268,168 @@ const StudentDashboard = () => {
 
             <SectionReveal delay={0.05}>
               <section
-                id="student-domain-communities"
-                aria-labelledby="domain-communities-heading"
+                id="student-standing"
+                aria-labelledby="student-standing-heading"
                 className="ui-panel-glass scroll-mt-28 p-5 sm:p-6 lg:p-8"
               >
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                   <div>
-                    <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-technical-text">
-                      Stay connected
+                    <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-primary-text">
+                      Your standing
                     </p>
                     <h2
-                      id="domain-communities-heading"
+                      id="student-standing-heading"
                       className="mt-1 font-display text-2xl font-semibold text-ink sm:text-3xl"
                     >
-                      Your Domain Communities
+                      Overall & Weekly Rankings
                     </h2>
                     <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-muted">
-                      Join the official discussion spaces for the domains linked to your account.
+                      Track your overall club points and weekly contest performance from one place.
                     </p>
                   </div>
+                  <Link
+                    to="/leaderboard"
+                    className="btn btn-secondary w-full justify-center sm:w-fit"
+                  >
+                    View Full Leaderboard
+                    <ArrowRight className="size-4" aria-hidden="true" />
+                  </Link>
                 </div>
 
-                {isLoadingDomainGroups ? (
-                  <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                    {[0, 1, 2].map((item) => (
-                      <div
-                        key={item}
-                        className="ui-card-glass min-h-48 animate-pulse border-technical/15 p-5 motion-reduce:animate-none"
-                        aria-hidden="true"
-                      >
-                        <div className="size-11 rounded-control bg-surface-muted" />
-                        <div className="mt-5 h-5 w-2/3 rounded-full bg-surface-muted" />
-                        <div className="mt-4 space-y-2">
-                          <div className="h-3 rounded-full bg-surface-muted" />
-                          <div className="h-3 w-5/6 rounded-full bg-surface-muted" />
-                        </div>
-                        <div className="mt-5 h-11 w-32 rounded-full bg-surface-muted" />
-                      </div>
-                    ))}
-                  </div>
-                ) : domainGroupsError ? (
-                  <div className="mt-6 flex items-start gap-3 rounded-card border border-rose/25 bg-rose/10 p-5 text-sm text-ink-muted">
-                    <ExternalLink
-                      className="mt-0.5 size-5 shrink-0 text-rose-text"
+                <div className="mt-6 grid gap-5 lg:grid-cols-2">
+                  <article className="ui-card-glass relative min-h-72 overflow-hidden border-primary/25 p-5 sm:p-6">
+                    <span
                       aria-hidden="true"
+                      className="pointer-events-none absolute -right-16 -top-20 size-44 rounded-full bg-primary/15"
                     />
-                    <p>{domainGroupsError}</p>
-                  </div>
-                ) : domainGroups.length > 0 ? (
-                  <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                    {domainGroups.map((group, index) => {
-                      const accent = domainCardStyles[index % domainCardStyles.length];
+                    <div className="relative flex items-start justify-between gap-4">
+                      <div>
+                        <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-primary-text">
+                          Overall Ranking
+                        </p>
+                        <h3 className="mt-2 font-display text-xl font-semibold text-ink">
+                          Club leaderboard
+                        </h3>
+                      </div>
+                      <span className="flex size-12 shrink-0 items-center justify-center rounded-control border border-primary/25 bg-primary/10 text-primary-text">
+                        <Trophy className="size-6" aria-hidden="true" />
+                      </span>
+                    </div>
 
-                      return (
-                        <article
-                          key={group.domain}
-                          className={`ui-card-glass group relative flex min-h-56 flex-col overflow-hidden p-5 transition duration-300 ease-out-expo hover:-translate-y-1 hover:shadow-glow motion-reduce:transform-none motion-reduce:transition-none ${accent.card}`}
-                        >
-                          <span
-                            aria-hidden="true"
-                            className={`pointer-events-none absolute -right-10 -top-12 size-28 rounded-full opacity-30 ${accent.glow}`}
-                          />
-                          <div className="relative flex items-start gap-4">
-                            <span
-                              className={`flex size-11 shrink-0 items-center justify-center rounded-control border ${accent.icon}`}
+                    {studentRank ? (
+                      <div className="relative mt-8 grid gap-5 sm:grid-cols-2">
+                        <div>
+                          <p className="text-sm font-medium text-ink-muted">Overall Rank</p>
+                          <p className="mt-2 font-display text-5xl font-bold tabular-nums text-primary-text">
+                            #{studentRank.overallRank}
+                          </p>
+                          <p className="mt-3 text-sm text-ink-subtle">
+                            Out of {studentRank.totalActiveStudents} students
+                          </p>
+                        </div>
+                        <div className="rounded-card border border-line/80 bg-surface/80 p-4">
+                          <p className="text-sm font-medium text-ink-muted">Overall Total Points</p>
+                          <p className="mt-2 font-display text-4xl font-bold tabular-nums text-ink">
+                            {studentRank.totalPoints}
+                          </p>
+                          <p className="mt-2 text-sm text-ink-subtle">Cumulative club score</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="relative mt-8 rounded-card border border-line/80 bg-surface/75 p-5 text-sm text-ink-muted">
+                        {studentRankError || "Loading your overall standing..."}
+                      </div>
+                    )}
+                  </article>
+
+                  <article className="ui-card-glass relative min-h-72 overflow-hidden border-dream/25 p-5 sm:p-6">
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute -left-20 -top-20 size-44 rounded-full bg-dream/15"
+                    />
+                    <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-dream-text">
+                          Weekly Ranking
+                        </p>
+                        <h3 className="mt-2 font-display text-xl font-semibold text-ink">
+                          Contest performance
+                        </h3>
+                      </div>
+                      <span className="flex size-12 shrink-0 items-center justify-center rounded-control border border-dream/25 bg-dream/10 text-dream-text">
+                        <Medal className="size-6" aria-hidden="true" />
+                      </span>
+                    </div>
+
+                    {isLoadingWeeks ? (
+                      <div
+                        className="relative mt-6 h-11 w-40 animate-pulse rounded-full bg-surface-muted motion-reduce:animate-none"
+                        aria-hidden="true"
+                      />
+                    ) : availableWeeks.length > 0 ? (
+                      <div className="relative mt-6 flex flex-wrap gap-2" aria-label="Select weekly contest week">
+                        {availableWeeks.map((week) => {
+                          const isSelected = selectedWeek === week;
+
+                          return (
+                            <button
+                              key={week}
+                              type="button"
+                              onClick={() => setSelectedWeek(week)}
+                              className={`rounded-full border px-4 py-2 text-sm font-semibold transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dream focus-visible:ring-offset-2 focus-visible:ring-offset-base motion-reduce:transition-none ${isSelected
+                                  ? "border-dream/50 bg-dream/15 text-dream-text shadow-glow"
+                                  : "border-line bg-surface/80 text-ink-muted hover:border-dream/35 hover:text-ink"
+                                }`}
+                              aria-pressed={isSelected}
                             >
-                              <WhatsAppIcon className="size-5" />
-                            </span>
-                            <div className="min-w-0">
-                              <p className="font-display text-lg font-semibold text-ink">
-                                {group.domain} Community
+                              Week {week}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="relative mt-6 rounded-card border border-line/80 bg-surface/75 p-5 text-sm text-ink-muted">
+                        No weekly contest rankings available yet.
+                      </div>
+                    )}
+
+                    {availableWeeks.length > 0 && (
+                      <div className="relative mt-7">
+                        {isLoadingWeeklyRank ? (
+                          <div className="grid gap-4 sm:grid-cols-2" aria-hidden="true">
+                            <div className="h-28 animate-pulse rounded-card bg-surface-muted motion-reduce:animate-none" />
+                            <div className="h-28 animate-pulse rounded-card bg-surface-muted motion-reduce:animate-none" />
+                          </div>
+                        ) : weeklyRankError ? (
+                          <div className="rounded-card border border-rose/25 bg-rose/10 p-5 text-sm text-ink-muted">
+                            {weeklyRankError}
+                          </div>
+                        ) : weeklyRank ? (
+                          <div className="grid gap-5 sm:grid-cols-2">
+                            <div>
+                              <p className="text-sm font-medium text-ink-muted">Weekly Rank</p>
+                              <p className="mt-2 font-display text-5xl font-bold tabular-nums text-dream-text">
+                                {weeklyRank.weeklyRank ? `#${weeklyRank.weeklyRank}` : "Not ranked"}
                               </p>
-                              <p className="mt-2 text-sm leading-6 text-ink-muted">
-                                {domainCommunityDescriptions[group.domain]}
+                              <p className="mt-3 text-sm text-ink-subtle">
+                                {weeklyRank.totalRankedStudents > 0
+                                  ? `Out of ${weeklyRank.totalRankedStudents} ranked students`
+                                  : "No ranked students for this week yet"}
                               </p>
                             </div>
+                            <div className="rounded-card border border-line/80 bg-surface/80 p-4">
+                              <p className="text-sm font-medium text-ink-muted">Weekly Points</p>
+                              <p className="mt-2 font-display text-4xl font-bold tabular-nums text-ink">
+                                {weeklyRank.weeklyPoints}
+                              </p>
+                              <p className="mt-2 text-sm text-ink-subtle">Week {weeklyRank.week} contest score</p>
+                            </div>
                           </div>
-                          <a
-                            href={group.joinUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn btn-secondary relative mt-5 w-full justify-center sm:w-fit"
-                          >
-                            Join Now
-                            <ExternalLink className="size-4" aria-hidden="true" />
-                          </a>
-                        </article>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="mt-6 flex items-start gap-3 rounded-card border border-line/80 bg-surface/75 p-5 text-sm text-ink-muted">
-                    <WhatsAppIcon className="mt-0.5 size-5 shrink-0 text-technical-text" />
-                    <p>No domain communities are available for your account yet.</p>
-                  </div>
-                )}
+                        ) : null}
+                      </div>
+                    )}
+                  </article>
+                </div>
               </section>
             </SectionReveal>
 
@@ -560,11 +580,6 @@ const StudentDashboard = () => {
             </SectionReveal>
           </div>
         </div>
-        <DomainWhatsAppModal
-          isOpen={isCommunityModalOpen}
-          groups={domainGroups}
-          onClose={dismissCommunityModal}
-        />
       </main>
     </PageTransition>
   );

@@ -45,6 +45,13 @@ export interface StudentRank {
   totalActiveStudents: number;
 }
 
+export interface StudentWeeklyRank {
+  week: number;
+  weeklyRank: number | null;
+  weeklyPoints: number;
+  totalRankedStudents: number;
+}
+
 interface OverallAggregationResult {
   _id: Types.ObjectId;
   name: string;
@@ -71,6 +78,11 @@ interface FacetResult<TEntry> {
 interface StudentRankAggregationResult {
   _id: Types.ObjectId;
   totalPoints: number;
+}
+
+interface StudentWeeklyRankAggregationResult {
+  studentId: Types.ObjectId;
+  points: number;
 }
 
 const parsePositiveInteger = (
@@ -343,5 +355,69 @@ export const getStudentOverallRank = async (
     overallRank: studentIndex + 1,
     totalPoints: studentRank.totalPoints,
     totalActiveStudents,
+  };
+};
+
+export const getStudentWeeklyRank = async (
+  studentId: string,
+  week: number
+): Promise<StudentWeeklyRank | null> => {
+  if (!Types.ObjectId.isValid(studentId) || !Number.isInteger(week) || week < 1) {
+    return null;
+  }
+
+  const objectId = new Types.ObjectId(studentId);
+
+  const rankedStudents = await PointTransaction.aggregate<StudentWeeklyRankAggregationResult>([
+    { $match: { source: "weekly_contest", weekNumber: week } },
+    { $group: { _id: "$studentId", points: { $sum: "$points" } } },
+    {
+      $lookup: {
+        from: "users",
+        localField: "_id",
+        foreignField: "_id",
+        as: "student",
+      },
+    },
+    { $unwind: "$student" },
+    { $match: { "student.role": "student", "student.isActive": true } },
+    { $sort: { points: -1, "student.name": 1, "student.usn": 1, _id: 1 } },
+    { $project: { studentId: "$_id", points: 1 } },
+  ]).exec();
+
+  const studentIndex = rankedStudents.findIndex(
+    (student) => student.studentId.toString() === objectId.toString()
+  );
+
+  if (studentIndex === -1) {
+    const activeStudentExists = await User.exists({
+      _id: objectId,
+      role: "student",
+      isActive: true,
+    }).exec();
+
+    if (!activeStudentExists) {
+      return null;
+    }
+
+    return {
+      week,
+      weeklyRank: null,
+      weeklyPoints: 0,
+      totalRankedStudents: rankedStudents.length,
+    };
+  }
+
+  const studentRank = rankedStudents[studentIndex];
+
+  if (!studentRank) {
+    return null;
+  }
+
+  return {
+    week,
+    weeklyRank: studentIndex + 1,
+    weeklyPoints: studentRank.points,
+    totalRankedStudents: rankedStudents.length,
   };
 };
