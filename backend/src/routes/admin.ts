@@ -12,12 +12,22 @@ import {
 } from "../controllers/adminController";
 import { authenticate } from "../middleware/authenticate";
 import { authorize } from "../middleware/authorize";
+import {
+  createAdminEvent,
+  getAdminEvent,
+  getAdminEvents,
+  updateAdminEvent,
+} from "../controllers/eventController";
 
 const router = Router();
 
 router.use(authenticate, authorize("admin"));
 
 router.get("/overview", getAdminOverview);
+router.post("/events", createAdminEvent);
+router.get("/events", getAdminEvents);
+router.get("/events/:eventId", getAdminEvent);
+router.patch("/events/:eventId", updateAdminEvent);
 router.get("/students", getStudents);
 router.get("/students/export", exportStudents);
 router.post("/leaderboard/points", awardStudentPoints);

@@ -17,7 +17,9 @@ import {
   FileSpreadsheet,
   GitBranch,
   History,
+  Image,
   Loader2,
+  Pencil,
   PlusCircle,
   RefreshCw,
   Search,
@@ -31,6 +33,13 @@ import {
 import PageTransition from '../components/ui/PageTransition';
 import SectionReveal from '../components/ui/SectionReveal';
 import { ApiError } from '../lib/api';
+import {
+  createAdminEvent,
+  getAdminEvents,
+  updateAdminEvent,
+  type EventInput,
+  type EventSummary,
+} from '../lib/eventApi';
 import { registrationBranchOptions } from '../lib/registrationBranches';
 import {
   awardStudentPoints,
@@ -52,10 +61,23 @@ import {
 const PAGE_LIMIT = 25;
 const OPEN_REGISTRATION_MESSAGE = 'Student registration is currently open.';
 const CLOSED_REGISTRATION_MESSAGE = 'Student registration is currently closed.';
+const emptyEventForm = {
+  title: '',
+  posterUrl: '',
+  description: '',
+  venue: '',
+  eventDate: '',
+  eventTime: '',
+  deadlineDate: '',
+  deadlineTime: '',
+  maxRegistrations: '',
+  active: true,
+};
 
 type StatusFilter = '' | 'active' | 'inactive';
 type DomainFilter = '' | 'Web Development' | 'DSA' | 'Aptitude';
 type AdminErrorKind = 'unauthorized' | 'forbidden' | 'network' | 'server' | 'api';
+type EventFormState = typeof emptyEventForm;
 
 interface AdminRequestError {
   kind: AdminErrorKind;
@@ -161,6 +183,68 @@ const formatDateTime = (value?: string | null) => {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(date);
+};
+
+const toDateInputValue = (value?: string | null) => {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toISOString().slice(0, 10);
+};
+
+const toTimeInputValue = (value?: string | null) => {
+  if (!value) return '';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  return date.toTimeString().slice(0, 5);
+};
+
+const getEventStatusLabel = (event: EventSummary) => {
+  if (event.status === 'open') return 'OPEN';
+  if (event.status === 'full') return 'FULL';
+  if (event.status === 'past') return 'PAST';
+  return 'CLOSED';
+};
+
+const getEventStatusClasses = (event: EventSummary) => {
+  if (event.status === 'open') return 'border-dream/35 bg-dream/10 text-dream-text';
+  if (event.status === 'full') return 'border-technical/35 bg-technical/10 text-technical-text';
+  if (event.status === 'past') return 'border-line bg-surface-muted text-ink-muted';
+  return 'border-rose/35 bg-rose/10 text-rose-text';
+};
+
+const buildEventPayload = (form: EventFormState): EventInput | null => {
+  const eventDateTime = new Date(`${form.eventDate}T${form.eventTime}`);
+  const registrationDeadline = new Date(`${form.deadlineDate}T${form.deadlineTime}`);
+  const maxRegistrations = Number(form.maxRegistrations);
+
+  if (
+    !form.title.trim() ||
+    !form.posterUrl.trim() ||
+    !form.description.trim() ||
+    !form.venue.trim() ||
+    !form.eventDate ||
+    !form.eventTime ||
+    !form.deadlineDate ||
+    !form.deadlineTime ||
+    Number.isNaN(eventDateTime.getTime()) ||
+    Number.isNaN(registrationDeadline.getTime()) ||
+    !Number.isInteger(maxRegistrations) ||
+    maxRegistrations < 1
+  ) {
+    return null;
+  }
+
+  return {
+    title: form.title.trim(),
+    posterUrl: form.posterUrl.trim(),
+    description: form.description.trim(),
+    venue: form.venue.trim(),
+    eventDateTime: eventDateTime.toISOString(),
+    registrationDeadline: registrationDeadline.toISOString(),
+    maxRegistrations,
+    active: form.active,
+  };
 };
 
 const formatShortDate = (value?: string | null) => {
@@ -279,6 +363,16 @@ const AdminDashboard = () => {
   const [awardSubmitting, setAwardSubmitting] = useState(false);
   const [isAwardConfirmOpen, setIsAwardConfirmOpen] = useState(false);
 
+  const [events, setEvents] = useState<EventSummary[]>([]);
+  const [eventsLoading, setEventsLoading] = useState(true);
+  const [eventsError, setEventsError] = useState<AdminRequestError | null>(null);
+  const [eventsNotice, setEventsNotice] = useState<string | null>(null);
+  const [eventForm, setEventForm] = useState<EventFormState>(emptyEventForm);
+  const [eventFormError, setEventFormError] = useState<AdminRequestError | null>(null);
+  const [eventSubmitting, setEventSubmitting] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<EventSummary | null>(null);
+  const [isEventModalOpen, setIsEventModalOpen] = useState(false);
+
   const [search, setSearch] = useState('');
   const [branch, setBranch] = useState('');
   const [year, setYear] = useState('');
@@ -331,12 +425,34 @@ const AdminDashboard = () => {
     }
   }, []);
 
+  const loadEvents = useCallback(async (signal?: AbortSignal) => {
+    setEventsLoading(true);
+    setEventsError(null);
+
+    try {
+      const response = await getAdminEvents(signal);
+      setEvents(response.events);
+    } catch (error) {
+      if (!isAbortError(error)) {
+        const requestError = classifyAdminError(error, 'Unable to load events.');
+        if (isGlobalAuthorizationError(requestError)) {
+          setGlobalAuthError((current) => current ?? requestError);
+        } else {
+          setEventsError(requestError);
+        }
+      }
+    } finally {
+      if (!signal?.aborted) setEventsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     const controller = new AbortController();
     void loadOverview(controller.signal);
     void loadRegistration(controller.signal);
+    void loadEvents(controller.signal);
     return () => controller.abort();
-  }, [loadOverview, loadRegistration]);
+  }, [loadEvents, loadOverview, loadRegistration]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -626,13 +742,109 @@ const AdminDashboard = () => {
     }
   };
 
+  const openCreateEventModal = () => {
+    setEditingEvent(null);
+    setEventForm(emptyEventForm);
+    setEventFormError(null);
+    setIsEventModalOpen(true);
+  };
+
+  const openEditEventModal = (event: EventSummary) => {
+    setEditingEvent(event);
+    setEventForm({
+      title: event.title,
+      posterUrl: event.posterUrl,
+      description: event.description,
+      venue: event.venue,
+      eventDate: toDateInputValue(event.eventDateTime),
+      eventTime: toTimeInputValue(event.eventDateTime),
+      deadlineDate: toDateInputValue(event.registrationDeadline),
+      deadlineTime: toTimeInputValue(event.registrationDeadline),
+      maxRegistrations: String(event.maxRegistrations),
+      active: event.active,
+    });
+    setEventFormError(null);
+    setIsEventModalOpen(true);
+  };
+
+  const closeEventModal = () => {
+    if (eventSubmitting) return;
+    setIsEventModalOpen(false);
+    setEditingEvent(null);
+    setEventForm(emptyEventForm);
+    setEventFormError(null);
+  };
+
+  const handleEventFormChange = (
+    field: keyof EventFormState,
+    value: string | boolean
+  ) => {
+    setEventForm((current) => ({ ...current, [field]: value }));
+    setEventFormError(null);
+  };
+
+  const handleEventSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const payload = buildEventPayload(eventForm);
+
+    if (!payload) {
+      setEventFormError({
+        kind: 'api',
+        message: 'Fill all event fields with valid values.',
+      });
+      return;
+    }
+
+    if (new Date(payload.registrationDeadline) >= new Date(payload.eventDateTime)) {
+      setEventFormError({
+        kind: 'api',
+        message: 'Registration deadline must be before the event date and time.',
+      });
+      return;
+    }
+
+    setEventSubmitting(true);
+    setEventFormError(null);
+    setEventsNotice(null);
+    setEventsError(null);
+
+    try {
+      const response = editingEvent
+        ? await updateAdminEvent(editingEvent.id, payload)
+        : await createAdminEvent(payload);
+
+      setEvents((current) => {
+        if (editingEvent) {
+          return current.map((item) => item.id === response.event.id ? response.event : item);
+        }
+
+        return [response.event, ...current];
+      });
+      setEventsNotice(response.message ?? (editingEvent ? 'Event updated successfully.' : 'Event created successfully.'));
+      setIsEventModalOpen(false);
+      setEditingEvent(null);
+      setEventForm(emptyEventForm);
+    } catch (error) {
+      const requestError = classifyAdminError(error, editingEvent ? 'Unable to update event.' : 'Unable to create event.');
+      if (isGlobalAuthorizationError(requestError)) {
+        setGlobalAuthError(requestError);
+      } else {
+        setEventFormError(requestError);
+      }
+    } finally {
+      setEventSubmitting(false);
+    }
+  };
+
   const handleGlobalRetry = () => {
     setGlobalAuthError(null);
     setOverviewError(null);
     setRegistrationError(null);
     setStudentsError(null);
+    setEventsError(null);
     void loadOverview();
     void loadRegistration();
+    void loadEvents();
     setStudentRefreshToken((current) => current + 1);
   };
 
@@ -833,6 +1045,110 @@ const AdminDashboard = () => {
         </SectionReveal>
 
         <SectionReveal delay={0.06} duration={0.42}>
+        <section aria-labelledby="events-management-heading" className="overflow-hidden rounded-card border border-line/80 bg-surface/90 shadow-soft">
+          <div className="border-b border-line/80 bg-dream-soft/30 p-5 sm:p-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-primary-text">
+                  Events &amp; Tracks
+                </p>
+                <h2 id="events-management-heading" className="mt-1 font-display text-2xl font-semibold text-ink">
+                  Manage Events
+                </h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-ink-muted">
+                  Create workshops, manage event registration windows, and monitor live capacity.
+                </p>
+              </div>
+              <button type="button" onClick={openCreateEventModal} className="btn btn-primary w-full justify-center sm:w-fit">
+                <PlusCircle className="size-4" aria-hidden="true" />
+                Add Event
+              </button>
+            </div>
+          </div>
+
+          <div className="p-5 sm:p-6">
+            {(eventsError || eventsNotice) && (
+              <div className="mb-5">
+                {eventsError ? (
+                  <InlineFeedback kind="error">{eventsError.message}</InlineFeedback>
+                ) : eventsNotice ? (
+                  <InlineFeedback kind="success">{eventsNotice}</InlineFeedback>
+                ) : null}
+              </div>
+            )}
+
+            {eventsLoading && events.length === 0 ? (
+              <LoadingState label="Loading events..." />
+            ) : eventsError && events.length === 0 ? (
+              <button type="button" onClick={() => void loadEvents()} className="btn btn-secondary">
+                <RefreshCw className="size-4" aria-hidden="true" />
+                Retry events
+              </button>
+            ) : events.length === 0 ? (
+              <div className="rounded-card border border-line/80 bg-surface/80 p-8 text-center text-sm text-ink-muted">
+                No events have been created yet.
+              </div>
+            ) : (
+              <div className="grid gap-4 xl:grid-cols-2">
+                {events.map((event) => (
+                  <article key={event.id} className="rounded-card border border-line/80 bg-glass/60 p-4 shadow-soft">
+                    <div className="grid gap-4 sm:grid-cols-[8rem_minmax(0,1fr)]">
+                      <div className="aspect-[16/10] overflow-hidden rounded-control border border-line bg-surface-muted">
+                        <img
+                          src={event.posterUrl}
+                          alt={`${event.title} poster`}
+                          className="size-full object-cover"
+                          loading="lazy"
+                          onError={(imageEvent) => {
+                            imageEvent.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <h3 className="break-words font-display text-lg font-semibold text-ink">
+                              {event.title}
+                            </h3>
+                            <p className="mt-1 text-sm text-ink-muted">{formatDateTime(event.eventDateTime)}</p>
+                          </div>
+                          <span className={`inline-flex min-h-8 items-center rounded-full border px-3 font-mono text-xs font-bold ${getEventStatusClasses(event)}`}>
+                            {getEventStatusLabel(event)}
+                          </span>
+                        </div>
+
+                        <dl className="mt-4 grid gap-3 text-sm text-ink-muted sm:grid-cols-2">
+                          <div>
+                            <dt className="font-semibold text-ink">Venue</dt>
+                            <dd>{event.venue}</dd>
+                          </div>
+                          <div>
+                            <dt className="font-semibold text-ink">Registrations</dt>
+                            <dd>{event.registrationCount} / {event.maxRegistrations}</dd>
+                          </div>
+                          <div className="sm:col-span-2">
+                            <dt className="font-semibold text-ink">Deadline</dt>
+                            <dd>{formatDateTime(event.registrationDeadline)}</dd>
+                          </div>
+                        </dl>
+
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          <button type="button" onClick={() => openEditEventModal(event)} className="btn btn-secondary rounded-full">
+                            <Pencil className="size-4" aria-hidden="true" />
+                            Edit
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+        </SectionReveal>
+
+        <SectionReveal delay={0.07} duration={0.42}>
         <section aria-labelledby="award-points-heading" className="overflow-hidden rounded-card border border-line/80 bg-surface/90 shadow-soft">
           <div className="border-b border-line/80 bg-dream-soft/30 p-5 sm:p-6">
             <p className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-technical-text">
@@ -1275,6 +1591,177 @@ const AdminDashboard = () => {
           </>
         )}
         </div>
+
+        {isEventModalOpen && (
+          <div className="fixed inset-0 z-[90] flex items-center justify-center overflow-y-auto bg-canvas/70 p-4 backdrop-blur-md">
+            <section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="event-modal-heading"
+              className="ui-panel-glass my-8 w-full max-w-3xl border-primary/30 p-5 shadow-glass sm:p-6"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-primary-text">
+                    {editingEvent ? 'Edit Event' : 'Add Event'}
+                  </p>
+                  <h2 id="event-modal-heading" className="mt-1 font-display text-2xl font-semibold text-ink">
+                    {editingEvent ? 'Update event details' : 'Create a new event'}
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-icon shrink-0"
+                  onClick={closeEventModal}
+                  disabled={eventSubmitting}
+                  aria-label="Close event form"
+                >
+                  <X className="size-5" aria-hidden="true" />
+                </button>
+              </div>
+
+              <form onSubmit={handleEventSubmit} className="mt-6 space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="sm:col-span-2">
+                    <span className="mb-2 block text-sm font-semibold text-ink">Event Title</span>
+                    <input
+                      type="text"
+                      value={eventForm.title}
+                      onChange={(event) => handleEventFormChange('title', event.target.value)}
+                      maxLength={120}
+                      className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft placeholder:text-ink-subtle focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
+                      required
+                    />
+                  </label>
+
+                  <label className="sm:col-span-2">
+                    <span className="mb-2 block text-sm font-semibold text-ink">Poster Image URL</span>
+                    <span className="relative block">
+                      <Image className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-subtle" aria-hidden="true" />
+                      <input
+                        type="url"
+                        value={eventForm.posterUrl}
+                        onChange={(event) => handleEventFormChange('posterUrl', event.target.value)}
+                        placeholder="https://..."
+                        maxLength={1000}
+                        className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 py-2 pl-10 pr-3 text-sm text-ink shadow-soft placeholder:text-ink-subtle focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
+                        required
+                      />
+                    </span>
+                  </label>
+
+                  <label className="sm:col-span-2">
+                    <span className="mb-2 block text-sm font-semibold text-ink">Description</span>
+                    <textarea
+                      value={eventForm.description}
+                      onChange={(event) => handleEventFormChange('description', event.target.value)}
+                      rows={4}
+                      maxLength={2000}
+                      className="w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft placeholder:text-ink-subtle focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
+                      required
+                    />
+                  </label>
+
+                  <label>
+                    <span className="mb-2 block text-sm font-semibold text-ink">Venue</span>
+                    <input
+                      type="text"
+                      value={eventForm.venue}
+                      onChange={(event) => handleEventFormChange('venue', event.target.value)}
+                      maxLength={160}
+                      className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft placeholder:text-ink-subtle focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
+                      required
+                    />
+                  </label>
+
+                  <label>
+                    <span className="mb-2 block text-sm font-semibold text-ink">Maximum Registrations</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={10000}
+                      step={1}
+                      value={eventForm.maxRegistrations}
+                      onChange={(event) => handleEventFormChange('maxRegistrations', event.target.value)}
+                      className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft placeholder:text-ink-subtle focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
+                      required
+                    />
+                  </label>
+
+                  <label>
+                    <span className="mb-2 block text-sm font-semibold text-ink">Event Date</span>
+                    <input
+                      type="date"
+                      value={eventForm.eventDate}
+                      onChange={(event) => handleEventFormChange('eventDate', event.target.value)}
+                      className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
+                      required
+                    />
+                  </label>
+
+                  <label>
+                    <span className="mb-2 block text-sm font-semibold text-ink">Event Time</span>
+                    <input
+                      type="time"
+                      value={eventForm.eventTime}
+                      onChange={(event) => handleEventFormChange('eventTime', event.target.value)}
+                      className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
+                      required
+                    />
+                  </label>
+
+                  <label>
+                    <span className="mb-2 block text-sm font-semibold text-ink">Registration Deadline Date</span>
+                    <input
+                      type="date"
+                      value={eventForm.deadlineDate}
+                      onChange={(event) => handleEventFormChange('deadlineDate', event.target.value)}
+                      className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
+                      required
+                    />
+                  </label>
+
+                  <label>
+                    <span className="mb-2 block text-sm font-semibold text-ink">Registration Deadline Time</span>
+                    <input
+                      type="time"
+                      value={eventForm.deadlineTime}
+                      onChange={(event) => handleEventFormChange('deadlineTime', event.target.value)}
+                      className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
+                      required
+                    />
+                  </label>
+                </div>
+
+                <label className="flex items-center gap-3 rounded-card border border-line/80 bg-surface/75 p-3 text-sm font-semibold text-ink">
+                  <input
+                    type="checkbox"
+                    checked={eventForm.active}
+                    onChange={(event) => handleEventFormChange('active', event.target.checked)}
+                    className="size-4 rounded border-line text-primary focus:ring-primary/30"
+                  />
+                  Registration active
+                </label>
+
+                {eventFormError && <InlineFeedback kind="error">{eventFormError.message}</InlineFeedback>}
+
+                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                  <button type="button" onClick={closeEventModal} className="btn btn-secondary" disabled={eventSubmitting}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-primary" disabled={eventSubmitting}>
+                    {eventSubmitting && (
+                      <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+                    )}
+                    {eventSubmitting
+                      ? editingEvent ? 'Updating...' : 'Creating...'
+                      : editingEvent ? 'Update Event' : 'Create Event'}
+                  </button>
+                </div>
+              </form>
+            </section>
+          </div>
+        )}
 
         {isAwardConfirmOpen && selectedAwardStudent && (
           <div className="fixed inset-0 z-[90] flex items-center justify-center bg-canvas/70 p-4 backdrop-blur-md">
