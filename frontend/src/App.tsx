@@ -20,6 +20,7 @@ import GlobalVideoBackground from "./components/ui/GlobalVideoBackground";
 import Home from "./pages/Home";
 import PastEvents from "./pages/Events";
 import Team from "./pages/Team";
+import Leaderboard from "./pages/Leaderboard";
 import Domains from "./pages/Domains";
 import BlogPostPage from "./pages/BlogPostPage";
 import StudentDashboard from "./pages/StudentDashboard";
@@ -140,10 +141,7 @@ function AppWrapper() {
 
             <Route path="/contact" element={<Contact />} />
 
-            <Route
-              path="/leaderboard"
-              element={<Navigate to="/" replace />}
-            />
+            <Route path="/leaderboard" element={<Leaderboard />} />
 
             <Route path="/login" element={<LoginPage />} />
 

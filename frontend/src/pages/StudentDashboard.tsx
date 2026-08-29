@@ -20,6 +20,7 @@ import DomainWhatsAppModal, {
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { blogPosts } from "../lib/resourcesData";
+import { getStudentRank, type StudentRank } from "../lib/leaderboardApi";
 import {
   getStudentDomainGroups,
   type DomainCommunity,
@@ -71,6 +72,8 @@ const StudentDashboard = () => {
   const [isLoadingDomainGroups, setIsLoadingDomainGroups] = useState(true);
   const [domainGroupsError, setDomainGroupsError] = useState("");
   const [isCommunityModalOpen, setIsCommunityModalOpen] = useState(false);
+  const [studentRank, setStudentRank] = useState<StudentRank | null>(null);
+  const [studentRankError, setStudentRankError] = useState("");
   const enrolledDomainKey = user?.enrolledDomains.join("|") ?? "";
   const communityModalSessionKey = user
     ? `hackerearth-hub:student-community-popup:${user.id}`
@@ -148,6 +151,34 @@ const StudentDashboard = () => {
     isLoadingDomainGroups,
     user?.role,
   ]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    let isMounted = true;
+
+    const loadStudentRank = async () => {
+      try {
+        setStudentRankError("");
+        const data = await getStudentRank();
+
+        if (isMounted) {
+          setStudentRank(data.rank);
+        }
+      } catch {
+        if (isMounted) {
+          setStudentRank(null);
+          setStudentRankError("Your standing could not be loaded right now.");
+        }
+      }
+    };
+
+    void loadStudentRank();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.id]);
 
   if (!user) return null;
 
@@ -243,6 +274,39 @@ const StudentDashboard = () => {
                           </dd>
                         </div>
                       </dl>
+
+                      <div className="mt-5 rounded-card border border-technical/25 bg-technical/10 p-4">
+                        <p className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-technical-text">
+                          Your Standing
+                        </p>
+                        {studentRank ? (
+                          <div className="mt-3 grid grid-cols-2 gap-3">
+                            <div>
+                              <p className="text-xs text-ink-subtle">Overall Rank</p>
+                              <p className="mt-1 text-2xl font-bold tabular-nums text-primary-text">
+                                #{studentRank.overallRank}
+                              </p>
+                            </div>
+                            <div>
+                              <p className="text-xs text-ink-subtle">Total Points</p>
+                              <p className="mt-1 text-2xl font-bold tabular-nums text-ink">
+                                {studentRank.totalPoints}
+                              </p>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="mt-3 text-sm leading-6 text-ink-muted">
+                            {studentRankError || "Loading your standing..."}
+                          </p>
+                        )}
+                        <Link
+                          to="/leaderboard"
+                          className="btn btn-secondary mt-4 w-full justify-center"
+                        >
+                          View Leaderboard
+                          <ArrowRight className="size-4" aria-hidden="true" />
+                        </Link>
+                      </div>
                     </aside>
                   </div>
                 </div>

@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import User, { EnrolledDomain, VALID_DOMAINS } from "../models/user";
+import { getStudentOverallRank } from "../services/leaderboardService";
 
 interface DomainGroup {
   domain: EnrolledDomain;
@@ -260,6 +261,38 @@ export const updateStudentProfile = async (req: Request, res: Response) => {
       success: true,
       message: "Profile updated successfully.",
       user: formatSafeUser(student),
+    });
+  } catch (_error) {
+    return res.status(500).json({
+      success: false,
+      message: "Unexpected server error.",
+    });
+  }
+};
+
+export const getStudentRank = async (req: Request, res: Response) => {
+  try {
+    if (!req.auth) {
+      return res.status(401).json({
+        success: false,
+        code: "AUTH_REQUIRED",
+        message: "Authentication is required.",
+      });
+    }
+
+    const rank = await getStudentOverallRank(req.auth.userId);
+
+    if (!rank) {
+      return res.status(404).json({
+        success: false,
+        code: "STUDENT_NOT_FOUND",
+        message: "Student account was not found.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      rank,
     });
   } catch (_error) {
     return res.status(500).json({

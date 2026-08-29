@@ -1,0 +1,346 @@
+import { PipelineStage, Types } from "mongoose";
+import PointTransaction from "../models/pointTransaction";
+import User from "../models/user";
+
+const DEFAULT_PAGE = 1;
+const DEFAULT_LIMIT = 25;
+const MAX_LIMIT = 100;
+
+export interface LeaderboardPaginationInput {
+  page?: unknown;
+  limit?: unknown;
+  search?: unknown;
+}
+
+export interface LeaderboardPagination {
+  page: number;
+  limit: number;
+  total: number;
+  totalPages: number;
+}
+
+export interface OverallLeaderboardEntry {
+  rank: number;
+  studentId: string;
+  name: string;
+  usn: string;
+  branch: string;
+  year: number;
+  totalPoints: number;
+}
+
+export interface WeeklyLeaderboardEntry {
+  rank: number;
+  studentId: string;
+  name: string;
+  usn: string;
+  branch: string;
+  year: number;
+  points: number;
+}
+
+export interface StudentRank {
+  overallRank: number;
+  totalPoints: number;
+  totalActiveStudents: number;
+}
+
+interface OverallAggregationResult {
+  _id: Types.ObjectId;
+  name: string;
+  usn: string;
+  branch: string;
+  year: number;
+  totalPoints: number;
+}
+
+interface WeeklyAggregationResult {
+  studentId: Types.ObjectId;
+  name: string;
+  usn: string;
+  branch: string;
+  year: number;
+  points: number;
+}
+
+interface FacetResult<TEntry> {
+  metadata: Array<{ total: number }>;
+  data: TEntry[];
+}
+
+interface StudentRankAggregationResult {
+  _id: Types.ObjectId;
+  totalPoints: number;
+  overallRank: number;
+}
+
+const parsePositiveInteger = (
+  value: unknown,
+  fallback: number,
+  max?: number
+) => {
+  const parsed = Number(value);
+
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    return fallback;
+  }
+
+  return max ? Math.min(parsed, max) : parsed;
+};
+
+const escapeRegex = (value: string) =>
+  value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+export const parseLeaderboardPagination = ({
+  page,
+  limit,
+  search,
+}: LeaderboardPaginationInput) => ({
+  page: parsePositiveInteger(page, DEFAULT_PAGE),
+  limit: parsePositiveInteger(limit, DEFAULT_LIMIT, MAX_LIMIT),
+  search: typeof search === "string" ? search.trim() : "",
+});
+
+const buildStudentMatch = (search: string): PipelineStage.Match["$match"] => {
+  const match: PipelineStage.Match["$match"] = {
+    role: "student",
+    isActive: true,
+  };
+
+  if (search) {
+    const regex = new RegExp(escapeRegex(search), "i");
+    match.$or = [{ name: regex }, { usn: regex }];
+  }
+
+  return match;
+};
+
+const mapPagination = (
+  page: number,
+  limit: number,
+  total: number
+): LeaderboardPagination => ({
+  page,
+  limit,
+  total,
+  totalPages: total === 0 ? 0 : Math.ceil(total / limit),
+});
+
+export const getOverallLeaderboard = async ({
+  page,
+  limit,
+  search,
+}: {
+  page: number;
+  limit: number;
+  search: string;
+}) => {
+  const skip = (page - 1) * limit;
+  const [result] = await User.aggregate<FacetResult<OverallAggregationResult>>([
+    { $match: buildStudentMatch(search) },
+    {
+      $lookup: {
+        from: "pointtransactions",
+        let: { studentId: "$_id" },
+        pipeline: [
+          { $match: { $expr: { $eq: ["$studentId", "$$studentId"] } } },
+          { $group: { _id: "$studentId", totalPoints: { $sum: "$points" } } },
+        ],
+        as: "pointSummary",
+      },
+    },
+    {
+      $addFields: {
+        totalPoints: {
+          $ifNull: [{ $arrayElemAt: ["$pointSummary.totalPoints", 0] }, 0],
+        },
+      },
+    },
+    { $sort: { totalPoints: -1, name: 1, email: 1, _id: 1 } },
+    {
+      $facet: {
+        metadata: [{ $count: "total" }],
+        data: [
+          { $skip: skip },
+          { $limit: limit },
+          {
+            $project: {
+              name: 1,
+              usn: 1,
+              branch: 1,
+              year: 1,
+              totalPoints: 1,
+            },
+          },
+        ],
+      },
+    },
+  ]).exec();
+
+  const total = result?.metadata[0]?.total ?? 0;
+  const leaderboard = (result?.data ?? []).map((entry, index) => ({
+    rank: skip + index + 1,
+    studentId: String(entry._id),
+    name: entry.name,
+    usn: entry.usn,
+    branch: entry.branch,
+    year: entry.year,
+    totalPoints: entry.totalPoints,
+  }));
+
+  return {
+    leaderboard,
+    pagination: mapPagination(page, limit, total),
+  };
+};
+
+export const getWeeklyLeaderboard = async ({
+  week,
+  page,
+  limit,
+  search,
+}: {
+  week: number;
+  page: number;
+  limit: number;
+  search: string;
+}) => {
+  const skip = (page - 1) * limit;
+  const [result] = await PointTransaction.aggregate<
+    FacetResult<WeeklyAggregationResult>
+  >([
+    { $match: { source: "weekly_contest", weekNumber: week } },
+    { $group: { _id: "$studentId", points: { $sum: "$points" } } },
+    {
+      $lookup: {
+        from: "users",
+        localField: "_id",
+        foreignField: "_id",
+        as: "student",
+      },
+    },
+    { $unwind: "$student" },
+    { $match: { "student.role": "student", "student.isActive": true } },
+    ...(search
+      ? [
+        {
+          $match: {
+            $or: [
+              { "student.name": new RegExp(escapeRegex(search), "i") },
+              { "student.usn": new RegExp(escapeRegex(search), "i") },
+            ],
+          },
+        } satisfies PipelineStage.Match,
+      ]
+      : []),
+    { $sort: { points: -1, "student.name": 1, "student.usn": 1, _id: 1 } },
+    {
+      $facet: {
+        metadata: [{ $count: "total" }],
+        data: [
+          { $skip: skip },
+          { $limit: limit },
+          {
+            $project: {
+              studentId: "$_id",
+              name: "$student.name",
+              usn: "$student.usn",
+              branch: "$student.branch",
+              year: "$student.year",
+              points: 1,
+            },
+          },
+        ],
+      },
+    },
+  ]).exec();
+
+  const total = result?.metadata[0]?.total ?? 0;
+  const leaderboard = (result?.data ?? []).map((entry, index) => ({
+    rank: skip + index + 1,
+    studentId: String(entry.studentId),
+    name: entry.name,
+    usn: entry.usn,
+    branch: entry.branch,
+    year: entry.year,
+    points: entry.points,
+  }));
+
+  return {
+    leaderboard,
+    pagination: mapPagination(page, limit, total),
+  };
+};
+
+export const getAvailableWeeklyContestWeeks = async () => {
+  const weeks = await PointTransaction.distinct("weekNumber", {
+    source: "weekly_contest",
+    weekNumber: { $exists: true },
+  }).exec();
+
+  return weeks
+    .filter((week): week is number => Number.isInteger(week) && week > 0)
+    .sort((a, b) => a - b);
+};
+
+export const getStudentOverallRank = async (
+  studentId: string
+): Promise<StudentRank | null> => {
+  if (!Types.ObjectId.isValid(studentId)) {
+    return null;
+  }
+
+  const objectId = new Types.ObjectId(studentId);
+
+  const [rankResult, totalActiveStudents] = await Promise.all([
+    User.aggregate<StudentRankAggregationResult>([
+      { $match: { role: "student", isActive: true } },
+      {
+        $lookup: {
+          from: "pointtransactions",
+          let: { studentId: "$_id" },
+          pipeline: [
+            { $match: { $expr: { $eq: ["$studentId", "$$studentId"] } } },
+            {
+              $group: {
+                _id: "$studentId",
+                totalPoints: { $sum: "$points" },
+              },
+            },
+          ],
+          as: "pointSummary",
+        },
+      },
+      {
+        $addFields: {
+          totalPoints: {
+            $ifNull: [{ $arrayElemAt: ["$pointSummary.totalPoints", 0] }, 0],
+          },
+        },
+      },
+      {
+        $setWindowFields: {
+          sortBy: { totalPoints: -1, name: 1, email: 1, _id: 1 },
+          output: {
+            overallRank: { $documentNumber: {} },
+          },
+        },
+      },
+      { $match: { _id: objectId } },
+      { $project: { totalPoints: 1, overallRank: 1 } },
+    ]).exec(),
+    User.countDocuments({ role: "student", isActive: true }).exec(),
+  ]);
+
+  const studentRank = rankResult[0];
+
+  if (!studentRank) {
+    return null;
+  }
+
+  return {
+    overallRank: studentRank.overallRank,
+    totalPoints: studentRank.totalPoints,
+    totalActiveStudents,
+  };
+};
