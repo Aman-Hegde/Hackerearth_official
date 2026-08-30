@@ -8,6 +8,7 @@ export interface EventSummary {
   description: string;
   venue: string;
   posterUrl: string;
+  posterPublicId?: string | null;
   eventDateTime: string;
   registrationDeadline: string;
   maxRegistrations: number;
@@ -25,6 +26,7 @@ export interface EventInput {
   description: string;
   venue: string;
   posterUrl: string;
+  posterPublicId?: string;
   eventDateTime: string;
   registrationDeadline: string;
   maxRegistrations: number;
@@ -70,6 +72,14 @@ interface AdminEventResponse {
   success: true;
   message?: string;
   event: EventSummary;
+}
+
+interface AdminPosterUploadResponse {
+  success: true;
+  poster: {
+    url: string;
+    publicId: string;
+  };
 }
 
 interface AdminEventRegistrationsResponse {
@@ -135,6 +145,30 @@ export const registerForEvent = (eventId: string) =>
 
 export const getAdminEvents = (signal?: AbortSignal) =>
   apiRequest<AdminEventsResponse>("/api/admin/events", { signal });
+
+export const uploadAdminEventPoster = async (file: File) => {
+  const formData = new FormData();
+  formData.append("poster", file);
+
+  const response = await fetch(`${API_BASE_URL}/api/admin/events/poster`, {
+    method: "POST",
+    credentials: "include",
+    body: formData,
+  });
+
+  const data = await parseJsonSafely(response);
+
+  if (!response.ok) {
+    throw new ApiError({
+      status: response.status,
+      code: getErrorCode(data),
+      message: getErrorMessage(data),
+      data,
+    });
+  }
+
+  return data as AdminPosterUploadResponse;
+};
 
 export const createAdminEvent = (input: EventInput) =>
   apiRequest<AdminEventResponse>("/api/admin/events", {

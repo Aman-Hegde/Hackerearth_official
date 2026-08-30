@@ -4,6 +4,7 @@ import mongoose, { Types } from "mongoose";
 import Event, { IEvent } from "../models/Event";
 import EventRegistration from "../models/EventRegistration";
 import User from "../models/user";
+import { uploadEventPosterToCloudinary } from "../config/cloudinary";
 
 type EventStatus = "open" | "full" | "closed" | "past";
 
@@ -12,6 +13,7 @@ interface EventBody {
   description?: unknown;
   venue?: unknown;
   posterUrl?: unknown;
+  posterPublicId?: unknown;
   eventDateTime?: unknown;
   registrationDeadline?: unknown;
   maxRegistrations?: unknown;
@@ -77,6 +79,7 @@ const toSafeEvent = (event: IEvent, isRegistered = false) => ({
   description: event.description,
   venue: event.venue,
   posterUrl: event.posterUrl,
+  posterPublicId: event.posterPublicId ?? null,
   eventDateTime: event.eventDateTime,
   registrationDeadline: event.registrationDeadline,
   maxRegistrations: event.maxRegistrations,
@@ -128,6 +131,7 @@ const validateEventPayload = (
     description: string;
     venue: string;
     posterUrl: string;
+    posterPublicId: string;
     eventDateTime: Date;
     registrationDeadline: Date;
     maxRegistrations: number;
@@ -174,6 +178,16 @@ const validateEventPayload = (
       return { error: "Poster image URL must be valid." };
     }
     update.posterUrl = posterUrl;
+  }
+
+  if (body.posterPublicId !== undefined) {
+    const posterPublicId = normalizeString(body.posterPublicId);
+    if (posterPublicId.length > 300) {
+      return { error: "Poster metadata is invalid." };
+    }
+    if (posterPublicId) {
+      update.posterPublicId = posterPublicId;
+    }
   }
 
   if (body.eventDateTime !== undefined || required) {
@@ -267,6 +281,34 @@ export const createAdminEvent = async (
     return res.status(500).json({
       success: false,
       message: "Unexpected server error.",
+    });
+  }
+};
+
+export const uploadAdminEventPoster = async (req: Request, res: Response) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({
+        success: false,
+        code: "POSTER_REQUIRED",
+        message: "Choose a poster image to upload.",
+      });
+    }
+
+    const result = await uploadEventPosterToCloudinary(req.file.buffer);
+
+    return res.status(200).json({
+      success: true,
+      poster: {
+        url: result.secure_url,
+        publicId: result.public_id,
+      },
+    });
+  } catch (_error) {
+    return res.status(502).json({
+      success: false,
+      code: "POSTER_UPLOAD_FAILED",
+      message: "Poster upload failed. Please try again.",
     });
   }
 };

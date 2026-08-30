@@ -5,6 +5,7 @@ export interface IEvent extends Document {
   description: string;
   venue: string;
   posterUrl: string;
+  posterPublicId?: string;
   eventDateTime: Date;
   registrationDeadline: Date;
   maxRegistrations: number;
@@ -40,6 +41,11 @@ const eventSchema = new Schema<IEvent>(
       required: [true, "Poster image URL is required"],
       trim: true,
       maxlength: 1000,
+    },
+    posterPublicId: {
+      type: String,
+      trim: true,
+      maxlength: 300,
     },
     eventDateTime: {
       type: Date,

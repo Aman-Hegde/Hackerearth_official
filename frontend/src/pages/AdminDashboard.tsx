@@ -38,6 +38,7 @@ import {
   downloadAdminEventRegistrations,
   getAdminEventRegistrations,
   getAdminEvents,
+  uploadAdminEventPoster,
   updateAdminEvent,
   type AdminEventRegistrationStudent,
   type AdminEventRegistrationSummary,
@@ -68,6 +69,7 @@ const CLOSED_REGISTRATION_MESSAGE = 'Student registration is currently closed.';
 const emptyEventForm = {
   title: '',
   posterUrl: '',
+  posterPublicId: '',
   description: '',
   venue: '',
   eventDate: '',
@@ -77,6 +79,8 @@ const emptyEventForm = {
   maxRegistrations: '',
   active: true,
 };
+const MAX_POSTER_SIZE_BYTES = 5 * 1024 * 1024;
+const acceptedPosterTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
 type StatusFilter = '' | 'active' | 'inactive';
 type DomainFilter = '' | 'Web Development' | 'DSA' | 'Aptitude';
@@ -242,6 +246,7 @@ const buildEventPayload = (form: EventFormState): EventInput | null => {
   return {
     title: form.title.trim(),
     posterUrl: form.posterUrl.trim(),
+    posterPublicId: form.posterPublicId.trim() || undefined,
     description: form.description.trim(),
     venue: form.venue.trim(),
     eventDateTime: eventDateTime.toISOString(),
@@ -374,6 +379,9 @@ const AdminDashboard = () => {
   const [eventForm, setEventForm] = useState<EventFormState>(emptyEventForm);
   const [eventFormError, setEventFormError] = useState<AdminRequestError | null>(null);
   const [eventSubmitting, setEventSubmitting] = useState(false);
+  const [eventSubmitLabel, setEventSubmitLabel] = useState('');
+  const [selectedEventPosterFile, setSelectedEventPosterFile] = useState<File | null>(null);
+  const [eventPosterPreviewUrl, setEventPosterPreviewUrl] = useState('');
   const [editingEvent, setEditingEvent] = useState<EventSummary | null>(null);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
   const [registrationsEvent, setRegistrationsEvent] = useState<AdminEventRegistrationSummary | null>(null);
@@ -755,6 +763,9 @@ const AdminDashboard = () => {
     setEditingEvent(null);
     setEventForm(emptyEventForm);
     setEventFormError(null);
+    setSelectedEventPosterFile(null);
+    setEventPosterPreviewUrl('');
+    setEventSubmitLabel('');
     setIsEventModalOpen(true);
   };
 
@@ -763,6 +774,7 @@ const AdminDashboard = () => {
     setEventForm({
       title: event.title,
       posterUrl: event.posterUrl,
+      posterPublicId: event.posterPublicId ?? '',
       description: event.description,
       venue: event.venue,
       eventDate: toDateInputValue(event.eventDateTime),
@@ -773,6 +785,9 @@ const AdminDashboard = () => {
       active: event.active,
     });
     setEventFormError(null);
+    setSelectedEventPosterFile(null);
+    setEventPosterPreviewUrl(event.posterUrl);
+    setEventSubmitLabel('');
     setIsEventModalOpen(true);
   };
 
@@ -781,6 +796,9 @@ const AdminDashboard = () => {
     setIsEventModalOpen(false);
     setEditingEvent(null);
     setEventForm(emptyEventForm);
+    setSelectedEventPosterFile(null);
+    setEventPosterPreviewUrl('');
+    setEventSubmitLabel('');
     setEventFormError(null);
   };
 
@@ -792,11 +810,58 @@ const AdminDashboard = () => {
     setEventFormError(null);
   };
 
+  const handleEventPosterChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null;
+
+    if (!file) {
+      setSelectedEventPosterFile(null);
+      setEventPosterPreviewUrl(editingEvent?.posterUrl ?? '');
+      return;
+    }
+
+    if (!acceptedPosterTypes.has(file.type)) {
+      setSelectedEventPosterFile(null);
+      setEventFormError({
+        kind: 'api',
+        message: 'Poster must be a JPG, PNG, or WebP image.',
+      });
+      event.target.value = '';
+      return;
+    }
+
+    if (file.size > MAX_POSTER_SIZE_BYTES) {
+      setSelectedEventPosterFile(null);
+      setEventFormError({
+        kind: 'api',
+        message: 'Poster image must be 5 MB or smaller.',
+      });
+      event.target.value = '';
+      return;
+    }
+
+    setSelectedEventPosterFile(file);
+    setEventPosterPreviewUrl(URL.createObjectURL(file));
+    setEventFormError(null);
+  };
+
   const handleEventSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const payload = buildEventPayload(eventForm);
 
-    if (!payload) {
+    if (!editingEvent && !selectedEventPosterFile) {
+      setEventFormError({
+        kind: 'api',
+        message: 'Choose an event poster image.',
+      });
+      return;
+    }
+
+    const draftPayload = buildEventPayload(
+      selectedEventPosterFile && !eventForm.posterUrl
+        ? { ...eventForm, posterUrl: 'https://poster-upload.local/pending-image' }
+        : eventForm
+    );
+
+    if (!draftPayload) {
       setEventFormError({
         kind: 'api',
         message: 'Fill all event fields with valid values.',
@@ -804,7 +869,7 @@ const AdminDashboard = () => {
       return;
     }
 
-    if (new Date(payload.registrationDeadline) >= new Date(payload.eventDateTime)) {
+    if (new Date(draftPayload.registrationDeadline) >= new Date(draftPayload.eventDateTime)) {
       setEventFormError({
         kind: 'api',
         message: 'Registration deadline must be before the event date and time.',
@@ -813,11 +878,24 @@ const AdminDashboard = () => {
     }
 
     setEventSubmitting(true);
+    setEventSubmitLabel(selectedEventPosterFile ? 'Uploading poster...' : editingEvent ? 'Updating event...' : 'Creating event...');
     setEventFormError(null);
     setEventsNotice(null);
     setEventsError(null);
 
     try {
+      let payload = draftPayload;
+
+      if (selectedEventPosterFile) {
+        const uploadResponse = await uploadAdminEventPoster(selectedEventPosterFile);
+        payload = {
+          ...draftPayload,
+          posterUrl: uploadResponse.poster.url,
+          posterPublicId: uploadResponse.poster.publicId,
+        };
+        setEventSubmitLabel(editingEvent ? 'Updating event...' : 'Creating event...');
+      }
+
       const response = editingEvent
         ? await updateAdminEvent(editingEvent.id, payload)
         : await createAdminEvent(payload);
@@ -833,6 +911,8 @@ const AdminDashboard = () => {
       setIsEventModalOpen(false);
       setEditingEvent(null);
       setEventForm(emptyEventForm);
+      setSelectedEventPosterFile(null);
+      setEventPosterPreviewUrl('');
     } catch (error) {
       const requestError = classifyAdminError(error, editingEvent ? 'Unable to update event.' : 'Unable to create event.');
       if (isGlobalAuthorizationError(requestError)) {
@@ -842,6 +922,7 @@ const AdminDashboard = () => {
       }
     } finally {
       setEventSubmitting(false);
+      setEventSubmitLabel('');
     }
   };
 
@@ -1779,14 +1860,15 @@ const AdminDashboard = () => {
         )}
 
         {isEventModalOpen && (
-          <div className="fixed inset-0 z-[90] flex items-center justify-center overflow-y-auto bg-canvas/70 p-4 backdrop-blur-md">
+          <div className="fixed inset-0 z-[90] overflow-hidden bg-canvas/70 backdrop-blur-md">
+            <div className="flex h-full items-start justify-center px-4 pb-4 pt-24 sm:px-6 sm:pb-6 sm:pt-28 lg:pt-32">
             <section
               role="dialog"
               aria-modal="true"
               aria-labelledby="event-modal-heading"
-              className="ui-panel-glass my-8 w-full max-w-3xl border-primary/30 p-5 shadow-glass sm:p-6"
+              className="ui-panel-glass flex max-h-[calc(100vh-7rem)] w-full max-w-3xl flex-col overflow-hidden border-primary/30 shadow-glass sm:max-h-[calc(100vh-8.5rem)] lg:max-h-[calc(100vh-10rem)]"
             >
-              <div className="flex items-start justify-between gap-4">
+              <div className="flex shrink-0 items-start justify-between gap-4 border-b border-line/70 bg-surface/80 p-5 sm:p-6">
                 <div>
                   <p className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-primary-text">
                     {editingEvent ? 'Edit Event' : 'Add Event'}
@@ -1806,7 +1888,7 @@ const AdminDashboard = () => {
                 </button>
               </div>
 
-              <form onSubmit={handleEventSubmit} className="mt-6 space-y-4">
+              <form onSubmit={handleEventSubmit} className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5 sm:p-6">
                 <div className="grid gap-4 sm:grid-cols-2">
                   <label className="sm:col-span-2">
                     <span className="mb-2 block text-sm font-semibold text-ink">Event Title</span>
@@ -1820,21 +1902,49 @@ const AdminDashboard = () => {
                     />
                   </label>
 
-                  <label className="sm:col-span-2">
-                    <span className="mb-2 block text-sm font-semibold text-ink">Poster Image URL</span>
-                    <span className="relative block">
-                      <Image className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-ink-subtle" aria-hidden="true" />
-                      <input
-                        type="url"
-                        value={eventForm.posterUrl}
-                        onChange={(event) => handleEventFormChange('posterUrl', event.target.value)}
-                        placeholder="https://..."
-                        maxLength={1000}
-                        className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 py-2 pl-10 pr-3 text-sm text-ink shadow-soft placeholder:text-ink-subtle focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
-                        required
-                      />
-                    </span>
-                  </label>
+                  <div className="sm:col-span-2">
+                    <label htmlFor="event-poster" className="mb-2 block text-sm font-semibold text-ink">
+                      Event Poster
+                    </label>
+                    <div className="grid gap-4 rounded-card border border-line/80 bg-surface/75 p-4 sm:grid-cols-[12rem_minmax(0,1fr)]">
+                      <div className="aspect-[16/10] overflow-hidden rounded-control border border-line bg-surface-muted">
+                        {eventPosterPreviewUrl ? (
+                          <img
+                            src={eventPosterPreviewUrl}
+                            alt="Selected event poster preview"
+                            className="size-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex size-full items-center justify-center text-sm font-semibold text-ink-muted">
+                            Poster preview
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <label className="btn btn-secondary w-full cursor-pointer justify-center sm:w-fit">
+                          <Image className="size-4" aria-hidden="true" />
+                          Choose Image
+                          <input
+                            id="event-poster"
+                            type="file"
+                            accept="image/jpeg,image/png,image/webp"
+                            onChange={handleEventPosterChange}
+                            className="sr-only"
+                          />
+                        </label>
+                        <p className="mt-3 text-sm leading-6 text-ink-muted">
+                          JPG, PNG, or WebP. Maximum 5 MB.
+                        </p>
+                        <p className="mt-2 truncate text-sm font-semibold text-ink">
+                          {selectedEventPosterFile
+                            ? selectedEventPosterFile.name
+                            : editingEvent
+                              ? 'Current poster will be kept unless replaced.'
+                              : 'No poster selected yet.'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
 
                   <label className="sm:col-span-2">
                     <span className="mb-2 block text-sm font-semibold text-ink">Description</span>
@@ -1946,6 +2056,7 @@ const AdminDashboard = () => {
                 </div>
               </form>
             </section>
+            </div>
           </div>
         )}
 

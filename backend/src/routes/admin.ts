@@ -18,14 +18,17 @@ import {
   getAdminEventRegistrations,
   getAdminEvents,
   exportAdminEventRegistrations,
+  uploadAdminEventPoster,
   updateAdminEvent,
 } from "../controllers/eventController";
+import { uploadEventPosterMiddleware } from "../middleware/eventPosterUpload";
 
 const router = Router();
 
 router.use(authenticate, authorize("admin"));
 
 router.get("/overview", getAdminOverview);
+router.post("/events/poster", uploadEventPosterMiddleware, uploadAdminEventPoster);
 router.post("/events", createAdminEvent);
 router.get("/events", getAdminEvents);
 router.get("/events/:eventId/registrations/export", exportAdminEventRegistrations);
