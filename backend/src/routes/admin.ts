@@ -8,6 +8,7 @@ import {
   exportStudents,
   clearStudentPasswordResetLimit,
   updateRegistrationSettings,
+  updateManualPointTransaction,
   updateStudentStatus,
 } from "../controllers/adminController";
 import { authenticate } from "../middleware/authenticate";
@@ -22,6 +23,14 @@ import {
   updateAdminEvent,
 } from "../controllers/eventController";
 import { uploadEventPosterMiddleware } from "../middleware/eventPosterUpload";
+import {
+  createAdminWeeklyContest,
+  exportAdminWeeklyContestAttempts,
+  getAdminWeeklyContestAttempts,
+  getAdminWeeklyContests,
+  updateAdminWeeklyContest,
+  upsertAdminWeeklyContestScore,
+} from "../controllers/weeklyContestController";
 
 const router = Router();
 
@@ -35,9 +44,22 @@ router.get("/events/:eventId/registrations/export", exportAdminEventRegistration
 router.get("/events/:eventId/registrations", getAdminEventRegistrations);
 router.get("/events/:eventId", getAdminEvent);
 router.patch("/events/:eventId", updateAdminEvent);
+router.post("/weekly-contests", createAdminWeeklyContest);
+router.get("/weekly-contests", getAdminWeeklyContests);
+router.get(
+  "/weekly-contests/:contestId/attempts/export",
+  exportAdminWeeklyContestAttempts
+);
+router.get("/weekly-contests/:contestId/attempts", getAdminWeeklyContestAttempts);
+router.put(
+  "/weekly-contests/:contestId/students/:studentId/score",
+  upsertAdminWeeklyContestScore
+);
+router.patch("/weekly-contests/:contestId", updateAdminWeeklyContest);
 router.get("/students", getStudents);
 router.get("/students/export", exportStudents);
 router.post("/leaderboard/points", awardStudentPoints);
+router.patch("/leaderboard/points/:transactionId", updateManualPointTransaction);
 router.get("/leaderboard/students/:studentId/points", getStudentPointHistory);
 router.patch("/students/:studentId/status", updateStudentStatus);
 router.patch(

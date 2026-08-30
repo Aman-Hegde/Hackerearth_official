@@ -6,6 +6,7 @@ import {
   Clock,
   ExternalLink,
   GraduationCap,
+  Loader2,
   MapPin,
   Medal,
   Shapes,
@@ -18,6 +19,7 @@ import { Link } from "react-router-dom";
 import PageTransition from "../components/ui/PageTransition";
 import SectionReveal from "../components/ui/SectionReveal";
 import ResourceCard from "../components/ResourceCard";
+import { useToast } from "../components/ToastProvider";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { blogPosts } from "../lib/resourcesData";
@@ -25,6 +27,11 @@ import {
   getStudentEvents,
   type EventSummary,
 } from "../lib/eventApi";
+import {
+  getStudentWeeklyContests,
+  openStudentWeeklyContest,
+  type StudentWeeklyContest,
+} from "../lib/studentApi";
 import {
   getStudentRank,
   getStudentWeeklyRank,
@@ -123,9 +130,89 @@ const DashboardEventPreview = ({ event }: { event: EventSummary }) => (
   </article>
 );
 
+const formatContestTime = (value: string) =>
+  new Intl.DateTimeFormat("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+
+const getTaskButtonLabel = (contest: StudentWeeklyContest) => {
+  if (contest.status === "upcoming") {
+    return `Starts ${new Intl.DateTimeFormat("en-IN", {
+      timeStyle: "short",
+    }).format(new Date(contest.startDateTime))}`;
+  }
+
+  if (contest.status === "ended") return "Contest Ended";
+  return contest.claimed ? "Open Contest" : "Start Contest";
+};
+
+const WeeklyContestTaskCard = ({
+  contest,
+  pending,
+  onOpen,
+}: {
+  contest: StudentWeeklyContest;
+  pending: boolean;
+  onOpen: (contest: StudentWeeklyContest) => void;
+}) => {
+  const isActionable = contest.status === "live";
+
+  return (
+    <article className="rounded-card border border-line/80 bg-surface/75 p-4 shadow-soft">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <span className="inline-flex min-h-7 items-center rounded-full border border-technical/30 bg-technical/10 px-2.5 font-mono text-[0.65rem] font-bold text-technical-text">
+            Week {contest.weekNumber}
+          </span>
+          <h4 className="mt-3 break-words font-display text-base font-semibold text-ink">
+            {contest.title}
+          </h4>
+          {contest.description && (
+            <p className="mt-2 line-clamp-2 text-sm leading-6 text-ink-muted">
+              {contest.description}
+            </p>
+          )}
+        </div>
+        <span className="inline-flex min-h-7 w-fit items-center rounded-full border border-dream/30 bg-dream/10 px-2.5 font-mono text-[0.65rem] font-bold uppercase text-dream-text">
+          {contest.status}
+        </span>
+      </div>
+
+      <dl className="mt-4 grid gap-2 text-xs text-ink-muted">
+        <div>
+          <dt className="font-semibold text-ink">Starts</dt>
+          <dd>{formatContestTime(contest.startDateTime)}</dd>
+        </div>
+        <div>
+          <dt className="font-semibold text-ink">Ends</dt>
+          <dd>{formatContestTime(contest.endDateTime)}</dd>
+        </div>
+      </dl>
+
+      <button
+        type="button"
+        onClick={() => onOpen(contest)}
+        disabled={!isActionable || pending}
+        className="btn btn-secondary mt-4 w-full justify-center disabled:cursor-not-allowed disabled:opacity-60 sm:w-fit"
+      >
+        {pending ? (
+          <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+        ) : isActionable ? (
+          <ExternalLink className="size-4" aria-hidden="true" />
+        ) : (
+          <Clock className="size-4" aria-hidden="true" />
+        )}
+        {pending ? "Opening..." : getTaskButtonLabel(contest)}
+      </button>
+    </article>
+  );
+};
+
 const StudentDashboard = () => {
   const { user } = useAuth();
   const { isDark } = useTheme();
+  const { showToast } = useToast();
   const [studentRank, setStudentRank] = useState<StudentRank | null>(null);
   const [studentRankError, setStudentRankError] = useState("");
   const [availableWeeks, setAvailableWeeks] = useState<number[]>([]);
@@ -137,6 +224,10 @@ const StudentDashboard = () => {
   const [dashboardEvents, setDashboardEvents] = useState<EventSummary[]>([]);
   const [dashboardEventsError, setDashboardEventsError] = useState("");
   const [isLoadingDashboardEvents, setIsLoadingDashboardEvents] = useState(true);
+  const [weeklyContestTasks, setWeeklyContestTasks] = useState<StudentWeeklyContest[]>([]);
+  const [weeklyContestTasksError, setWeeklyContestTasksError] = useState("");
+  const [isLoadingWeeklyContestTasks, setIsLoadingWeeklyContestTasks] = useState(true);
+  const [pendingContestId, setPendingContestId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -165,6 +256,72 @@ const StudentDashboard = () => {
       isMounted = false;
     };
   }, [user?.id]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const controller = new AbortController();
+    setIsLoadingWeeklyContestTasks(true);
+    setWeeklyContestTasksError("");
+
+    void getStudentWeeklyContests(controller.signal)
+      .then((response) => {
+        setWeeklyContestTasks(response.contests);
+      })
+      .catch((error) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setWeeklyContestTasks([]);
+        setWeeklyContestTasksError("Weekly contests could not be loaded right now.");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setIsLoadingWeeklyContestTasks(false);
+        }
+      });
+
+    return () => controller.abort();
+  }, [user?.id]);
+
+  const handleOpenWeeklyContest = async (contest: StudentWeeklyContest) => {
+    if (pendingContestId || contest.status !== "live") return;
+
+    const externalTab = window.open("about:blank", "_blank");
+    if (!externalTab) {
+      showToast({
+        variant: "error",
+        message: "Popup was blocked. Please allow popups and try again.",
+      });
+      return;
+    }
+    externalTab.opener = null;
+    setPendingContestId(contest.id);
+
+    try {
+      const response = await openStudentWeeklyContest(contest.id);
+      setWeeklyContestTasks((current) =>
+        current.map((item) =>
+          item.id === contest.id ? { ...item, claimed: true } : item
+        )
+      );
+      if (response.awarded) {
+        showToast({
+          variant: "success",
+          message: `+${response.pointsAwarded} weekly contest points recorded.`,
+        });
+      }
+
+      externalTab.location.href = response.contestUrl;
+    } catch (error) {
+      externalTab.close();
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to open this contest right now.";
+      showToast({ variant: "error", message });
+    } finally {
+      setPendingContestId(null);
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -600,13 +757,35 @@ const StudentDashboard = () => {
                       <CheckCircle2 className="size-5" aria-hidden="true" />
                     </div>
                     <h3 className="mt-5 font-display text-xl font-semibold text-ink">My tasks</h3>
-                    <p className="mt-2 text-sm font-semibold text-ink">No tasks assigned yet.</p>
-                    <p className="mt-2 flex-1 text-sm leading-6 text-ink-muted">
-                      Assigned club tasks will appear here when they become available.
-                    </p>
-                    <span className="mt-5 inline-flex min-h-11 w-fit items-center rounded-full border border-line bg-surface-muted/80 px-4 text-sm font-medium text-ink-muted">
-                      You&apos;re all caught up
-                    </span>
+                    <div className="mt-4 flex-1 space-y-3">
+                      {isLoadingWeeklyContestTasks ? (
+                        <div className="space-y-3" aria-hidden="true">
+                          {[0, 1].map((item) => (
+                            <div
+                              key={item}
+                              className="h-32 animate-pulse rounded-card bg-surface-muted motion-reduce:animate-none"
+                            />
+                          ))}
+                        </div>
+                      ) : weeklyContestTasksError ? (
+                        <p className="rounded-card border border-line/80 bg-surface/75 p-4 text-sm leading-6 text-ink-muted">
+                          {weeklyContestTasksError}
+                        </p>
+                      ) : weeklyContestTasks.length > 0 ? (
+                        weeklyContestTasks.map((contest) => (
+                          <WeeklyContestTaskCard
+                            key={contest.id}
+                            contest={contest}
+                            pending={pendingContestId === contest.id}
+                            onOpen={handleOpenWeeklyContest}
+                          />
+                        ))
+                      ) : (
+                        <p className="rounded-card border border-line/80 bg-surface/75 p-4 text-sm leading-6 text-ink-muted">
+                          No weekly contests assigned yet.
+                        </p>
+                      )}
+                    </div>
                   </article>
                 </div>
               </section>

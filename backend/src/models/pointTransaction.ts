@@ -9,6 +9,14 @@ export const POINT_TRANSACTION_SOURCES = [
 export type PointTransactionSource =
   (typeof POINT_TRANSACTION_SOURCES)[number];
 
+export const WEEKLY_CONTEST_POINT_TYPES = [
+  "open_reward",
+  "contest_score",
+] as const;
+
+export type WeeklyContestPointType =
+  (typeof WEEKLY_CONTEST_POINT_TYPES)[number];
+
 export interface IPointTransaction extends Document {
   studentId: Types.ObjectId;
   points: number;
@@ -16,7 +24,15 @@ export interface IPointTransaction extends Document {
   description?: string;
   awardedBy?: Types.ObjectId;
   contestId?: Types.ObjectId | string;
+  weeklyContestId?: Types.ObjectId;
+  weeklyContestPointType?: WeeklyContestPointType;
   weekNumber?: number;
+  previousPoints?: number;
+  previousDescription?: string;
+  updatedBy?: Types.ObjectId;
+  manualUpdatedAt?: Date;
+  scoreUpdatedBy?: Types.ObjectId;
+  scoreUpdatedAt?: Date;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -51,6 +67,16 @@ const pointTransactionSchema = new Schema<IPointTransaction>(
     contestId: {
       type: Schema.Types.Mixed,
     },
+    weeklyContestId: {
+      type: Schema.Types.ObjectId,
+      ref: "WeeklyContest",
+      index: true,
+    },
+    weeklyContestPointType: {
+      type: String,
+      enum: WEEKLY_CONTEST_POINT_TYPES,
+      index: true,
+    },
     weekNumber: {
       type: Number,
       min: 1,
@@ -59,6 +85,28 @@ const pointTransactionSchema = new Schema<IPointTransaction>(
           value === undefined || Number.isInteger(value),
         message: "Week number must be an integer",
       },
+    },
+    previousPoints: {
+      type: Number,
+    },
+    previousDescription: {
+      type: String,
+      trim: true,
+      maxlength: 240,
+    },
+    updatedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+    manualUpdatedAt: {
+      type: Date,
+    },
+    scoreUpdatedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+    },
+    scoreUpdatedAt: {
+      type: Date,
     },
   },
   {
@@ -69,6 +117,17 @@ const pointTransactionSchema = new Schema<IPointTransaction>(
 pointTransactionSchema.index({ studentId: 1, createdAt: -1 });
 pointTransactionSchema.index({ source: 1, weekNumber: 1, studentId: 1 });
 pointTransactionSchema.index({ source: 1, createdAt: -1 });
+pointTransactionSchema.index(
+  { studentId: 1, weeklyContestId: 1, weeklyContestPointType: 1 },
+  {
+    unique: true,
+    partialFilterExpression: {
+      source: "weekly_contest",
+      weeklyContestId: { $exists: true },
+      weeklyContestPointType: { $exists: true },
+    },
+  }
+);
 
 const PointTransaction: Model<IPointTransaction> =
   (mongoose.models.PointTransaction as Model<IPointTransaction> | undefined) ||

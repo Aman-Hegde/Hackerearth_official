@@ -48,17 +48,28 @@ import {
 import { registrationBranchOptions } from '../lib/registrationBranches';
 import {
   awardStudentPoints,
+  createAdminWeeklyContest,
+  downloadAdminWeeklyContestAttemptsExcel,
   getAdminOverview,
   getAdminRegistrationSettings,
   getAdminStudentPointHistory,
   getAdminStudents,
+  getAdminWeeklyContestAttempts,
+  getAdminWeeklyContests,
   downloadAdminStudentsExcel,
   type AdminPointStudent,
   type AdminPointTransaction,
   type AdminOverview,
   type AdminStudent,
+  type AdminWeeklyContest,
+  type AdminWeeklyContestAttempt,
+  type AdminWeeklyContestAttemptSummary,
   type RegistrationSettings,
   type StudentPagination,
+  type WeeklyContestInput,
+  upsertAdminWeeklyContestScore,
+  updateManualPointTransaction,
+  updateAdminWeeklyContest,
   updateAdminRegistrationSettings,
   updateAdminStudentStatus,
 } from '../lib/adminApi';
@@ -81,6 +92,17 @@ const emptyEventForm = {
   maxRegistrations: '',
   active: true,
 };
+const emptyWeeklyContestForm = {
+  title: '',
+  description: '',
+  weekNumber: '',
+  contestUrl: '',
+  startDate: '',
+  startTime: '',
+  endDate: '',
+  endTime: '',
+  active: true,
+};
 const MAX_POSTER_SIZE_BYTES = 5 * 1024 * 1024;
 const acceptedPosterTypes = new Set(['image/jpeg', 'image/png', 'image/webp']);
 
@@ -88,6 +110,7 @@ type StatusFilter = '' | 'active' | 'inactive';
 type DomainFilter = '' | 'Web Development' | 'DSA' | 'Aptitude';
 type AdminErrorKind = 'unauthorized' | 'forbidden' | 'network' | 'server' | 'api';
 type EventFormState = typeof emptyEventForm;
+type WeeklyContestFormState = typeof emptyWeeklyContestForm;
 
 interface AdminRequestError {
   kind: AdminErrorKind;
@@ -265,6 +288,62 @@ const buildEventPayload = (form: EventFormState): EventInput | null => {
   };
 };
 
+const getWeeklyContestStatusLabel = (contest: AdminWeeklyContest) => {
+  if (contest.status === 'live') return 'LIVE';
+  if (contest.status === 'upcoming') return 'UPCOMING';
+  if (contest.status === 'ended') return 'ENDED';
+  return 'INACTIVE';
+};
+
+const getWeeklyContestStatusClasses = (contest: AdminWeeklyContest) => {
+  if (contest.status === 'live') return 'border-success/35 bg-success/10 text-success-text';
+  if (contest.status === 'upcoming') return 'border-dream/35 bg-dream/10 text-dream-text';
+  if (contest.status === 'ended') return 'border-line bg-surface-muted text-ink-muted';
+  return 'border-rose/35 bg-rose/10 text-rose-text';
+};
+
+const buildWeeklyContestPayload = (form: WeeklyContestFormState): WeeklyContestInput | null => {
+  const weekNumber = Number(form.weekNumber);
+  const startDateTime = new Date(`${form.startDate}T${form.startTime}`);
+  const endDateTime = new Date(`${form.endDate}T${form.endTime}`);
+  const description = form.description.trim();
+
+  if (
+    !form.title.trim() ||
+    !form.contestUrl.trim() ||
+    !form.startDate ||
+    !form.startTime ||
+    !form.endDate ||
+    !form.endTime ||
+    !Number.isInteger(weekNumber) ||
+    weekNumber < 1 ||
+    weekNumber > 10 ||
+    Number.isNaN(startDateTime.getTime()) ||
+    Number.isNaN(endDateTime.getTime())
+  ) {
+    return null;
+  }
+
+  try {
+    const parsedUrl = new URL(form.contestUrl.trim());
+    if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') {
+      return null;
+    }
+  } catch {
+    return null;
+  }
+
+  return {
+    title: form.title.trim(),
+    description: description || undefined,
+    weekNumber,
+    contestUrl: form.contestUrl.trim(),
+    startDateTime: startDateTime.toISOString(),
+    endDateTime: endDateTime.toISOString(),
+    active: form.active,
+  };
+};
+
 const formatShortDate = (value?: string | null) => {
   if (!value) return 'Recently';
   const date = new Date(value);
@@ -380,6 +459,11 @@ const AdminDashboard = () => {
   const [awardNotice, setAwardNotice] = useState<string | null>(null);
   const [awardSubmitting, setAwardSubmitting] = useState(false);
   const [isAwardConfirmOpen, setIsAwardConfirmOpen] = useState(false);
+  const [editingPointTransaction, setEditingPointTransaction] = useState<AdminPointTransaction | null>(null);
+  const [editAwardPoints, setEditAwardPoints] = useState('');
+  const [editAwardDescription, setEditAwardDescription] = useState('');
+  const [editAwardSubmitting, setEditAwardSubmitting] = useState(false);
+  const [editAwardError, setEditAwardError] = useState<AdminRequestError | null>(null);
 
   const [events, setEvents] = useState<EventSummary[]>([]);
   const [eventsLoading, setEventsLoading] = useState(true);
@@ -398,6 +482,24 @@ const AdminDashboard = () => {
   const [registrationsLoading, setRegistrationsLoading] = useState(false);
   const [registrationsError, setRegistrationsError] = useState<AdminRequestError | null>(null);
   const [registrationsDownloading, setRegistrationsDownloading] = useState(false);
+  const [weeklyContests, setWeeklyContests] = useState<AdminWeeklyContest[]>([]);
+  const [weeklyContestsLoading, setWeeklyContestsLoading] = useState(true);
+  const [weeklyContestsError, setWeeklyContestsError] = useState<AdminRequestError | null>(null);
+  const [weeklyContestsNotice, setWeeklyContestsNotice] = useState<string | null>(null);
+  const [weeklyContestForm, setWeeklyContestForm] = useState<WeeklyContestFormState>(emptyWeeklyContestForm);
+  const [weeklyContestFormError, setWeeklyContestFormError] = useState<AdminRequestError | null>(null);
+  const [weeklyContestSubmitting, setWeeklyContestSubmitting] = useState(false);
+  const [editingWeeklyContest, setEditingWeeklyContest] = useState<AdminWeeklyContest | null>(null);
+  const [isWeeklyContestModalOpen, setIsWeeklyContestModalOpen] = useState(false);
+  const [attemptsContest, setAttemptsContest] = useState<AdminWeeklyContestAttemptSummary | null>(null);
+  const [weeklyContestAttempts, setWeeklyContestAttempts] = useState<AdminWeeklyContestAttempt[]>([]);
+  const [attemptsLoading, setAttemptsLoading] = useState(false);
+  const [attemptsError, setAttemptsError] = useState<AdminRequestError | null>(null);
+  const [attemptsDownloading, setAttemptsDownloading] = useState(false);
+  const [scoreAttempt, setScoreAttempt] = useState<AdminWeeklyContestAttempt | null>(null);
+  const [contestScoreInput, setContestScoreInput] = useState('');
+  const [scoreSubmitting, setScoreSubmitting] = useState(false);
+  const [scoreError, setScoreError] = useState<AdminRequestError | null>(null);
 
   const [search, setSearch] = useState('');
   const [branch, setBranch] = useState('');
@@ -472,13 +574,35 @@ const AdminDashboard = () => {
     }
   }, []);
 
+  const loadWeeklyContests = useCallback(async (signal?: AbortSignal) => {
+    setWeeklyContestsLoading(true);
+    setWeeklyContestsError(null);
+
+    try {
+      const response = await getAdminWeeklyContests(signal);
+      setWeeklyContests(response.contests);
+    } catch (error) {
+      if (!isAbortError(error)) {
+        const requestError = classifyAdminError(error, 'Unable to load weekly contests.');
+        if (isGlobalAuthorizationError(requestError)) {
+          setGlobalAuthError((current) => current ?? requestError);
+        } else {
+          setWeeklyContestsError(requestError);
+        }
+      }
+    } finally {
+      if (!signal?.aborted) setWeeklyContestsLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     const controller = new AbortController();
     void loadOverview(controller.signal);
     void loadRegistration(controller.signal);
     void loadEvents(controller.signal);
+    void loadWeeklyContests(controller.signal);
     return () => controller.abort();
-  }, [loadEvents, loadOverview, loadRegistration]);
+  }, [loadEvents, loadOverview, loadRegistration, loadWeeklyContests]);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -768,6 +892,77 @@ const AdminDashboard = () => {
     }
   };
 
+  const openEditPointTransactionModal = (transaction: AdminPointTransaction) => {
+    if (!transaction.editable) return;
+    setEditingPointTransaction(transaction);
+    setEditAwardPoints(String(transaction.points));
+    setEditAwardDescription(transaction.description ?? '');
+    setEditAwardError(null);
+    setAwardNotice(null);
+  };
+
+  const closeEditPointTransactionModal = () => {
+    if (editAwardSubmitting) return;
+    setEditingPointTransaction(null);
+    setEditAwardPoints('');
+    setEditAwardDescription('');
+    setEditAwardError(null);
+  };
+
+  const getEditAwardValidationMessage = () => {
+    const points = Number(editAwardPoints);
+    const description = editAwardDescription.trim();
+
+    if (!editingPointTransaction) return 'Select a point award to edit.';
+    if (!editAwardPoints.trim() || !Number.isInteger(points) || points < 1 || points > 100000) {
+      return 'Points must be a whole number from 1 to 100000.';
+    }
+    if (!description) return 'A reason or activity description is required.';
+    if (description.length > 240) return 'Description cannot exceed 240 characters.';
+    return null;
+  };
+
+  const handleSubmitEditPointTransaction = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!editingPointTransaction || editAwardSubmitting) return;
+
+    const validationMessage = getEditAwardValidationMessage();
+    if (validationMessage) {
+      setEditAwardError({ kind: 'api', message: validationMessage });
+      return;
+    }
+
+    setEditAwardSubmitting(true);
+    setEditAwardError(null);
+    setAwardNotice(null);
+
+    try {
+      const response = await updateManualPointTransaction({
+        transactionId: editingPointTransaction.id,
+        points: Number(editAwardPoints),
+        description: editAwardDescription.trim(),
+      });
+
+      setSelectedAwardStudent(response.student);
+      setPointHistory((current) =>
+        current.map((transaction) =>
+          transaction.id === response.transaction.id ? response.transaction : transaction
+        )
+      );
+      setAwardNotice(`Point award updated for ${response.student.name}.`);
+      closeEditPointTransactionModal();
+    } catch (error) {
+      const requestError = classifyAdminError(error, 'Unable to update point award.');
+      if (isGlobalAuthorizationError(requestError)) {
+        setGlobalAuthError(requestError);
+      } else {
+        setEditAwardError(requestError);
+      }
+    } finally {
+      setEditAwardSubmitting(false);
+    }
+  };
+
   const openCreateEventModal = () => {
     setEditingEvent(null);
     setEventForm(emptyEventForm);
@@ -1020,15 +1215,262 @@ const AdminDashboard = () => {
     }
   };
 
+  const openCreateWeeklyContestModal = () => {
+    setEditingWeeklyContest(null);
+    setWeeklyContestForm(emptyWeeklyContestForm);
+    setWeeklyContestFormError(null);
+    setIsWeeklyContestModalOpen(true);
+  };
+
+  const openEditWeeklyContestModal = (contest: AdminWeeklyContest) => {
+    setEditingWeeklyContest(contest);
+    setWeeklyContestForm({
+      title: contest.title,
+      description: contest.description ?? '',
+      weekNumber: String(contest.weekNumber),
+      contestUrl: contest.contestUrl,
+      startDate: toDateInputValue(contest.startDateTime),
+      startTime: toTimeInputValue(contest.startDateTime),
+      endDate: toDateInputValue(contest.endDateTime),
+      endTime: toTimeInputValue(contest.endDateTime),
+      active: contest.active,
+    });
+    setWeeklyContestFormError(null);
+    setIsWeeklyContestModalOpen(true);
+  };
+
+  const closeWeeklyContestModal = () => {
+    if (weeklyContestSubmitting) return;
+    setIsWeeklyContestModalOpen(false);
+    setEditingWeeklyContest(null);
+    setWeeklyContestForm(emptyWeeklyContestForm);
+    setWeeklyContestFormError(null);
+  };
+
+  const handleWeeklyContestFormChange = (
+    field: keyof WeeklyContestFormState,
+    value: string | boolean
+  ) => {
+    setWeeklyContestForm((current) => ({ ...current, [field]: value }));
+    setWeeklyContestFormError(null);
+  };
+
+  const handleWeeklyContestSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+
+    const payload = buildWeeklyContestPayload(weeklyContestForm);
+    if (!payload) {
+      setWeeklyContestFormError({
+        kind: 'api',
+        message: 'Fill all weekly contest fields with valid values.',
+      });
+      return;
+    }
+
+    if (new Date(payload.endDateTime) <= new Date(payload.startDateTime)) {
+      setWeeklyContestFormError({
+        kind: 'api',
+        message: 'Contest end date and time must be after the start date and time.',
+      });
+      return;
+    }
+
+    setWeeklyContestSubmitting(true);
+    setWeeklyContestFormError(null);
+    setWeeklyContestsNotice(null);
+    setWeeklyContestsError(null);
+
+    try {
+      const response = editingWeeklyContest
+        ? await updateAdminWeeklyContest(editingWeeklyContest.id, payload)
+        : await createAdminWeeklyContest(payload);
+
+      setWeeklyContests((current) => {
+        if (editingWeeklyContest) {
+          return current
+            .map((contest) => contest.id === response.contest.id ? response.contest : contest)
+            .sort((first, second) => first.weekNumber - second.weekNumber);
+        }
+
+        return [...current, response.contest].sort(
+          (first, second) => first.weekNumber - second.weekNumber
+        );
+      });
+      setWeeklyContestsNotice(response.message ?? 'Weekly contest saved successfully.');
+      setIsWeeklyContestModalOpen(false);
+      setEditingWeeklyContest(null);
+      setWeeklyContestForm(emptyWeeklyContestForm);
+      setWeeklyContestFormError(null);
+    } catch (error) {
+      const requestError = classifyAdminError(
+        error,
+        editingWeeklyContest ? 'Unable to update weekly contest.' : 'Unable to create weekly contest.'
+      );
+      if (isGlobalAuthorizationError(requestError)) {
+        setGlobalAuthError(requestError);
+      } else {
+        setWeeklyContestFormError(requestError);
+      }
+    } finally {
+      setWeeklyContestSubmitting(false);
+    }
+  };
+
+  const openAttemptsModal = async (contest: AdminWeeklyContest) => {
+    setAttemptsContest({
+      id: contest.id,
+      title: contest.title,
+      weekNumber: contest.weekNumber,
+      attemptCount: contest.attemptCount,
+    });
+    setWeeklyContestAttempts([]);
+    setAttemptsError(null);
+    setAttemptsLoading(true);
+
+    try {
+      const response = await getAdminWeeklyContestAttempts(contest.id);
+      setAttemptsContest(response.contest);
+      setWeeklyContestAttempts(response.attempts);
+      setWeeklyContests((current) =>
+        current.map((item) =>
+          item.id === response.contest.id
+            ? { ...item, attemptCount: response.contest.attemptCount }
+            : item
+        )
+      );
+    } catch (error) {
+      const requestError = classifyAdminError(error, 'Unable to load contest attempts.');
+      if (isGlobalAuthorizationError(requestError)) {
+        setGlobalAuthError(requestError);
+        setAttemptsContest(null);
+      } else {
+        setAttemptsError(requestError);
+      }
+    } finally {
+      setAttemptsLoading(false);
+    }
+  };
+
+  const closeAttemptsModal = () => {
+    if (attemptsDownloading) return;
+    setAttemptsContest(null);
+    setWeeklyContestAttempts([]);
+    setAttemptsError(null);
+    setScoreAttempt(null);
+    setScoreError(null);
+  };
+
+  const openScoreModal = (attempt: AdminWeeklyContestAttempt) => {
+    setScoreAttempt(attempt);
+    setContestScoreInput(attempt.contestScore === null ? '' : String(attempt.contestScore));
+    setScoreError(null);
+  };
+
+  const closeScoreModal = () => {
+    if (scoreSubmitting) return;
+    setScoreAttempt(null);
+    setContestScoreInput('');
+    setScoreError(null);
+  };
+
+  const handleSubmitContestScore = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!attemptsContest || !scoreAttempt || scoreSubmitting) return;
+
+    const score = Number(contestScoreInput);
+    if (
+      !/^(0|[1-9]\d*)$/.test(contestScoreInput.trim()) ||
+      !Number.isInteger(score) ||
+      score < 0 ||
+      score > 100000
+    ) {
+      setScoreError({
+        kind: 'api',
+        message: 'Contest score must be a whole number from 0 to 100000.',
+      });
+      return;
+    }
+
+    setScoreSubmitting(true);
+    setScoreError(null);
+    setAttemptsError(null);
+
+    try {
+      const response = await upsertAdminWeeklyContestScore({
+        contestId: attemptsContest.id,
+        studentId: scoreAttempt.studentId,
+        score,
+      });
+      setWeeklyContestAttempts((current) =>
+        current.map((attempt) =>
+          attempt.id === scoreAttempt.id
+            ? { ...attempt, contestScore: response.score.contestScore }
+            : attempt
+        )
+      );
+      setScoreAttempt(null);
+      setContestScoreInput('');
+    } catch (error) {
+      const requestError = classifyAdminError(error, 'Unable to save contest score.');
+      if (isGlobalAuthorizationError(requestError)) {
+        setGlobalAuthError(requestError);
+        setScoreAttempt(null);
+      } else {
+        setScoreError(requestError);
+      }
+    } finally {
+      setScoreSubmitting(false);
+    }
+  };
+
+  const handleDownloadContestAttempts = async (
+    contest: AdminWeeklyContest | AdminWeeklyContestAttemptSummary | null = attemptsContest
+  ) => {
+    if (!contest || attemptsDownloading) return;
+
+    setAttemptsDownloading(true);
+    setAttemptsError(null);
+    setWeeklyContestsError(null);
+    const isModalDownload = attemptsContest?.id === contest.id;
+
+    try {
+      const { blob, filename } = await downloadAdminWeeklyContestAttemptsExcel(contest.id);
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      const requestError = classifyAdminError(error, 'Unable to download contest attempts.');
+      if (isGlobalAuthorizationError(requestError)) {
+        setGlobalAuthError(requestError);
+        if (isModalDownload) setAttemptsContest(null);
+      } else {
+        if (isModalDownload) {
+          setAttemptsError(requestError);
+        } else {
+          setWeeklyContestsError(requestError);
+        }
+      }
+    } finally {
+      setAttemptsDownloading(false);
+    }
+  };
+
   const handleGlobalRetry = () => {
     setGlobalAuthError(null);
     setOverviewError(null);
     setRegistrationError(null);
     setStudentsError(null);
     setEventsError(null);
+    setWeeklyContestsError(null);
     void loadOverview();
     void loadRegistration();
     void loadEvents();
+    void loadWeeklyContests();
     setStudentRefreshToken((current) => current + 1);
   };
 
@@ -1340,6 +1782,110 @@ const AdminDashboard = () => {
         </section>
         </SectionReveal>
 
+        <SectionReveal delay={0.065} duration={0.42}>
+        <section aria-labelledby="weekly-contests-heading" className="overflow-hidden rounded-card border border-line/80 bg-surface/90 shadow-soft">
+          <div className="border-b border-line/80 bg-dream-soft/30 p-5 sm:p-6">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-dream-text">
+                  Weekly Contests
+                </p>
+                <h2 id="weekly-contests-heading" className="mt-1 font-display text-2xl font-semibold text-ink">
+                  Manage Weekly Contests
+                </h2>
+                <p className="mt-2 max-w-3xl text-sm leading-6 text-ink-muted">
+                  Schedule official weekly contest links and review recorded first-click attempts.
+                </p>
+              </div>
+              <button type="button" onClick={openCreateWeeklyContestModal} className="btn btn-primary w-full justify-center sm:w-fit">
+                <PlusCircle className="size-4" aria-hidden="true" />
+                Add Weekly Contest
+              </button>
+            </div>
+          </div>
+
+          <div className="p-5 sm:p-6">
+            {(weeklyContestsError || weeklyContestsNotice) && (
+              <div className="mb-5">
+                {weeklyContestsError ? (
+                  <InlineFeedback kind="error">{weeklyContestsError.message}</InlineFeedback>
+                ) : weeklyContestsNotice ? (
+                  <InlineFeedback kind="success">{weeklyContestsNotice}</InlineFeedback>
+                ) : null}
+              </div>
+            )}
+
+            {weeklyContestsLoading && weeklyContests.length === 0 ? (
+              <LoadingState label="Loading weekly contests..." />
+            ) : weeklyContestsError && weeklyContests.length === 0 ? (
+              <button type="button" onClick={() => void loadWeeklyContests()} className="btn btn-secondary">
+                <RefreshCw className="size-4" aria-hidden="true" />
+                Retry weekly contests
+              </button>
+            ) : weeklyContests.length === 0 ? (
+              <div className="rounded-card border border-line/80 bg-surface/80 p-8 text-center text-sm text-ink-muted">
+                No weekly contests have been created yet.
+              </div>
+            ) : (
+              <div className="grid gap-4 xl:grid-cols-2">
+                {weeklyContests.map((contest) => (
+                  <article key={contest.id} className="rounded-card border border-line/80 bg-glass/60 p-4 shadow-soft">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div className="min-w-0">
+                        <span className="inline-flex min-h-8 items-center rounded-full border border-dream/30 bg-dream/10 px-3 font-mono text-xs font-bold text-dream-text">
+                          Week {contest.weekNumber}
+                        </span>
+                        <h3 className="mt-3 break-words font-display text-lg font-semibold text-ink">
+                          {contest.title}
+                        </h3>
+                        {contest.description && (
+                          <p className="mt-2 line-clamp-2 text-sm leading-6 text-ink-muted">
+                            {contest.description}
+                          </p>
+                        )}
+                      </div>
+                      <span className={`inline-flex min-h-8 w-fit items-center rounded-full border px-3 font-mono text-xs font-bold ${getWeeklyContestStatusClasses(contest)}`}>
+                        {getWeeklyContestStatusLabel(contest)}
+                      </span>
+                    </div>
+
+                    <dl className="mt-4 grid gap-3 text-sm text-ink-muted sm:grid-cols-2">
+                      <div>
+                        <dt className="font-semibold text-ink">Starts</dt>
+                        <dd>{formatDateTime(contest.startDateTime)}</dd>
+                      </div>
+                      <div>
+                        <dt className="font-semibold text-ink">Ends</dt>
+                        <dd>{formatDateTime(contest.endDateTime)}</dd>
+                      </div>
+                      <div className="sm:col-span-2">
+                        <dt className="font-semibold text-ink">Recorded Attempts</dt>
+                        <dd>{contest.attemptCount}</dd>
+                      </div>
+                    </dl>
+
+                    <div className="mt-4 flex flex-wrap gap-2">
+                      <button type="button" onClick={() => void openAttemptsModal(contest)} className="btn btn-secondary rounded-full">
+                        <Users className="size-4" aria-hidden="true" />
+                        View Attempts
+                      </button>
+                      <button type="button" onClick={() => void handleDownloadContestAttempts(contest)} className="btn btn-secondary rounded-full" disabled={attemptsDownloading}>
+                        <FileSpreadsheet className="size-4" aria-hidden="true" />
+                        {attemptsDownloading ? 'Downloading...' : 'Download Excel'}
+                      </button>
+                      <button type="button" onClick={() => openEditWeeklyContestModal(contest)} className="btn btn-secondary rounded-full">
+                        <Pencil className="size-4" aria-hidden="true" />
+                        Edit
+                      </button>
+                    </div>
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+        </SectionReveal>
+
         <SectionReveal delay={0.07} duration={0.42}>
         <section aria-labelledby="award-points-heading" className="overflow-hidden rounded-card border border-line/80 bg-surface/90 shadow-soft">
           <div className="border-b border-line/80 bg-dream-soft/30 p-5 sm:p-6">
@@ -1536,6 +2082,16 @@ const AdminDashboard = () => {
                               {transaction.awardedBy?.name ? ` • by ${transaction.awardedBy.name}` : ''}
                             </span>
                           </span>
+                          {transaction.editable && (
+                            <button
+                              type="button"
+                              className="btn btn-secondary min-h-9 shrink-0 rounded-full px-3 text-xs"
+                              onClick={() => openEditPointTransactionModal(transaction)}
+                            >
+                              <Pencil className="size-3.5" aria-hidden="true" />
+                              Edit
+                            </button>
+                          )}
                         </li>
                       ))}
                     </ul>
@@ -1882,6 +2438,353 @@ const AdminDashboard = () => {
           </div>
         )}
 
+        {attemptsContest && (
+          <div className="fixed inset-0 z-[90] flex items-center justify-center overflow-y-auto bg-canvas/70 p-4 backdrop-blur-md">
+            <section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="weekly-attempts-heading"
+              className="ui-panel-glass my-8 flex max-h-[calc(100vh-4rem)] w-full max-w-5xl flex-col overflow-hidden border-dream/30 shadow-glass"
+            >
+              <div className="flex shrink-0 items-start justify-between gap-4 border-b border-line/70 bg-surface/80 p-5 sm:p-6">
+                <div>
+                  <p className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-dream-text">
+                    Recorded Attempts
+                  </p>
+                  <h2 id="weekly-attempts-heading" className="mt-1 font-display text-2xl font-semibold text-ink">
+                    {attemptsContest.title}
+                  </h2>
+                  <p className="mt-2 text-sm text-ink-muted">
+                    {attemptsContest.attemptCount} students opened this contest
+                  </p>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => void handleDownloadContestAttempts()}
+                    className="btn btn-secondary hidden sm:inline-flex"
+                    disabled={attemptsDownloading}
+                  >
+                    <FileSpreadsheet className="size-4" aria-hidden="true" />
+                    {attemptsDownloading ? 'Downloading...' : 'Download Excel'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-icon"
+                    onClick={closeAttemptsModal}
+                    disabled={attemptsDownloading}
+                    aria-label="Close contest attempts"
+                  >
+                    <X className="size-5" aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="min-h-0 flex-1 overflow-y-auto p-5 sm:p-6">
+                <button
+                  type="button"
+                  onClick={() => void handleDownloadContestAttempts()}
+                  className="btn btn-secondary mb-4 w-full justify-center sm:hidden"
+                  disabled={attemptsDownloading}
+                >
+                  <FileSpreadsheet className="size-4" aria-hidden="true" />
+                  {attemptsDownloading ? 'Downloading...' : 'Download Excel'}
+                </button>
+
+                {attemptsError && <InlineFeedback kind="error">{attemptsError.message}</InlineFeedback>}
+
+                {attemptsLoading ? (
+                  <div className="mt-4">
+                    <LoadingState label="Loading recorded attempts..." />
+                  </div>
+                ) : weeklyContestAttempts.length === 0 ? (
+                  <div className="mt-4 rounded-card border border-line/80 bg-surface/80 p-8 text-center text-sm text-ink-muted">
+                    No students have opened this contest yet.
+                  </div>
+                ) : (
+                  <div className="mt-4 overflow-hidden rounded-card border border-line/80 bg-surface/90 shadow-soft">
+                    <p className="border-b border-line/80 bg-surface-muted/50 px-4 py-3 text-xs font-medium text-ink-subtle md:hidden">
+                      Scroll horizontally to view every attempt field.
+                    </p>
+                    <div className="max-w-full overflow-x-auto overscroll-x-contain">
+                      <table className="min-w-[68rem] w-full border-collapse text-left text-sm">
+                        <caption className="sr-only">Weekly contest recorded attempts</caption>
+                        <thead className="border-b border-line-strong bg-dream-soft/50 text-xs uppercase tracking-[0.08em] text-ink-muted">
+                          <tr>
+                            {['Name', 'USN', 'Email', 'Phone Number', 'Year', 'Opened At', 'Contest Score', 'Action'].map((heading) => (
+                              <th key={heading} scope="col" className="px-4 py-4 font-semibold">{heading}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-line/80">
+                          {weeklyContestAttempts.map((attempt) => (
+                            <tr key={attempt.id} className="bg-surface/80 transition-colors hover:bg-dream-soft/30 motion-reduce:transition-none">
+                              <th scope="row" className="px-4 py-4 font-semibold text-ink">{attempt.name}</th>
+                              <td className="px-4 py-4 font-mono text-xs font-semibold text-ink-muted">{attempt.usn}</td>
+                              <td className="px-4 py-4 text-ink-muted">
+                                <a href={`mailto:${attempt.email}`} className="underline decoration-line underline-offset-4 hover:text-technical-text">
+                                  {attempt.email}
+                                </a>
+                              </td>
+                              <td className="px-4 py-4 text-ink-muted">{attempt.contactNumber}</td>
+                              <td className="px-4 py-4 text-ink-muted">{attempt.year ?? '-'}</td>
+                              <td className="px-4 py-4 text-ink-muted">{formatDateTime(attempt.openedAt)}</td>
+                              <td className="px-4 py-4 font-semibold text-ink">
+                                {attempt.contestScore === null ? '-' : attempt.contestScore}
+                              </td>
+                              <td className="px-4 py-4">
+                                <button
+                                  type="button"
+                                  className="btn btn-secondary rounded-full"
+                                  onClick={() => openScoreModal(attempt)}
+                                >
+                                  {attempt.contestScore === null ? 'Add Score' : 'Edit Score'}
+                                </button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+          </div>
+        )}
+
+        {scoreAttempt && attemptsContest && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-canvas/70 p-4 backdrop-blur-md">
+            <section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="contest-score-heading"
+              className="ui-panel-glass w-full max-w-md border-technical/30 p-5 shadow-glass sm:p-6"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-technical-text">
+                    Contest Score
+                  </p>
+                  <h2 id="contest-score-heading" className="mt-1 font-display text-2xl font-semibold text-ink">
+                    {scoreAttempt.contestScore === null ? 'Add score' : 'Edit score'}
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-icon shrink-0"
+                  onClick={closeScoreModal}
+                  disabled={scoreSubmitting}
+                  aria-label="Close contest score form"
+                >
+                  <X className="size-5" aria-hidden="true" />
+                </button>
+              </div>
+
+              <div className="mt-5 rounded-card border border-line/80 bg-surface/80 p-4 text-sm text-ink-muted">
+                <p className="font-semibold text-ink">{scoreAttempt.name}</p>
+                <p className="mt-1 font-mono text-xs font-semibold text-ink-subtle">
+                  {scoreAttempt.usn} • Week {attemptsContest.weekNumber}
+                </p>
+                <p className="mt-3 leading-6">
+                  Enter only the external contest result. The automatic +5 first-click reward remains separate.
+                </p>
+              </div>
+
+              <form onSubmit={handleSubmitContestScore} className="mt-5 space-y-4">
+                <label>
+                  <span className="mb-2 block text-sm font-semibold text-ink">Score</span>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100000}
+                    step={1}
+                    value={contestScoreInput}
+                    onChange={(event) => {
+                      setContestScoreInput(event.target.value);
+                      setScoreError(null);
+                    }}
+                    className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft placeholder:text-ink-subtle focus:border-technical/60 focus:ring-2 focus:ring-technical/20"
+                    required
+                  />
+                </label>
+
+                {scoreError && <InlineFeedback kind="error">{scoreError.message}</InlineFeedback>}
+
+                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                  <button type="button" className="btn btn-secondary" onClick={closeScoreModal} disabled={scoreSubmitting}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-primary" disabled={scoreSubmitting}>
+                    {scoreSubmitting && (
+                      <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+                    )}
+                    {scoreSubmitting ? 'Saving...' : 'Save Score'}
+                  </button>
+                </div>
+              </form>
+            </section>
+          </div>
+        )}
+
+        {isWeeklyContestModalOpen && (
+          <div className="fixed inset-0 z-[90] overflow-hidden bg-canvas/70 backdrop-blur-md">
+            <div className="flex h-full items-start justify-center px-4 pb-4 pt-24 sm:px-6 sm:pb-6 sm:pt-28 lg:pt-32">
+              <section
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="weekly-contest-modal-heading"
+                className="ui-panel-glass flex max-h-[calc(100vh-7rem)] w-full max-w-3xl flex-col overflow-hidden border-dream/30 shadow-glass sm:max-h-[calc(100vh-8.5rem)] lg:max-h-[calc(100vh-10rem)]"
+              >
+                <div className="flex shrink-0 items-start justify-between gap-4 border-b border-line/70 bg-surface/80 p-5 sm:p-6">
+                  <div>
+                    <p className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-dream-text">
+                      {editingWeeklyContest ? 'Edit Weekly Contest' : 'Add Weekly Contest'}
+                    </p>
+                    <h2 id="weekly-contest-modal-heading" className="mt-1 font-display text-2xl font-semibold text-ink">
+                      {editingWeeklyContest ? 'Update contest details' : 'Create a weekly contest'}
+                    </h2>
+                  </div>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-icon shrink-0"
+                    onClick={closeWeeklyContestModal}
+                    disabled={weeklyContestSubmitting}
+                    aria-label="Close weekly contest form"
+                  >
+                    <X className="size-5" aria-hidden="true" />
+                  </button>
+                </div>
+
+                <form onSubmit={handleWeeklyContestSubmit} className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5 sm:p-6">
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <label>
+                      <span className="mb-2 block text-sm font-semibold text-ink">Week Number</span>
+                      <select
+                        value={weeklyContestForm.weekNumber}
+                        onChange={(event) => handleWeeklyContestFormChange('weekNumber', event.target.value)}
+                        className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft focus:border-dream/60 focus:ring-2 focus:ring-dream/20"
+                        required
+                      >
+                        <option value="">Select week</option>
+                        {Array.from({ length: 10 }, (_, index) => index + 1).map((week) => (
+                          <option key={week} value={week}>Week {week}</option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label>
+                      <span className="mb-2 block text-sm font-semibold text-ink">Contest Title</span>
+                      <input
+                        type="text"
+                        value={weeklyContestForm.title}
+                        onChange={(event) => handleWeeklyContestFormChange('title', event.target.value)}
+                        maxLength={120}
+                        className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft placeholder:text-ink-subtle focus:border-dream/60 focus:ring-2 focus:ring-dream/20"
+                        required
+                      />
+                    </label>
+
+                    <label className="sm:col-span-2">
+                      <span className="mb-2 block text-sm font-semibold text-ink">Description</span>
+                      <textarea
+                        value={weeklyContestForm.description}
+                        onChange={(event) => handleWeeklyContestFormChange('description', event.target.value)}
+                        rows={3}
+                        maxLength={1000}
+                        className="w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft placeholder:text-ink-subtle focus:border-dream/60 focus:ring-2 focus:ring-dream/20"
+                      />
+                    </label>
+
+                    <label className="sm:col-span-2">
+                      <span className="mb-2 block text-sm font-semibold text-ink">Contest URL</span>
+                      <input
+                        type="url"
+                        value={weeklyContestForm.contestUrl}
+                        onChange={(event) => handleWeeklyContestFormChange('contestUrl', event.target.value)}
+                        maxLength={1000}
+                        placeholder="https://"
+                        className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft placeholder:text-ink-subtle focus:border-dream/60 focus:ring-2 focus:ring-dream/20"
+                        required
+                      />
+                    </label>
+
+                    <label>
+                      <span className="mb-2 block text-sm font-semibold text-ink">Start Date</span>
+                      <input
+                        type="date"
+                        value={weeklyContestForm.startDate}
+                        onChange={(event) => handleWeeklyContestFormChange('startDate', event.target.value)}
+                        className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft focus:border-dream/60 focus:ring-2 focus:ring-dream/20"
+                        required
+                      />
+                    </label>
+
+                    <label>
+                      <span className="mb-2 block text-sm font-semibold text-ink">Start Time</span>
+                      <input
+                        type="time"
+                        value={weeklyContestForm.startTime}
+                        onChange={(event) => handleWeeklyContestFormChange('startTime', event.target.value)}
+                        className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft focus:border-dream/60 focus:ring-2 focus:ring-dream/20"
+                        required
+                      />
+                    </label>
+
+                    <label>
+                      <span className="mb-2 block text-sm font-semibold text-ink">End Date</span>
+                      <input
+                        type="date"
+                        value={weeklyContestForm.endDate}
+                        onChange={(event) => handleWeeklyContestFormChange('endDate', event.target.value)}
+                        className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft focus:border-dream/60 focus:ring-2 focus:ring-dream/20"
+                        required
+                      />
+                    </label>
+
+                    <label>
+                      <span className="mb-2 block text-sm font-semibold text-ink">End Time</span>
+                      <input
+                        type="time"
+                        value={weeklyContestForm.endTime}
+                        onChange={(event) => handleWeeklyContestFormChange('endTime', event.target.value)}
+                        className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft focus:border-dream/60 focus:ring-2 focus:ring-dream/20"
+                        required
+                      />
+                    </label>
+                  </div>
+
+                  <label className="flex items-center gap-3 rounded-card border border-line/80 bg-surface/75 p-3 text-sm font-semibold text-ink">
+                    <input
+                      type="checkbox"
+                      checked={weeklyContestForm.active}
+                      onChange={(event) => handleWeeklyContestFormChange('active', event.target.checked)}
+                      className="size-4 rounded border-line text-dream focus:ring-dream/30"
+                    />
+                    Contest active
+                  </label>
+
+                  {weeklyContestFormError && <InlineFeedback kind="error">{weeklyContestFormError.message}</InlineFeedback>}
+
+                  <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                    <button type="button" onClick={closeWeeklyContestModal} className="btn btn-secondary" disabled={weeklyContestSubmitting}>
+                      Cancel
+                    </button>
+                    <button type="submit" className="btn btn-primary" disabled={weeklyContestSubmitting}>
+                      {weeklyContestSubmitting && (
+                        <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+                      )}
+                      {weeklyContestSubmitting
+                        ? editingWeeklyContest ? 'Updating...' : 'Creating...'
+                        : editingWeeklyContest ? 'Update Contest' : 'Create Contest'}
+                    </button>
+                  </div>
+                </form>
+              </section>
+            </div>
+          </div>
+        )}
+
         {isEventModalOpen && (
           <div className="fixed inset-0 z-[90] overflow-hidden bg-canvas/70 backdrop-blur-md">
             <div className="flex h-full items-start justify-center px-4 pb-4 pt-24 sm:px-6 sm:pb-6 sm:pt-28 lg:pt-32">
@@ -2163,6 +3066,100 @@ const AdminDashboard = () => {
                   {awardSubmitting ? 'Awarding...' : 'Confirm Award'}
                 </button>
               </div>
+            </section>
+          </div>
+        )}
+
+        {editingPointTransaction && selectedAwardStudent && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-canvas/70 p-4 backdrop-blur-md">
+            <section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="edit-point-award-heading"
+              className="ui-panel-glass w-full max-w-md border-technical/30 p-5 shadow-glass sm:p-6"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-technical-text">
+                    Correct Award
+                  </p>
+                  <h2 id="edit-point-award-heading" className="mt-1 font-display text-2xl font-semibold text-ink">
+                    Edit manual points
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-icon shrink-0"
+                  onClick={closeEditPointTransactionModal}
+                  disabled={editAwardSubmitting}
+                  aria-label="Close edit point award form"
+                >
+                  <X className="size-5" aria-hidden="true" />
+                </button>
+              </div>
+
+              <div className="mt-5 rounded-card border border-line/80 bg-surface/80 p-4 text-sm text-ink-muted">
+                <p className="font-semibold text-ink">{selectedAwardStudent.name}</p>
+                <p className="mt-1 font-mono text-xs font-semibold text-ink-subtle">
+                  {selectedAwardStudent.usn} • Manual award
+                </p>
+                <p className="mt-3 leading-6">
+                  This updates the existing award transaction. Leaderboard totals will reflect the corrected value.
+                </p>
+              </div>
+
+              <form onSubmit={handleSubmitEditPointTransaction} className="mt-5 space-y-4">
+                <label>
+                  <span className="mb-2 block text-sm font-semibold text-ink">Points</span>
+                  <input
+                    type="number"
+                    min={1}
+                    max={100000}
+                    step={1}
+                    value={editAwardPoints}
+                    onChange={(event) => {
+                      setEditAwardPoints(event.target.value);
+                      setEditAwardError(null);
+                    }}
+                    className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft placeholder:text-ink-subtle focus:border-technical/60 focus:ring-2 focus:ring-technical/20"
+                    required
+                  />
+                </label>
+
+                <label>
+                  <span className="mb-2 block text-sm font-semibold text-ink">Reason / Activity</span>
+                  <input
+                    type="text"
+                    value={editAwardDescription}
+                    onChange={(event) => {
+                      setEditAwardDescription(event.target.value);
+                      setEditAwardError(null);
+                    }}
+                    maxLength={240}
+                    className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft placeholder:text-ink-subtle focus:border-technical/60 focus:ring-2 focus:ring-technical/20"
+                    required
+                  />
+                </label>
+
+                {editAwardError && <InlineFeedback kind="error">{editAwardError.message}</InlineFeedback>}
+
+                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                  <button
+                    type="button"
+                    className="btn btn-secondary"
+                    onClick={closeEditPointTransactionModal}
+                    disabled={editAwardSubmitting}
+                  >
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-primary" disabled={editAwardSubmitting}>
+                    {editAwardSubmitting && (
+                      <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+                    )}
+                    {editAwardSubmitting ? 'Saving...' : 'Save Changes'}
+                  </button>
+                </div>
+              </form>
             </section>
           </div>
         )}
