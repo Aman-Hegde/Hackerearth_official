@@ -3,11 +3,14 @@ import {
   BookOpen,
   CalendarDays,
   CheckCircle2,
+  Clock,
   ExternalLink,
   GraduationCap,
+  MapPin,
   Medal,
   Shapes,
   Trophy,
+  Users,
   UserRound,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -18,6 +21,10 @@ import ResourceCard from "../components/ResourceCard";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { blogPosts } from "../lib/resourcesData";
+import {
+  getStudentEvents,
+  type EventSummary,
+} from "../lib/eventApi";
 import {
   getStudentRank,
   getStudentWeeklyRank,
@@ -49,6 +56,73 @@ const domainCardStyles = [
   },
 ] as const;
 
+const formatDashboardDateTime = (value: string) =>
+  new Intl.DateTimeFormat("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+
+const getDashboardEventStatusLabel = (status: EventSummary["status"]) =>
+  status === "ongoing" ? "ONGOING" : "UPCOMING";
+
+const DashboardEventPreview = ({ event }: { event: EventSummary }) => (
+  <article className="rounded-card border border-line/80 bg-surface/75 p-3 shadow-soft">
+    <div className="grid gap-3 sm:grid-cols-[5rem_minmax(0,1fr)]">
+      <div className="aspect-[16/10] overflow-hidden rounded-control border border-line bg-surface-muted sm:aspect-square">
+        {event.posterUrl ? (
+          <img
+            src={event.posterUrl}
+            alt={`${event.title} poster`}
+            loading="lazy"
+            decoding="async"
+            className="size-full object-cover"
+            onError={(imageEvent) => {
+              imageEvent.currentTarget.style.display = "none";
+            }}
+          />
+        ) : (
+          <div className="flex size-full items-center justify-center text-xs font-semibold text-ink-muted">
+            Event
+          </div>
+        )}
+      </div>
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <h4 className="break-words font-display text-base font-semibold text-ink">
+            {event.title}
+          </h4>
+          <span className="inline-flex min-h-7 shrink-0 items-center rounded-full border border-dream/30 bg-dream/10 px-2.5 font-mono text-[0.65rem] font-bold text-dream-text">
+            {getDashboardEventStatusLabel(event.status)}
+          </span>
+        </div>
+        <dl className="mt-3 grid gap-2 text-xs text-ink-muted">
+          <div className="flex gap-2">
+            <Clock className="mt-0.5 size-3.5 shrink-0 text-primary-text" aria-hidden="true" />
+            <div>
+              <dt className="sr-only">Start time</dt>
+              <dd>{formatDashboardDateTime(event.eventDateTime)}</dd>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <MapPin className="mt-0.5 size-3.5 shrink-0 text-technical-text" aria-hidden="true" />
+            <div>
+              <dt className="sr-only">Venue</dt>
+              <dd>{event.venue}</dd>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Users className="mt-0.5 size-3.5 shrink-0 text-rose-text" aria-hidden="true" />
+            <div>
+              <dt className="sr-only">Registrations</dt>
+              <dd>{event.registrationCount} / {event.maxRegistrations} Registered</dd>
+            </div>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </article>
+);
+
 const StudentDashboard = () => {
   const { user } = useAuth();
   const { isDark } = useTheme();
@@ -60,6 +134,9 @@ const StudentDashboard = () => {
   const [weeklyRankError, setWeeklyRankError] = useState("");
   const [isLoadingWeeks, setIsLoadingWeeks] = useState(true);
   const [isLoadingWeeklyRank, setIsLoadingWeeklyRank] = useState(false);
+  const [dashboardEvents, setDashboardEvents] = useState<EventSummary[]>([]);
+  const [dashboardEventsError, setDashboardEventsError] = useState("");
+  const [isLoadingDashboardEvents, setIsLoadingDashboardEvents] = useState(true);
 
   useEffect(() => {
     if (!user) return;
@@ -164,6 +241,40 @@ const StudentDashboard = () => {
       isMounted = false;
     };
   }, [selectedWeek, user?.id]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const controller = new AbortController();
+    setIsLoadingDashboardEvents(true);
+    setDashboardEventsError("");
+
+    void getStudentEvents(controller.signal)
+      .then((response) => {
+        const currentEvents = response.upcoming
+          .filter((event) => event.status !== "past")
+          .sort(
+            (first, second) =>
+              new Date(first.eventDateTime).getTime() -
+              new Date(second.eventDateTime).getTime()
+          )
+          .slice(0, 3);
+
+        setDashboardEvents(currentEvents);
+      })
+      .catch((error) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setDashboardEvents([]);
+        setDashboardEventsError("Upcoming events could not be loaded right now.");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setIsLoadingDashboardEvents(false);
+        }
+      });
+
+    return () => controller.abort();
+  }, [user?.id]);
 
   if (!user) return null;
 
@@ -454,11 +565,32 @@ const StudentDashboard = () => {
                       <CalendarDays className="size-5" aria-hidden="true" />
                     </div>
                     <h3 className="mt-5 font-display text-xl font-semibold text-ink">Upcoming events</h3>
-                    <p className="mt-2 flex-1 text-sm leading-6 text-ink-muted">
-                      There are no upcoming events published right now. Visit the events page for club highlights and updates.
-                    </p>
+                    <div className="mt-4 flex-1 space-y-3">
+                      {isLoadingDashboardEvents ? (
+                        <div className="space-y-3" aria-hidden="true">
+                          {[0, 1].map((item) => (
+                            <div
+                              key={item}
+                              className="h-24 animate-pulse rounded-card bg-surface-muted motion-reduce:animate-none"
+                            />
+                          ))}
+                        </div>
+                      ) : dashboardEventsError ? (
+                        <p className="rounded-card border border-line/80 bg-surface/75 p-4 text-sm leading-6 text-ink-muted">
+                          {dashboardEventsError}
+                        </p>
+                      ) : dashboardEvents.length > 0 ? (
+                        dashboardEvents.map((event) => (
+                          <DashboardEventPreview key={event.id} event={event} />
+                        ))
+                      ) : (
+                        <p className="rounded-card border border-line/80 bg-surface/75 p-4 text-sm leading-6 text-ink-muted">
+                          No upcoming events right now.
+                        </p>
+                      )}
+                    </div>
                     <Link to="/events" className="btn btn-secondary mt-5 w-full justify-center sm:w-fit">
-                      Explore events
+                      View Event
                       <ArrowRight className="size-4" aria-hidden="true" />
                     </Link>
                   </article>

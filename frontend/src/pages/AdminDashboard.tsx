@@ -74,6 +74,8 @@ const emptyEventForm = {
   venue: '',
   eventDate: '',
   eventTime: '',
+  eventEndDate: '',
+  eventEndTime: '',
   deadlineDate: '',
   deadlineTime: '',
   maxRegistrations: '',
@@ -210,6 +212,7 @@ const toTimeInputValue = (value?: string | null) => {
 const getEventStatusLabel = (event: EventSummary) => {
   if (event.status === 'open') return 'OPEN';
   if (event.status === 'full') return 'FULL';
+  if (event.status === 'ongoing') return 'ONGOING';
   if (event.status === 'past') return 'PAST';
   return 'CLOSED';
 };
@@ -217,12 +220,14 @@ const getEventStatusLabel = (event: EventSummary) => {
 const getEventStatusClasses = (event: EventSummary) => {
   if (event.status === 'open') return 'border-dream/35 bg-dream/10 text-dream-text';
   if (event.status === 'full') return 'border-technical/35 bg-technical/10 text-technical-text';
+  if (event.status === 'ongoing') return 'border-primary/35 bg-primary/10 text-primary-text';
   if (event.status === 'past') return 'border-line bg-surface-muted text-ink-muted';
   return 'border-rose/35 bg-rose/10 text-rose-text';
 };
 
 const buildEventPayload = (form: EventFormState): EventInput | null => {
   const eventDateTime = new Date(`${form.eventDate}T${form.eventTime}`);
+  const eventEndDateTime = new Date(`${form.eventEndDate}T${form.eventEndTime}`);
   const registrationDeadline = new Date(`${form.deadlineDate}T${form.deadlineTime}`);
   const maxRegistrations = Number(form.maxRegistrations);
 
@@ -233,9 +238,12 @@ const buildEventPayload = (form: EventFormState): EventInput | null => {
     !form.venue.trim() ||
     !form.eventDate ||
     !form.eventTime ||
+    !form.eventEndDate ||
+    !form.eventEndTime ||
     !form.deadlineDate ||
     !form.deadlineTime ||
     Number.isNaN(eventDateTime.getTime()) ||
+    Number.isNaN(eventEndDateTime.getTime()) ||
     Number.isNaN(registrationDeadline.getTime()) ||
     !Number.isInteger(maxRegistrations) ||
     maxRegistrations < 1
@@ -250,6 +258,7 @@ const buildEventPayload = (form: EventFormState): EventInput | null => {
     description: form.description.trim(),
     venue: form.venue.trim(),
     eventDateTime: eventDateTime.toISOString(),
+    eventEndDateTime: eventEndDateTime.toISOString(),
     registrationDeadline: registrationDeadline.toISOString(),
     maxRegistrations,
     active: form.active,
@@ -779,6 +788,8 @@ const AdminDashboard = () => {
       venue: event.venue,
       eventDate: toDateInputValue(event.eventDateTime),
       eventTime: toTimeInputValue(event.eventDateTime),
+      eventEndDate: toDateInputValue(event.eventEndDateTime),
+      eventEndTime: toTimeInputValue(event.eventEndDateTime),
       deadlineDate: toDateInputValue(event.registrationDeadline),
       deadlineTime: toTimeInputValue(event.registrationDeadline),
       maxRegistrations: String(event.maxRegistrations),
@@ -869,10 +880,18 @@ const AdminDashboard = () => {
       return;
     }
 
-    if (new Date(draftPayload.registrationDeadline) >= new Date(draftPayload.eventDateTime)) {
+    if (new Date(draftPayload.eventEndDateTime) <= new Date(draftPayload.eventDateTime)) {
       setEventFormError({
         kind: 'api',
-        message: 'Registration deadline must be before the event date and time.',
+        message: 'Event end date and time must be after the event start date and time.',
+      });
+      return;
+    }
+
+    if (new Date(draftPayload.registrationDeadline) > new Date(draftPayload.eventDateTime)) {
+      setEventFormError({
+        kind: 'api',
+        message: 'Registration deadline must be before or at the event start date and time.',
       });
       return;
     }
@@ -1291,7 +1310,11 @@ const AdminDashboard = () => {
                             <dt className="font-semibold text-ink">Registrations</dt>
                             <dd>{event.registrationCount} / {event.maxRegistrations}</dd>
                           </div>
-                          <div className="sm:col-span-2">
+                          <div>
+                            <dt className="font-semibold text-ink">Ends</dt>
+                            <dd>{event.eventEndDateTime ? formatDateTime(event.eventEndDateTime) : 'Legacy event'}</dd>
+                          </div>
+                          <div>
                             <dt className="font-semibold text-ink">Deadline</dt>
                             <dd>{formatDateTime(event.registrationDeadline)}</dd>
                           </div>
@@ -1985,7 +2008,7 @@ const AdminDashboard = () => {
                   </label>
 
                   <label>
-                    <span className="mb-2 block text-sm font-semibold text-ink">Event Date</span>
+                    <span className="mb-2 block text-sm font-semibold text-ink">Event Start Date</span>
                     <input
                       type="date"
                       value={eventForm.eventDate}
@@ -1996,11 +2019,33 @@ const AdminDashboard = () => {
                   </label>
 
                   <label>
-                    <span className="mb-2 block text-sm font-semibold text-ink">Event Time</span>
+                    <span className="mb-2 block text-sm font-semibold text-ink">Event Start Time</span>
                     <input
                       type="time"
                       value={eventForm.eventTime}
                       onChange={(event) => handleEventFormChange('eventTime', event.target.value)}
+                      className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
+                      required
+                    />
+                  </label>
+
+                  <label>
+                    <span className="mb-2 block text-sm font-semibold text-ink">Event End Date</span>
+                    <input
+                      type="date"
+                      value={eventForm.eventEndDate}
+                      onChange={(event) => handleEventFormChange('eventEndDate', event.target.value)}
+                      className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
+                      required
+                    />
+                  </label>
+
+                  <label>
+                    <span className="mb-2 block text-sm font-semibold text-ink">Event End Time</span>
+                    <input
+                      type="time"
+                      value={eventForm.eventEndTime}
+                      onChange={(event) => handleEventFormChange('eventEndTime', event.target.value)}
                       className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
                       required
                     />

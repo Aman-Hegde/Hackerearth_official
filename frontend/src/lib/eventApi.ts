@@ -1,6 +1,6 @@
 import { API_BASE_URL, ApiError, apiRequest } from "./api";
 
-export type EventStatus = "open" | "full" | "closed" | "past";
+export type EventStatus = "open" | "full" | "closed" | "ongoing" | "past";
 
 export interface EventSummary {
   id: string;
@@ -10,6 +10,7 @@ export interface EventSummary {
   posterUrl: string;
   posterPublicId?: string | null;
   eventDateTime: string;
+  eventEndDateTime?: string | null;
   registrationDeadline: string;
   maxRegistrations: number;
   registrationCount: number;
@@ -28,6 +29,7 @@ export interface EventInput {
   posterUrl: string;
   posterPublicId?: string;
   eventDateTime: string;
+  eventEndDateTime: string;
   registrationDeadline: string;
   maxRegistrations: number;
   active?: boolean;

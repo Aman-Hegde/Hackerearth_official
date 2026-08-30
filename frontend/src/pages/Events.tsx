@@ -36,6 +36,7 @@ const formatDate = (value: string) =>
 const getButtonLabel = (event: EventSummary) => {
   if (event.isRegistered) return "REGISTERED";
   if (event.status === "full") return "REGISTRATION FULL";
+  if (event.status === "ongoing") return "EVENT ONGOING";
   if (event.status === "closed") return "REGISTRATION CLOSED";
   return "REGISTER NOW";
 };
@@ -43,6 +44,7 @@ const getButtonLabel = (event: EventSummary) => {
 const getStatusLabel = (status: EventSummary["status"]) => {
   if (status === "open") return "OPEN";
   if (status === "full") return "FULL";
+  if (status === "ongoing") return "ONGOING";
   if (status === "past") return "PAST";
   return "CLOSED";
 };
@@ -150,6 +152,15 @@ const UpcomingEventCard = ({
               <dd>{formatDateTime(event.eventDateTime)}</dd>
             </div>
           </div>
+          {event.eventEndDateTime && (
+            <div className="flex gap-2">
+              <Clock className="mt-0.5 size-4 shrink-0 text-dream-text" aria-hidden="true" />
+              <div>
+                <dt className="font-semibold text-ink">Ends</dt>
+                <dd>{formatDateTime(event.eventEndDateTime)}</dd>
+              </div>
+            </div>
+          )}
           <div className="flex gap-2">
             <Clock className="mt-0.5 size-4 shrink-0 text-rose-text" aria-hidden="true" />
             <div>

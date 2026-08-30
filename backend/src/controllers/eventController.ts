@@ -6,7 +6,7 @@ import EventRegistration from "../models/EventRegistration";
 import User from "../models/user";
 import { uploadEventPosterToCloudinary } from "../config/cloudinary";
 
-type EventStatus = "open" | "full" | "closed" | "past";
+type EventStatus = "open" | "full" | "closed" | "ongoing" | "past";
 
 interface EventBody {
   title?: unknown;
@@ -15,6 +15,7 @@ interface EventBody {
   posterUrl?: unknown;
   posterPublicId?: unknown;
   eventDateTime?: unknown;
+  eventEndDateTime?: unknown;
   registrationDeadline?: unknown;
   maxRegistrations?: unknown;
   active?: unknown;
@@ -52,14 +53,25 @@ const parsePositiveInteger = (
 
 const getEventStatus = (event: {
   eventDateTime: Date;
+  eventEndDateTime?: Date | null;
   registrationDeadline: Date;
   registrationCount: number;
   maxRegistrations: number;
   active: boolean;
 }): EventStatus => {
   const now = new Date();
+  const eventEndDateTime =
+    event.eventEndDateTime instanceof Date && !Number.isNaN(event.eventEndDateTime.getTime())
+      ? event.eventEndDateTime
+      : null;
 
-  if (now >= event.eventDateTime) return "past";
+  if (eventEndDateTime) {
+    if (now >= eventEndDateTime) return "past";
+    if (now >= event.eventDateTime) return "ongoing";
+  } else if (now >= event.eventDateTime) {
+    return "past";
+  }
+
   if (event.registrationCount >= event.maxRegistrations) return "full";
   if (!event.active || now >= event.registrationDeadline) return "closed";
   return "open";
@@ -67,6 +79,7 @@ const getEventStatus = (event: {
 
 const getRegistrationOpen = (event: {
   eventDateTime: Date;
+  eventEndDateTime?: Date | null;
   registrationDeadline: Date;
   registrationCount: number;
   maxRegistrations: number;
@@ -81,6 +94,7 @@ const toSafeEvent = (event: IEvent, isRegistered = false) => ({
   posterUrl: event.posterUrl,
   posterPublicId: event.posterPublicId ?? null,
   eventDateTime: event.eventDateTime,
+  eventEndDateTime: event.eventEndDateTime ?? null,
   registrationDeadline: event.registrationDeadline,
   maxRegistrations: event.maxRegistrations,
   registrationCount: event.registrationCount,
@@ -133,6 +147,7 @@ const validateEventPayload = (
     posterUrl: string;
     posterPublicId: string;
     eventDateTime: Date;
+    eventEndDateTime: Date;
     registrationDeadline: Date;
     maxRegistrations: number;
     active: boolean;
@@ -199,6 +214,14 @@ const validateEventPayload = (
     update.eventDateTime = eventDateTime;
   }
 
+  if (body.eventEndDateTime !== undefined || required) {
+    const eventEndDateTime = parseDate(body.eventEndDateTime);
+    if (!eventEndDateTime) {
+      return { error: "A valid event end date and time is required." };
+    }
+    update.eventEndDateTime = eventEndDateTime;
+  }
+
   if (body.registrationDeadline !== undefined || required) {
     const registrationDeadline = parseDate(body.registrationDeadline);
     if (!registrationDeadline) {
@@ -257,12 +280,20 @@ export const createAdminEvent = async (
       });
     }
 
-    const { eventDateTime, registrationDeadline } = validation.update;
-    if (!eventDateTime || !registrationDeadline || registrationDeadline >= eventDateTime) {
+    const { eventDateTime, eventEndDateTime, registrationDeadline } = validation.update;
+    if (!eventDateTime || !eventEndDateTime || eventEndDateTime <= eventDateTime) {
       return res.status(400).json({
         success: false,
         code: "INVALID_EVENT_DATES",
-        message: "Registration deadline must be before the event date and time.",
+        message: "Event end date and time must be after the event start date and time.",
+      });
+    }
+
+    if (!registrationDeadline || registrationDeadline > eventDateTime) {
+      return res.status(400).json({
+        success: false,
+        code: "INVALID_EVENT_DATES",
+        message: "Registration deadline must be before or at the event start date and time.",
       });
     }
 
@@ -408,6 +439,8 @@ export const updateAdminEvent = async (
     }
 
     const nextEventDateTime = validation.update.eventDateTime ?? event.eventDateTime;
+    const nextEventEndDateTime =
+      validation.update.eventEndDateTime ?? event.eventEndDateTime;
     const nextRegistrationDeadline =
       validation.update.registrationDeadline ?? event.registrationDeadline;
 
@@ -415,15 +448,23 @@ export const updateAdminEvent = async (
       return res.status(400).json({
         success: false,
         code: "INVALID_EVENT_DATES",
-        message: "Event date and time must be in the future.",
+        message: "Event start date and time must be in the future.",
       });
     }
 
-    if (nextRegistrationDeadline >= nextEventDateTime) {
+    if (nextEventEndDateTime && nextEventEndDateTime <= nextEventDateTime) {
       return res.status(400).json({
         success: false,
         code: "INVALID_EVENT_DATES",
-        message: "Registration deadline must be before the event date and time.",
+        message: "Event end date and time must be after the event start date and time.",
+      });
+    }
+
+    if (nextRegistrationDeadline > nextEventDateTime) {
+      return res.status(400).json({
+        success: false,
+        code: "INVALID_EVENT_DATES",
+        message: "Registration deadline must be before or at the event start date and time.",
       });
     }
 
@@ -730,7 +771,7 @@ export const registerForEvent = async (
       const message =
         status === "full"
           ? "Registration is full for this event."
-          : status === "past"
+          : status === "past" || status === "ongoing"
             ? "This event has already started."
             : "Registration is closed for this event.";
 
@@ -739,7 +780,7 @@ export const registerForEvent = async (
         code:
           status === "full"
             ? "EVENT_FULL"
-            : status === "past"
+            : status === "past" || status === "ongoing"
               ? "EVENT_PAST"
               : "REGISTRATION_CLOSED",
         message,

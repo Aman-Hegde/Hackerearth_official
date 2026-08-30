@@ -7,6 +7,7 @@ export interface IEvent extends Document {
   posterUrl: string;
   posterPublicId?: string;
   eventDateTime: Date;
+  eventEndDateTime?: Date;
   registrationDeadline: Date;
   maxRegistrations: number;
   registrationCount: number;
@@ -50,6 +51,10 @@ const eventSchema = new Schema<IEvent>(
     eventDateTime: {
       type: Date,
       required: [true, "Event date and time are required"],
+      index: true,
+    },
+    eventEndDateTime: {
+      type: Date,
       index: true,
     },
     registrationDeadline: {
@@ -98,15 +103,25 @@ eventSchema.index({ active: 1, eventDateTime: 1 });
 eventSchema.pre("validate", function validateEventDates() {
   if (
     this.eventDateTime instanceof Date &&
-    this.registrationDeadline instanceof Date &&
-    this.registrationDeadline >= this.eventDateTime
+    this.eventEndDateTime instanceof Date &&
+    this.eventEndDateTime <= this.eventDateTime
   ) {
     this.invalidate(
-      "registrationDeadline",
-      "Registration deadline must be before the event date and time"
+      "eventEndDateTime",
+      "Event end date and time must be after the event start date and time"
     );
   }
 
+  if (
+    this.eventDateTime instanceof Date &&
+    this.registrationDeadline instanceof Date &&
+    this.registrationDeadline > this.eventDateTime
+  ) {
+    this.invalidate(
+      "registrationDeadline",
+      "Registration deadline must be before or at the event start date and time"
+    );
+  }
 });
 
 const Event: Model<IEvent> =
