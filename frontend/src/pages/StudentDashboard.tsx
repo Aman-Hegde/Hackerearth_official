@@ -45,6 +45,8 @@ import {
   studentResourceState,
 } from "../lib/studentResources";
 
+type WeeklySelection = "all" | number;
+
 const domainCardStyles = [
   {
     card: "border-technical/25 hover:border-technical/50",
@@ -216,7 +218,7 @@ const StudentDashboard = () => {
   const [studentRank, setStudentRank] = useState<StudentRank | null>(null);
   const [studentRankError, setStudentRankError] = useState("");
   const [availableWeeks, setAvailableWeeks] = useState<number[]>([]);
-  const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
+  const [selectedWeek, setSelectedWeek] = useState<WeeklySelection>("all");
   const [weeklyRank, setWeeklyRank] = useState<StudentWeeklyRank | null>(null);
   const [weeklyRankError, setWeeklyRankError] = useState("");
   const [isLoadingWeeks, setIsLoadingWeeks] = useState(true);
@@ -335,17 +337,19 @@ const StudentDashboard = () => {
 
         if (isMounted) {
           const weeks = data.weeks;
-          const latestWeek = weeks.length > 0 ? weeks[weeks.length - 1] : null;
           setAvailableWeeks(weeks);
           setSelectedWeek((currentWeek) =>
-            currentWeek && weeks.includes(currentWeek) ? currentWeek : latestWeek
+            currentWeek === "all" ||
+              (typeof currentWeek === "number" && weeks.includes(currentWeek))
+              ? currentWeek
+              : "all"
           );
           setWeeklyRankError("");
         }
       } catch {
         if (isMounted) {
           setAvailableWeeks([]);
-          setSelectedWeek(null);
+          setSelectedWeek("all");
           setWeeklyRank(null);
           setWeeklyRankError("Weekly rankings could not be loaded right now.");
         }
@@ -364,7 +368,7 @@ const StudentDashboard = () => {
   }, [user?.id]);
 
   useEffect(() => {
-    if (!user || selectedWeek === null) {
+    if (!user) {
       setWeeklyRank(null);
       return;
     }
@@ -375,7 +379,10 @@ const StudentDashboard = () => {
       try {
         setIsLoadingWeeklyRank(true);
         setWeeklyRankError("");
-        const data = await getStudentWeeklyRank(selectedWeek);
+        const data = await getStudentWeeklyRank({
+          scope: selectedWeek === "all" ? "all" : "week",
+          week: selectedWeek === "all" ? undefined : selectedWeek,
+        });
 
         if (isMounted) {
           setWeeklyRank(data.rank);
@@ -636,6 +643,17 @@ const StudentDashboard = () => {
                       />
                     ) : availableWeeks.length > 0 ? (
                       <div className="relative mt-6 flex flex-wrap gap-2" aria-label="Select weekly contest week">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedWeek("all")}
+                          className={`rounded-full border px-4 py-2 text-sm font-semibold transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dream focus-visible:ring-offset-2 focus-visible:ring-offset-base motion-reduce:transition-none ${selectedWeek === "all"
+                              ? "border-dream/50 bg-dream/15 text-dream-text shadow-glow"
+                              : "border-line bg-surface/80 text-ink-muted hover:border-dream/35 hover:text-ink"
+                            }`}
+                          aria-pressed={selectedWeek === "all"}
+                        >
+                          All Weekly Contests
+                        </button>
                         {availableWeeks.map((week) => {
                           const isSelected = selectedWeek === week;
 
@@ -690,7 +708,11 @@ const StudentDashboard = () => {
                               <p className="mt-2 font-display text-4xl font-bold tabular-nums text-ink">
                                 {weeklyRank.weeklyPoints}
                               </p>
-                              <p className="mt-2 text-sm text-ink-subtle">Week {weeklyRank.week} contest score</p>
+                              <p className="mt-2 text-sm text-ink-subtle">
+                                {weeklyRank.scope === "all"
+                                  ? "All weekly contest score"
+                                  : `Week ${weeklyRank.week} contest score`}
+                              </p>
                             </div>
                           </div>
                         ) : null}

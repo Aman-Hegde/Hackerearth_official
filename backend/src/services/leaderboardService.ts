@@ -1,6 +1,7 @@
 import { PipelineStage, Types } from "mongoose";
 import PointTransaction from "../models/pointTransaction";
 import User from "../models/user";
+import WeeklyContest from "../models/WeeklyContest";
 
 const DEFAULT_PAGE = 1;
 const DEFAULT_LIMIT = 25;
@@ -46,7 +47,8 @@ export interface StudentRank {
 }
 
 export interface StudentWeeklyRank {
-  week: number;
+  week: number | null;
+  scope: "all" | "week";
   weeklyRank: number | null;
   weeklyPoints: number;
   totalRankedStudents: number;
@@ -207,20 +209,49 @@ export const getOverallLeaderboard = async ({
 
 export const getWeeklyLeaderboard = async ({
   week,
+  scope,
   page,
   limit,
   search,
 }: {
-  week: number;
+  week?: number;
+  scope?: "all" | "week";
   page: number;
   limit: number;
   search: string;
 }) => {
   const skip = (page - 1) * limit;
+  const weeklyScope = scope ?? "week";
+  const officialWeeks = await getAvailableWeeklyContestWeeks();
+
+  if (weeklyScope === "all" && officialWeeks.length === 0) {
+    return {
+      leaderboard: [],
+      pagination: mapPagination(page, limit, 0),
+    };
+  }
+
+  if (weeklyScope === "week" && (!week || !officialWeeks.includes(week))) {
+    return {
+      leaderboard: [],
+      pagination: mapPagination(page, limit, 0),
+    };
+  }
+
+  const weeklyMatch: PipelineStage.Match["$match"] = {
+    source: "weekly_contest",
+  };
+
+  if (weeklyScope === "all") {
+    weeklyMatch.weekNumber = { $in: officialWeeks };
+  } else {
+    weeklyMatch.weekNumber = week;
+  }
+
   const [result] = await PointTransaction.aggregate<
     FacetResult<WeeklyAggregationResult>
   >([
-    { $match: { source: "weekly_contest", weekNumber: week } },
+    { $match: weeklyMatch },
     { $group: { _id: "$studentId", points: { $sum: "$points" } } },
     {
       $lookup: {
@@ -284,14 +315,15 @@ export const getWeeklyLeaderboard = async ({
 };
 
 export const getAvailableWeeklyContestWeeks = async () => {
-  const weeks = await PointTransaction.distinct("weekNumber", {
-    source: "weekly_contest",
-    weekNumber: { $exists: true },
-  }).exec();
+  const contests = await WeeklyContest.find({})
+    .select("weekNumber")
+    .sort({ weekNumber: 1 })
+    .lean()
+    .exec();
 
-  return weeks
-    .filter((week): week is number => Number.isInteger(week) && week > 0)
-    .sort((a, b) => a - b);
+  return contests
+    .map((contest) => contest.weekNumber)
+    .filter((week): week is number => Number.isInteger(week) && week > 0);
 };
 
 export const getStudentOverallRank = async (
@@ -360,16 +392,71 @@ export const getStudentOverallRank = async (
 
 export const getStudentWeeklyRank = async (
   studentId: string,
-  week: number
+  week?: number,
+  scope: "all" | "week" = "week"
 ): Promise<StudentWeeklyRank | null> => {
-  if (!Types.ObjectId.isValid(studentId) || !Number.isInteger(week) || week < 1) {
+  if (
+    !Types.ObjectId.isValid(studentId) ||
+    (scope === "week" && (!Number.isInteger(week) || !week || week < 1))
+  ) {
     return null;
   }
 
   const objectId = new Types.ObjectId(studentId);
+  const officialWeeks = await getAvailableWeeklyContestWeeks();
+
+  if (scope === "all" && officialWeeks.length === 0) {
+    const activeStudentExists = await User.exists({
+      _id: objectId,
+      role: "student",
+      isActive: true,
+    }).exec();
+
+    if (!activeStudentExists) {
+      return null;
+    }
+
+    return {
+      week: null,
+      scope,
+      weeklyRank: null,
+      weeklyPoints: 0,
+      totalRankedStudents: 0,
+    };
+  }
+
+  if (scope === "week" && (!week || !officialWeeks.includes(week))) {
+    const activeStudentExists = await User.exists({
+      _id: objectId,
+      role: "student",
+      isActive: true,
+    }).exec();
+
+    if (!activeStudentExists) {
+      return null;
+    }
+
+    return {
+      week: week ?? null,
+      scope,
+      weeklyRank: null,
+      weeklyPoints: 0,
+      totalRankedStudents: 0,
+    };
+  }
+
+  const weeklyMatch: PipelineStage.Match["$match"] = {
+    source: "weekly_contest",
+  };
+
+  if (scope === "all") {
+    weeklyMatch.weekNumber = { $in: officialWeeks };
+  } else {
+    weeklyMatch.weekNumber = week;
+  }
 
   const rankedStudents = await PointTransaction.aggregate<StudentWeeklyRankAggregationResult>([
-    { $match: { source: "weekly_contest", weekNumber: week } },
+    { $match: weeklyMatch },
     { $group: { _id: "$studentId", points: { $sum: "$points" } } },
     {
       $lookup: {
@@ -401,7 +488,8 @@ export const getStudentWeeklyRank = async (
     }
 
     return {
-      week,
+      week: scope === "all" ? null : week ?? null,
+      scope,
       weeklyRank: null,
       weeklyPoints: 0,
       totalRankedStudents: rankedStudents.length,
@@ -415,7 +503,8 @@ export const getStudentWeeklyRank = async (
   }
 
   return {
-    week,
+    week: scope === "all" ? null : week ?? null,
+    scope,
     weeklyRank: studentIndex + 1,
     weeklyPoints: studentRank.points,
     totalRankedStudents: rankedStudents.length,

@@ -243,17 +243,34 @@ export const getStudentWeeklyStanding = async (
       });
     }
 
-    const week = Number(req.query.week);
-
-    if (!Number.isInteger(week) || week < 1) {
+    if (
+      req.query.scope !== undefined &&
+      req.query.scope !== "all" &&
+      req.query.scope !== "week"
+    ) {
       return res.status(400).json({
         success: false,
-        code: "INVALID_WEEK",
-        message: "A valid week number is required.",
+        code: "INVALID_SCOPE",
+        message: "Weekly standing scope must be all or week.",
       });
     }
 
-    const rank = await getStudentWeeklyRank(req.auth.userId, week);
+    const scope = req.query.scope === "all" ? "all" : "week";
+    const week = Number(req.query.week);
+
+    if (scope === "week" && (!Number.isInteger(week) || week < 1 || week > 10)) {
+      return res.status(400).json({
+        success: false,
+        code: "INVALID_WEEK",
+        message: "A valid week number from 1 to 10 is required.",
+      });
+    }
+
+    const rank = await getStudentWeeklyRank(
+      req.auth.userId,
+      scope === "week" ? week : undefined,
+      scope
+    );
 
     if (!rank) {
       return res.status(404).json({

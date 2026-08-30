@@ -22,17 +22,20 @@ import { ApiError } from "../lib/api";
 import {
   getOverallLeaderboard,
   getStudentRank,
+  getStudentWeeklyRank,
   getWeeklyContestWeeks,
   getWeeklyLeaderboard,
   type LeaderboardPagination,
   type OverallLeaderboardEntry,
   type StudentRank,
+  type StudentWeeklyRank,
   type WeeklyLeaderboardEntry,
 } from "../lib/leaderboardApi";
 import { cn } from "../lib/utils";
 
 type LeaderboardMode = "overall" | "weekly";
 type LeaderboardEntry = OverallLeaderboardEntry | WeeklyLeaderboardEntry;
+type WeeklySelection = "all" | number;
 
 const DEFAULT_PAGINATION: LeaderboardPagination = {
   page: 1,
@@ -275,13 +278,14 @@ export default function Leaderboard() {
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [pagination, setPagination] = useState(DEFAULT_PAGINATION);
   const [weeks, setWeeks] = useState<number[]>([]);
-  const [selectedWeek, setSelectedWeek] = useState<number | null>(null);
+  const [selectedWeek, setSelectedWeek] = useState<WeeklySelection>("all");
   const [searchInput, setSearchInput] = useState("");
   const [appliedSearch, setAppliedSearch] = useState("");
   const [page, setPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
   const [studentRank, setStudentRank] = useState<StudentRank | null>(null);
+  const [studentWeeklyRank, setStudentWeeklyRank] = useState<StudentWeeklyRank | null>(null);
   const [studentRankError, setStudentRankError] = useState("");
 
   const pageSize = 25;
@@ -300,9 +304,10 @@ export default function Leaderboard() {
           });
           setEntries(data.leaderboard);
           setPagination(data.pagination);
-        } else if (selectedWeek) {
+        } else if (selectedWeek === "all" || selectedWeek) {
           const data = await getWeeklyLeaderboard({
-            week: selectedWeek,
+            scope: selectedWeek === "all" ? "all" : "week",
+            week: selectedWeek === "all" ? undefined : selectedWeek,
             page,
             limit: pageSize,
             search: appliedSearch,
@@ -337,9 +342,14 @@ export default function Leaderboard() {
       try {
         const data = await getWeeklyContestWeeks();
         setWeeks(data.weeks);
-        setSelectedWeek((current) => current ?? data.weeks[0] ?? null);
+        setSelectedWeek((current) =>
+          current === "all" || (typeof current === "number" && data.weeks.includes(current))
+            ? current
+            : "all"
+        );
       } catch {
         setWeeks([]);
+        setSelectedWeek("all");
       }
     };
 
@@ -349,22 +359,34 @@ export default function Leaderboard() {
   useEffect(() => {
     if (!isAuthenticated || user?.role !== "student") {
       setStudentRank(null);
+      setStudentWeeklyRank(null);
       return;
     }
 
     const loadStudentRank = async () => {
       try {
         setStudentRankError("");
-        const data = await getStudentRank();
-        setStudentRank(data.rank);
+        if (mode === "overall") {
+          const data = await getStudentRank();
+          setStudentRank(data.rank);
+          setStudentWeeklyRank(null);
+        } else {
+          const data = await getStudentWeeklyRank({
+            scope: selectedWeek === "all" ? "all" : "week",
+            week: selectedWeek === "all" ? undefined : selectedWeek,
+          });
+          setStudentWeeklyRank(data.rank);
+          setStudentRank(null);
+        }
       } catch {
         setStudentRank(null);
+        setStudentWeeklyRank(null);
         setStudentRankError("Your standing could not be loaded right now.");
       }
     };
 
     void loadStudentRank();
-  }, [isAuthenticated, user?.role]);
+  }, [isAuthenticated, mode, selectedWeek, user?.role]);
 
   const handleModeChange = (nextMode: LeaderboardMode) => {
     setMode(nextMode);
@@ -373,7 +395,7 @@ export default function Leaderboard() {
     setSearchInput("");
   };
 
-  const handleWeekChange = (week: number) => {
+  const handleWeekChange = (week: WeeklySelection) => {
     setSelectedWeek(week);
     setPage(1);
   };
@@ -436,8 +458,10 @@ export default function Leaderboard() {
                 <div className="grid gap-4 border-b border-line p-4 sm:p-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
                   <div>
                     <p className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-technical-text">
-                      {mode === "weekly" && selectedWeek
-                        ? `Week ${selectedWeek} Rankings`
+                      {mode === "weekly"
+                        ? selectedWeek === "all"
+                          ? "All Weekly Contest Rankings"
+                          : `Week ${selectedWeek} Rankings`
                         : modeLabels[mode]}
                     </p>
                     <h2 className="mt-1 font-display text-2xl font-semibold text-ink">
@@ -468,6 +492,19 @@ export default function Leaderboard() {
                   <div className="border-b border-line p-4 sm:p-6">
                     {weeks.length > 0 ? (
                       <div className="flex flex-wrap gap-2" aria-label="Weekly contest selector">
+                        <button
+                          type="button"
+                          onClick={() => handleWeekChange("all")}
+                          className={cn(
+                            "rounded-full border px-4 py-2 text-sm font-semibold transition focus-visible:outline-offset-2",
+                            selectedWeek === "all"
+                              ? "border-dream/40 bg-dream/15 text-dream-text shadow-soft"
+                              : "border-line bg-surface text-ink-muted hover:border-dream/35 hover:text-ink"
+                          )}
+                          aria-pressed={selectedWeek === "all"}
+                        >
+                          All Weekly Contests
+                        </button>
                         {weeks.map((week) => (
                           <button
                             key={week}
@@ -538,7 +575,7 @@ export default function Leaderboard() {
                 <div className="ui-card-glass border-dream/25 p-5">
                   <Award className="size-8 text-dream-text" aria-hidden="true" />
                   <h2 className="mt-4 font-display text-xl font-semibold text-ink">
-                    Sign in to know your rank
+                    Sign in to know your rank.
                   </h2>
                   <p className="mt-2 text-sm leading-6 text-ink-muted">
                     Log in with your NMAMIT account to see your personal standing.
@@ -555,7 +592,7 @@ export default function Leaderboard() {
                   <p className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-technical-text">
                     Your Standing
                   </p>
-                  {studentRank ? (
+                  {mode === "overall" && studentRank ? (
                     <div className="mt-4 grid gap-3">
                       <div className="rounded-card border border-line/80 bg-surface/80 p-4">
                         <p className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-subtle">
@@ -580,6 +617,39 @@ export default function Leaderboard() {
                           </p>
                           <p className="mt-1 text-2xl font-bold tabular-nums text-ink">
                             {studentRank.totalActiveStudents}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  ) : mode === "weekly" && studentWeeklyRank ? (
+                    <div className="mt-4 grid gap-3">
+                      <div className="rounded-card border border-line/80 bg-surface/80 p-4">
+                        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-subtle">
+                          {studentWeeklyRank.scope === "all"
+                            ? "All Weekly Rank"
+                            : `Week ${studentWeeklyRank.week} Rank`}
+                        </p>
+                        <p className="mt-1 text-3xl font-bold tabular-nums text-primary-text">
+                          {studentWeeklyRank.weeklyRank
+                            ? `#${studentWeeklyRank.weeklyRank}`
+                            : "Not ranked"}
+                        </p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div className="rounded-card border border-line/80 bg-surface/80 p-4">
+                          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-subtle">
+                            Weekly Points
+                          </p>
+                          <p className="mt-1 text-2xl font-bold tabular-nums text-ink">
+                            {studentWeeklyRank.weeklyPoints}
+                          </p>
+                        </div>
+                        <div className="rounded-card border border-line/80 bg-surface/80 p-4">
+                          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-ink-subtle">
+                            Ranked
+                          </p>
+                          <p className="mt-1 text-2xl font-bold tabular-nums text-ink">
+                            {studentWeeklyRank.totalRankedStudents}
                           </p>
                         </div>
                       </div>

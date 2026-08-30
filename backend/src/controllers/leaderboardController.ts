@@ -32,25 +32,40 @@ export const getWeeklyLeaderboardHandler = async (
   res: Response
 ) => {
   try {
+    if (
+      req.query.scope !== undefined &&
+      req.query.scope !== "all" &&
+      req.query.scope !== "week"
+    ) {
+      return res.status(400).json({
+        success: false,
+        code: "INVALID_SCOPE",
+        message: "Weekly leaderboard scope must be all or week.",
+      });
+    }
+
+    const scope = req.query.scope === "all" ? "all" : "week";
     const week = Number(req.query.week);
 
-    if (!Number.isInteger(week) || week < 1) {
+    if (scope === "week" && (!Number.isInteger(week) || week < 1 || week > 10)) {
       return res.status(400).json({
         success: false,
         code: "INVALID_WEEK",
-        message: "A valid week number is required.",
+        message: "A valid week number from 1 to 10 is required.",
       });
     }
 
     const pagination = parseLeaderboardPagination(req.query);
-    const result = await getWeeklyLeaderboard({
-      ...pagination,
-      week,
-    });
+    const result = await getWeeklyLeaderboard(
+      scope === "week"
+        ? { ...pagination, scope, week }
+        : { ...pagination, scope }
+    );
 
     return res.status(200).json({
       success: true,
-      week,
+      scope,
+      week: scope === "week" ? week : null,
       leaderboard: result.leaderboard,
       pagination: result.pagination,
     });
