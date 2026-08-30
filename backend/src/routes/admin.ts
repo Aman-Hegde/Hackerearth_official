@@ -15,7 +15,9 @@ import { authorize } from "../middleware/authorize";
 import {
   createAdminEvent,
   getAdminEvent,
+  getAdminEventRegistrations,
   getAdminEvents,
+  exportAdminEventRegistrations,
   updateAdminEvent,
 } from "../controllers/eventController";
 
@@ -26,6 +28,8 @@ router.use(authenticate, authorize("admin"));
 router.get("/overview", getAdminOverview);
 router.post("/events", createAdminEvent);
 router.get("/events", getAdminEvents);
+router.get("/events/:eventId/registrations/export", exportAdminEventRegistrations);
+router.get("/events/:eventId/registrations", getAdminEventRegistrations);
 router.get("/events/:eventId", getAdminEvent);
 router.patch("/events/:eventId", updateAdminEvent);
 router.get("/students", getStudents);

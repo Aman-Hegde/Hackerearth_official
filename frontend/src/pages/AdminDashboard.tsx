@@ -35,8 +35,12 @@ import SectionReveal from '../components/ui/SectionReveal';
 import { ApiError } from '../lib/api';
 import {
   createAdminEvent,
+  downloadAdminEventRegistrations,
+  getAdminEventRegistrations,
   getAdminEvents,
   updateAdminEvent,
+  type AdminEventRegistrationStudent,
+  type AdminEventRegistrationSummary,
   type EventInput,
   type EventSummary,
 } from '../lib/eventApi';
@@ -372,6 +376,11 @@ const AdminDashboard = () => {
   const [eventSubmitting, setEventSubmitting] = useState(false);
   const [editingEvent, setEditingEvent] = useState<EventSummary | null>(null);
   const [isEventModalOpen, setIsEventModalOpen] = useState(false);
+  const [registrationsEvent, setRegistrationsEvent] = useState<AdminEventRegistrationSummary | null>(null);
+  const [eventRegistrations, setEventRegistrations] = useState<AdminEventRegistrationStudent[]>([]);
+  const [registrationsLoading, setRegistrationsLoading] = useState(false);
+  const [registrationsError, setRegistrationsError] = useState<AdminRequestError | null>(null);
+  const [registrationsDownloading, setRegistrationsDownloading] = useState(false);
 
   const [search, setSearch] = useState('');
   const [branch, setBranch] = useState('');
@@ -836,6 +845,81 @@ const AdminDashboard = () => {
     }
   };
 
+  const openRegistrationsModal = async (event: EventSummary) => {
+    setRegistrationsEvent({
+      id: event.id,
+      title: event.title,
+      registrationCount: event.registrationCount,
+      maxRegistrations: event.maxRegistrations,
+    });
+    setEventRegistrations([]);
+    setRegistrationsError(null);
+    setRegistrationsLoading(true);
+
+    try {
+      const response = await getAdminEventRegistrations(event.id);
+      setRegistrationsEvent(response.event);
+      setEventRegistrations(response.registrations);
+      setEvents((current) =>
+        current.map((item) =>
+          item.id === response.event.id
+            ? {
+                ...item,
+                registrationCount: response.event.registrationCount,
+                maxRegistrations: response.event.maxRegistrations,
+              }
+            : item
+        )
+      );
+    } catch (error) {
+      const requestError = classifyAdminError(error, 'Unable to load event registrations.');
+      if (isGlobalAuthorizationError(requestError)) {
+        setGlobalAuthError(requestError);
+        setRegistrationsEvent(null);
+      } else {
+        setRegistrationsError(requestError);
+      }
+    } finally {
+      setRegistrationsLoading(false);
+    }
+  };
+
+  const closeRegistrationsModal = () => {
+    if (registrationsDownloading) return;
+    setRegistrationsEvent(null);
+    setEventRegistrations([]);
+    setRegistrationsError(null);
+  };
+
+  const handleDownloadEventRegistrations = async () => {
+    if (!registrationsEvent || registrationsDownloading) return;
+
+    setRegistrationsDownloading(true);
+    setRegistrationsError(null);
+
+    try {
+      const { blob, filename } = await downloadAdminEventRegistrations(registrationsEvent.id);
+      const downloadUrl = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+    } catch (error) {
+      const requestError = classifyAdminError(error, 'Unable to download registrations.');
+      if (isGlobalAuthorizationError(requestError)) {
+        setGlobalAuthError(requestError);
+        setRegistrationsEvent(null);
+      } else {
+        setRegistrationsError(requestError);
+      }
+    } finally {
+      setRegistrationsDownloading(false);
+    }
+  };
+
   const handleGlobalRetry = () => {
     setGlobalAuthError(null);
     setOverviewError(null);
@@ -1133,6 +1217,10 @@ const AdminDashboard = () => {
                         </dl>
 
                         <div className="mt-4 flex flex-wrap gap-2">
+                          <button type="button" onClick={() => void openRegistrationsModal(event)} className="btn btn-secondary rounded-full">
+                            <Users className="size-4" aria-hidden="true" />
+                            View Registrations
+                          </button>
                           <button type="button" onClick={() => openEditEventModal(event)} className="btn btn-secondary rounded-full">
                             <Pencil className="size-4" aria-hidden="true" />
                             Edit
@@ -1591,6 +1679,104 @@ const AdminDashboard = () => {
           </>
         )}
         </div>
+
+        {registrationsEvent && (
+          <div className="fixed inset-0 z-[90] flex items-center justify-center overflow-y-auto bg-canvas/70 p-4 backdrop-blur-md">
+            <section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="event-registrations-heading"
+              className="ui-panel-glass my-8 w-full max-w-5xl border-dream/30 p-5 shadow-glass sm:p-6"
+            >
+              <div className="flex flex-col gap-4 border-b border-line/80 pb-5 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <p className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-dream-text">
+                    Registered Students
+                  </p>
+                  <h2 id="event-registrations-heading" className="mt-1 break-words font-display text-2xl font-semibold text-ink">
+                    {registrationsEvent.title}
+                  </h2>
+                  <p className="mt-2 text-sm font-semibold text-ink-muted">
+                    {registrationsEvent.registrationCount} / {registrationsEvent.maxRegistrations} Registered
+                  </p>
+                </div>
+                <div className="flex flex-col gap-2 sm:flex-row">
+                  <button
+                    type="button"
+                    onClick={() => void handleDownloadEventRegistrations()}
+                    className="btn min-h-11 rounded-full border border-creative/30 bg-creative/10 px-4 text-creative-text hover:bg-creative/20"
+                    disabled={registrationsDownloading}
+                  >
+                    {registrationsDownloading ? (
+                      <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+                    ) : (
+                      <FileSpreadsheet className="size-4" aria-hidden="true" />
+                    )}
+                    {registrationsDownloading ? 'Downloading...' : 'Download Excel'}
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-icon self-end sm:self-auto"
+                    onClick={closeRegistrationsModal}
+                    disabled={registrationsDownloading}
+                    aria-label="Close event registrations"
+                  >
+                    <X className="size-5" aria-hidden="true" />
+                  </button>
+                </div>
+              </div>
+
+              <div className="mt-5">
+                {registrationsError && (
+                  <div className="mb-4">
+                    <InlineFeedback kind="error">{registrationsError.message}</InlineFeedback>
+                  </div>
+                )}
+
+                {registrationsLoading ? (
+                  <LoadingState label="Loading event registrations..." />
+                ) : eventRegistrations.length === 0 ? (
+                  <div className="rounded-card border border-line/80 bg-surface/80 p-8 text-center text-sm text-ink-muted">
+                    No students have registered for this event yet.
+                  </div>
+                ) : (
+                  <div className="overflow-hidden rounded-card border border-line/80 bg-surface/90 shadow-soft">
+                    <p className="border-b border-line/80 bg-surface-muted/50 px-4 py-3 text-xs font-medium text-ink-subtle md:hidden">
+                      Scroll horizontally to view every registration field.
+                    </p>
+                    <div className="max-w-full overflow-x-auto overscroll-x-contain">
+                      <table className="min-w-[46rem] w-full border-collapse text-left text-sm">
+                        <caption className="sr-only">Event registrations</caption>
+                        <thead className="border-b border-line-strong bg-dream-soft/50 text-xs uppercase tracking-[0.08em] text-ink-muted">
+                          <tr>
+                            {['Name', 'USN', 'Email', 'Phone Number', 'Year'].map((heading) => (
+                              <th key={heading} scope="col" className="px-4 py-4 font-semibold">{heading}</th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody className="divide-y divide-line/80">
+                          {eventRegistrations.map((registration) => (
+                            <tr key={registration.id} className="bg-surface/80 transition-colors hover:bg-dream-soft/30 motion-reduce:transition-none">
+                              <th scope="row" className="px-4 py-4 font-semibold text-ink">{registration.name}</th>
+                              <td className="px-4 py-4 font-mono text-xs font-semibold text-ink-muted">{registration.usn}</td>
+                              <td className="px-4 py-4 text-ink-muted">
+                                <a href={`mailto:${registration.email}`} className="underline decoration-line underline-offset-4 hover:text-technical-text">
+                                  {registration.email}
+                                </a>
+                              </td>
+                              <td className="px-4 py-4 text-ink-muted">{registration.contactNumber}</td>
+                              <td className="px-4 py-4 text-ink-muted">{registration.year ?? '-'}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+          </div>
+        )}
 
         {isEventModalOpen && (
           <div className="fixed inset-0 z-[90] flex items-center justify-center overflow-y-auto bg-canvas/70 p-4 backdrop-blur-md">

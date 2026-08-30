@@ -1,4 +1,4 @@
-import { apiRequest } from "./api";
+import { API_BASE_URL, ApiError, apiRequest } from "./api";
 
 export type EventStatus = "open" | "full" | "closed" | "past";
 
@@ -31,6 +31,23 @@ export interface EventInput {
   active?: boolean;
 }
 
+export interface AdminEventRegistrationStudent {
+  id: string;
+  name: string;
+  usn: string;
+  email: string;
+  contactNumber: string;
+  year: number | null;
+  registeredAt: string;
+}
+
+export interface AdminEventRegistrationSummary {
+  id: string;
+  title: string;
+  registrationCount: number;
+  maxRegistrations: number;
+}
+
 interface StudentEventsResponse {
   success: true;
   upcoming: EventSummary[];
@@ -54,6 +71,56 @@ interface AdminEventResponse {
   message?: string;
   event: EventSummary;
 }
+
+interface AdminEventRegistrationsResponse {
+  success: true;
+  event: AdminEventRegistrationSummary;
+  registrations: AdminEventRegistrationStudent[];
+}
+
+const getErrorMessage = (data: unknown): string => {
+  if (
+    data &&
+    typeof data === "object" &&
+    "message" in data &&
+    typeof data.message === "string"
+  ) {
+    return data.message;
+  }
+
+  return "Request failed. Please try again.";
+};
+
+const getErrorCode = (data: unknown): string | undefined => {
+  if (
+    data &&
+    typeof data === "object" &&
+    "code" in data &&
+    typeof data.code === "string"
+  ) {
+    return data.code;
+  }
+
+  return undefined;
+};
+
+const parseJsonSafely = async (response: Response): Promise<unknown> => {
+  try {
+    return await response.json();
+  } catch {
+    return null;
+  }
+};
+
+const getFilenameFromContentDisposition = (contentDisposition: string | null) => {
+  if (!contentDisposition) return null;
+
+  const utf8Match = contentDisposition.match(/filename\*=UTF-8''([^;]+)/i);
+  if (utf8Match?.[1]) return decodeURIComponent(utf8Match[1].replace(/"/g, ""));
+
+  const filenameMatch = contentDisposition.match(/filename="?([^";]+)"?/i);
+  return filenameMatch?.[1] ?? null;
+};
 
 export const getStudentEvents = (signal?: AbortSignal) =>
   apiRequest<StudentEventsResponse>("/api/student/events", { signal });
@@ -83,3 +150,38 @@ export const updateAdminEvent = (eventId: string, input: Partial<EventInput>) =>
       body: JSON.stringify(input),
     }
   );
+
+export const getAdminEventRegistrations = (eventId: string, signal?: AbortSignal) =>
+  apiRequest<AdminEventRegistrationsResponse>(
+    `/api/admin/events/${encodeURIComponent(eventId)}/registrations`,
+    { signal }
+  );
+
+export const downloadAdminEventRegistrations = async (
+  eventId: string
+): Promise<{ blob: Blob; filename: string }> => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/admin/events/${encodeURIComponent(eventId)}/registrations/export`,
+    {
+      method: "GET",
+      credentials: "include",
+    }
+  );
+
+  if (!response.ok) {
+    const data = await parseJsonSafely(response);
+    throw new ApiError({
+      status: response.status,
+      code: getErrorCode(data),
+      message: getErrorMessage(data),
+      data,
+    });
+  }
+
+  const blob = await response.blob();
+  const filename =
+    getFilenameFromContentDisposition(response.headers.get("Content-Disposition")) ??
+    "event-registrations.xlsx";
+
+  return { blob, filename };
+};

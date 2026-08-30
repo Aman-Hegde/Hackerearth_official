@@ -1,4 +1,5 @@
 import { Request, Response } from "express";
+import ExcelJS from "exceljs";
 import mongoose, { Types } from "mongoose";
 import Event, { IEvent } from "../models/Event";
 import EventRegistration from "../models/EventRegistration";
@@ -22,6 +23,8 @@ const MAX_EVENT_DESCRIPTION_LENGTH = 2000;
 const MAX_EVENT_VENUE_LENGTH = 160;
 const MAX_POSTER_URL_LENGTH = 1000;
 const MAX_EVENT_REGISTRATIONS = 10000;
+const EVENT_REGISTRATION_STUDENT_FIELDS =
+  "name usn email contactNumber year";
 
 const normalizeString = (value: unknown) =>
   typeof value === "string" ? value.trim() : "";
@@ -85,6 +88,36 @@ const toSafeEvent = (event: IEvent, isRegistered = false) => ({
   createdAt: event.createdAt,
   updatedAt: event.updatedAt,
 });
+
+const toEventRegistrationStudent = (registration: {
+  _id: unknown;
+  createdAt: Date;
+  studentId?: {
+    name?: string;
+    usn?: string;
+    email?: string;
+    contactNumber?: string;
+    year?: number;
+  };
+}) => ({
+  id: String(registration._id),
+  name: registration.studentId?.name ?? "Unknown student",
+  usn: registration.studentId?.usn ?? "",
+  email: registration.studentId?.email ?? "",
+  contactNumber: registration.studentId?.contactNumber ?? "",
+  year: registration.studentId?.year ?? null,
+  registeredAt: registration.createdAt,
+});
+
+const sanitizeFilenamePart = (value: string) => {
+  const normalized = value
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return normalized || "event";
+};
 
 const validateEventPayload = (
   body: EventBody,
@@ -360,6 +393,147 @@ export const updateAdminEvent = async (
       message: "Event updated successfully.",
       event: toSafeEvent(event),
     });
+  } catch (_error) {
+    return res.status(500).json({
+      success: false,
+      message: "Unexpected server error.",
+    });
+  }
+};
+
+export const getAdminEventRegistrations = async (
+  req: Request<{ eventId: string }>,
+  res: Response
+) => {
+  try {
+    const { eventId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+      return res.status(400).json({
+        success: false,
+        code: "INVALID_EVENT_ID",
+        message: "A valid event id is required.",
+      });
+    }
+
+    const event = await Event.findById(eventId).exec();
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        code: "EVENT_NOT_FOUND",
+        message: "Event not found.",
+      });
+    }
+
+    const registrations = await EventRegistration.find({ eventId })
+      .sort({ createdAt: 1 })
+      .populate<{
+        studentId?: {
+          name?: string;
+          usn?: string;
+          email?: string;
+          contactNumber?: string;
+          year?: number;
+        };
+      }>("studentId", EVENT_REGISTRATION_STUDENT_FIELDS)
+      .exec();
+
+    return res.status(200).json({
+      success: true,
+      event: {
+        id: event._id.toString(),
+        title: event.title,
+        registrationCount: event.registrationCount,
+        maxRegistrations: event.maxRegistrations,
+      },
+      registrations: registrations.map(toEventRegistrationStudent),
+    });
+  } catch (_error) {
+    return res.status(500).json({
+      success: false,
+      message: "Unexpected server error.",
+    });
+  }
+};
+
+export const exportAdminEventRegistrations = async (
+  req: Request<{ eventId: string }>,
+  res: Response
+) => {
+  try {
+    const { eventId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+      return res.status(400).json({
+        success: false,
+        code: "INVALID_EVENT_ID",
+        message: "A valid event id is required.",
+      });
+    }
+
+    const event = await Event.findById(eventId).exec();
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        code: "EVENT_NOT_FOUND",
+        message: "Event not found.",
+      });
+    }
+
+    const registrations = await EventRegistration.find({ eventId })
+      .sort({ createdAt: 1 })
+      .populate<{
+        studentId?: {
+          name?: string;
+          usn?: string;
+          email?: string;
+          contactNumber?: string;
+          year?: number;
+        };
+      }>("studentId", EVENT_REGISTRATION_STUDENT_FIELDS)
+      .exec();
+
+    const workbook = new ExcelJS.Workbook();
+    workbook.creator = "HackerEarth Hub NMAMIT";
+    workbook.created = new Date();
+
+    const worksheet = workbook.addWorksheet("Registrations");
+    worksheet.columns = [
+      { header: "Name", key: "name", width: 28 },
+      { header: "USN", key: "usn", width: 16 },
+      { header: "Email", key: "email", width: 32 },
+      { header: "Phone Number", key: "contactNumber", width: 18 },
+      { header: "Year", key: "year", width: 10 },
+    ];
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.views = [{ state: "frozen", ySplit: 1 }];
+    worksheet.autoFilter = {
+      from: { row: 1, column: 1 },
+      to: { row: 1, column: 5 },
+    };
+
+    registrations.forEach((registration) => {
+      const student = toEventRegistrationStudent(registration);
+      worksheet.addRow({
+        name: student.name,
+        usn: student.usn,
+        email: student.email,
+        contactNumber: student.contactNumber,
+        year: student.year ?? "",
+      });
+    });
+
+    const filename = `${sanitizeFilenamePart(event.title)}-registrations.xlsx`;
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${filename}"`
+    );
+
+    await workbook.xlsx.write(res);
+    res.end();
   } catch (_error) {
     return res.status(500).json({
       success: false,
