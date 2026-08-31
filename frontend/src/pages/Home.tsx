@@ -8,6 +8,7 @@ import { useAuth } from "../context/AuthContext";
 import PageTransition from "../components/ui/PageTransition";
 import SectionReveal from "../components/ui/SectionReveal";
 import DomainVisualCarousel, { type DomainVisualKind } from "../components/home/DomainVisualCarousel";
+import HomeTeamCollage from "../components/home/HomeTeamCollage";
 import MemberExperienceMarquee, { type MemberExperience } from "../components/home/MemberExperienceMarquee";
 // import CurvedHorizonGlow from '../components/CurvedHorizonGlow';
 // import CurvedSectionTransition from '../components/CurvedSectionTransition';
@@ -441,7 +442,7 @@ const Home = () => {
 
         <div className="site-container-wide relative z-20 w-full">
           <motion.div
-            className="grid w-full min-w-0 items-center gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.8fr)] lg:gap-10 xl:gap-14"
+            className="grid w-full min-w-0 items-center gap-10 lg:grid-cols-[minmax(0,1.05fr)_minmax(20rem,0.95fr)] lg:gap-10 xl:gap-14"
             initial={shouldReduceMotion ? false : { opacity: 0, y: 18 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: shouldReduceMotion ? 0 : 0.55, ease: [0.16, 1, 0.3, 1] }}
@@ -514,46 +515,7 @@ const Home = () => {
               delay={0.32}
               className="relative flex w-full items-center justify-center py-4 lg:min-h-[24rem] lg:py-0"
             >
-              <figure className="relative w-full max-w-md">
-                <div className="pointer-events-none absolute -inset-8 rounded-full bg-gradient-to-br from-dream/20 via-technical/10 to-rose/10 blur-2xl" aria-hidden="true" />
-                <div className="ui-panel-glass relative overflow-hidden p-5 sm:p-6">
-                  <div className="pointer-events-none absolute -right-12 -top-16 size-40 rounded-full bg-technical/10" aria-hidden="true" />
-                  <div className="pointer-events-none absolute -bottom-16 -left-10 size-36 rounded-full bg-dream/10" aria-hidden="true" />
-                  <div className="relative grid gap-4">
-                    <div className="rounded-card border border-line/80 bg-white/90 p-4 shadow-soft">
-                      <img
-                        src="/branding/hackerearth-club-logo-with-name.svg"
-                        alt="HackerEarth Hub NMAMIT"
-                        className="mx-auto h-24 w-full object-contain sm:h-28"
-                        loading="eager"
-                        decoding="async"
-                      />
-                    </div>
-                    <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3">
-                      <div className="rounded-card border border-line/80 bg-surface/85 p-4 shadow-soft">
-                        <p className="font-mono text-[0.68rem] font-semibold uppercase tracking-[0.16em] text-technical-text">
-                          Official technical community
-                        </p>
-                        <p className="mt-2 text-sm font-medium leading-6 text-ink-muted">
-                          Built for NMAMIT students to learn, compete, and create together.
-                        </p>
-                      </div>
-                      <div className="flex size-24 items-center justify-center rounded-card border border-line/80 bg-white/95 p-3 shadow-soft">
-                        <img
-                          src="/branding/nmamit-logo-blue.svg"
-                          alt="NMAMIT"
-                          className="size-full object-contain"
-                          loading="eager"
-                          decoding="async"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </div>
-                <figcaption className="sr-only">
-                  HackerEarth Hub NMAMIT official branding with NMAMIT logo
-                </figcaption>
-              </figure>
+              <HomeTeamCollage />
             </SectionReveal>
           </motion.div>
         </div>

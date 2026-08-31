@@ -12,6 +12,7 @@ interface TeamMember {
   name: string;
   position: string;
   image?: string;
+  imagePosition?: string;
   skills?: string[];
   slogan?: string;
   github?: string;
@@ -20,22 +21,44 @@ interface TeamMember {
 }
 
 const leadership: TeamMember[] = [
-  { id: "pratham-s-salian", name: "Pratham S Salian", position: "President" },
+  { id: "pratham-s-salian",
+    name: "Pratham S Salian",
+    position: "President" ,
+    image: "/team/pratham-s-salian.webp",
+    slogan: "Curiosity is the key to innovation.",
+    github: "https://github.com/prathamssalian",
+    linkedin: "https://www.linkedin.com/in/pratham-s-salian-33534328b?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+    email: "prathamssalian@gmail.com",
+  },
   {
     id: "shravya-s",
     name: "Shravya S",
     position: "Vice President",
+    image: "/team/shravya-s.webp",
     slogan: "Curious learner, always exploring, learning, improving and growing.",
     skills: ["Java", "TypeScript", "React.js"],
     github: "https://github.com/ShravyaS229",
     linkedin: "https://www.linkedin.com/in/shravya04",
     email: "nnm24is229@nmamit.in",
   },
-  { id: "kashvi-suresh", name: "Kashvi Suresh", position: "Secretary" },
+  {
+    id: "kashvi-suresh",
+    name: "Kashvi Suresh",
+    position: "Secretary",
+    image: "/team/kashvi-suresh.webp",
+    imagePosition: "50% 72%",
+    slogan: "A little curious, a little chaotic, always creative ",
+    skills: ["Python", "Java", "C", "R"],
+    github: "https://github.com/KashviSuresh03",
+    linkedin: "http://www.linkedin.com/in/kashvi-suresh",
+    email: "nnm24cs114@nmamit.in",
+  },
   {
     id: "shaarwari",
     name: "Shaarwari",
     position: "Vice Secretary",
+    image: "/team/shaarwari.webp",
+    imagePosition: "50% 43%",
     slogan: "Think. Investigate. Build",
     skills: ["Python", "React", "MySQL"],
     github: "https://github.com/Shaarwari13",
@@ -49,6 +72,7 @@ const techLeads: TeamMember[] = [
     id: "b-m-shuchay-jogithaya",
     name: "B M Shuchay Jogithaya",
     position: "Tech Lead",
+    image: "/team/bm-shuchay-jogithaya.webp",
     slogan: "Unlocking potential through tech.",
     skills: ["Python", "C++", "Next.js"],
     github: "https://github.com/bmshuchayajogithaya-star",
@@ -59,6 +83,7 @@ const techLeads: TeamMember[] = [
     id: "amish-sudhakara",
     name: "Amish Sudhakara",
     position: "Tech Lead",
+    image: "/team/amish-sudhakara.webp",
     slogan: "Curiosity keeps me moving.",
     skills: ["Python", "React", "PyTorch"],
     github: "https://github.com/Amish-Sudhakara",
@@ -69,6 +94,8 @@ const techLeads: TeamMember[] = [
     id: "b-shreya-kamath",
     name: "B. SHREYA KAMATH",
     position: "Tech Lead",
+    image: "/team/b-shreya-kamath.webp",
+    imagePosition: "50% 55%",
     slogan: "Do what inspires you, become what inspires others.",
     skills: ["Python", "Java", "Machine Learning"],
     github: "https://github.com/bshreyakamath",
@@ -78,9 +105,41 @@ const techLeads: TeamMember[] = [
 ];
 
 const mediaTeam: TeamMember[] = [
-  { id: "gautham-kini-t", name: "Gautham Kini T", position: "Media Head" },
-  { id: "stuti-shetty", name: "Stuti Shetty", position: "Media Team" },
-  { id: "shaina-pinto", name: "Shaina Pinto", position: "Social Media Team" },
+  {
+    id: "gautham-kini-t",
+    name: "Gautham Kini T",
+    position: "Social Media Head",
+    image: "/team/gautham-kini-t.webp",
+    imagePosition: "50% 42%",
+    slogan: "Turning ideas into visuals that speak louder",
+    skills: ["Python", "Aiml", "Java", "power BI", "c++", "deep learning."],
+    github: "https://github.com/Gauthamkini",
+    linkedin: "https://www.linkedin.com/in/gautham-kini-t-457311322/",
+    email: "nnm24ad022@nmamit.in",
+  },
+  {
+    id: "stuti-shetty",
+    name: "Stuti Shetty",
+    position: "Social Media Team",
+    image: "/team/stuti-shetty.webp",
+    slogan: "trust the process",
+    github: "https://github.com/stutiishettyy-a11y",
+    linkedin: "https://www.linkedin.com/in/stuti-shetty-32ba55428",
+    email: "nn25cse365@nmamit.in",
+
+  },
+  {
+    id: "shaina-pinto",
+    name: "Shaina Pinto",
+    position: "Social Media Team",
+    image: "/team/shaina-pinto.webp",
+    imagePosition: "50% 50%",
+    slogan: "Dream big. Learn more. Create better.s",
+    skills: ["Python"],
+    github: "https://github.com/shainapnt-pixel",
+    linkedin: "https://www.linkedin.com/in/shaina-pinto-564916375?utm_source=share_via&utm_content=profile&utm_medium=member_android",
+    email: "NN25CSE304@nmamit.in",
+  },
 ];
 
 const publicityTeam: TeamMember[] = [
@@ -88,6 +147,7 @@ const publicityTeam: TeamMember[] = [
     id: "akshara-shetty",
     name: "Akshara Shetty",
     position: "Publicity Head",
+    image: "/team/akshara-shetty.webp",
     slogan: "A little creativity, a lot of energy, and a voice that gets heard.",
     skills: ["C", "C++", "Python"],
     github: "https://github.com/aksharashettyy",
@@ -97,7 +157,8 @@ const publicityTeam: TeamMember[] = [
   {
     id: "unnati-u-bhat",
     name: "Unnati U Bhat",
-    position: "Publicity Team Member",
+    position: "Publicity Team",
+    image: "/team/unnati-u-bhat.webp",
     slogan: "Exploring, experimenting and creating with spontaneity",
     skills: ["Python", "React", "FastAPI"],
     github: "https://github.com/UnnatiBhat09",
@@ -107,7 +168,9 @@ const publicityTeam: TeamMember[] = [
   {
     id: "ashmitha-k-shetty",
     name: "Ashmitha K Shetty",
-    position: "Publicity Team Member",
+    position: "Publicity Team",
+    image: "/team/ashmitha-k-shetty.webp",
+    imagePosition: "50% 58%",
     slogan: "Creating, connecting, and making ideas stand out",
     skills: ["C", "C++", "Python"],
     github: "https://github.com/ashmithakshetty",
@@ -118,6 +181,8 @@ const publicityTeam: TeamMember[] = [
     id: "vijaya-g-nayak",
     name: "Vijaya G Nayak",
     position: "Publicity Team",
+    image: "/team/vijaya-g-nayak.webp",
+    imagePosition: "50% 85%",
     slogan: "Learning, building, and creating my way forward",
     skills: ["C", "C++", "Java"],
     github: "https://github.com/Vijaya130",
@@ -131,7 +196,9 @@ const webTeam: TeamMember[] = [
     id: "dhanush-y-shetty",
     name: "Dhanush Y Shetty",
     position: "Web Master",
-    slogan: "Coding I would rate 1/0 :)",
+    image: "/team/dhanush-y-shetty.webp",
+    imagePosition: "50% 35%",
+    slogan: "Money follows ma Brotha :)",
     skills: ["C", "Java", "Python"],
     github: "https://github.com/dhanush229-lab",
     linkedin: "https://www.linkedin.com/in/dhanush-y-shetty-3840992a7/",
@@ -141,6 +208,8 @@ const webTeam: TeamMember[] = [
     id: "aman-hegde",
     name: "Aman Hegde",
     position: "Web Master",
+    image: "/team/aman-hegde.webp",
+    imagePosition: "50% 50%",
     slogan: "Building ideas into code, and code into impact.",
     skills: ["Python", "Java", "React"],
     github: "https://github.com/Aman-Hegde",
@@ -154,6 +223,7 @@ const eventManagementTeam: TeamMember[] = [
     id: "rachitha-c-shettigar",
     name: "Rachitha C Shettigar",
     position: "Event Management Head",
+    image: "/team/rachitha-c-shettigar.webp",
     slogan: "Turning ideas into creativity",
     skills: ["C", "Python", "Java"],
     github: "https://github.com/Rachithashettigar08",
@@ -163,7 +233,8 @@ const eventManagementTeam: TeamMember[] = [
   {
     id: "ishani-durgesh-shanbhag",
     name: "Ishani Durgesh Shanbhag",
-    position: "Event Management",
+    position: "Event Team",
+    image: "/team/ishani-durgesh-shanbhag.webp",
     slogan: "Fluent in “why not?”",
     skills: ["Python", "React.js", "FastAPI"],
     github: "https://github.com/ishani-codes",
@@ -174,6 +245,7 @@ const eventManagementTeam: TeamMember[] = [
     id: "mrinmay-verma",
     name: "Mrinmay Verma",
     position: "Event Team",
+    image: "/team/mrinmay-verma.webp",
     slogan: "Curious by nature, driven to learn, and always ready to take on new challenges.",
     skills: ["Python", "C++", "Git/GitHub"],
     github: "https://github.com/Mrinmay-Verma",
@@ -187,11 +259,37 @@ const documentationTeam: TeamMember[] = [
     id: "prerana-puthran",
     name: "Prerana Puthran",
     position: "Documentation Head",
+    image: "/team/prerana-puthran.webp",
     slogan: "Learn.Build.Lead",
     skills: ["C", "C++", "Python"],
     github: "https://github.com/preranaputhran02",
     linkedin: "https://www.linkedin.com/in/prerana-puthran-b54559386",
     email: "nnm24cs194@nmamit.in",
+  },
+];
+
+const graphicsTeam: TeamMember[] = [
+  {
+    id: "hardik-shetty",
+    name: "Hardik Shetty",
+    position: "Graphics Head",
+    image: "/team/hardik-shetty.webp",
+  },
+  {
+    id: "shravya-graphics",
+    name: "Shravya",
+    position: "Graphics Team ",
+    image: "/team/shravya-graphics.webp",
+  },
+];
+
+const advisory: TeamMember[] = [
+  {
+    id: "shaamak-senior-advisor",
+    name: "Shaamak",
+    position: "Senior Advisor",
+    image: "/team/shaamak-senior-advisor.webp",
+    slogan: "Shaamak bro please send it to me! what to display",
   },
 ];
 
@@ -203,6 +301,8 @@ const teamSections: Array<{ title: string; data: TeamMember[] }> = [
   { title: "Publicity Team", data: publicityTeam },
   { title: "Event Management Team", data: eventManagementTeam },
   { title: "Documentation Team", data: documentationTeam },
+  { title: "Graphics Team", data: graphicsTeam },
+  { title: "Advisory", data: advisory },
 ];
 
 type TeamAccent = "primary" | "technical" | "creative" | "rose";
@@ -215,6 +315,8 @@ const teamSectionAccents: TeamAccent[] = [
   "primary",
   "technical",
   "creative",
+  "rose",
+  "primary",
 ];
 
 const teamAccentStyles: Record<
@@ -279,6 +381,9 @@ const TeamMemberCard = ({
   const [isHovered, setIsHovered] = useState(false);
   const [isFlipped, setIsFlipped] = useState(false);
   const hasSocialLinks = Boolean(member.github || member.linkedin || member.email);
+  const hasExtendedDetails = Boolean(
+    member.slogan || member.skills?.length || hasSocialLinks,
+  );
   const showingBack = isHovered || isFlipped;
 
   const handlePointerEnter = (event: PointerEvent<HTMLElement>) => {
@@ -342,7 +447,8 @@ const TeamMemberCard = ({
                 alt={member.name}
                 loading="lazy"
                 decoding="async"
-                className="size-full object-cover object-[center_20%]"
+                className="size-full object-cover"
+                style={{ objectPosition: member.imagePosition ?? "50% 65%" }}
               />
             )}
             <div
@@ -362,13 +468,18 @@ const TeamMemberCard = ({
             <p className={`mt-3 inline-flex w-fit rounded-full border border-current/20 bg-surface-muted/70 px-3 py-1.5 font-mono text-xs font-semibold uppercase tracking-[0.12em] ${accent.role}`}>
               {member.position}
             </p>
+            {member.slogan && (
+              <p className="team-flip-card__front-quote mt-3 text-sm italic leading-5 text-ink-muted">
+                "{member.slogan}"
+              </p>
+            )}
           </div>
         </div>
 
         <div
           className={`team-flip-card__face team-flip-card__back ui-card-glass flex flex-col p-6 transition-colors duration-300 sm:p-7 ${
             showingBack ? "" : "pointer-events-none"
-          } ${accent.card} ${accent.topBorder}`}
+          } ${hasExtendedDetails ? "" : "team-flip-card__back--minimal"} ${accent.card} ${accent.topBorder}`}
           aria-hidden={!showingBack}
         >
           <div
@@ -383,24 +494,28 @@ const TeamMemberCard = ({
             {member.position}
           </p>
 
-          <div className="mt-6 min-h-28">
-            {member.slogan && (
-              <p className="text-sm italic leading-relaxed text-ink-muted sm:text-base">
-                "{member.slogan}"
-              </p>
-            )}
-          </div>
+          {hasExtendedDetails && (
+            <>
+              <div className="mt-6 min-h-28">
+                {member.slogan && (
+                  <p className="text-sm italic leading-relaxed text-ink-muted sm:text-base">
+                    "{member.slogan}"
+                  </p>
+                )}
+              </div>
 
-          <div className="mt-5 flex min-h-16 flex-wrap content-start gap-2">
-            {member.skills?.slice(0, 3).map((skill) => (
-              <span
-                key={skill}
-                className={`rounded-full border px-3 py-1 font-mono text-xs font-semibold text-ink-muted ${accent.skill}`}
-              >
-                {skill}
-              </span>
-            ))}
-          </div>
+              <div className="mt-5 flex min-h-16 flex-wrap content-start gap-2">
+                {member.skills?.slice(0, 3).map((skill) => (
+                  <span
+                    key={skill}
+                    className={`rounded-full border px-3 py-1 font-mono text-xs font-semibold text-ink-muted ${accent.skill}`}
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </>
+          )}
 
           {hasSocialLinks && (
             <div className="mt-auto flex flex-wrap items-center gap-2 pt-6">
