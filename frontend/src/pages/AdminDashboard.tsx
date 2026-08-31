@@ -25,6 +25,8 @@ import {
 } from 'lucide-react';
 import PageTransition from '../components/ui/PageTransition';
 import SectionReveal from '../components/ui/SectionReveal';
+import InaugurationLaunch from '../components/admin/InaugurationLaunch';
+import { INAUGURATION_MODE } from '../config/inauguration';
 import { ApiError } from '../lib/api';
 import { registrationBranchOptions } from '../lib/registrationBranches';
 import {
@@ -475,7 +477,9 @@ const AdminDashboard = () => {
   const filtersActive = Boolean(search.trim() || branch.trim() || year || status || domain);
 
   return (
-    <PageTransition>
+    <>
+      {INAUGURATION_MODE && <InaugurationLaunch />}
+      <PageTransition>
       <main className="relative isolate min-h-screen overflow-x-hidden bg-transparent text-ink">
         <div className="site-container-wide min-w-0 space-y-10 pb-section pt-24 sm:pt-28 lg:pt-32">
           <SectionReveal variant="fade" duration={0.42}>
@@ -895,7 +899,8 @@ const AdminDashboard = () => {
         )}
         </div>
       </main>
-    </PageTransition>
+      </PageTransition>
+    </>
   );
 };
 
