@@ -3,32 +3,49 @@ import {
   BookOpen,
   CalendarDays,
   CheckCircle2,
+  Clock,
   ExternalLink,
   GraduationCap,
+  Loader2,
+  MapPin,
+  Medal,
   Shapes,
+  Trophy,
+  Users,
   UserRound,
 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import PageTransition from "../components/ui/PageTransition";
 import SectionReveal from "../components/ui/SectionReveal";
 import ResourceCard from "../components/ResourceCard";
-import DomainWhatsAppModal, {
-  domainCommunityDescriptions,
-  WhatsAppIcon,
-} from "../components/student/DomainWhatsAppModal";
+import { useToast } from "../components/ToastProvider";
 import { useAuth } from "../context/AuthContext";
 import { useTheme } from "../context/ThemeContext";
 import { blogPosts } from "../lib/resourcesData";
 import {
-  getStudentDomainGroups,
-  type DomainCommunity,
+  getStudentEvents,
+  type EventSummary,
+} from "../lib/eventApi";
+import {
+  getStudentWeeklyContests,
+  openStudentWeeklyContest,
+  type StudentWeeklyContest,
 } from "../lib/studentApi";
+import {
+  getStudentRank,
+  getStudentWeeklyRank,
+  getWeeklyContestWeeks,
+  type StudentRank,
+  type StudentWeeklyRank,
+} from "../lib/leaderboardApi";
 import {
   getEnrolledResourceCategories,
   studentResourceSearch,
   studentResourceState,
 } from "../lib/studentResources";
+
+type WeeklySelection = "all" | number;
 
 const domainCardStyles = [
   {
@@ -48,106 +65,380 @@ const domainCardStyles = [
   },
 ] as const;
 
-const hasDismissedCommunityModal = (key: string) => {
-  try {
-    return sessionStorage.getItem(key) === "dismissed";
-  } catch {
-    return true;
+const formatDashboardDateTime = (value: string) =>
+  new Intl.DateTimeFormat("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+
+const getDashboardEventStatusLabel = (status: EventSummary["status"]) =>
+  status === "ongoing" ? "ONGOING" : "UPCOMING";
+
+const DashboardEventPreview = ({ event }: { event: EventSummary }) => (
+  <article className="rounded-card border border-line/80 bg-surface/75 p-3 shadow-soft">
+    <div className="grid gap-3 sm:grid-cols-[5rem_minmax(0,1fr)]">
+      <div className="aspect-[16/10] overflow-hidden rounded-control border border-line bg-surface-muted sm:aspect-square">
+        {event.posterUrl ? (
+          <img
+            src={event.posterUrl}
+            alt={`${event.title} poster`}
+            loading="lazy"
+            decoding="async"
+            className="size-full object-cover"
+            onError={(imageEvent) => {
+              imageEvent.currentTarget.style.display = "none";
+            }}
+          />
+        ) : (
+          <div className="flex size-full items-center justify-center text-xs font-semibold text-ink-muted">
+            Event
+          </div>
+        )}
+      </div>
+      <div className="min-w-0">
+        <div className="flex flex-wrap items-start justify-between gap-2">
+          <h4 className="break-words font-display text-base font-semibold text-ink">
+            {event.title}
+          </h4>
+          <span className="inline-flex min-h-7 shrink-0 items-center rounded-full border border-dream/30 bg-dream/10 px-2.5 font-mono text-[0.65rem] font-bold text-dream-text">
+            {getDashboardEventStatusLabel(event.status)}
+          </span>
+        </div>
+        <dl className="mt-3 grid gap-2 text-xs text-ink-muted">
+          <div className="flex gap-2">
+            <Clock className="mt-0.5 size-3.5 shrink-0 text-primary-text" aria-hidden="true" />
+            <div>
+              <dt className="sr-only">Start time</dt>
+              <dd>{formatDashboardDateTime(event.eventDateTime)}</dd>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <MapPin className="mt-0.5 size-3.5 shrink-0 text-technical-text" aria-hidden="true" />
+            <div>
+              <dt className="sr-only">Venue</dt>
+              <dd>{event.venue}</dd>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Users className="mt-0.5 size-3.5 shrink-0 text-rose-text" aria-hidden="true" />
+            <div>
+              <dt className="sr-only">Registrations</dt>
+              <dd>{event.registrationCount} / {event.maxRegistrations} Registered</dd>
+            </div>
+          </div>
+        </dl>
+      </div>
+    </div>
+  </article>
+);
+
+const formatContestTime = (value: string) =>
+  new Intl.DateTimeFormat("en-IN", {
+    dateStyle: "medium",
+    timeStyle: "short",
+  }).format(new Date(value));
+
+const getTaskButtonLabel = (contest: StudentWeeklyContest) => {
+  if (contest.status === "upcoming") {
+    return `Starts ${new Intl.DateTimeFormat("en-IN", {
+      timeStyle: "short",
+    }).format(new Date(contest.startDateTime))}`;
   }
+
+  if (contest.status === "ended") return "Contest Ended";
+  return contest.claimed ? "Open Contest" : "Start Contest";
 };
 
-const markCommunityModalDismissed = (key: string) => {
-  try {
-    sessionStorage.setItem(key, "dismissed");
-  } catch {
-    // If sessionStorage is unavailable, the in-memory open state still closes the modal.
-  }
+const WeeklyContestTaskCard = ({
+  contest,
+  pending,
+  onOpen,
+}: {
+  contest: StudentWeeklyContest;
+  pending: boolean;
+  onOpen: (contest: StudentWeeklyContest) => void;
+}) => {
+  const isActionable = contest.status === "live";
+
+  return (
+    <article className="rounded-card border border-line/80 bg-surface/75 p-4 shadow-soft">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0">
+          <span className="inline-flex min-h-7 items-center rounded-full border border-technical/30 bg-technical/10 px-2.5 font-mono text-[0.65rem] font-bold text-technical-text">
+            Week {contest.weekNumber}
+          </span>
+          <h4 className="mt-3 break-words font-display text-base font-semibold text-ink">
+            {contest.title}
+          </h4>
+          {contest.description && (
+            <p className="mt-2 line-clamp-2 text-sm leading-6 text-ink-muted">
+              {contest.description}
+            </p>
+          )}
+        </div>
+        <span className="inline-flex min-h-7 w-fit items-center rounded-full border border-dream/30 bg-dream/10 px-2.5 font-mono text-[0.65rem] font-bold uppercase text-dream-text">
+          {contest.status}
+        </span>
+      </div>
+
+      <dl className="mt-4 grid gap-2 text-xs text-ink-muted">
+        <div>
+          <dt className="font-semibold text-ink">Starts</dt>
+          <dd>{formatContestTime(contest.startDateTime)}</dd>
+        </div>
+        <div>
+          <dt className="font-semibold text-ink">Ends</dt>
+          <dd>{formatContestTime(contest.endDateTime)}</dd>
+        </div>
+      </dl>
+
+      <button
+        type="button"
+        onClick={() => onOpen(contest)}
+        disabled={!isActionable || pending}
+        className="btn btn-secondary mt-4 w-full justify-center disabled:cursor-not-allowed disabled:opacity-60 sm:w-fit"
+      >
+        {pending ? (
+          <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+        ) : isActionable ? (
+          <ExternalLink className="size-4" aria-hidden="true" />
+        ) : (
+          <Clock className="size-4" aria-hidden="true" />
+        )}
+        {pending ? "Opening..." : getTaskButtonLabel(contest)}
+      </button>
+    </article>
+  );
 };
 
 const StudentDashboard = () => {
   const { user } = useAuth();
   const { isDark } = useTheme();
-  const [domainGroups, setDomainGroups] = useState<DomainCommunity[]>([]);
-  const [isLoadingDomainGroups, setIsLoadingDomainGroups] = useState(true);
-  const [domainGroupsError, setDomainGroupsError] = useState("");
-  const [isCommunityModalOpen, setIsCommunityModalOpen] = useState(false);
-  const enrolledDomainKey = user?.enrolledDomains.join("|") ?? "";
-  const communityModalSessionKey = user
-    ? `hackerearth-hub:student-community-popup:${user.id}`
-    : "";
-
-  const dismissCommunityModal = useCallback(() => {
-    if (communityModalSessionKey) {
-      markCommunityModalDismissed(communityModalSessionKey);
-    }
-    setIsCommunityModalOpen(false);
-  }, [communityModalSessionKey]);
+  const { showToast } = useToast();
+  const [studentRank, setStudentRank] = useState<StudentRank | null>(null);
+  const [studentRankError, setStudentRankError] = useState("");
+  const [availableWeeks, setAvailableWeeks] = useState<number[]>([]);
+  const [selectedWeek, setSelectedWeek] = useState<WeeklySelection>("all");
+  const [weeklyRank, setWeeklyRank] = useState<StudentWeeklyRank | null>(null);
+  const [weeklyRankError, setWeeklyRankError] = useState("");
+  const [isLoadingWeeks, setIsLoadingWeeks] = useState(true);
+  const [isLoadingWeeklyRank, setIsLoadingWeeklyRank] = useState(false);
+  const [dashboardEvents, setDashboardEvents] = useState<EventSummary[]>([]);
+  const [dashboardEventsError, setDashboardEventsError] = useState("");
+  const [isLoadingDashboardEvents, setIsLoadingDashboardEvents] = useState(true);
+  const [weeklyContestTasks, setWeeklyContestTasks] = useState<StudentWeeklyContest[]>([]);
+  const [weeklyContestTasksError, setWeeklyContestTasksError] = useState("");
+  const [isLoadingWeeklyContestTasks, setIsLoadingWeeklyContestTasks] = useState(true);
+  const [pendingContestId, setPendingContestId] = useState<string | null>(null);
 
   useEffect(() => {
+    if (!user) return;
+
     let isMounted = true;
 
-    const loadDomainGroups = async () => {
-      if (!user) {
-        if (isMounted) {
-          setDomainGroups([]);
-          setIsLoadingDomainGroups(false);
-        }
-        return;
-      }
-
+    const loadStudentRank = async () => {
       try {
-        setIsLoadingDomainGroups(true);
-        setDomainGroupsError("");
-        const data = await getStudentDomainGroups();
+        setStudentRankError("");
+        const data = await getStudentRank();
 
         if (isMounted) {
-          setDomainGroups(data.groups);
+          setStudentRank(data.rank);
         }
       } catch {
         if (isMounted) {
-          setDomainGroups([]);
-          setDomainGroupsError(
-            "Domain communities could not be loaded right now."
-          );
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoadingDomainGroups(false);
+          setStudentRank(null);
+          setStudentRankError("Your standing could not be loaded right now.");
         }
       }
     };
 
-    void loadDomainGroups();
+    void loadStudentRank();
 
     return () => {
       isMounted = false;
     };
-  }, [enrolledDomainKey, user?.id]);
+  }, [user?.id]);
 
   useEffect(() => {
-    if (
-      !user ||
-      user.role !== "student" ||
-      isLoadingDomainGroups ||
-      domainGroupsError ||
-      domainGroups.length === 0 ||
-      !communityModalSessionKey
-    ) {
+    if (!user) return;
+
+    const controller = new AbortController();
+    setIsLoadingWeeklyContestTasks(true);
+    setWeeklyContestTasksError("");
+
+    void getStudentWeeklyContests(controller.signal)
+      .then((response) => {
+        setWeeklyContestTasks(response.contests);
+      })
+      .catch((error) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setWeeklyContestTasks([]);
+        setWeeklyContestTasksError("Weekly contests could not be loaded right now.");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setIsLoadingWeeklyContestTasks(false);
+        }
+      });
+
+    return () => controller.abort();
+  }, [user?.id]);
+
+  const handleOpenWeeklyContest = async (contest: StudentWeeklyContest) => {
+    if (pendingContestId || contest.status !== "live") return;
+
+    const externalTab = window.open("about:blank", "_blank");
+    if (!externalTab) {
+      showToast({
+        variant: "error",
+        message: "Popup was blocked. Please allow popups and try again.",
+      });
+      return;
+    }
+    externalTab.opener = null;
+    setPendingContestId(contest.id);
+
+    try {
+      const response = await openStudentWeeklyContest(contest.id);
+      setWeeklyContestTasks((current) =>
+        current.map((item) =>
+          item.id === contest.id ? { ...item, claimed: true } : item
+        )
+      );
+      if (response.awarded) {
+        showToast({
+          variant: "success",
+          message: `+${response.pointsAwarded} weekly contest points recorded.`,
+        });
+      }
+
+      externalTab.location.href = response.contestUrl;
+    } catch (error) {
+      externalTab.close();
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Unable to open this contest right now.";
+      showToast({ variant: "error", message });
+    } finally {
+      setPendingContestId(null);
+    }
+  };
+
+  useEffect(() => {
+    if (!user) return;
+
+    let isMounted = true;
+
+    const loadWeeklyContestWeeks = async () => {
+      try {
+        setIsLoadingWeeks(true);
+        const data = await getWeeklyContestWeeks();
+
+        if (isMounted) {
+          const weeks = data.weeks;
+          setAvailableWeeks(weeks);
+          setSelectedWeek((currentWeek) =>
+            currentWeek === "all" ||
+              (typeof currentWeek === "number" && weeks.includes(currentWeek))
+              ? currentWeek
+              : "all"
+          );
+          setWeeklyRankError("");
+        }
+      } catch {
+        if (isMounted) {
+          setAvailableWeeks([]);
+          setSelectedWeek("all");
+          setWeeklyRank(null);
+          setWeeklyRankError("Weekly rankings could not be loaded right now.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingWeeks(false);
+        }
+      }
+    };
+
+    void loadWeeklyContestWeeks();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!user) {
+      setWeeklyRank(null);
       return;
     }
 
-    if (hasDismissedCommunityModal(communityModalSessionKey)) {
-      return;
-    }
+    let isMounted = true;
 
-    setIsCommunityModalOpen(true);
-  }, [
-    communityModalSessionKey,
-    domainGroups.length,
-    domainGroupsError,
-    isLoadingDomainGroups,
-    user?.role,
-  ]);
+    const loadWeeklyRank = async () => {
+      try {
+        setIsLoadingWeeklyRank(true);
+        setWeeklyRankError("");
+        const data = await getStudentWeeklyRank({
+          scope: selectedWeek === "all" ? "all" : "week",
+          week: selectedWeek === "all" ? undefined : selectedWeek,
+        });
+
+        if (isMounted) {
+          setWeeklyRank(data.rank);
+        }
+      } catch {
+        if (isMounted) {
+          setWeeklyRank(null);
+          setWeeklyRankError("Your weekly standing could not be loaded right now.");
+        }
+      } finally {
+        if (isMounted) {
+          setIsLoadingWeeklyRank(false);
+        }
+      }
+    };
+
+    void loadWeeklyRank();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [selectedWeek, user?.id]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const controller = new AbortController();
+    setIsLoadingDashboardEvents(true);
+    setDashboardEventsError("");
+
+    void getStudentEvents(controller.signal)
+      .then((response) => {
+        const currentEvents = response.upcoming
+          .filter((event) => event.status !== "past")
+          .sort(
+            (first, second) =>
+              new Date(first.eventDateTime).getTime() -
+              new Date(second.eventDateTime).getTime()
+          )
+          .slice(0, 3);
+
+        setDashboardEvents(currentEvents);
+      })
+      .catch((error) => {
+        if (error instanceof DOMException && error.name === "AbortError") return;
+        setDashboardEvents([]);
+        setDashboardEventsError("Upcoming events could not be loaded right now.");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) {
+          setIsLoadingDashboardEvents(false);
+        }
+      });
+
+    return () => controller.abort();
+  }, [user?.id]);
 
   if (!user) return null;
 
@@ -243,6 +534,7 @@ const StudentDashboard = () => {
                           </dd>
                         </div>
                       </dl>
+
                     </aside>
                   </div>
                 </div>
@@ -251,101 +543,183 @@ const StudentDashboard = () => {
 
             <SectionReveal delay={0.05}>
               <section
-                id="student-domain-communities"
-                aria-labelledby="domain-communities-heading"
+                id="student-standing"
+                aria-labelledby="student-standing-heading"
                 className="ui-panel-glass scroll-mt-28 p-5 sm:p-6 lg:p-8"
               >
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+                <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
                   <div>
-                    <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-technical-text">
-                      Stay connected
+                    <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-primary-text">
+                      Your standing
                     </p>
                     <h2
-                      id="domain-communities-heading"
+                      id="student-standing-heading"
                       className="mt-1 font-display text-2xl font-semibold text-ink sm:text-3xl"
                     >
-                      Your Domain Communities
+                      Overall & Weekly Rankings
                     </h2>
                     <p className="mt-2 max-w-2xl text-sm leading-6 text-ink-muted">
-                      Join the official discussion spaces for the domains linked to your account.
+                      Track your overall club points and weekly contest performance from one place.
                     </p>
                   </div>
+                  <Link
+                    to="/leaderboard"
+                    className="btn btn-secondary w-full justify-center sm:w-fit"
+                  >
+                    View Full Leaderboard
+                    <ArrowRight className="size-4" aria-hidden="true" />
+                  </Link>
                 </div>
 
-                {isLoadingDomainGroups ? (
-                  <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                    {[0, 1, 2].map((item) => (
-                      <div
-                        key={item}
-                        className="ui-card-glass min-h-48 animate-pulse border-technical/15 p-5 motion-reduce:animate-none"
-                        aria-hidden="true"
-                      >
-                        <div className="size-11 rounded-control bg-surface-muted" />
-                        <div className="mt-5 h-5 w-2/3 rounded-full bg-surface-muted" />
-                        <div className="mt-4 space-y-2">
-                          <div className="h-3 rounded-full bg-surface-muted" />
-                          <div className="h-3 w-5/6 rounded-full bg-surface-muted" />
-                        </div>
-                        <div className="mt-5 h-11 w-32 rounded-full bg-surface-muted" />
-                      </div>
-                    ))}
-                  </div>
-                ) : domainGroupsError ? (
-                  <div className="mt-6 flex items-start gap-3 rounded-card border border-rose/25 bg-rose/10 p-5 text-sm text-ink-muted">
-                    <ExternalLink
-                      className="mt-0.5 size-5 shrink-0 text-rose-text"
+                <div className="mt-6 grid gap-5 lg:grid-cols-2">
+                  <article className="ui-card-glass relative min-h-72 overflow-hidden border-primary/25 p-5 sm:p-6">
+                    <span
                       aria-hidden="true"
+                      className="pointer-events-none absolute -right-16 -top-20 size-44 rounded-full bg-primary/15"
                     />
-                    <p>{domainGroupsError}</p>
-                  </div>
-                ) : domainGroups.length > 0 ? (
-                  <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                    {domainGroups.map((group, index) => {
-                      const accent = domainCardStyles[index % domainCardStyles.length];
+                    <div className="relative flex items-start justify-between gap-4">
+                      <div>
+                        <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-primary-text">
+                          Overall Ranking
+                        </p>
+                        <h3 className="mt-2 font-display text-xl font-semibold text-ink">
+                          Club leaderboard
+                        </h3>
+                      </div>
+                      <span className="flex size-12 shrink-0 items-center justify-center rounded-control border border-primary/25 bg-primary/10 text-primary-text">
+                        <Trophy className="size-6" aria-hidden="true" />
+                      </span>
+                    </div>
 
-                      return (
-                        <article
-                          key={group.domain}
-                          className={`ui-card-glass group relative flex min-h-56 flex-col overflow-hidden p-5 transition duration-300 ease-out-expo hover:-translate-y-1 hover:shadow-glow motion-reduce:transform-none motion-reduce:transition-none ${accent.card}`}
+                    {studentRank ? (
+                      <div className="relative mt-8 grid gap-5 sm:grid-cols-2">
+                        <div>
+                          <p className="text-sm font-medium text-ink-muted">Overall Rank</p>
+                          <p className="mt-2 font-display text-5xl font-bold tabular-nums text-primary-text">
+                            #{studentRank.overallRank}
+                          </p>
+                          <p className="mt-3 text-sm text-ink-subtle">
+                            Out of {studentRank.totalActiveStudents} students
+                          </p>
+                        </div>
+                        <div className="rounded-card border border-line/80 bg-surface/80 p-4">
+                          <p className="text-sm font-medium text-ink-muted">Overall Total Points</p>
+                          <p className="mt-2 font-display text-4xl font-bold tabular-nums text-ink">
+                            {studentRank.totalPoints}
+                          </p>
+                          <p className="mt-2 text-sm text-ink-subtle">Cumulative club score</p>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="relative mt-8 rounded-card border border-line/80 bg-surface/75 p-5 text-sm text-ink-muted">
+                        {studentRankError || "Loading your overall standing..."}
+                      </div>
+                    )}
+                  </article>
+
+                  <article className="ui-card-glass relative min-h-72 overflow-hidden border-dream/25 p-5 sm:p-6">
+                    <span
+                      aria-hidden="true"
+                      className="pointer-events-none absolute -left-20 -top-20 size-44 rounded-full bg-dream/15"
+                    />
+                    <div className="relative flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                      <div>
+                        <p className="font-mono text-xs font-semibold uppercase tracking-[0.16em] text-dream-text">
+                          Weekly Ranking
+                        </p>
+                        <h3 className="mt-2 font-display text-xl font-semibold text-ink">
+                          Contest performance
+                        </h3>
+                      </div>
+                      <span className="flex size-12 shrink-0 items-center justify-center rounded-control border border-dream/25 bg-dream/10 text-dream-text">
+                        <Medal className="size-6" aria-hidden="true" />
+                      </span>
+                    </div>
+
+                    {isLoadingWeeks ? (
+                      <div
+                        className="relative mt-6 h-11 w-40 animate-pulse rounded-full bg-surface-muted motion-reduce:animate-none"
+                        aria-hidden="true"
+                      />
+                    ) : availableWeeks.length > 0 ? (
+                      <div className="relative mt-6 flex flex-wrap gap-2" aria-label="Select weekly contest week">
+                        <button
+                          type="button"
+                          onClick={() => setSelectedWeek("all")}
+                          className={`rounded-full border px-4 py-2 text-sm font-semibold transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dream focus-visible:ring-offset-2 focus-visible:ring-offset-base motion-reduce:transition-none ${selectedWeek === "all"
+                              ? "border-dream/50 bg-dream/15 text-dream-text shadow-glow"
+                              : "border-line bg-surface/80 text-ink-muted hover:border-dream/35 hover:text-ink"
+                            }`}
+                          aria-pressed={selectedWeek === "all"}
                         >
-                          <span
-                            aria-hidden="true"
-                            className={`pointer-events-none absolute -right-10 -top-12 size-28 rounded-full opacity-30 ${accent.glow}`}
-                          />
-                          <div className="relative flex items-start gap-4">
-                            <span
-                              className={`flex size-11 shrink-0 items-center justify-center rounded-control border ${accent.icon}`}
+                          All Weekly Contests
+                        </button>
+                        {availableWeeks.map((week) => {
+                          const isSelected = selectedWeek === week;
+
+                          return (
+                            <button
+                              key={week}
+                              type="button"
+                              onClick={() => setSelectedWeek(week)}
+                              className={`rounded-full border px-4 py-2 text-sm font-semibold transition duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-dream focus-visible:ring-offset-2 focus-visible:ring-offset-base motion-reduce:transition-none ${isSelected
+                                  ? "border-dream/50 bg-dream/15 text-dream-text shadow-glow"
+                                  : "border-line bg-surface/80 text-ink-muted hover:border-dream/35 hover:text-ink"
+                                }`}
+                              aria-pressed={isSelected}
                             >
-                              <WhatsAppIcon className="size-5" />
-                            </span>
-                            <div className="min-w-0">
-                              <p className="font-display text-lg font-semibold text-ink">
-                                {group.domain} Community
+                              Week {week}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="relative mt-6 rounded-card border border-line/80 bg-surface/75 p-5 text-sm text-ink-muted">
+                        No weekly contest rankings available yet.
+                      </div>
+                    )}
+
+                    {availableWeeks.length > 0 && (
+                      <div className="relative mt-7">
+                        {isLoadingWeeklyRank ? (
+                          <div className="grid gap-4 sm:grid-cols-2" aria-hidden="true">
+                            <div className="h-28 animate-pulse rounded-card bg-surface-muted motion-reduce:animate-none" />
+                            <div className="h-28 animate-pulse rounded-card bg-surface-muted motion-reduce:animate-none" />
+                          </div>
+                        ) : weeklyRankError ? (
+                          <div className="rounded-card border border-rose/25 bg-rose/10 p-5 text-sm text-ink-muted">
+                            {weeklyRankError}
+                          </div>
+                        ) : weeklyRank ? (
+                          <div className="grid gap-5 sm:grid-cols-2">
+                            <div>
+                              <p className="text-sm font-medium text-ink-muted">Weekly Rank</p>
+                              <p className="mt-2 font-display text-5xl font-bold tabular-nums text-dream-text">
+                                {weeklyRank.weeklyRank ? `#${weeklyRank.weeklyRank}` : "Not ranked"}
                               </p>
-                              <p className="mt-2 text-sm leading-6 text-ink-muted">
-                                {domainCommunityDescriptions[group.domain]}
+                              <p className="mt-3 text-sm text-ink-subtle">
+                                {weeklyRank.totalRankedStudents > 0
+                                  ? `Out of ${weeklyRank.totalRankedStudents} ranked students`
+                                  : "No ranked students for this week yet"}
+                              </p>
+                            </div>
+                            <div className="rounded-card border border-line/80 bg-surface/80 p-4">
+                              <p className="text-sm font-medium text-ink-muted">Weekly Points</p>
+                              <p className="mt-2 font-display text-4xl font-bold tabular-nums text-ink">
+                                {weeklyRank.weeklyPoints}
+                              </p>
+                              <p className="mt-2 text-sm text-ink-subtle">
+                                {weeklyRank.scope === "all"
+                                  ? "All weekly contest score"
+                                  : `Week ${weeklyRank.week} contest score`}
                               </p>
                             </div>
                           </div>
-                          <a
-                            href={group.joinUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="btn btn-secondary relative mt-5 w-full justify-center sm:w-fit"
-                          >
-                            Join Now
-                            <ExternalLink className="size-4" aria-hidden="true" />
-                          </a>
-                        </article>
-                      );
-                    })}
-                  </div>
-                ) : (
-                  <div className="mt-6 flex items-start gap-3 rounded-card border border-line/80 bg-surface/75 p-5 text-sm text-ink-muted">
-                    <WhatsAppIcon className="mt-0.5 size-5 shrink-0 text-technical-text" />
-                    <p>No domain communities are available for your account yet.</p>
-                  </div>
-                )}
+                        ) : null}
+                      </div>
+                    )}
+                  </article>
+                </div>
               </section>
             </SectionReveal>
 
@@ -370,11 +744,32 @@ const StudentDashboard = () => {
                       <CalendarDays className="size-5" aria-hidden="true" />
                     </div>
                     <h3 className="mt-5 font-display text-xl font-semibold text-ink">Upcoming events</h3>
-                    <p className="mt-2 flex-1 text-sm leading-6 text-ink-muted">
-                      There are no upcoming events published right now. Visit the events page for club highlights and updates.
-                    </p>
+                    <div className="mt-4 flex-1 space-y-3">
+                      {isLoadingDashboardEvents ? (
+                        <div className="space-y-3" aria-hidden="true">
+                          {[0, 1].map((item) => (
+                            <div
+                              key={item}
+                              className="h-24 animate-pulse rounded-card bg-surface-muted motion-reduce:animate-none"
+                            />
+                          ))}
+                        </div>
+                      ) : dashboardEventsError ? (
+                        <p className="rounded-card border border-line/80 bg-surface/75 p-4 text-sm leading-6 text-ink-muted">
+                          {dashboardEventsError}
+                        </p>
+                      ) : dashboardEvents.length > 0 ? (
+                        dashboardEvents.map((event) => (
+                          <DashboardEventPreview key={event.id} event={event} />
+                        ))
+                      ) : (
+                        <p className="rounded-card border border-line/80 bg-surface/75 p-4 text-sm leading-6 text-ink-muted">
+                          No upcoming events right now.
+                        </p>
+                      )}
+                    </div>
                     <Link to="/events" className="btn btn-secondary mt-5 w-full justify-center sm:w-fit">
-                      Explore events
+                      View Event
                       <ArrowRight className="size-4" aria-hidden="true" />
                     </Link>
                   </article>
@@ -384,13 +779,35 @@ const StudentDashboard = () => {
                       <CheckCircle2 className="size-5" aria-hidden="true" />
                     </div>
                     <h3 className="mt-5 font-display text-xl font-semibold text-ink">My tasks</h3>
-                    <p className="mt-2 text-sm font-semibold text-ink">No tasks assigned yet.</p>
-                    <p className="mt-2 flex-1 text-sm leading-6 text-ink-muted">
-                      Assigned club tasks will appear here when they become available.
-                    </p>
-                    <span className="mt-5 inline-flex min-h-11 w-fit items-center rounded-full border border-line bg-surface-muted/80 px-4 text-sm font-medium text-ink-muted">
-                      You&apos;re all caught up
-                    </span>
+                    <div className="mt-4 flex-1 space-y-3">
+                      {isLoadingWeeklyContestTasks ? (
+                        <div className="space-y-3" aria-hidden="true">
+                          {[0, 1].map((item) => (
+                            <div
+                              key={item}
+                              className="h-32 animate-pulse rounded-card bg-surface-muted motion-reduce:animate-none"
+                            />
+                          ))}
+                        </div>
+                      ) : weeklyContestTasksError ? (
+                        <p className="rounded-card border border-line/80 bg-surface/75 p-4 text-sm leading-6 text-ink-muted">
+                          {weeklyContestTasksError}
+                        </p>
+                      ) : weeklyContestTasks.length > 0 ? (
+                        weeklyContestTasks.map((contest) => (
+                          <WeeklyContestTaskCard
+                            key={contest.id}
+                            contest={contest}
+                            pending={pendingContestId === contest.id}
+                            onOpen={handleOpenWeeklyContest}
+                          />
+                        ))
+                      ) : (
+                        <p className="rounded-card border border-line/80 bg-surface/75 p-4 text-sm leading-6 text-ink-muted">
+                          No weekly contests assigned yet.
+                        </p>
+                      )}
+                    </div>
                   </article>
                 </div>
               </section>
@@ -496,11 +913,6 @@ const StudentDashboard = () => {
             </SectionReveal>
           </div>
         </div>
-        <DomainWhatsAppModal
-          isOpen={isCommunityModalOpen}
-          groups={domainGroups}
-          onClose={dismissCommunityModal}
-        />
       </main>
     </PageTransition>
   );
