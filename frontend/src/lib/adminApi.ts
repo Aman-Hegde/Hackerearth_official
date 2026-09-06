@@ -132,6 +132,7 @@ export interface AdminDppOpenStudent {
   year: number | null;
   branch: string;
   openedAt: string;
+  aptitudeScore: number | null;
 }
 
 export interface AdminDppOpenSummary {
@@ -223,6 +224,32 @@ interface AdminDppOpensResponse {
   success: true;
   dpp: AdminDppOpenSummary;
   opens: AdminDppOpenStudent[];
+}
+
+interface UpsertAdminDppScoreResponse {
+  success: true;
+  message: string;
+  action: 'created' | 'updated';
+  dpp: {
+    id: string;
+    type: AdminDppType;
+    title: string;
+  };
+  student: {
+    id: string;
+    name: string;
+    email: string;
+    usn: string;
+    branch: string;
+    year: number;
+  };
+  score: {
+    id: string;
+    dppId: string;
+    studentId: string;
+    aptitudeScore: number;
+    updatedAt: string;
+  };
 }
 
 interface UpsertWeeklyContestScoreResponse {
@@ -601,3 +628,21 @@ export const downloadAdminDppOpensExcel = async (
 
   return { blob, filename };
 };
+
+export const upsertAdminDppScore = ({
+  dppId,
+  studentId,
+  score,
+}: {
+  dppId: string;
+  studentId: string;
+  score: number;
+}) =>
+  apiRequest<UpsertAdminDppScoreResponse>(
+    `/api/admin/dpps/${encodeURIComponent(dppId)}/students/${encodeURIComponent(studentId)}/score`,
+    {
+      method: 'PUT',
+      credentials: 'include',
+      body: JSON.stringify({ score }),
+    },
+  );

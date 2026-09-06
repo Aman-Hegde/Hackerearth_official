@@ -85,6 +85,7 @@ import {
   updateAdminWeeklyContest,
   updateAdminRegistrationSettings,
   updateAdminStudentStatus,
+  upsertAdminDppScore,
 } from '../lib/adminApi';
 
 const PAGE_LIMIT = 25;
@@ -373,6 +374,8 @@ const getDppTypeClasses = (type: AdminDpp['type']) =>
     ? 'border-technical/35 bg-technical/10 text-technical-text'
     : 'border-primary/35 bg-primary/10 text-primary-text';
 
+const getDppOpenKey = (open: AdminDppOpenStudent) => open.studentId || open.id;
+
 const buildDppPayload = (form: DppFormState): DppInput | null => {
   const type = form.type === 'dsa' || form.type === 'aptitude' ? form.type : null;
   const description = form.description.trim();
@@ -569,6 +572,10 @@ const AdminDashboard = () => {
   const [dppOpensLoading, setDppOpensLoading] = useState(false);
   const [dppOpensError, setDppOpensError] = useState<AdminRequestError | null>(null);
   const [dppOpensDownloading, setDppOpensDownloading] = useState(false);
+  const [dppScoreInputs, setDppScoreInputs] = useState<Record<string, string>>({});
+  const [dppScoreErrors, setDppScoreErrors] = useState<Record<string, string>>({});
+  const [dppScoreNotice, setDppScoreNotice] = useState<string | null>(null);
+  const [pendingDppScoreStudentIds, setPendingDppScoreStudentIds] = useState<Record<string, boolean>>({});
 
   const [search, setSearch] = useState('');
   const [branch, setBranch] = useState('');
@@ -1648,12 +1655,22 @@ const AdminDashboard = () => {
     });
     setDppOpens([]);
     setDppOpensError(null);
+    setDppScoreErrors({});
+    setDppScoreNotice(null);
     setDppOpensLoading(true);
 
     try {
       const response = await getAdminDppOpens(dpp.id);
       setDppOpensSummary(response.dpp);
       setDppOpens(response.opens);
+      setDppScoreInputs(
+        Object.fromEntries(
+          response.opens.map((open) => [
+            getDppOpenKey(open),
+            open.aptitudeScore === null ? '' : String(open.aptitudeScore),
+          ])
+        )
+      );
       setDpps((current) =>
         current.map((item) =>
           item.id === response.dpp.id
@@ -1679,6 +1696,144 @@ const AdminDashboard = () => {
     setDppOpensSummary(null);
     setDppOpens([]);
     setDppOpensError(null);
+    setDppScoreInputs({});
+    setDppScoreErrors({});
+    setDppScoreNotice(null);
+    setPendingDppScoreStudentIds({});
+  };
+
+  const handleDppScoreInputChange = (open: AdminDppOpenStudent, value: string) => {
+    const key = getDppOpenKey(open);
+    setDppScoreInputs((current) => ({ ...current, [key]: value }));
+    setDppScoreErrors((current) => {
+      const next = { ...current };
+      delete next[key];
+      return next;
+    });
+    setDppScoreNotice(null);
+  };
+
+  const handleSaveDppScore = async (open: AdminDppOpenStudent) => {
+    if (!dppOpensSummary || dppOpensSummary.type !== 'aptitude') return;
+
+    const key = getDppOpenKey(open);
+    const rawScore = dppScoreInputs[key] ?? '';
+    const normalizedScore = rawScore.trim();
+
+    if (open.studentId && pendingDppScoreStudentIds[open.studentId]) return;
+
+    if (!open.studentId) {
+      setDppScoreErrors((current) => ({
+        ...current,
+        [key]: 'Student id is unavailable for this open record.',
+      }));
+      return;
+    }
+
+    if (!/^(0|[1-9]\d*)$/.test(normalizedScore)) {
+      setDppScoreErrors((current) => ({
+        ...current,
+        [key]: 'Score must be a whole number from 0 to 100000.',
+      }));
+      return;
+    }
+
+    const score = Number(normalizedScore);
+    if (!Number.isInteger(score) || score < 0 || score > 100000) {
+      setDppScoreErrors((current) => ({
+        ...current,
+        [key]: 'Score must be a whole number from 0 to 100000.',
+      }));
+      return;
+    }
+
+    setPendingDppScoreStudentIds((current) => ({
+      ...current,
+      [open.studentId as string]: true,
+    }));
+    setDppScoreNotice(null);
+    setDppScoreErrors((current) => {
+      const next = { ...current };
+      delete next[key];
+      return next;
+    });
+
+    try {
+      const response = await upsertAdminDppScore({
+        dppId: dppOpensSummary.id,
+        studentId: open.studentId,
+        score,
+      });
+      setDppOpens((current) =>
+        current.map((item) =>
+          item.studentId === response.score.studentId
+            ? { ...item, aptitudeScore: response.score.aptitudeScore }
+            : item
+        )
+      );
+      setDppScoreInputs((current) => ({
+        ...current,
+        [key]: String(response.score.aptitudeScore),
+      }));
+      setDppScoreNotice('Aptitude score saved.');
+    } catch (error) {
+      const requestError = classifyAdminError(error, 'Unable to save aptitude score.');
+      if (isGlobalAuthorizationError(requestError)) {
+        setGlobalAuthError(requestError);
+      } else {
+        setDppScoreErrors((current) => ({
+          ...current,
+          [key]: requestError.message,
+        }));
+      }
+    } finally {
+      if (open.studentId) {
+        setPendingDppScoreStudentIds((current) => {
+          const next = { ...current };
+          delete next[open.studentId as string];
+          return next;
+        });
+      }
+    }
+  };
+
+  const renderDppScoreControls = (open: AdminDppOpenStudent) => {
+    const key = getDppOpenKey(open);
+    const isSaving = Boolean(open.studentId && pendingDppScoreStudentIds[open.studentId]);
+
+    return (
+      <div className="min-w-0 space-y-2">
+        <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center">
+          <input
+            type="number"
+            min={0}
+            max={100000}
+            step={1}
+            value={dppScoreInputs[key] ?? ''}
+            onChange={(event) => handleDppScoreInputChange(open, event.target.value)}
+            placeholder="Score"
+            className="min-h-10 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft placeholder:text-ink-subtle focus:border-technical/60 focus:ring-2 focus:ring-technical/20 sm:w-28"
+            aria-label={`Aptitude score for ${open.name}`}
+          />
+          <button
+            type="button"
+            className="btn btn-secondary min-h-10 rounded-full"
+            onClick={() => void handleSaveDppScore(open)}
+            disabled={isSaving || !open.studentId}
+          >
+            {isSaving && (
+              <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+            )}
+            {isSaving ? 'Saving...' : open.aptitudeScore === null ? 'Save Score' : 'Update Score'}
+          </button>
+        </div>
+        {dppScoreErrors[key] && (
+          <p className="text-xs leading-5 text-rose-text" role="alert">
+            {dppScoreErrors[key]}
+          </p>
+        )}
+      </div>
+    );
   };
 
   const handleDownloadDppOpens = async (
@@ -3062,6 +3217,16 @@ const AdminDashboard = () => {
                 </button>
 
                 {dppOpensError && <InlineFeedback kind="error">{dppOpensError.message}</InlineFeedback>}
+                {dppOpensSummary.type === 'aptitude' && !dppOpensLoading && dppOpens.length > 0 && (
+                  <div className="mt-4 rounded-card border border-primary/25 bg-primary/10 p-4 text-sm leading-6 text-ink-muted">
+                    Enter the student's aptitude performance score. This is added to the Overall Leaderboard separately from the +5 first-open reward.
+                  </div>
+                )}
+                {dppScoreNotice && (
+                  <div className="mt-4">
+                    <InlineFeedback kind="success">{dppScoreNotice}</InlineFeedback>
+                  </div>
+                )}
 
                 {dppOpensLoading ? (
                   <div className="mt-4">
@@ -3074,14 +3239,62 @@ const AdminDashboard = () => {
                 ) : (
                   <div className="mt-4 overflow-hidden rounded-card border border-line/80 bg-surface/90 shadow-soft">
                     <p className="border-b border-line/80 bg-surface-muted/50 px-4 py-3 text-xs font-medium text-ink-subtle md:hidden">
-                      Scroll horizontally to view every first-open field.
+                      {dppOpensSummary.type === 'aptitude'
+                        ? 'Manage aptitude scores from each student card.'
+                        : 'Scroll horizontally to view every first-open field.'}
                     </p>
+                    {dppOpensSummary.type === 'aptitude' && (
+                      <div className="grid gap-3 p-4 md:hidden">
+                        {dppOpens.map((open) => (
+                          <article key={open.id} className="rounded-card border border-line/80 bg-glass/60 p-4">
+                            <div className="flex flex-col gap-1">
+                              <h3 className="font-display text-base font-semibold text-ink">{open.name}</h3>
+                              <p className="font-mono text-xs font-semibold text-ink-subtle">{open.usn}</p>
+                              <a href={`mailto:${open.email}`} className="break-words text-sm text-technical-text underline decoration-line underline-offset-4">
+                                {open.email}
+                              </a>
+                            </div>
+                            <dl className="mt-4 grid gap-3 text-sm text-ink-muted">
+                              <div>
+                                <dt className="font-semibold text-ink">Phone Number</dt>
+                                <dd>{open.contactNumber}</dd>
+                              </div>
+                              <div>
+                                <dt className="font-semibold text-ink">Year</dt>
+                                <dd>{open.year ?? '-'}</dd>
+                              </div>
+                              <div>
+                                <dt className="font-semibold text-ink">Branch</dt>
+                                <dd>{open.branch}</dd>
+                              </div>
+                              <div>
+                                <dt className="font-semibold text-ink">Opened At</dt>
+                                <dd>{formatDateTime(open.openedAt)}</dd>
+                              </div>
+                            </dl>
+                            <div className="mt-4">
+                              <p className="mb-2 text-sm font-semibold text-ink">Aptitude Score</p>
+                              {renderDppScoreControls(open)}
+                            </div>
+                          </article>
+                        ))}
+                      </div>
+                    )}
                     <div className="max-w-full overflow-x-auto overscroll-x-contain">
-                      <table className="min-w-[64rem] w-full border-collapse text-left text-sm">
+                      <table className={`${dppOpensSummary.type === 'aptitude' ? 'hidden min-w-[78rem] md:table' : 'min-w-[64rem]'} w-full border-collapse text-left text-sm`}>
                         <caption className="sr-only">DPP first opens</caption>
                         <thead className="border-b border-line-strong bg-dream-soft/50 text-xs uppercase tracking-[0.08em] text-ink-muted">
                           <tr>
-                            {['Name', 'USN', 'Email', 'Phone Number', 'Year', 'Branch', 'Opened At'].map((heading) => (
+                            {[
+                              'Name',
+                              'USN',
+                              'Email',
+                              'Phone Number',
+                              'Year',
+                              'Branch',
+                              'Opened At',
+                              ...(dppOpensSummary.type === 'aptitude' ? ['Aptitude Score'] : []),
+                            ].map((heading) => (
                               <th key={heading} scope="col" className="px-4 py-4 font-semibold">{heading}</th>
                             ))}
                           </tr>
@@ -3100,6 +3313,11 @@ const AdminDashboard = () => {
                               <td className="px-4 py-4 text-ink-muted">{open.year ?? '-'}</td>
                               <td className="px-4 py-4 text-ink-muted">{open.branch}</td>
                               <td className="px-4 py-4 text-ink-muted">{formatDateTime(open.openedAt)}</td>
+                              {dppOpensSummary.type === 'aptitude' && (
+                                <td className="px-4 py-4 align-top">
+                                  {renderDppScoreControls(open)}
+                                </td>
+                              )}
                             </tr>
                           ))}
                         </tbody>
