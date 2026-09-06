@@ -100,6 +100,47 @@ export interface AdminWeeklyContestAttemptSummary {
   attemptCount: number;
 }
 
+export type AdminDppType = 'dsa' | 'aptitude';
+
+export interface AdminDpp {
+  id: string;
+  type: AdminDppType;
+  title: string;
+  url: string;
+  description?: string;
+  active: boolean;
+  firstOpenCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DppInput {
+  type: AdminDppType;
+  title: string;
+  url: string;
+  description?: string;
+  active: boolean;
+}
+
+export interface AdminDppOpenStudent {
+  id: string;
+  studentId?: string;
+  name: string;
+  usn: string;
+  email: string;
+  contactNumber: string;
+  year: number | null;
+  branch: string;
+  openedAt: string;
+}
+
+export interface AdminDppOpenSummary {
+  id: string;
+  type: AdminDppType;
+  title: string;
+  firstOpenCount: number;
+}
+
 export interface StudentPagination {
   page: number;
   limit: number;
@@ -165,6 +206,23 @@ interface AdminWeeklyContestAttemptsResponse {
   success: true;
   contest: AdminWeeklyContestAttemptSummary;
   attempts: AdminWeeklyContestAttempt[];
+}
+
+interface AdminDppsResponse {
+  success: true;
+  dpps: AdminDpp[];
+}
+
+interface AdminDppResponse {
+  success: true;
+  message?: string;
+  dpp: AdminDpp;
+}
+
+interface AdminDppOpensResponse {
+  success: true;
+  dpp: AdminDppOpenSummary;
+  opens: AdminDppOpenStudent[];
 }
 
 interface UpsertWeeklyContestScoreResponse {
@@ -476,3 +534,70 @@ export const upsertAdminWeeklyContestScore = ({
       body: JSON.stringify({ score }),
     },
   );
+
+export const getAdminDpps = (signal?: AbortSignal) =>
+  apiRequest<AdminDppsResponse>('/api/admin/dpps', {
+    credentials: 'include',
+    signal,
+  });
+
+export const createAdminDpp = (input: DppInput) =>
+  apiRequest<AdminDppResponse>('/api/admin/dpps', {
+    method: 'POST',
+    credentials: 'include',
+    body: JSON.stringify(input),
+  });
+
+export const updateAdminDpp = (
+  dppId: string,
+  input: Partial<DppInput>,
+) =>
+  apiRequest<AdminDppResponse>(
+    `/api/admin/dpps/${encodeURIComponent(dppId)}`,
+    {
+      method: 'PATCH',
+      credentials: 'include',
+      body: JSON.stringify(input),
+    },
+  );
+
+export const getAdminDppOpens = (
+  dppId: string,
+  signal?: AbortSignal,
+) =>
+  apiRequest<AdminDppOpensResponse>(
+    `/api/admin/dpps/${encodeURIComponent(dppId)}/opens`,
+    {
+      credentials: 'include',
+      signal,
+    },
+  );
+
+export const downloadAdminDppOpensExcel = async (
+  dppId: string,
+): Promise<{ blob: Blob; filename: string }> => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/admin/dpps/${encodeURIComponent(dppId)}/opens/export`,
+    {
+      method: 'GET',
+      credentials: 'include',
+    },
+  );
+
+  if (!response.ok) {
+    const data = await parseJsonSafely(response);
+    throw new ApiError({
+      status: response.status,
+      code: getErrorCode(data),
+      message: getErrorMessage(data),
+      data,
+    });
+  }
+
+  const filename =
+    getFilenameFromContentDisposition(response.headers.get('Content-Disposition')) ??
+    'dpp-first-opens.xlsx';
+  const blob = await response.blob();
+
+  return { blob, filename };
+};
