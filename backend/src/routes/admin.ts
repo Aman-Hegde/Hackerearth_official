@@ -31,6 +31,13 @@ import {
   updateAdminWeeklyContest,
   upsertAdminWeeklyContestScore,
 } from "../controllers/weeklyContestController";
+import {
+  createAdminDpp,
+  exportAdminDppOpens,
+  getAdminDppOpens,
+  getAdminDpps,
+  updateAdminDpp,
+} from "../controllers/dppController";
 
 const router = Router();
 
@@ -56,6 +63,11 @@ router.put(
   upsertAdminWeeklyContestScore
 );
 router.patch("/weekly-contests/:contestId", updateAdminWeeklyContest);
+router.post("/dpps", createAdminDpp);
+router.get("/dpps", getAdminDpps);
+router.get("/dpps/:dppId/opens/export", exportAdminDppOpens);
+router.get("/dpps/:dppId/opens", getAdminDppOpens);
+router.patch("/dpps/:dppId", updateAdminDpp);
 router.get("/students", getStudents);
 router.get("/students/export", exportStudents);
 router.post("/leaderboard/points", awardStudentPoints);
