@@ -37,6 +37,7 @@ import {
   getAdminDppOpens,
   getAdminDpps,
   updateAdminDpp,
+  upsertAdminDppScore,
 } from "../controllers/dppController";
 
 const router = Router();
@@ -67,6 +68,7 @@ router.post("/dpps", createAdminDpp);
 router.get("/dpps", getAdminDpps);
 router.get("/dpps/:dppId/opens/export", exportAdminDppOpens);
 router.get("/dpps/:dppId/opens", getAdminDppOpens);
+router.put("/dpps/:dppId/students/:studentId/score", upsertAdminDppScore);
 router.patch("/dpps/:dppId", updateAdminDpp);
 router.get("/students", getStudents);
 router.get("/students/export", exportStudents);

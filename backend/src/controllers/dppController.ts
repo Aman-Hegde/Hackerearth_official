@@ -14,6 +14,10 @@ interface DppBody {
   active?: unknown;
 }
 
+interface DppScoreBody {
+  score?: unknown;
+}
+
 interface OpenStudentDetails {
   _id?: unknown;
   name?: string;
@@ -27,13 +31,15 @@ interface OpenStudentDetails {
 interface DppOpenRow {
   _id: unknown;
   firstOpenedAt: Date;
-  studentId?: OpenStudentDetails;
+  studentId?: OpenStudentDetails | undefined;
+  aptitudeScore?: number | null | undefined;
 }
 
 const DPP_OPEN_REWARD_POINTS = 5;
 const MAX_DPP_TITLE_LENGTH = 120;
 const MAX_DPP_DESCRIPTION_LENGTH = 1000;
 const MAX_DPP_URL_LENGTH = 1000;
+const MAX_DPP_SCORE = 100000;
 const OPEN_STUDENT_FIELDS = "name usn email contactNumber year branch";
 
 const normalizeString = (value: unknown) =>
@@ -61,6 +67,24 @@ const validateUrl = (value: string) => {
 
 const toActivityType = (type: DppType) =>
   type === "dsa" ? "dsa_dpp" : "aptitude_dpp";
+
+const parseDppScore = (value: unknown) => {
+  if (typeof value !== "number" && typeof value !== "string") {
+    return { error: "Score must be a whole number from 0 to 100000." };
+  }
+
+  const normalized = typeof value === "string" ? value.trim() : String(value);
+  if (!/^(0|[1-9]\d*)$/.test(normalized)) {
+    return { error: "Score must be a whole number from 0 to 100000." };
+  }
+
+  const score = Number(normalized);
+  if (!Number.isInteger(score) || score < 0 || score > MAX_DPP_SCORE) {
+    return { error: "Score must be a whole number from 0 to 100000." };
+  }
+
+  return { score };
+};
 
 const validateDppPayload = (
   body: DppBody,
@@ -169,6 +193,7 @@ const toOpenStudent = (open: DppOpenRow) => ({
   year: open.studentId?.year ?? null,
   branch: open.studentId?.branch ?? "",
   openedAt: open.firstOpenedAt,
+  aptitudeScore: open.aptitudeScore ?? null,
 });
 
 const sanitizeFilenamePart = (value: string) => {
@@ -181,8 +206,8 @@ const sanitizeFilenamePart = (value: string) => {
   return normalized || "dpp";
 };
 
-const loadDppOpens = async (dpp: IDpp) =>
-  ActivityOpen.find({
+const loadDppOpens = async (dpp: IDpp) => {
+  const opens = await ActivityOpen.find({
     activityType: { $in: ["dsa_dpp", "aptitude_dpp"] },
     dppId: dpp._id,
   })
@@ -192,6 +217,40 @@ const loadDppOpens = async (dpp: IDpp) =>
       OPEN_STUDENT_FIELDS
     )
     .exec();
+
+  if (dpp.type !== "aptitude" || opens.length === 0) {
+    return opens.map((open) => ({
+      _id: open._id,
+      firstOpenedAt: open.firstOpenedAt,
+      studentId: open.studentId,
+      aptitudeScore: null,
+    }));
+  }
+
+  const studentIds = opens
+    .map((open) => open.studentId?._id)
+    .filter((studentId): studentId is Types.ObjectId => studentId instanceof Types.ObjectId);
+
+  const scores = await PointTransaction.find({
+    source: "dpp",
+    dppId: dpp._id,
+    dppPointType: "aptitude_score",
+    studentId: { $in: studentIds },
+  })
+    .select("studentId points")
+    .exec();
+
+  const scoreByStudent = new Map(
+    scores.map((score) => [score.studentId.toString(), score.points])
+  );
+
+  return opens.map((open) => ({
+    _id: open._id,
+    firstOpenedAt: open.firstOpenedAt,
+    studentId: open.studentId,
+    aptitudeScore: scoreByStudent.get(String(open.studentId?._id)) ?? null,
+  }));
+};
 
 export const createAdminDpp = async (
   req: Request<unknown, unknown, DppBody>,
@@ -318,6 +377,193 @@ export const updateAdminDpp = async (
   }
 };
 
+export const upsertAdminDppScore = async (
+  req: Request<{ dppId: string; studentId: string }, unknown, DppScoreBody>,
+  res: Response
+) => {
+  try {
+    if (!req.auth) {
+      return res.status(401).json({
+        success: false,
+        code: "AUTH_REQUIRED",
+        message: "Authentication is required.",
+      });
+    }
+
+    const { dppId, studentId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(dppId)) {
+      return res.status(400).json({
+        success: false,
+        code: "INVALID_DPP_ID",
+        message: "A valid DPP id is required.",
+      });
+    }
+
+    if (!mongoose.Types.ObjectId.isValid(studentId)) {
+      return res.status(400).json({
+        success: false,
+        code: "INVALID_STUDENT_ID",
+        message: "A valid student id is required.",
+      });
+    }
+
+    const scoreResult = parseDppScore(req.body.score);
+    if (scoreResult.error || scoreResult.score === undefined) {
+      return res.status(400).json({
+        success: false,
+        code: "INVALID_DPP_SCORE",
+        message: scoreResult.error,
+      });
+    }
+
+    const dppObjectId = new Types.ObjectId(dppId);
+    const studentObjectId = new Types.ObjectId(studentId);
+    const [dpp, student] = await Promise.all([
+      Dpp.findById(dppObjectId).exec(),
+      User.findOne({
+        _id: studentObjectId,
+        role: "student",
+      })
+        .select("_id name usn email branch year")
+        .exec(),
+    ]);
+
+    if (!dpp) {
+      return res.status(404).json({
+        success: false,
+        code: "DPP_NOT_FOUND",
+        message: "DPP not found.",
+      });
+    }
+
+    if (dpp.type !== "aptitude") {
+      return res.status(400).json({
+        success: false,
+        code: "DPP_SCORE_NOT_SUPPORTED",
+        message: "Performance scores are supported only for Aptitude DPPs.",
+      });
+    }
+
+    if (!student) {
+      return res.status(404).json({
+        success: false,
+        code: "STUDENT_NOT_FOUND",
+        message: "Student not found.",
+      });
+    }
+
+    const activityOpen = await ActivityOpen.exists({
+      activityType: "aptitude_dpp",
+      dppId: dppObjectId,
+      studentId: studentObjectId,
+    }).exec();
+
+    if (!activityOpen) {
+      return res.status(409).json({
+        success: false,
+        code: "DPP_NOT_OPENED",
+        message: "The student must open this Aptitude DPP before a score can be recorded.",
+      });
+    }
+
+    const now = new Date();
+    const adminObjectId = new Types.ObjectId(req.auth.userId);
+    const existingScore = await PointTransaction.findOne({
+      source: "dpp",
+      dppId: dppObjectId,
+      dppPointType: "aptitude_score",
+      studentId: studentObjectId,
+    }).exec();
+
+    let created = false;
+    let scoreTransaction;
+
+    if (existingScore) {
+      existingScore.previousPoints = existingScore.points;
+      existingScore.points = scoreResult.score;
+      existingScore.description = `Aptitude score for ${dpp.title}`;
+      existingScore.scoreUpdatedBy = adminObjectId;
+      existingScore.scoreUpdatedAt = now;
+      scoreTransaction = await existingScore.save();
+    } else {
+      try {
+        scoreTransaction = await PointTransaction.create({
+          studentId: studentObjectId,
+          points: scoreResult.score,
+          source: "dpp",
+          dppId: dppObjectId,
+          dppPointType: "aptitude_score",
+          description: `Aptitude score for ${dpp.title}`,
+          awardedBy: adminObjectId,
+        });
+        created = true;
+      } catch (error) {
+        if (!isDuplicateKeyError(error)) {
+          throw error;
+        }
+
+        const winningScore = await PointTransaction.findOne({
+          source: "dpp",
+          dppId: dppObjectId,
+          dppPointType: "aptitude_score",
+          studentId: studentObjectId,
+        }).exec();
+
+        if (!winningScore) {
+          throw error;
+        }
+
+        winningScore.previousPoints = winningScore.points;
+        winningScore.points = scoreResult.score;
+        winningScore.description = `Aptitude score for ${dpp.title}`;
+        winningScore.scoreUpdatedBy = adminObjectId;
+        winningScore.scoreUpdatedAt = now;
+        scoreTransaction = await winningScore.save();
+      }
+    }
+
+    if (!scoreTransaction) {
+      return res.status(500).json({
+        success: false,
+        message: "Unable to record DPP score.",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: created
+        ? "Aptitude DPP score recorded successfully."
+        : "Aptitude DPP score updated successfully.",
+      action: created ? "created" : "updated",
+      dpp: {
+        id: dpp._id.toString(),
+        type: dpp.type,
+        title: dpp.title,
+      },
+      student: {
+        id: student._id.toString(),
+        name: student.name,
+        email: student.email,
+        usn: student.usn,
+        branch: student.branch,
+        year: student.year,
+      },
+      score: {
+        id: scoreTransaction._id.toString(),
+        dppId: dpp._id.toString(),
+        studentId: student._id.toString(),
+        aptitudeScore: scoreTransaction.points,
+        updatedAt: scoreTransaction.updatedAt,
+      },
+    });
+  } catch {
+    return res.status(500).json({
+      success: false,
+      message: "Unexpected server error.",
+    });
+  }
+};
+
 export const getAdminDppOpens = async (
   req: Request<{ dppId: string }>,
   res: Response
@@ -398,6 +644,9 @@ export const exportAdminDppOpens = async (
       { header: "Year", key: "year", width: 10 },
       { header: "Branch", key: "branch", width: 18 },
       { header: "Opened At", key: "openedAt", width: 22 },
+      ...(dpp.type === "aptitude"
+        ? [{ header: "Aptitude Score", key: "aptitudeScore", width: 18 }]
+        : []),
     ];
     worksheet.getRow(1).font = { bold: true };
     worksheet.views = [{ state: "frozen", ySplit: 1 }];
@@ -412,6 +661,9 @@ export const exportAdminDppOpens = async (
         year: student.year ?? "",
         branch: student.branch,
         openedAt: student.openedAt,
+        ...(dpp.type === "aptitude"
+          ? { aptitudeScore: student.aptitudeScore ?? "" }
+          : {}),
       });
     });
     worksheet.getColumn("openedAt").numFmt = "yyyy-mm-dd hh:mm";

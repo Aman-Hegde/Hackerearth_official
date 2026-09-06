@@ -18,7 +18,7 @@ export const WEEKLY_CONTEST_POINT_TYPES = [
 export type WeeklyContestPointType =
   (typeof WEEKLY_CONTEST_POINT_TYPES)[number];
 
-export const DPP_POINT_TYPES = ["open_reward"] as const;
+export const DPP_POINT_TYPES = ["open_reward", "aptitude_score"] as const;
 
 export type DppPointType = (typeof DPP_POINT_TYPES)[number];
 
