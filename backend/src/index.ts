@@ -2,6 +2,7 @@ import authRoutes from "./routes/auth";
 import adminRoutes from "./routes/admin";
 import leaderboardRoutes from "./routes/leaderboard";
 import studentRoutes from "./routes/student";
+import eventRoutes from "./routes/events";
 import { connectDatabase } from "./config/db";
 import express, { Request, Response } from "express";
 import cors, { CorsOptions } from "cors";
@@ -51,6 +52,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/leaderboard", leaderboardRoutes);
 app.use("/api/student", studentRoutes);
+app.use("/api/events", eventRoutes);
 
 const PORT = Number(process.env.PORT) || 5000;
 

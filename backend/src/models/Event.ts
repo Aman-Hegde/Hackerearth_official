@@ -1,6 +1,10 @@
 import mongoose, { Document, Model, Schema, Types } from "mongoose";
 
 export interface IEvent extends Document {
+  tagline?: string;
+  imageUrls?: string[];
+  rounds?: string[];
+  published?: boolean;
   title: string;
   description: string;
   venue: string;
@@ -19,6 +23,10 @@ export interface IEvent extends Document {
 
 const eventSchema = new Schema<IEvent>(
   {
+    tagline: { type: String, maxlength: 160, default: "" },
+    imageUrls: { type: [String], default: [] },
+    rounds: { type: [String], default: [] },
+    published: { type: Boolean, default: true },
     title: {
       type: String,
       required: [true, "Event title is required"],
