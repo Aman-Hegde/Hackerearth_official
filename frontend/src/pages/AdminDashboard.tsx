@@ -38,6 +38,7 @@ import SectionReveal from '../components/ui/SectionReveal';
 import { ApiError } from '../lib/api';
 import {
   createAdminEvent,
+  importProjectDoomsday,
   downloadAdminEventRegistrations,
   getAdminEventRegistrations,
   getAdminEvents,
@@ -93,6 +94,10 @@ const PAGE_LIMIT = 25;
 const OPEN_REGISTRATION_MESSAGE = 'Student registration is currently open.';
 const CLOSED_REGISTRATION_MESSAGE = 'Student registration is currently closed.';
 const emptyEventForm = {
+  tagline: '',
+  imageUrls: '',
+  rounds: '',
+  published: true,
   title: '',
   posterUrl: '',
   posterPublicId: '',
@@ -284,12 +289,10 @@ const buildEventPayload = (form: EventFormState): EventInput | null => {
     !form.venue.trim() ||
     !form.eventDate ||
     !form.eventTime ||
-    !form.eventEndDate ||
-    !form.eventEndTime ||
     !form.deadlineDate ||
     !form.deadlineTime ||
     Number.isNaN(eventDateTime.getTime()) ||
-    Number.isNaN(eventEndDateTime.getTime()) ||
+    ((!!form.eventEndDate || !!form.eventEndTime) && Number.isNaN(eventEndDateTime.getTime())) ||
     Number.isNaN(registrationDeadline.getTime()) ||
     !Number.isInteger(maxRegistrations) ||
     maxRegistrations < 1
@@ -298,13 +301,17 @@ const buildEventPayload = (form: EventFormState): EventInput | null => {
   }
 
   return {
+    tagline: form.tagline.trim(),
+    imageUrls: form.imageUrls.split(/\r?\n/).map((url) => url.trim()).filter(Boolean),
+    rounds: form.rounds.split(/\r?\n/).map((round) => round.trim()).filter(Boolean),
+    published: form.published,
     title: form.title.trim(),
     posterUrl: form.posterUrl.trim(),
     posterPublicId: form.posterPublicId.trim() || undefined,
     description: form.description.trim(),
     venue: form.venue.trim(),
     eventDateTime: eventDateTime.toISOString(),
-    eventEndDateTime: eventEndDateTime.toISOString(),
+    eventEndDateTime: form.eventEndDate && form.eventEndTime ? eventEndDateTime.toISOString() : undefined,
     registrationDeadline: registrationDeadline.toISOString(),
     maxRegistrations,
     active: form.active,
@@ -1068,6 +1075,18 @@ const AdminDashboard = () => {
     }
   };
 
+  const [importingDoomsday, setImportingDoomsday] = useState(false);
+  const handleImportDoomsday = async () => {
+    setImportingDoomsday(true);
+    try {
+      const result = await importProjectDoomsday();
+      await loadEvents();
+      setEventsNotice(result.message ?? "Project Doomsday imported.");
+    } catch (error) {
+      setEventsError({ kind: 'api', message: error instanceof Error ? error.message : "Import failed." });
+    } finally { setImportingDoomsday(false); }
+  };
+
   const openCreateEventModal = () => {
     setEditingEvent(null);
     setEventForm(emptyEventForm);
@@ -1081,6 +1100,10 @@ const AdminDashboard = () => {
   const openEditEventModal = (event: EventSummary) => {
     setEditingEvent(event);
     setEventForm({
+      tagline: event.tagline ?? "",
+      imageUrls: (event.imageUrls ?? []).join("\n"),
+      rounds: (event.rounds ?? []).join("\n"),
+      published: event.published !== false,
       title: event.title,
       posterUrl: event.posterUrl,
       posterPublicId: event.posterPublicId ?? '',
@@ -1180,7 +1203,7 @@ const AdminDashboard = () => {
       return;
     }
 
-    if (new Date(draftPayload.eventEndDateTime) <= new Date(draftPayload.eventDateTime)) {
+    if (draftPayload.eventEndDateTime && new Date(draftPayload.eventEndDateTime) <= new Date(draftPayload.eventDateTime)) {
       setEventFormError({
         kind: 'api',
         message: 'Event end date and time must be after the event start date and time.',
@@ -2187,6 +2210,7 @@ const AdminDashboard = () => {
                   Create workshops, manage event registration windows, and monitor live capacity.
                 </p>
               </div>
+              <button type="button" disabled={importingDoomsday} onClick={() => void handleImportDoomsday()} className="btn btn-secondary">{importingDoomsday ? 'Importing...' : 'Import Project Doomsday'}</button>
               <button type="button" onClick={openCreateEventModal} className="btn btn-primary w-full justify-center sm:w-fit">
                 <PlusCircle className="size-4" aria-hidden="true" />
                 Add Event
@@ -3999,7 +4023,7 @@ const AdminDashboard = () => {
                       value={eventForm.eventEndDate}
                       onChange={(event) => handleEventFormChange('eventEndDate', event.target.value)}
                       className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
-                      required
+                      required={!editingEvent || !!editingEvent.eventEndDateTime}
                     />
                   </label>
 
@@ -4010,7 +4034,7 @@ const AdminDashboard = () => {
                       value={eventForm.eventEndTime}
                       onChange={(event) => handleEventFormChange('eventEndTime', event.target.value)}
                       className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
-                      required
+                      required={!editingEvent || !!editingEvent.eventEndDateTime}
                     />
                   </label>
 
@@ -4047,6 +4071,16 @@ const AdminDashboard = () => {
                   Registration active
                 </label>
 
+                <label className="block text-sm font-semibold">Tagline
+                  <input className="mt-2 block w-full rounded border bg-surface p-3" maxLength={160} value={eventForm.tagline} onChange={(e) => handleEventFormChange('tagline', e.target.value)} />
+                </label>
+                <label className="block text-sm font-semibold">Photograph URLs (one per line, in slideshow order; leave blank to use the poster)
+                  <textarea className="mt-2 block w-full rounded border bg-surface p-3" rows={8} value={eventForm.imageUrls} onChange={(e) => handleEventFormChange('imageUrls', e.target.value)} />
+                </label>
+                <label className="block text-sm font-semibold">Rounds (one per line)
+                  <textarea className="mt-2 block w-full rounded border bg-surface p-3" rows={3} value={eventForm.rounds} onChange={(e) => handleEventFormChange('rounds', e.target.value)} />
+                </label>
+                <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={eventForm.published} onChange={(e) => handleEventFormChange('published', e.target.checked)} />Published publicly (uncheck to archive)</label>
                 {eventFormError && <InlineFeedback kind="error">{eventFormError.message}</InlineFeedback>}
 
                 <div className="flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">

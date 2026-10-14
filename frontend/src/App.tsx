@@ -87,6 +87,10 @@ function AppWrapper() {
       return <Navigate to="/login" replace />;
     }
 
+    if (user.role === "admin" && (!user.emailVerified || user.isActive === false)) {
+      return <Navigate to="/events" replace />;
+    }
+
     if (!allowedRoles.includes(user.role)) {
       return (
         <Navigate
