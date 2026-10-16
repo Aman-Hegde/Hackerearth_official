@@ -4,11 +4,16 @@ import mongoose, { Types } from "mongoose";
 import Event, { IEvent } from "../models/Event";
 import EventRegistration from "../models/EventRegistration";
 import User from "../models/user";
+import GuestEventRegistration, { GuestParticipant } from "../models/GuestEventRegistration";
 import { uploadEventPosterToCloudinary } from "../config/cloudinary";
 
 type EventStatus = "open" | "full" | "closed" | "ongoing" | "past";
 
 interface EventBody {
+  tagline?: unknown;
+  imageUrls?: unknown;
+  rounds?: unknown;
+  published?: unknown;
   title?: unknown;
   description?: unknown;
   venue?: unknown;
@@ -88,6 +93,10 @@ const getRegistrationOpen = (event: {
 
 const toSafeEvent = (event: IEvent, isRegistered = false) => ({
   id: event._id.toString(),
+  tagline: event.tagline ?? "",
+  imageUrls: event.imageUrls ?? [],
+  rounds: event.rounds ?? [],
+  published: event.published ?? true,
   title: event.title,
   description: event.description,
   venue: event.venue,
@@ -100,7 +109,7 @@ const toSafeEvent = (event: IEvent, isRegistered = false) => ({
   registrationCount: event.registrationCount,
   active: event.active,
   status: getEventStatus(event),
-  registrationOpen: getRegistrationOpen(event),
+  registrationOpen: event.published !== false && getRegistrationOpen(event),
   isRegistered,
   createdAt: event.createdAt,
   updatedAt: event.updatedAt,
@@ -126,6 +135,13 @@ const toEventRegistrationStudent = (registration: {
   registeredAt: registration.createdAt,
 });
 
+const getGuestAttendees = async (eventId: string) => {
+  const guests = await GuestEventRegistration.find({ eventId }).sort({ createdAt: 1 }).exec();
+  return guests.map((guest) => ({ id: String(guest._id), name: guest.name,
+    email: guest.email, contactNumber: guest.contactNumber, usn: "", year: null,
+    registeredAt: guest.createdAt }));
+};
+
 const sanitizeFilenamePart = (value: string) => {
   const normalized = value
     .trim()
@@ -141,6 +157,10 @@ const validateEventPayload = (
   options: { partial: boolean; currentRegistrationCount?: number }
 ) => {
   const update: Partial<{
+    tagline: string;
+    imageUrls: string[];
+    rounds: string[];
+    published: boolean;
     title: string;
     description: string;
     venue: string;
@@ -153,6 +173,23 @@ const validateEventPayload = (
     active: boolean;
   }> = {};
 
+  if (body.tagline !== undefined) {
+    if (typeof body.tagline !== "string" || body.tagline.length > 160) return { error: "Tagline must be at most 160 characters." };
+    update.tagline = body.tagline.trim();
+  }
+  for (const field of ["imageUrls", "rounds"] as const) {
+    const value = body[field];
+    if (value === undefined) continue;
+    if (!Array.isArray(value) || value.length > 20 || value.some((item) =>
+      typeof item !== "string" || !item.trim() || (field === "imageUrls" ? !isEventImageUrl(item) : item.length > 100))) {
+      return { error: `Invalid ${field}. Supply at most 20 valid entries.` };
+    }
+    update[field] = [...new Set(value.map((item: string) => item.trim()))];
+  }
+  if (body.published !== undefined) {
+    if (typeof body.published !== "boolean") return { error: "Published must be true or false." };
+    update.published = body.published;
+  }
   const required = !options.partial;
 
   const title = normalizeString(body.title);
@@ -184,14 +221,7 @@ const validateEventPayload = (
     if (!posterUrl || posterUrl.length > MAX_POSTER_URL_LENGTH) {
       return { error: "Poster image URL is required." };
     }
-    try {
-      const parsed = new URL(posterUrl);
-      if (!["http:", "https:"].includes(parsed.protocol)) {
-        return { error: "Poster image URL must be a valid http or https URL." };
-      }
-    } catch {
-      return { error: "Poster image URL must be valid." };
-    }
+    if (!isEventImageUrl(posterUrl)) return { error: "Poster must be an http(s) URL or a local /events/ image path." };
     update.posterUrl = posterUrl;
   }
 
@@ -418,14 +448,6 @@ export const updateAdminEvent = async (
       });
     }
 
-    if (new Date() >= event.eventDateTime) {
-      return res.status(409).json({
-        success: false,
-        code: "EVENT_PAST",
-        message: "Past events cannot be edited.",
-      });
-    }
-
     const validation = validateEventPayload(req.body, {
       partial: true,
       currentRegistrationCount: event.registrationCount,
@@ -443,14 +465,6 @@ export const updateAdminEvent = async (
       validation.update.eventEndDateTime ?? event.eventEndDateTime;
     const nextRegistrationDeadline =
       validation.update.registrationDeadline ?? event.registrationDeadline;
-
-    if (nextEventDateTime <= new Date()) {
-      return res.status(400).json({
-        success: false,
-        code: "INVALID_EVENT_DATES",
-        message: "Event start date and time must be in the future.",
-      });
-    }
 
     if (nextEventEndDateTime && nextEventEndDateTime <= nextEventDateTime) {
       return res.status(400).json({
@@ -528,7 +542,8 @@ export const getAdminEventRegistrations = async (
         registrationCount: event.registrationCount,
         maxRegistrations: event.maxRegistrations,
       },
-      registrations: registrations.map(toEventRegistrationStudent),
+      registrations: [...registrations.map(toEventRegistrationStudent),
+        ...await getGuestAttendees(eventId)],
     });
   } catch (_error) {
     return res.status(500).json({
@@ -604,6 +619,10 @@ export const exportAdminEventRegistrations = async (
       });
     });
 
+    for (const guest of await getGuestAttendees(eventId)) {
+      worksheet.addRow(guest);
+    }
+
     const filename = `${sanitizeFilenamePart(event.title)}-registrations.xlsx`;
 
     res.setHeader(
@@ -627,19 +646,11 @@ export const exportAdminEventRegistrations = async (
 
 export const getStudentEvents = async (req: Request, res: Response) => {
   try {
-    if (!req.auth) {
-      return res.status(401).json({
-        success: false,
-        code: "AUTH_REQUIRED",
-        message: "Authentication is required.",
-      });
-    }
-
     const [events, registrations] = await Promise.all([
-      Event.find().sort({ eventDateTime: 1 }).exec(),
-      EventRegistration.find({ studentId: req.auth.userId })
+      Event.find({ published: { $ne: false } }).sort({ eventDateTime: 1 }).exec(),
+      req.auth ? EventRegistration.find({ studentId: req.auth.userId })
         .select("eventId")
-        .exec(),
+        .exec() : Promise.resolve([]),
     ]);
     const registeredEventIds = new Set(
       registrations.map((registration) => registration.eventId.toString())
@@ -665,12 +676,23 @@ export const registerForEvent = async (
   req: Request<{ eventId: string }>,
   res: Response
 ) => {
+  const body: unknown = req.body ?? {};
+  const allowedFields = req.auth ? [] : ["name", "email", "contactNumber"];
+  if (!body || typeof body !== "object" || Array.isArray(body) ||
+      Object.keys(body).some((key) => !allowedFields.includes(key))) {
+    return res.status(400).json({ success: false, code: "INVALID_REGISTRATION",
+      message: "Only participant registration fields are allowed." });
+  }
+  let guest: GuestParticipant | undefined;
   if (!req.auth) {
-    return res.status(401).json({
-      success: false,
-      code: "AUTH_REQUIRED",
-      message: "Authentication is required.",
-    });
+    const input = body as Record<string, unknown>;
+    guest = { name: normalizeString(input.name), email: normalizeString(input.email).toLowerCase(),
+      contactNumber: normalizeString(input.contactNumber) };
+    if (guest.name.length < 2 || guest.name.length > 100 || guest.email.length > 254 ||
+        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guest.email) || !/^\d{10}$/.test(guest.contactNumber)) {
+      return res.status(400).json({ success: false, code: "INVALID_PARTICIPANT",
+        message: "Enter your name, valid email, and 10-digit phone number." });
+    }
   }
 
   const { eventId } = req.params;
@@ -682,22 +704,23 @@ export const registerForEvent = async (
     });
   }
 
-  const session = await mongoose.startSession();
+  let session: mongoose.ClientSession | undefined;
 
   try {
-    const student = await User.findOne({
+    const student = req.auth ? await User.findOne({
       _id: req.auth.userId,
-      role: "student",
+      role: { $in: ["student", "admin"] },
+      emailVerified: true,
       isActive: true,
     })
       .select("_id")
-      .exec();
+      .exec() : null;
 
-    if (!student) {
+    if (req.auth && !student) {
       return res.status(403).json({
         success: false,
         code: "ACCOUNT_INACTIVE",
-        message: "This student account is not active.",
+        message: "This account is not active or verified.",
       });
     }
 
@@ -707,17 +730,19 @@ export const registerForEvent = async (
       maxRegistrations: number;
     } | null = null;
 
-    await session.withTransaction(async () => {
+    session = await mongoose.startSession();
+    await session.withTransaction(async (transactionSession) => {
       const updatedEvent = await Event.findOneAndUpdate(
         {
           _id: eventId,
           active: true,
+          published: { $ne: false },
           eventDateTime: { $gt: now },
           registrationDeadline: { $gt: now },
           $expr: { $lt: ["$registrationCount", "$maxRegistrations"] },
         },
         { $inc: { registrationCount: 1 } },
-        { new: true, session }
+        { new: true, session: transactionSession }
       ).exec();
 
       if (!updatedEvent) {
@@ -729,15 +754,14 @@ export const registerForEvent = async (
         maxRegistrations: updatedEvent.maxRegistrations,
       };
 
-      await EventRegistration.create(
-        [
-          {
-            eventId: new Types.ObjectId(eventId),
-            studentId: student._id,
-          },
-        ],
-        { session }
-      );
+      if (guest) {
+        await GuestEventRegistration.create([{ eventId: new Types.ObjectId(eventId), ...guest }], { session: transactionSession });
+      } else if (student) {
+        await EventRegistration.create(
+          [{ eventId: new Types.ObjectId(eventId), studentId: student._id }],
+          { session: transactionSession }
+        );
+      }
     });
 
     const summary = registeredEventSummary as {
@@ -805,6 +829,44 @@ export const registerForEvent = async (
       message: "Unexpected server error.",
     });
   } finally {
-    await session.endSession();
+    await session?.endSession();
+  }
+};
+
+const isEventImageUrl = (value: string) => {
+  if (value.length > 1000) return false;
+  if (/^\/events\/[a-zA-Z0-9_/-]+\.(webp|png|jpe?g)$/i.test(value)) return true;
+  try { return ["http:", "https:"].includes(new URL(value).protocol); } catch { return false; }
+};
+
+// Explicit admin import; never runs at startup or from the public events API.
+export const importProjectDoomsday = async (req: Request, res: Response) => {
+  const id = new Types.ObjectId("70c800000000000000000010");
+  try {
+    const existing = await Event.findOne({ $or: [
+      { _id: id }, { title: /project\s+doomsday/i }
+    ] }).exec();
+    if (existing) return res.status(200).json({ success: true, message: "Project Doomsday already exists. Use Edit to manage its photographs; no record was overwritten.", event: toSafeEvent(existing) });
+    const event = await Event.create({
+      _id: id, createdBy: new Types.ObjectId(req.auth!.userId),
+      title: "PROJECT DOOMSDAY: SAVE THE TIMELINE",
+      tagline: "Three rounds. One mission.",
+      description: "Project Doomsday brought together participants for a three-round technical challenge testing knowledge, logical thinking, pattern printing, and data structure and algorithm skills.",
+      rounds: ["MCQ Challenge", "Pattern Printing", "DSA Challenge"],
+      imageUrls: Array.from(
+  { length: 7 },
+  (_, i) =>
+    `/events/project-doomsday/doomsday-${String(i + 2).padStart(2, "0")}.webp`
+),
+      posterUrl: "/events/project-doomsday/doomsday-02.webp",
+      venue: "Not specified", eventDateTime: new Date("2026-10-10T09:00:00+05:30"),
+      registrationDeadline: new Date("2026-10-10T09:00:00+05:30"),
+      maxRegistrations: 1, active: false, published: true,
+    });
+    return res.status(201).json({ success: true, message: "Project Doomsday published in Past Events.", event: toSafeEvent(event) });
+  } catch (error) {
+    if (typeof error === "object" && error !== null && "code" in error && error.code === 11000)
+      return res.status(409).json({ success: false, message: "Project Doomsday was already imported. Refresh the event list." });
+    return res.status(500).json({ success: false, message: "Unable to import Project Doomsday." });
   }
 };

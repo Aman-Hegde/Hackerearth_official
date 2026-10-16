@@ -15,6 +15,7 @@ import { authenticate } from "../middleware/authenticate";
 import { authorize } from "../middleware/authorize";
 import {
   createAdminEvent,
+  importProjectDoomsday,
   getAdminEvent,
   getAdminEventRegistrations,
   getAdminEvents,
@@ -48,6 +49,7 @@ router.use(authenticate, authorize("admin"));
 
 router.get("/overview", getAdminOverview);
 router.post("/events/poster", uploadEventPosterMiddleware, uploadAdminEventPoster);
+router.post("/events/import/project-doomsday", importProjectDoomsday);
 router.post("/events", createAdminEvent);
 router.get("/events", getAdminEvents);
 router.get("/events/:eventId/registrations/export", exportAdminEventRegistrations);

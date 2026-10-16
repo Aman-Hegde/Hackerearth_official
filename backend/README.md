@@ -494,3 +494,22 @@ credentials: "include"
 - Use `.env.example` as the template for local development.
 - Never commit `.env` files or sensitive credentials.
 - Store large files (PDFs, posters, images) in external object storage and save only metadata/URLs in MongoDB.
+
+## Event access and verification
+
+- `GET /api/events` is public. `POST /api/events/:eventId/register` accepts guests, students, and admins.
+- Guests submit only `name`, `email`, and a 10-digit `contactNumber`. Signed-in participants submit an empty body; their identity comes from the verified session. Unknown fields are rejected.
+- Registration retains atomic capacity/deadline checks and transactions. Guest registrations use a separate collection with a unique event/email index, preserving existing student indexes. MongoDB must support transactions, as before.
+- `/api/admin/events` and every nested management route use `authenticate` and `authorize("admin")` before controllers or poster processing. Authorization checks the current account's role, active status, and email verification. Missing/invalid credentials return 401; non-admin or revoked admin access returns 403.
+- Existing attendee lists and Excel exports include guest participants. Public event responses never contain attendee details.
+- The admin dashboard is role guarded. The public Events page shows management navigation only to verified, active admins.
+
+Run regression checks:
+
+```sh
+npm --prefix backend run build
+node --test backend/tests/eventPermissions.test.cjs
+npm --prefix frontend run build
+```
+
+The regression suite sends real HTTP requests through the production Express routers, authentication, authorization, upload middleware, and controllers. Database and Cloudinary operations are stubbed; it does not exercise a live MongoDB transaction or actual cloud upload. It covers guest/student management denial, cookie and bearer sessions, forged/expired credentials, revoked admins, authorized admin operations, participant validation, guest attendee exports, and closed/full/duplicate registrations.

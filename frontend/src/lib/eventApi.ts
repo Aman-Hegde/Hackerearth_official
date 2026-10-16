@@ -4,6 +4,10 @@ export type EventStatus = "open" | "full" | "closed" | "ongoing" | "past";
 
 export interface EventSummary {
   id: string;
+  tagline?: string;
+  imageUrls?: string[];
+  rounds?: string[];
+  published?: boolean;
   title: string;
   description: string;
   venue: string;
@@ -23,13 +27,17 @@ export interface EventSummary {
 }
 
 export interface EventInput {
+  tagline?: string;
+  imageUrls?: string[];
+  rounds?: string[];
+  published?: boolean;
   title: string;
   description: string;
   venue: string;
   posterUrl: string;
   posterPublicId?: string;
   eventDateTime: string;
-  eventEndDateTime: string;
+  eventEndDateTime?: string;
   registrationDeadline: string;
   maxRegistrations: number;
   active?: boolean;
@@ -135,13 +143,20 @@ const getFilenameFromContentDisposition = (contentDisposition: string | null) =>
 };
 
 export const getStudentEvents = (signal?: AbortSignal) =>
-  apiRequest<StudentEventsResponse>("/api/student/events", { signal });
+  apiRequest<StudentEventsResponse>("/api/events", { signal });
 
-export const registerForEvent = (eventId: string) =>
+export interface GuestParticipant {
+  name: string;
+  email: string;
+  contactNumber: string;
+}
+
+export const registerForEvent = (eventId: string, participant?: GuestParticipant) =>
   apiRequest<StudentEventRegistrationResponse>(
-    `/api/student/events/${encodeURIComponent(eventId)}/register`,
+    `/api/events/${encodeURIComponent(eventId)}/register`,
     {
       method: "POST",
+      body: JSON.stringify(participant ?? {}),
     }
   );
 
@@ -221,3 +236,6 @@ export const downloadAdminEventRegistrations = async (
 
   return { blob, filename };
 };
+
+export const importProjectDoomsday = () =>
+  apiRequest<AdminEventResponse>("/api/admin/events/import/project-doomsday", { method: "POST" });

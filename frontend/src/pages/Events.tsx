@@ -11,6 +11,7 @@ import {
 import { motion, useReducedMotion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useEffect, useState } from "react";
+import EventCarousel from "../components/EventCarousel";
 import PageTransition from "../components/ui/PageTransition";
 import SectionReveal from "../components/ui/SectionReveal";
 import { useToast } from "../components/ToastProvider";
@@ -25,12 +26,8 @@ import {
 const formatDateTime = (value: string) =>
   new Intl.DateTimeFormat("en-IN", {
     dateStyle: "medium",
+    timeZone: "Asia/Kolkata",
     timeStyle: "short",
-  }).format(new Date(value));
-
-const formatDate = (value: string) =>
-  new Intl.DateTimeFormat("en-IN", {
-    dateStyle: "medium",
   }).format(new Date(value));
 
 const getButtonLabel = (event: EventSummary) => {
@@ -48,28 +45,6 @@ const getStatusLabel = (status: EventSummary["status"]) => {
   if (status === "past") return "PAST";
   return "CLOSED";
 };
-
-const EventPoster = ({ event }: { event: EventSummary }) => (
-  <div className="relative m-3 mb-0 aspect-[16/10] overflow-hidden rounded-[1.35rem] border border-line/70 bg-surface-muted shadow-soft sm:m-4 sm:mb-0">
-    <img
-      src={event.posterUrl}
-      alt={`${event.title} poster`}
-      loading="lazy"
-      decoding="async"
-      className="size-full object-cover transition-transform duration-500 group-hover:scale-[1.02] motion-reduce:transition-none motion-reduce:group-hover:scale-100"
-      onError={(event) => {
-        event.currentTarget.style.display = "none";
-      }}
-    />
-    <div className="absolute inset-0 -z-10 grid place-items-center bg-dream-soft/40 text-sm font-semibold text-ink-muted">
-      Event poster
-    </div>
-    <div
-      className="pointer-events-none absolute inset-0 bg-gradient-to-t from-primary/20 via-transparent to-transparent"
-      aria-hidden="true"
-    />
-  </div>
-);
 
 const ProgressBar = ({ event }: { event: EventSummary }) => {
   const percent =
@@ -122,7 +97,7 @@ const UpcomingEventCard = ({
       viewport={{ once: true, amount: 0.25 }}
       className="ui-card-glass top-border-accent-primary group flex h-full min-w-0 flex-col overflow-hidden border-dream/25 transition duration-300 hover:border-dream/50 hover:shadow-glow"
     >
-      <EventPoster event={event} />
+      <EventCarousel event={event} />
 
       <div className="flex flex-1 flex-col gap-4 p-5 sm:p-6">
         <div className="flex flex-wrap items-center gap-2">
@@ -133,15 +108,6 @@ const UpcomingEventCard = ({
             <Users className="size-3.5" aria-hidden="true" />
             {event.registrationCount}/{event.maxRegistrations}
           </span>
-        </div>
-
-        <div>
-          <h3 className="font-display text-2xl font-semibold leading-tight text-ink">
-            {event.title}
-          </h3>
-          <p className="mt-2 line-clamp-3 text-sm leading-6 text-ink-muted">
-            {event.description}
-          </p>
         </div>
 
         <dl className="grid gap-3 text-sm text-ink-muted sm:grid-cols-2">
@@ -203,6 +169,8 @@ const UpcomingEventCard = ({
 
 const PastEventCard = ({ event, index }: { event: EventSummary; index: number }) => {
   const shouldReduceMotion = useReducedMotion();
+  const cinematic = /project\s+doomsday/i.test(event.title) ||
+    event.imageUrls?.some((url) => url.startsWith("/events/project-doomsday/")) === true;
 
   return (
     <motion.article
@@ -213,33 +181,9 @@ const PastEventCard = ({ event, index }: { event: EventSummary; index: number })
         delay: shouldReduceMotion ? 0 : index * 0.05,
       }}
       viewport={{ once: true, amount: 0.25 }}
-      className="ui-card-glass group flex h-full min-w-0 flex-col overflow-hidden border-line/80"
+      className={`ui-card-glass group flex h-full min-w-0 flex-col overflow-hidden border-line/80 ${cinematic ? "col-span-full w-full justify-self-center" : ""}`}
     >
-      <EventPoster event={event} />
-      <div className="flex flex-1 flex-col p-5 sm:p-6">
-        <span className="inline-flex min-h-8 w-fit items-center rounded-full border border-line bg-surface/80 px-3 font-mono text-xs font-bold text-ink-muted">
-          PAST EVENT
-        </span>
-        <h3 className="mt-4 font-display text-2xl font-semibold leading-tight text-ink">
-          {event.title}
-        </h3>
-        <p className="mt-2 line-clamp-3 text-sm leading-6 text-ink-muted">
-          {event.description}
-        </p>
-        <dl className="mt-5 grid gap-3 text-sm text-ink-muted sm:grid-cols-2">
-          <div>
-            <dt className="font-semibold text-ink">Date</dt>
-            <dd>{formatDate(event.eventDateTime)}</dd>
-          </div>
-          <div>
-            <dt className="font-semibold text-ink">Venue</dt>
-            <dd>{event.venue}</dd>
-          </div>
-        </dl>
-        <p className="mt-5 text-sm font-semibold text-ink-muted">
-          {event.registrationCount} Registered
-        </p>
-      </div>
+      <EventCarousel event={event} cinematic={cinematic} />
     </motion.article>
   );
 };
@@ -251,17 +195,12 @@ const Events = () => {
   const [pastEvents, setPastEvents] = useState<EventSummary[]>([]);
   const [isLoadingEvents, setIsLoadingEvents] = useState(true);
   const [eventsError, setEventsError] = useState("");
+  const [guestEvent, setGuestEvent] = useState<EventSummary | null>(null);
+  const [participant, setParticipant] = useState({ name: "", email: "", contactNumber: "" });
   const [pendingEventId, setPendingEventId] = useState<string | null>(null);
 
   useEffect(() => {
     if (isLoading) return;
-
-    if (!user || user.role !== "student") {
-      setUpcomingEvents([]);
-      setPastEvents([]);
-      setIsLoadingEvents(false);
-      return;
-    }
 
     const controller = new AbortController();
     setIsLoadingEvents(true);
@@ -285,12 +224,13 @@ const Events = () => {
     return () => controller.abort();
   }, [isLoading, user]);
 
-  const handleRegister = async (event: EventSummary) => {
+  const handleRegister = async (event: EventSummary, submitGuest = false) => {
+    if (!user && !submitGuest) { setGuestEvent(event); return; }
     if (pendingEventId) return;
 
     try {
       setPendingEventId(event.id);
-      const response = await registerForEvent(event.id);
+      const response = await registerForEvent(event.id, user ? undefined : participant);
 
       const updateEvent = (item: EventSummary) =>
         item.id === event.id
@@ -304,6 +244,7 @@ const Events = () => {
           : item;
 
       setUpcomingEvents((current) => current.map(updateEvent));
+      setGuestEvent(null);
       showToast({ variant: "success", message: response.message });
     } catch (error) {
       const message =
@@ -357,20 +298,29 @@ const Events = () => {
               </p>
             </SectionReveal>
 
-            {!isLoading && (!user || user.role !== "student") ? (
-              <div className="ui-panel-glass mx-auto max-w-2xl p-6 text-center sm:p-8">
-                <h2 className="font-display text-2xl font-semibold text-ink">
-                  Sign in as a student to register
-                </h2>
-                <p className="mt-3 text-sm leading-6 text-ink-muted">
-                  Event registration is available for authenticated students.
-                </p>
-                <Link to="/login" className="btn btn-primary mt-6">
-                  Login
-                  <ArrowRight className="size-4" aria-hidden="true" />
-                </Link>
-              </div>
-            ) : isLoadingEvents ? (
+            {!isLoading && user?.role === "admin" && user.emailVerified && user.isActive !== false && (
+              <Link to="/admin/dashboard" className="btn btn-primary mb-6">Manage events</Link>
+            )}
+            {guestEvent && !user && (
+              <form className="ui-panel-glass mx-auto mb-6 max-w-2xl space-y-4 p-6"
+                onSubmit={(e) => { e.preventDefault(); void handleRegister(guestEvent, true); }}>
+                <h2 className="text-xl font-semibold">Register for {guestEvent.title}</h2>
+                {(["name", "email", "contactNumber"] as const).map((field) => (
+                  <label key={field} className="block">
+                    {field === "contactNumber" ? "Phone number" : field === "name" ? "Name" : "Email"}
+                    <input required className="mt-1 block w-full rounded border p-2 text-ink bg-surface"
+                      type={field === "email" ? "email" : field === "contactNumber" ? "tel" : "text"}
+                      minLength={field === "name" ? 2 : undefined}
+                      maxLength={field === "name" ? 100 : field === "email" ? 254 : 10}
+                      pattern={field === "contactNumber" ? "[0-9]{10}" : undefined}
+                      value={participant[field]} onChange={(e) => setParticipant({ ...participant, [field]: e.target.value })} />
+                  </label>
+                ))}
+                <button className="btn btn-primary" disabled={!!pendingEventId} type="submit">{pendingEventId ? "Registering..." : "Confirm registration"}</button>
+                <button className="btn ml-3" disabled={!!pendingEventId} type="button" onClick={() => setGuestEvent(null)}>Cancel</button>
+              </form>
+            )}
+            {isLoading || isLoadingEvents ? (
               <div className="grid gap-6 md:grid-cols-2">
                 {[0, 1].map((item) => (
                   <div
