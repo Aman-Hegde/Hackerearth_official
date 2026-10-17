@@ -140,6 +140,7 @@ function AppWrapper() {
             <Route path="/" element={<Home />} />
 
             <Route path="/events" element={<PastEvents />} />
+            <Route path="/events/:eventId" element={<PastEvents />} />
 
             <Route path="/team" element={<Team />} />
 

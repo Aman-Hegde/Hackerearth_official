@@ -426,10 +426,16 @@ test('Events V3 team registration, security, capacity and admin regression suite
     assert.equal(preview.status, 200);
     const previewBody = await preview.json();
     assert.equal(previewBody.invitation.event.name, event.title);
+    assert.deepEqual(Object.keys(previewBody.invitation.event), ['name']);
     assert.equal(previewBody.invitation.team.name, 'Link Team');
     assert.equal(previewBody.invitation.team.availableSlots, 2);
+    assert.deepEqual(
+      Object.keys(previewBody.invitation.team).sort(),
+      ['availableSlots', 'name', 'status']
+    );
     assert.equal(JSON.stringify(previewBody).includes('9876543210'), false);
     assert.equal(JSON.stringify(previewBody).includes('leader@example.com'), false);
+    assert.equal(JSON.stringify(previewBody).includes('Leader College'), false);
 
     const joined = await request('POST', `/api/events/${eventId}/teams/join`, undefined, {
       invitationCode, name: 'Guest Teammate', email: 'teammate@example.com',
@@ -490,8 +496,77 @@ test('Events V3 team registration, security, capacity and admin regression suite
     assert.equal(leaderView.team.members.length, 2);
     assert.equal(leaderView.team.invitationCode, code);
     assert.equal(memberView.team.invitationCode, undefined);
-    assert.equal(leaderView.team.members[0].contactNumber, undefined);
-    assert.match(leaderView.team.members[0].email, /@nmamit\.in$/);
+    assert.equal(memberView.team.invitationPath, undefined);
+    assert.deepEqual(
+      Object.keys(leaderView.team).sort(),
+      [
+        'currentMemberCount', 'invitationCode', 'invitationPath',
+        'maxTeamSize', 'members', 'minTeamSize', 'name', 'role', 'status',
+      ].sort()
+    );
+    assert.deepEqual(
+      Object.keys(memberView.team).sort(),
+      ['currentMemberCount', 'maxTeamSize', 'members', 'minTeamSize', 'name', 'role', 'status']
+    );
+    for (const rosterMember of leaderView.team.members) {
+      assert.deepEqual(Object.keys(rosterMember).sort(), ['name', 'role']);
+    }
+    const serializedTeam = JSON.stringify(leaderView);
+    assert.equal(serializedTeam.includes('@nmamit.in'), false);
+    assert.equal(serializedTeam.includes('9876543210'), false);
+    assert.equal(serializedTeam.includes('NNM24IS'), false);
+    assert.equal(serializedTeam.includes('ISE'), false);
+  });
+
+  await t.test('guest access tokens are scoped to one membership and hide invitation secrets from teammates', async () => {
+    reset();
+    const alphaCreation = await request('POST', `/api/events/${eventId}/teams`, undefined, {
+      teamName: 'Private Alpha', name: 'Alpha Leader', email: 'alpha-leader@example.com',
+      contactNumber: '9876543210', collegeName: 'Alpha College',
+    });
+    const alpha = (await alphaCreation.json()).team;
+    const alphaJoin = await request('POST', `/api/events/${eventId}/teams/join`, undefined, {
+      invitationCode: alpha.invitationCode, name: 'Alpha Teammate', email: 'alpha-member@example.com',
+      contactNumber: '9123456789', collegeName: 'Member College',
+    });
+    const alphaMember = (await alphaJoin.json()).team;
+    const betaCreation = await request('POST', `/api/events/${eventId}/teams`, undefined, {
+      teamName: 'Private Beta', name: 'Beta Leader', email: 'beta-leader@example.com',
+      contactNumber: '9987654321', collegeName: 'Beta College',
+    });
+    const beta = (await betaCreation.json()).team;
+
+    const alphaLeaderView = await request('GET', `/api/events/${eventId}/team`, undefined, undefined, {
+      'x-team-access-token': alpha.accessToken,
+    });
+    assert.equal(alphaLeaderView.status, 200);
+    const alphaLeaderBody = await alphaLeaderView.json();
+    assert.equal(alphaLeaderBody.team.name, 'Private Alpha');
+    assert.equal(alphaLeaderBody.team.invitationCode, alpha.invitationCode);
+
+    const alphaMemberView = await request('GET', `/api/events/${eventId}/team`, undefined, undefined, {
+      'x-team-access-token': alphaMember.accessToken,
+    });
+    assert.equal(alphaMemberView.status, 200);
+    const alphaMemberBody = await alphaMemberView.json();
+    assert.equal(alphaMemberBody.team.name, 'Private Alpha');
+    assert.equal(alphaMemberBody.team.invitationCode, undefined);
+    assert.equal(alphaMemberBody.team.invitationPath, undefined);
+    assert.equal(JSON.stringify(alphaMemberBody).includes('Private Beta'), false);
+    assert.equal(JSON.stringify(alphaMemberBody).includes('alpha-leader@example.com'), false);
+    assert.equal(JSON.stringify(alphaMemberBody).includes('9876543210'), false);
+    assert.equal(JSON.stringify(alphaMemberBody).includes('Alpha College'), false);
+
+    const betaLeaderView = await request('GET', `/api/events/${eventId}/team`, undefined, undefined, {
+      'x-team-access-token': beta.accessToken,
+    });
+    assert.equal(betaLeaderView.status, 200);
+    assert.equal((await betaLeaderView.json()).team.name, 'Private Beta');
+
+    const unknownToken = await request('GET', `/api/events/${eventId}/team`, undefined, undefined, {
+      'x-team-access-token': 'not-a-valid-team-access-token',
+    });
+    assert.equal(unknownToken.status, 404);
   });
 
   await t.test('admin cannot change team limits in a way that invalidates existing teams', async () => {

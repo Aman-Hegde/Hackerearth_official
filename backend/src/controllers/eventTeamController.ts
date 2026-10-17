@@ -699,7 +699,6 @@ export const previewEventTeamInvitation = async (
       success: true,
       invitation: {
         event: {
-          id: event._id.toString(),
           name: event.title,
         },
         team: {
@@ -764,6 +763,34 @@ const loadTeamMembers = async (teamId: Types.ObjectId) =>
     .lean<PopulatedMember[]>()
     .exec();
 
+const loadParticipantTeamMembers = async (teamId: Types.ObjectId) =>
+  EventTeamMember.find({ teamId })
+    .sort({ isLeader: -1, createdAt: 1 })
+    .populate<{ studentId?: Pick<NonNullable<PopulatedMember["studentId"]>, "name"> }>(
+      "studentId",
+      "name"
+    )
+    .populate<{
+      guestRegistrationId?: Pick<
+        NonNullable<PopulatedMember["guestRegistrationId"]>,
+        "name"
+      >;
+    }>("guestRegistrationId", "name")
+    .lean<PopulatedMember[]>()
+    .exec();
+
+const toParticipantMember = (member: PopulatedMember) => {
+  const participant =
+    member.participantType === "member"
+      ? member.studentId
+      : member.guestRegistrationId;
+
+  return {
+    name: participant?.name ?? "Unknown participant",
+    role: member.isLeader ? "leader" : "member",
+  };
+};
+
 const toSafeMember = (
   member: PopulatedMember,
   includeParticipantDetails: boolean,
@@ -824,24 +851,23 @@ export const getMyEventTeam = async (
     const team = await teamQuery.exec();
     if (!team) return res.status(404).json({ success: false, code: "TEAM_NOT_FOUND", message: "Team not found." });
     const { minTeamSize, maxTeamSize } = getTeamConfiguration(event);
-    const members = await loadTeamMembers(team._id);
+    const members = await loadParticipantTeamMembers(team._id);
     return res.status(200).json({
       success: true,
       team: {
-        id: team._id.toString(),
         name: team.name,
         status: getTeamStatus(team.currentMemberCount, minTeamSize, maxTeamSize),
         currentMemberCount: team.currentMemberCount,
         minTeamSize,
         maxTeamSize,
-        isLeader: member.isLeader,
+        role: member.isLeader ? "leader" : "member",
         ...(member.isLeader
           ? {
             invitationCode: team.invitationCode,
             invitationPath: `/events/${event._id.toString()}?invite=${encodeURIComponent(team.invitationCode)}`,
           }
           : {}),
-        members: members.map((item) => toSafeMember(item, true)),
+        members: members.map(toParticipantMember),
       },
     });
   } catch (error) {

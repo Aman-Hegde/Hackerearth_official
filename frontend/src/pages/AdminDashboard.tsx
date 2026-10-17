@@ -8,7 +8,6 @@ import {
 } from 'react';
 import {
   AlertCircle,
-  BookOpen,
   Brain,
   CheckCircle2,
   ChevronLeft,
@@ -35,6 +34,7 @@ import {
 } from 'lucide-react';
 import PageTransition from '../components/ui/PageTransition';
 import SectionReveal from '../components/ui/SectionReveal';
+import AdminEventTeamsModal from '../components/events/AdminEventTeamsModal';
 import { ApiError } from '../lib/api';
 import {
   createAdminEvent,
@@ -110,6 +110,10 @@ const emptyEventForm = {
   deadlineDate: '',
   deadlineTime: '',
   maxRegistrations: '',
+  participationType: 'individual' as 'individual' | 'team',
+  eligibility: 'public' as 'public' | 'members_only',
+  minTeamSize: '',
+  maxTeamSize: '',
   active: true,
 };
 const emptyWeeklyContestForm = {
@@ -281,6 +285,8 @@ const buildEventPayload = (form: EventFormState): EventInput | null => {
   const eventEndDateTime = new Date(`${form.eventEndDate}T${form.eventEndTime}`);
   const registrationDeadline = new Date(`${form.deadlineDate}T${form.deadlineTime}`);
   const maxRegistrations = Number(form.maxRegistrations);
+  const minTeamSize = Number(form.minTeamSize);
+  const maxTeamSize = Number(form.maxTeamSize);
 
   if (
     !form.title.trim() ||
@@ -295,7 +301,14 @@ const buildEventPayload = (form: EventFormState): EventInput | null => {
     ((!!form.eventEndDate || !!form.eventEndTime) && Number.isNaN(eventEndDateTime.getTime())) ||
     Number.isNaN(registrationDeadline.getTime()) ||
     !Number.isInteger(maxRegistrations) ||
-    maxRegistrations < 1
+    maxRegistrations < 1 ||
+    (form.participationType === 'team' && (
+      !Number.isInteger(minTeamSize) ||
+      !Number.isInteger(maxTeamSize) ||
+      minTeamSize < 1 ||
+      maxTeamSize < minTeamSize ||
+      maxTeamSize > 100
+    ))
   ) {
     return null;
   }
@@ -314,6 +327,9 @@ const buildEventPayload = (form: EventFormState): EventInput | null => {
     eventEndDateTime: form.eventEndDate && form.eventEndTime ? eventEndDateTime.toISOString() : undefined,
     registrationDeadline: registrationDeadline.toISOString(),
     maxRegistrations,
+    participationType: form.participationType,
+    eligibility: form.eligibility,
+    ...(form.participationType === 'team' ? { minTeamSize, maxTeamSize } : {}),
     active: form.active,
   };
 };
@@ -548,6 +564,7 @@ const AdminDashboard = () => {
   const [registrationsLoading, setRegistrationsLoading] = useState(false);
   const [registrationsError, setRegistrationsError] = useState<AdminRequestError | null>(null);
   const [registrationsDownloading, setRegistrationsDownloading] = useState(false);
+  const [teamsEvent, setTeamsEvent] = useState<EventSummary | null>(null);
   const [weeklyContests, setWeeklyContests] = useState<AdminWeeklyContest[]>([]);
   const [weeklyContestsLoading, setWeeklyContestsLoading] = useState(true);
   const [weeklyContestsError, setWeeklyContestsError] = useState<AdminRequestError | null>(null);
@@ -1116,6 +1133,10 @@ const AdminDashboard = () => {
       deadlineDate: toDateInputValue(event.registrationDeadline),
       deadlineTime: toTimeInputValue(event.registrationDeadline),
       maxRegistrations: String(event.maxRegistrations),
+      participationType: event.participationType ?? 'individual',
+      eligibility: event.eligibility ?? 'public',
+      minTeamSize: event.minTeamSize ? String(event.minTeamSize) : '',
+      maxTeamSize: event.maxTeamSize ? String(event.maxTeamSize) : '',
       active: event.active,
     });
     setEventFormError(null);
@@ -1140,7 +1161,13 @@ const AdminDashboard = () => {
     field: keyof EventFormState,
     value: string | boolean
   ) => {
-    setEventForm((current) => ({ ...current, [field]: value }));
+    setEventForm((current) => ({
+      ...current,
+      [field]: value,
+      ...(field === 'participationType' && value === 'individual'
+        ? { minTeamSize: '', maxTeamSize: '' }
+        : {}),
+    }));
     setEventFormError(null);
   };
 
@@ -2286,12 +2313,24 @@ const AdminDashboard = () => {
                             <dt className="font-semibold text-ink">Deadline</dt>
                             <dd>{formatDateTime(event.registrationDeadline)}</dd>
                           </div>
+                          <div>
+                            <dt className="font-semibold text-ink">Format</dt>
+                            <dd>{event.participationType === 'team' ? `Team · ${event.minTeamSize}-${event.maxTeamSize} members` : 'Individual'}</dd>
+                          </div>
+                          <div>
+                            <dt className="font-semibold text-ink">Eligibility</dt>
+                            <dd>{event.eligibility === 'members_only' ? 'Members Only' : 'Open to Everyone'}</dd>
+                          </div>
                         </dl>
 
                         <div className="mt-4 flex flex-wrap gap-2">
-                          <button type="button" onClick={() => void openRegistrationsModal(event)} className="btn btn-secondary rounded-full">
+                          <button
+                            type="button"
+                            onClick={() => event.participationType === 'team' ? setTeamsEvent(event) : void openRegistrationsModal(event)}
+                            className="btn btn-secondary rounded-full"
+                          >
                             <Users className="size-4" aria-hidden="true" />
-                            View Registrations
+                            {event.participationType === 'team' ? 'View Teams' : 'View Registrations'}
                           </button>
                           <button type="button" onClick={() => openEditEventModal(event)} className="btn btn-secondary rounded-full">
                             <Pencil className="size-4" aria-hidden="true" />
@@ -2999,6 +3038,13 @@ const AdminDashboard = () => {
           </>
         )}
         </div>
+
+        {teamsEvent && (
+          <AdminEventTeamsModal
+            event={teamsEvent}
+            onClose={() => setTeamsEvent(null)}
+          />
+        )}
 
         {registrationsEvent && (
           <div className="fixed inset-0 z-[90] flex items-center justify-center overflow-y-auto bg-canvas/70 p-4 backdrop-blur-md">
@@ -3995,6 +4041,61 @@ const AdminDashboard = () => {
                   </label>
 
                   <label>
+                    <span className="mb-2 block text-sm font-semibold text-ink">Participation Type</span>
+                    <select
+                      value={eventForm.participationType}
+                      onChange={(event) => handleEventFormChange('participationType', event.target.value)}
+                      className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
+                    >
+                      <option value="individual">Individual</option>
+                      <option value="team">Team</option>
+                    </select>
+                  </label>
+
+                  <label>
+                    <span className="mb-2 block text-sm font-semibold text-ink">Eligibility</span>
+                    <select
+                      value={eventForm.eligibility}
+                      onChange={(event) => handleEventFormChange('eligibility', event.target.value)}
+                      className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
+                    >
+                      <option value="members_only">Members Only</option>
+                      <option value="public">Open to Everyone</option>
+                    </select>
+                  </label>
+
+                  {eventForm.participationType === 'team' && (
+                    <>
+                      <label>
+                        <span className="mb-2 block text-sm font-semibold text-ink">Minimum Team Size</span>
+                        <input
+                          type="number"
+                          min={1}
+                          max={100}
+                          step={1}
+                          value={eventForm.minTeamSize}
+                          onChange={(event) => handleEventFormChange('minTeamSize', event.target.value)}
+                          className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
+                          required
+                        />
+                      </label>
+                      <label>
+                        <span className="mb-2 block text-sm font-semibold text-ink">Maximum Team Size</span>
+                        <input
+                          type="number"
+                          min={1}
+                          max={100}
+                          step={1}
+                          value={eventForm.maxTeamSize}
+                          onChange={(event) => handleEventFormChange('maxTeamSize', event.target.value)}
+                          className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
+                          required
+                        />
+                      </label>
+                    </>
+                  )}
+
+                  <label>
                     <span className="mb-2 block text-sm font-semibold text-ink">Event Start Date</span>
                     <input
                       type="date"
@@ -4092,7 +4193,7 @@ const AdminDashboard = () => {
                       <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
                     )}
                     {eventSubmitting
-                      ? editingEvent ? 'Updating...' : 'Creating...'
+                      ? eventSubmitLabel || (editingEvent ? 'Updating...' : 'Creating...')
                       : editingEvent ? 'Update Event' : 'Create Event'}
                   </button>
                 </div>
