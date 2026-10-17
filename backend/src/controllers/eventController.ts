@@ -6,6 +6,10 @@ import EventRegistration from "../models/EventRegistration";
 import User from "../models/user";
 import GuestEventRegistration, { GuestParticipant } from "../models/GuestEventRegistration";
 import { uploadEventPosterToCloudinary } from "../config/cloudinary";
+import {
+  InvalidLocalPosterError,
+  storeLocalTestEventPoster,
+} from "../services/localEventPosterStorage";
 import EventTeam from "../models/EventTeam";
 import {
   getEventEligibility,
@@ -391,16 +395,27 @@ export const uploadAdminEventPoster = async (req: Request, res: Response) => {
       });
     }
 
-    const result = await uploadEventPosterToCloudinary(req.file.buffer);
+    const result =
+      process.env.LOCAL_TEST_MODE === "true"
+        ? await storeLocalTestEventPoster(req.file.buffer, req.file.mimetype)
+        : await uploadEventPosterToCloudinary(req.file.buffer);
 
     return res.status(200).json({
       success: true,
       poster: {
-        url: result.secure_url,
-        publicId: result.public_id,
+        url: "secure_url" in result ? result.secure_url : result.url,
+        publicId: "public_id" in result ? result.public_id : result.publicId,
       },
     });
-  } catch (_error) {
+  } catch (error) {
+    if (error instanceof InvalidLocalPosterError) {
+      return res.status(400).json({
+        success: false,
+        code: "INVALID_POSTER_CONTENT",
+        message: "Poster file contents must be a valid JPG, PNG, or WebP image.",
+      });
+    }
+
     return res.status(502).json({
       success: false,
       code: "POSTER_UPLOAD_FAILED",
@@ -597,6 +612,58 @@ export const updateAdminEvent = async (
     });
   }
 };
+
+const setAdminEventPublished = async (
+  req: Request<{ eventId: string }>,
+  res: Response,
+  published: boolean
+) => {
+  try {
+    const { eventId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+      return res.status(400).json({
+        success: false,
+        code: "INVALID_EVENT_ID",
+        message: "A valid event id is required.",
+      });
+    }
+
+    const event = await Event.findById(eventId).exec();
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        code: "EVENT_NOT_FOUND",
+        message: "Event not found.",
+      });
+    }
+
+    event.published = published;
+    await event.save();
+
+    return res.status(200).json({
+      success: true,
+      message: published
+        ? "Event restored successfully."
+        : "Event removed from public listings. Existing registrations and teams were preserved.",
+      event: toSafeEvent(event),
+    });
+  } catch (_error) {
+    return res.status(500).json({
+      success: false,
+      message: "Unexpected server error.",
+    });
+  }
+};
+
+export const archiveAdminEvent = (
+  req: Request<{ eventId: string }>,
+  res: Response
+) => setAdminEventPublished(req, res, false);
+
+export const restoreAdminEvent = (
+  req: Request<{ eventId: string }>,
+  res: Response
+) => setAdminEventPublished(req, res, true);
 
 export const getAdminEventRegistrations = async (
   req: Request<{ eventId: string }>,

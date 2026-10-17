@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../context/themeContextValue';
 import logo from '../assets/image.png';
 import { TypingAnime } from '../components/TypingAnime';
 

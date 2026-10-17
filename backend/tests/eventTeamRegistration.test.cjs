@@ -273,7 +273,7 @@ test('Events V3 team registration, security, capacity and admin regression suite
     reset({ eligibility: 'members_only' });
     const guest = await request('POST', `/api/events/${eventId}/teams`, undefined, {
       teamName: 'Guest Team', name: 'Guest', email: 'guest@example.com',
-      contactNumber: '9876543210', collegeName: 'Guest College',
+      contactNumber: '9876543210', branch: 'CSE',
     });
     assert.equal(guest.status, 401);
     assert.equal((await guest.json()).code, 'MEMBERS_ONLY_EVENT');
@@ -351,6 +351,31 @@ test('Events V3 team registration, security, capacity and admin regression suite
     });
     assert.equal(response.status, 201);
     assert.equal(registrations[0].contactNumber, '9876543210');
+    assert.equal(registrations[0].branch, 'ISE');
+  });
+
+  await t.test('team branch is required and may be confirmed without changing the member profile', async () => {
+    reset({ eligibility: 'members_only' });
+    accounts.get(studentIds[0].toString()).branch = '';
+    const missingMemberBranch = await request('POST', `/api/events/${eventId}/teams`, studentIds[0], {
+      teamName: 'Missing Branch',
+    });
+    assert.equal(missingMemberBranch.status, 400);
+    assert.equal((await missingMemberBranch.json()).code, 'BRANCH_REQUIRED');
+
+    const missingGuestBranch = await request('POST', `/api/events/${eventId}/teams`, undefined, {
+      teamName: 'Guest Missing Branch', name: 'Guest Person', email: 'branch@example.com',
+      contactNumber: '9876543210',
+    });
+    assert.equal(missingGuestBranch.status, 400);
+
+    accounts.get(studentIds[0].toString()).branch = 'ISE';
+    const confirmed = await request('POST', `/api/events/${eventId}/teams`, studentIds[0], {
+      teamName: 'Confirmed Branch', branch: 'CSE',
+    });
+    assert.equal(confirmed.status, 201);
+    assert.equal(registrations[0].branch, 'CSE');
+    assert.equal(accounts.get(studentIds[0].toString()).branch, 'ISE');
   });
 
   await t.test('admin configures team events and invalid team sizes are rejected', async () => {
@@ -384,7 +409,7 @@ test('Events V3 team registration, security, capacity and admin regression suite
     reset();
     const response = await request('POST', `/api/events/${eventId}/teams`, undefined, {
       teamName: 'Public Team', name: 'External Guest', email: 'external@example.com',
-      contactNumber: '919876543210', collegeName: 'External College',
+      contactNumber: '919876543210', branch: 'CSE',
     });
     assert.equal(response.status, 201);
     const result = await response.json();
@@ -393,10 +418,10 @@ test('Events V3 team registration, security, capacity and admin regression suite
     assert.match(result.team.invitationPath, new RegExp(`^/events/${eventId}\\?invite=`));
     assert.equal(guests.length, 1);
     assert.equal(guests[0].contactNumber, '9876543210');
-    assert.equal(guests[0].collegeName, 'External College');
+    assert.equal(guests[0].branch, 'CSE');
     const duplicate = await request('POST', `/api/events/${eventId}/teams`, undefined, {
       teamName: 'Another Public Team', name: 'External Guest', email: 'external@example.com',
-      contactNumber: '9876543210', collegeName: 'External College',
+      contactNumber: '9876543210', branch: 'CSE',
     });
     assert.equal(duplicate.status, 409);
     assert.equal((await duplicate.json()).code, 'ALREADY_REGISTERED');
@@ -413,7 +438,7 @@ test('Events V3 team registration, security, capacity and admin regression suite
     reset();
     const created = await request('POST', `/api/events/${eventId}/teams`, undefined, {
       teamName: 'Link Team', name: 'Guest Leader', email: 'leader@example.com',
-      contactNumber: '+919876543210', collegeName: 'Leader College',
+      contactNumber: '+919876543210', branch: 'ECE',
     });
     assert.equal(created.status, 201);
     const createdBody = await created.json();
@@ -435,11 +460,11 @@ test('Events V3 team registration, security, capacity and admin regression suite
     );
     assert.equal(JSON.stringify(previewBody).includes('9876543210'), false);
     assert.equal(JSON.stringify(previewBody).includes('leader@example.com'), false);
-    assert.equal(JSON.stringify(previewBody).includes('Leader College'), false);
+    assert.equal(JSON.stringify(previewBody).includes('ECE'), false);
 
     const joined = await request('POST', `/api/events/${eventId}/teams/join`, undefined, {
       invitationCode, name: 'Guest Teammate', email: 'teammate@example.com',
-      contactNumber: '919123456789', collegeName: 'Teammate College',
+      contactNumber: '919123456789', branch: 'AIML',
     });
     assert.equal(joined.status, 201);
     assert.equal((await joined.json()).team.currentMemberCount, 2);
@@ -447,7 +472,7 @@ test('Events V3 team registration, security, capacity and admin regression suite
     assert.equal(guests[1].contactNumber, '9123456789');
   });
 
-  await t.test('public guest team registration requires valid contact and college details', async () => {
+  await t.test('public guest team registration requires valid contact and branch details', async () => {
     reset();
     const missing = await request('POST', `/api/events/${eventId}/teams`, undefined, {
       teamName: 'Missing Details', name: 'External Guest', email: 'missing@example.com',
@@ -455,7 +480,7 @@ test('Events V3 team registration, security, capacity and admin regression suite
     assert.equal(missing.status, 400);
     const invalid = await request('POST', `/api/events/${eventId}/teams`, undefined, {
       teamName: 'Invalid Details', name: 'External Guest', email: 'invalid@example.com',
-      contactNumber: '98765abcde', collegeName: 'External College',
+      contactNumber: '98765abcde', branch: 'CSE',
     });
     assert.equal(invalid.status, 400);
   });
@@ -522,17 +547,17 @@ test('Events V3 team registration, security, capacity and admin regression suite
     reset();
     const alphaCreation = await request('POST', `/api/events/${eventId}/teams`, undefined, {
       teamName: 'Private Alpha', name: 'Alpha Leader', email: 'alpha-leader@example.com',
-      contactNumber: '9876543210', collegeName: 'Alpha College',
+      contactNumber: '9876543210', branch: 'CSE',
     });
     const alpha = (await alphaCreation.json()).team;
     const alphaJoin = await request('POST', `/api/events/${eventId}/teams/join`, undefined, {
       invitationCode: alpha.invitationCode, name: 'Alpha Teammate', email: 'alpha-member@example.com',
-      contactNumber: '9123456789', collegeName: 'Member College',
+      contactNumber: '9123456789', branch: 'ISE',
     });
     const alphaMember = (await alphaJoin.json()).team;
     const betaCreation = await request('POST', `/api/events/${eventId}/teams`, undefined, {
       teamName: 'Private Beta', name: 'Beta Leader', email: 'beta-leader@example.com',
-      contactNumber: '9987654321', collegeName: 'Beta College',
+      contactNumber: '9987654321', branch: 'ECE',
     });
     const beta = (await betaCreation.json()).team;
 
@@ -555,7 +580,7 @@ test('Events V3 team registration, security, capacity and admin regression suite
     assert.equal(JSON.stringify(alphaMemberBody).includes('Private Beta'), false);
     assert.equal(JSON.stringify(alphaMemberBody).includes('alpha-leader@example.com'), false);
     assert.equal(JSON.stringify(alphaMemberBody).includes('9876543210'), false);
-    assert.equal(JSON.stringify(alphaMemberBody).includes('Alpha College'), false);
+    assert.equal(JSON.stringify(alphaMemberBody).includes('CSE'), false);
 
     const betaLeaderView = await request('GET', `/api/events/${eventId}/team`, undefined, undefined, {
       'x-team-access-token': beta.accessToken,
@@ -593,6 +618,29 @@ test('Events V3 team registration, security, capacity and admin regression suite
     }
   });
 
+  await t.test('archived events reject invitation previews and new team registrations while preserving teams', async () => {
+    reset({ eligibility: 'members_only' });
+    const created = await request('POST', `/api/events/${eventId}/teams`, studentIds[0], { teamName: 'Preserved Team' });
+    assert.equal(created.status, 201);
+    const invitationCode = (await created.json()).team.invitationCode;
+    const teamCount = teams.length;
+    const memberCount = members.length;
+
+    const archived = await request('PATCH', `/api/admin/events/${eventId}/archive`, adminId, {});
+    assert.equal(archived.status, 200);
+    assert.equal(event.published, false);
+    assert.equal((await request('GET', `/api/events/${eventId}/teams/invitations/${invitationCode}`, studentIds[1])).status, 404);
+    assert.equal((await request('POST', `/api/events/${eventId}/teams`, studentIds[1], { teamName: 'Blocked Team' })).status, 409);
+    assert.equal((await request('POST', `/api/events/${eventId}/teams/join`, studentIds[1], { invitationCode })).status, 409);
+    assert.equal(teams.length, teamCount);
+    assert.equal(members.length, memberCount);
+
+    const restored = await request('PATCH', `/api/admin/events/${eventId}/restore`, adminId, {});
+    assert.equal(restored.status, 200);
+    assert.equal(event.published, true);
+    assert.equal((await request('GET', `/api/events/${eventId}/teams/invitations/${invitationCode}`, studentIds[1])).status, 200);
+  });
+
   await t.test('admin team list and XLSX export are protected and include team members', async () => {
     reset();
     await request('POST', `/api/events/${eventId}/teams`, studentIds[0], { teamName: 'Admin View Team' });
@@ -603,12 +651,17 @@ test('Events V3 team registration, security, capacity and admin regression suite
     const listBody = await list.json();
     assert.equal(listBody.teams[0].members[0].isLeader, true);
     assert.equal(listBody.teams[0].members[0].contactNumber, '9876543210');
+    assert.equal(listBody.teams[0].members[0].branch, 'ISE');
+    assert.equal('collegeName' in listBody.teams[0].members[0], false);
     const exported = await request('GET', `/api/admin/events/${eventId}/teams/export`, adminId);
     assert.equal(exported.status, 200);
     const workbook = new (require('exceljs').Workbook)();
     await workbook.xlsx.load(Buffer.from(await exported.arrayBuffer()));
     assert.equal(workbook.worksheets[0].getRow(2).getCell(1).value, 'Admin View Team');
     assert.equal(workbook.worksheets[0].getRow(2).getCell(8).value, '9876543210');
+    assert.equal(workbook.worksheets[0].getRow(1).getCell(9).value, 'Branch');
+    assert.equal(workbook.worksheets[0].getRow(2).getCell(9).value, 'ISE');
+    assert.equal(workbook.worksheets[0].getRow(1).values.includes('College'), false);
   });
 
   await t.test('public team registration and invitation preview are rate limited', async () => {

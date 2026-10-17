@@ -5,6 +5,8 @@ export interface GuestParticipant {
   name: string;
   email: string;
   contactNumber: string;
+  branch?: string;
+  // Retained for compatibility with historical registrations.
   collegeName?: string;
 }
 interface GuestRegistration extends GuestParticipant {
@@ -16,6 +18,7 @@ const schema = new Schema<GuestRegistration>({
   name: { type: String, required: true, maxlength: 100 },
   email: { type: String, required: true, lowercase: true, maxlength: 254 },
   contactNumber: { type: String, required: true, match: /^\d{10}$/ },
+  branch: { type: String, trim: true, maxlength: 160 },
   collegeName: { type: String, trim: true, maxlength: 160 },
 }, { timestamps: true });
 schema.index({ eventId: 1, email: 1 }, { unique: true });

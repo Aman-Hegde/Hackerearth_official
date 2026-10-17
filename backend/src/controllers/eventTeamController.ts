@@ -27,13 +27,14 @@ interface TeamRequestBody {
   name?: unknown;
   email?: unknown;
   contactNumber?: unknown;
-  collegeName?: unknown;
+  branch?: unknown;
 }
 
 interface RegisteredParticipant {
   type: "member" | "guest";
   studentId?: Types.ObjectId;
   contactNumber?: string;
+  branch: string;
   guest: GuestParticipant | null;
 }
 
@@ -79,7 +80,7 @@ const parseGuest = (body: TeamRequestBody): GuestParticipant | null => {
     name: normalizeString(body.name),
     email: normalizeString(body.email).toLowerCase(),
     contactNumber: normalizeIndianContactNumber(body.contactNumber) ?? "",
-    collegeName: normalizeString(body.collegeName),
+    branch: normalizeString(body.branch),
   };
   if (
     guest.name.length < 2 ||
@@ -87,8 +88,8 @@ const parseGuest = (body: TeamRequestBody): GuestParticipant | null => {
     guest.email.length > 254 ||
     !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guest.email) ||
     !guest.contactNumber ||
-    guest.collegeName.length < 2 ||
-    guest.collegeName.length > 160
+    guest.branch.length < 2 ||
+    guest.branch.length > 160
   ) {
     return null;
   }
@@ -147,7 +148,7 @@ const loadAuthenticatedParticipant = async (req: Request) => {
     emailVerified: true,
     isActive: true,
   })
-    .select("_id email contactNumber")
+    .select("_id email contactNumber branch")
     .exec();
   if (!student) {
     throw new TeamRegistrationError(
@@ -201,6 +202,7 @@ const createParticipantRegistration = async (
           ...(participant.contactNumber
             ? { contactNumber: participant.contactNumber }
             : {}),
+          branch: participant.branch,
         },
       ],
       { session }
@@ -488,12 +490,12 @@ const handleTeamAction = async (
   const authenticatedFields = [
     ...(action === "create" ? ["teamName"] : ["invitationCode"]),
     "contactNumber",
+    "branch",
   ];
   const guestFields = [
     ...authenticatedFields,
     "name",
     "email",
-    "collegeName",
   ];
   if (!assertAllowedBody(req.body, req.auth ? authenticatedFields : guestFields)) {
     return res.status(400).json({
@@ -529,7 +531,7 @@ const handleTeamAction = async (
         throw new TeamRegistrationError(
           400,
           "INVALID_PARTICIPANT",
-          "Enter your name, valid email, Indian mobile number, and college name."
+          "Enter your name, valid email, Indian mobile number, and branch name."
         );
       }
       if (action === "join") {
@@ -553,6 +555,7 @@ const handleTeamAction = async (
       await ensureGuestCanRegister(event, guest);
       const participant: RegisteredParticipant = {
         type: "guest",
+        branch: guest.branch ?? "",
         guest,
       };
       const result =
@@ -605,11 +608,20 @@ const handleTeamAction = async (
         "Enter a valid Indian mobile number for event coordination."
       );
     }
+    const branch = normalizeString(req.body.branch) || normalizeString(student.branch);
+    if (branch.length < 2 || branch.length > 160) {
+      throw new TeamRegistrationError(
+        400,
+        "BRANCH_REQUIRED",
+        "Enter a valid branch name for event registration."
+      );
+    }
 
     const participant: RegisteredParticipant = {
       type: "member",
       studentId: student._id,
       contactNumber,
+      branch,
       guest: null,
     };
     const result =
@@ -736,13 +748,14 @@ type PopulatedMember = {
   eventRegistrationId?: {
     _id?: unknown;
     contactNumber?: string;
+    branch?: string;
   };
   guestRegistrationId?: {
     _id?: unknown;
     name?: string;
     email?: string;
     contactNumber?: string;
-    collegeName?: string;
+    branch?: string;
   };
 };
 
@@ -755,10 +768,10 @@ const loadTeamMembers = async (teamId: Types.ObjectId) =>
     )
     .populate<{
       eventRegistrationId?: PopulatedMember["eventRegistrationId"];
-    }>("eventRegistrationId", "contactNumber")
+    }>("eventRegistrationId", "contactNumber branch")
     .populate<{ guestRegistrationId?: PopulatedMember["guestRegistrationId"] }>(
       "guestRegistrationId",
-      "name email contactNumber collegeName"
+      "name email contactNumber branch"
     )
     .lean<PopulatedMember[]>()
     .exec();
@@ -807,7 +820,11 @@ const toSafeMember = (
       ? {
         email: participant?.email ?? "",
         usn: member.studentId?.usn ?? "",
-        branch: member.studentId?.branch ?? "",
+        branch:
+          member.eventRegistrationId?.branch ??
+          member.guestRegistrationId?.branch ??
+          member.studentId?.branch ??
+          "",
         year: member.studentId?.year ?? null,
       }
       : {}),
@@ -817,7 +834,6 @@ const toSafeMember = (
           member.eventRegistrationId?.contactNumber ??
           participant?.contactNumber ??
           "",
-        collegeName: member.guestRegistrationId?.collegeName ?? "",
       }
       : {}),
     participantType: member.participantType,
@@ -947,8 +963,7 @@ export const exportAdminEventTeams = async (
       { header: "USN", key: "usn", width: 16 },
       { header: "Email", key: "email", width: 32 },
       { header: "Phone Number", key: "contactNumber", width: 18 },
-      { header: "College", key: "collegeName", width: 28 },
-      { header: "Branch", key: "branch", width: 16 },
+      { header: "Branch", key: "branch", width: 24 },
       { header: "Year", key: "year", width: 10 },
       { header: "Joined At", key: "joinedAt", width: 22 },
     ];
@@ -965,7 +980,6 @@ export const exportAdminEventTeams = async (
           usn: member.usn,
           email: member.email,
           contactNumber: member.contactNumber,
-          collegeName: member.collegeName,
           branch: member.branch,
           year: member.year ?? "",
           joinedAt: member.joinedAt,

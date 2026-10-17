@@ -19,8 +19,8 @@ import EventTeamDashboardModal from "../components/events/EventTeamDashboardModa
 import EventTeamRegistrationModal from "../components/events/EventTeamRegistrationModal";
 import PageTransition from "../components/ui/PageTransition";
 import SectionReveal from "../components/ui/SectionReveal";
-import { useToast } from "../components/ToastProvider";
-import { useAuth } from "../context/AuthContext";
+import { useToast } from "../components/toastContext";
+import { useAuth } from "../context/authContextValue";
 import { ApiError } from "../lib/api";
 import {
   getStudentEvents,

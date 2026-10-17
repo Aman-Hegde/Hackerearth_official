@@ -4,7 +4,7 @@ import { motion, useReducedMotion } from "framer-motion";
 import { ArrowRight, Users, Trophy, Calendar, Rocket, ChevronRight, FolderOpen } from "lucide-react";
 import TypingHero from "../components/TypingHero";
 import { Code } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/authContextValue";
 import PageTransition from "../components/ui/PageTransition";
 import SectionReveal from "../components/ui/SectionReveal";
 import DomainVisualCarousel, { type DomainVisualKind } from "../components/home/DomainVisualCarousel";

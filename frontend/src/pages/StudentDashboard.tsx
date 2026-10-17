@@ -19,9 +19,9 @@ import { Link } from "react-router-dom";
 import PageTransition from "../components/ui/PageTransition";
 import SectionReveal from "../components/ui/SectionReveal";
 import ResourceCard from "../components/ResourceCard";
-import { useToast } from "../components/ToastProvider";
-import { useAuth } from "../context/AuthContext";
-import { useTheme } from "../context/ThemeContext";
+import { useToast } from "../components/toastContext";
+import { useAuth } from "../context/authContextValue";
+import { useTheme } from "../context/themeContextValue";
 import { blogPosts } from "../lib/resourcesData";
 import {
   getStudentEvents,
@@ -283,6 +283,7 @@ const DppCard = ({
 
 const StudentDashboard = () => {
   const { user } = useAuth();
+  const userId = user?.id;
   const { isDark } = useTheme();
   const { showToast } = useToast();
   const [studentRank, setStudentRank] = useState<StudentRank | null>(null);
@@ -306,7 +307,7 @@ const StudentDashboard = () => {
   const [pendingDppId, setPendingDppId] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!user) return;
+    if (!userId) return;
 
     let isMounted = true;
 
@@ -331,10 +332,10 @@ const StudentDashboard = () => {
     return () => {
       isMounted = false;
     };
-  }, [user?.id]);
+  }, [userId]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!userId) return;
 
     const controller = new AbortController();
     setIsLoadingWeeklyContestTasks(true);
@@ -356,10 +357,10 @@ const StudentDashboard = () => {
       });
 
     return () => controller.abort();
-  }, [user?.id]);
+  }, [userId]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!userId) return;
 
     const controller = new AbortController();
     setIsLoadingStudentDpps(true);
@@ -381,7 +382,7 @@ const StudentDashboard = () => {
       });
 
     return () => controller.abort();
-  }, [user?.id]);
+  }, [userId]);
 
   const handleOpenWeeklyContest = async (contest: StudentWeeklyContest) => {
     if (pendingContestId || contest.status !== "live") return;
@@ -467,7 +468,7 @@ const StudentDashboard = () => {
   };
 
   useEffect(() => {
-    if (!user) return;
+    if (!userId) return;
 
     let isMounted = true;
 
@@ -506,10 +507,10 @@ const StudentDashboard = () => {
     return () => {
       isMounted = false;
     };
-  }, [user?.id]);
+  }, [userId]);
 
   useEffect(() => {
-    if (!user) {
+    if (!userId) {
       setWeeklyRank(null);
       return;
     }
@@ -545,10 +546,10 @@ const StudentDashboard = () => {
     return () => {
       isMounted = false;
     };
-  }, [selectedWeek, user?.id]);
+  }, [selectedWeek, userId]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!userId) return;
 
     const controller = new AbortController();
     setIsLoadingDashboardEvents(true);
@@ -579,7 +580,7 @@ const StudentDashboard = () => {
       });
 
     return () => controller.abort();
-  }, [user?.id]);
+  }, [userId]);
 
   if (!user) return null;
 

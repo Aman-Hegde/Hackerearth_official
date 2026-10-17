@@ -163,7 +163,7 @@ export interface GuestParticipant {
 }
 
 export interface GuestTeamParticipant extends GuestParticipant {
-  collegeName: string;
+  branch: string;
 }
 
 export interface TeamRegistrationInput {
@@ -172,7 +172,7 @@ export interface TeamRegistrationInput {
   contactNumber?: string;
   name?: string;
   email?: string;
-  collegeName?: string;
+  branch: string;
 }
 
 export interface EventTeamRegistrationResult {
@@ -222,7 +222,6 @@ export interface AdminEventTeamMember {
   joinedAt: string;
   email: string;
   contactNumber: string;
-  collegeName: string;
   usn: string;
   branch: string;
   year: number | null;
@@ -364,6 +363,18 @@ export const getAdminEventRegistrations = (eventId: string, signal?: AbortSignal
   apiRequest<AdminEventRegistrationsResponse>(
     `/api/admin/events/${encodeURIComponent(eventId)}/registrations`,
     { signal }
+  );
+
+export const archiveAdminEvent = (eventId: string) =>
+  apiRequest<AdminEventResponse>(
+    `/api/admin/events/${encodeURIComponent(eventId)}/archive`,
+    { method: "PATCH" }
+  );
+
+export const restoreAdminEvent = (eventId: string) =>
+  apiRequest<AdminEventResponse>(
+    `/api/admin/events/${encodeURIComponent(eventId)}/restore`,
+    { method: "PATCH" }
   );
 
 export const getAdminEventTeams = (eventId: string, signal?: AbortSignal) =>

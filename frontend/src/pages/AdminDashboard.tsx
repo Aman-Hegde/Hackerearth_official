@@ -37,12 +37,14 @@ import SectionReveal from '../components/ui/SectionReveal';
 import AdminEventTeamsModal from '../components/events/AdminEventTeamsModal';
 import { ApiError } from '../lib/api';
 import {
+  archiveAdminEvent,
   createAdminEvent,
   importProjectDoomsday,
   downloadAdminEventRegistrations,
   getAdminEventRegistrations,
   getAdminEvents,
   uploadAdminEventPoster,
+  restoreAdminEvent,
   updateAdminEvent,
   type AdminEventRegistrationStudent,
   type AdminEventRegistrationSummary,
@@ -565,6 +567,10 @@ const AdminDashboard = () => {
   const [registrationsError, setRegistrationsError] = useState<AdminRequestError | null>(null);
   const [registrationsDownloading, setRegistrationsDownloading] = useState(false);
   const [teamsEvent, setTeamsEvent] = useState<EventSummary | null>(null);
+  const [removingEvent, setRemovingEvent] = useState<EventSummary | null>(null);
+  const [eventArchiveSubmitting, setEventArchiveSubmitting] = useState(false);
+  const [eventArchiveError, setEventArchiveError] = useState<AdminRequestError | null>(null);
+  const [restoringEventId, setRestoringEventId] = useState<string | null>(null);
   const [weeklyContests, setWeeklyContests] = useState<AdminWeeklyContest[]>([]);
   const [weeklyContestsLoading, setWeeklyContestsLoading] = useState(true);
   const [weeklyContestsError, setWeeklyContestsError] = useState<AdminRequestError | null>(null);
@@ -1292,6 +1298,63 @@ const AdminDashboard = () => {
     } finally {
       setEventSubmitting(false);
       setEventSubmitLabel('');
+    }
+  };
+
+  const closeRemoveEventConfirm = () => {
+    if (eventArchiveSubmitting) return;
+    setRemovingEvent(null);
+    setEventArchiveError(null);
+  };
+
+  const handleConfirmRemoveEvent = async () => {
+    if (!removingEvent || eventArchiveSubmitting) return;
+    setEventArchiveSubmitting(true);
+    setEventArchiveError(null);
+    setEventsError(null);
+    setEventsNotice(null);
+
+    try {
+      const response = await archiveAdminEvent(removingEvent.id);
+      setEvents((current) =>
+        current.map((item) => item.id === response.event.id ? response.event : item)
+      );
+      setEventsNotice(response.message ?? 'Event removed from public listings.');
+      setRemovingEvent(null);
+    } catch (error) {
+      const requestError = classifyAdminError(error, 'Unable to remove event.');
+      if (isGlobalAuthorizationError(requestError)) {
+        setGlobalAuthError(requestError);
+        setRemovingEvent(null);
+      } else {
+        setEventArchiveError(requestError);
+      }
+    } finally {
+      setEventArchiveSubmitting(false);
+    }
+  };
+
+  const handleRestoreEvent = async (event: EventSummary) => {
+    if (restoringEventId) return;
+    setRestoringEventId(event.id);
+    setEventsError(null);
+    setEventsNotice(null);
+
+    try {
+      const response = await restoreAdminEvent(event.id);
+      setEvents((current) =>
+        current.map((item) => item.id === response.event.id ? response.event : item)
+      );
+      setEventsNotice(response.message ?? 'Event restored successfully.');
+    } catch (error) {
+      const requestError = classifyAdminError(error, 'Unable to restore event.');
+      if (isGlobalAuthorizationError(requestError)) {
+        setGlobalAuthError(requestError);
+      } else {
+        setEventsError(requestError);
+      }
+    } finally {
+      setRestoringEventId(null);
     }
   };
 
@@ -2028,6 +2091,8 @@ const AdminDashboard = () => {
   const registrationClosesAt = formatDateTime(registration?.registrationClosesAt);
   const filtersActive = Boolean(search.trim() || branch.trim() || year || status || domain);
   const dppTypeLocked = Boolean(editingDpp && editingDpp.firstOpenCount > 0);
+  const activeEvents = events.filter((event) => event.published !== false);
+  const archivedEvents = events.filter((event) => event.published === false);
 
   return (
     <>
@@ -2268,8 +2333,14 @@ const AdminDashboard = () => {
                 No events have been created yet.
               </div>
             ) : (
+              <div className="space-y-6">
+              {activeEvents.length === 0 ? (
+                <div className="rounded-card border border-line/80 bg-surface/80 p-8 text-center text-sm text-ink-muted">
+                  No active events. Archived events remain available below.
+                </div>
+              ) : (
               <div className="grid gap-4 xl:grid-cols-2">
-                {events.map((event) => (
+                {activeEvents.map((event) => (
                   <article key={event.id} className="rounded-card border border-line/80 bg-glass/60 p-4 shadow-soft">
                     <div className="grid gap-4 sm:grid-cols-[8rem_minmax(0,1fr)]">
                       <div className="aspect-[16/10] overflow-hidden rounded-control border border-line bg-surface-muted">
@@ -2336,11 +2407,71 @@ const AdminDashboard = () => {
                             <Pencil className="size-4" aria-hidden="true" />
                             Edit
                           </button>
+                          <button
+                            type="button"
+                            onClick={() => { setRemovingEvent(event); setEventArchiveError(null); }}
+                            className="btn min-h-11 rounded-full border border-rose/30 bg-rose/10 px-4 text-rose-text hover:bg-rose/20"
+                          >
+                            <Trash2 className="size-4" aria-hidden="true" />
+                            Remove Event
+                          </button>
                         </div>
                       </div>
                     </div>
                   </article>
                 ))}
+              </div>
+              )}
+
+              {archivedEvents.length > 0 && (
+                <section aria-labelledby="archived-events-heading" className="rounded-card border border-line/80 bg-surface-muted/35 p-4 sm:p-5">
+                  <div>
+                    <p className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-ink-subtle">Archive</p>
+                    <h3 id="archived-events-heading" className="mt-1 font-display text-xl font-semibold text-ink">Archived Events</h3>
+                    <p className="mt-1 text-sm text-ink-muted">Hidden from public listings. Existing registrations and teams are preserved.</p>
+                  </div>
+                  <div className="mt-4 grid gap-3 lg:grid-cols-2">
+                    {archivedEvents.map((event) => (
+                      <article key={event.id} className="rounded-control border border-line/80 bg-surface/80 p-4">
+                        <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                          <div className="min-w-0">
+                            <h4 className="break-words font-semibold text-ink">{event.title}</h4>
+                            <p className="mt-1 text-sm text-ink-muted">{formatDateTime(event.eventDateTime)} | {event.registrationCount} / {event.maxRegistrations} registered</p>
+                          </div>
+                          <span className="inline-flex w-fit rounded-full border border-line px-3 py-1 text-xs font-bold uppercase text-ink-muted">Archived</span>
+                        </div>
+                        <div className="mt-4 flex flex-wrap gap-2">
+                          <button
+                            type="button"
+                            onClick={() => event.participationType === 'team' ? setTeamsEvent(event) : void openRegistrationsModal(event)}
+                            className="btn btn-secondary rounded-full"
+                          >
+                            <Users className="size-4" aria-hidden="true" />
+                            {event.participationType === 'team' ? 'View Teams' : 'View Registrations'}
+                          </button>
+                          <button type="button" onClick={() => openEditEventModal(event)} className="btn btn-secondary rounded-full">
+                            <Pencil className="size-4" aria-hidden="true" />
+                            Edit
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => void handleRestoreEvent(event)}
+                            disabled={restoringEventId === event.id}
+                            className="btn btn-primary rounded-full"
+                          >
+                            {restoringEventId === event.id ? (
+                              <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+                            ) : (
+                              <RefreshCw className="size-4" aria-hidden="true" />
+                            )}
+                            {restoringEventId === event.id ? 'Restoring...' : 'Restore'}
+                          </button>
+                        </div>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              )}
               </div>
             )}
           </div>
@@ -3909,6 +4040,60 @@ const AdminDashboard = () => {
                     <Trash2 className="size-4" aria-hidden="true" />
                   )}
                   {weeklyContestRemoveSubmitting ? 'Removing...' : 'Remove Contest'}
+                </button>
+              </div>
+            </section>
+          </div>
+        )}
+
+        {removingEvent && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center bg-canvas/70 p-4 backdrop-blur-md">
+            <section
+              role="dialog"
+              aria-modal="true"
+              aria-labelledby="remove-event-heading"
+              className="ui-panel-glass w-full max-w-lg border-rose/30 p-5 shadow-glass sm:p-6"
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-rose-text">Remove Event</p>
+                  <h2 id="remove-event-heading" className="mt-1 break-words font-display text-2xl font-semibold text-ink">
+                    Remove &quot;{removingEvent.title}&quot;?
+                  </h2>
+                </div>
+                <button
+                  type="button"
+                  className="btn btn-ghost btn-icon shrink-0"
+                  onClick={closeRemoveEventConfirm}
+                  disabled={eventArchiveSubmitting}
+                  aria-label="Close remove event confirmation"
+                >
+                  <X className="size-5" aria-hidden="true" />
+                </button>
+              </div>
+
+              <div className="mt-5 rounded-card border border-line/80 bg-surface/80 p-4 text-sm leading-6 text-ink-muted">
+                This event will disappear from public event listings and stop accepting new registrations or invitation joins. Existing teams, registrations, and historical data will be preserved, and the event can be restored later.
+              </div>
+
+              {eventArchiveError && (
+                <div className="mt-4"><InlineFeedback kind="error">{eventArchiveError.message}</InlineFeedback></div>
+              )}
+
+              <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+                <button type="button" className="btn btn-secondary" onClick={closeRemoveEventConfirm} disabled={eventArchiveSubmitting}>Cancel</button>
+                <button
+                  type="button"
+                  className="btn min-h-11 rounded-full border border-rose/30 bg-rose/10 px-4 text-rose-text hover:bg-rose/20"
+                  onClick={() => void handleConfirmRemoveEvent()}
+                  disabled={eventArchiveSubmitting}
+                >
+                  {eventArchiveSubmitting ? (
+                    <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+                  ) : (
+                    <Trash2 className="size-4" aria-hidden="true" />
+                  )}
+                  {eventArchiveSubmitting ? 'Removing...' : 'Remove Event'}
                 </button>
               </div>
             </section>

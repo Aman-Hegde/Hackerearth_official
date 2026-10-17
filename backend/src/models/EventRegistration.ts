@@ -4,6 +4,7 @@ export interface IEventRegistration extends Document {
   eventId: Types.ObjectId;
   studentId: Types.ObjectId;
   contactNumber?: string;
+  branch?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -26,6 +27,11 @@ const eventRegistrationSchema = new Schema<IEventRegistration>(
       type: String,
       trim: true,
       match: [/^[6-9]\d{9}$/, "Contact number must be a valid Indian mobile number"],
+    },
+    branch: {
+      type: String,
+      trim: true,
+      maxlength: 160,
     },
   },
   {

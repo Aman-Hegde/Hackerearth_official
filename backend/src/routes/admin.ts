@@ -14,6 +14,7 @@ import {
 import { authenticate } from "../middleware/authenticate";
 import { authorize } from "../middleware/authorize";
 import {
+  archiveAdminEvent,
   createAdminEvent,
   importProjectDoomsday,
   getAdminEvent,
@@ -22,6 +23,7 @@ import {
   exportAdminEventRegistrations,
   uploadAdminEventPoster,
   updateAdminEvent,
+  restoreAdminEvent,
 } from "../controllers/eventController";
 import { uploadEventPosterMiddleware } from "../middleware/eventPosterUpload";
 import {
@@ -61,6 +63,8 @@ router.get("/events/:eventId/teams", getAdminEventTeams);
 router.get("/events/:eventId/registrations/export", exportAdminEventRegistrations);
 router.get("/events/:eventId/registrations", getAdminEventRegistrations);
 router.get("/events/:eventId", getAdminEvent);
+router.patch("/events/:eventId/archive", archiveAdminEvent);
+router.patch("/events/:eventId/restore", restoreAdminEvent);
 router.patch("/events/:eventId", updateAdminEvent);
 router.post("/weekly-contests", createAdminWeeklyContest);
 router.get("/weekly-contests", getAdminWeeklyContests);

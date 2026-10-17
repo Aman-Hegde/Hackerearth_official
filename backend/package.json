@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon --watch src --ext ts --exec ts-node --files src/index.ts",
+    "dev:test-local": "nodemon --watch src --ext ts --exec ts-node --files src/startLocalTest.ts",
     "build": "tsc",
     "start": "node dist/index.js",
     "test:db": "ts-node src/testDb.ts",
@@ -11,7 +12,10 @@
     "test:leaderboard-search-ranks": "ts-node src/scripts/testLeaderboardSearchRanks.ts",
     "test:events": "npm run build && node --test tests/eventPermissions.test.cjs",
     "test:event-teams": "npm run build && node --test tests/eventTeamRegistration.test.cjs",
-    "create:admin": "ts-node --files src/scripts/createAdmin.ts"
+    "test:local-safety": "npm run build && node --test tests/localTestSafety.test.cjs",
+    "test:local-poster": "npm run build && node --test tests/localPosterStorage.test.cjs",
+    "create:admin": "ts-node --files src/scripts/createAdmin.ts",
+    "create:admin:test-local": "ts-node --files src/scripts/createLocalTestAdmin.ts"
   },
   "keywords": [],
   "author": "",
@@ -28,7 +32,7 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.9.0",
     "multer": "^2.4.0",
-    "nodemailer": "^9.0.3",
+    "nodemailer": "10.1.2",
     "serverless-http": "^3.2.0"
   },
   "devDependencies": {
@@ -38,9 +42,11 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.3.0",
     "@types/node": "^24.2.0",
-    "@types/nodemailer": "^8.0.1",
     "nodemon": "^3.1.10",
     "ts-node": "^10.9.2",
     "typescript": "5.9.2"
+  },
+  "engines": {
+    "node": ">=20.19.0"
   }
 }

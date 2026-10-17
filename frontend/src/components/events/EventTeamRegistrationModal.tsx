@@ -60,7 +60,7 @@ const EventTeamRegistrationModal = ({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [contactNumber, setContactNumber] = useState(user?.contactNumber ?? "");
-  const [collegeName, setCollegeName] = useState("");
+  const [branch, setBranch] = useState(user?.branch ?? "");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -141,20 +141,24 @@ const EventTeamRegistrationModal = ({
       setError("Load a valid invitation before joining.");
       return;
     }
-    if (!user && (!name.trim() || !email.trim() || !collegeName.trim())) {
-      setError("Enter your full name, email address, contact number, and college name.");
+    if (branch.trim().length < 2 || branch.trim().length > 160) {
+      setError("Enter a valid branch name.");
+      return;
+    }
+    if (!user && (!name.trim() || !email.trim())) {
+      setError("Enter your full name, email address, contact number, and branch name.");
       return;
     }
 
     setSubmitting(true);
     setError("");
     const participant = user
-      ? { contactNumber: normalizedContact }
+      ? { contactNumber: normalizedContact, branch: branch.trim() }
       : {
           name: name.trim(),
           email: email.trim(),
           contactNumber: normalizedContact,
-          collegeName: collegeName.trim(),
+          branch: branch.trim(),
         };
     try {
       const response = mode === "create"
@@ -235,29 +239,31 @@ const EventTeamRegistrationModal = ({
                     <span className="mb-2 block text-sm font-semibold text-ink">Email Address</span>
                     <input type="email" className={inputClass} value={email} onChange={(e) => setEmail(e.target.value)} maxLength={254} required />
                   </label>
-                  <label className="sm:col-span-2">
-                    <span className="mb-2 block text-sm font-semibold text-ink">College Name</span>
-                    <input className={inputClass} value={collegeName} onChange={(e) => setCollegeName(e.target.value)} maxLength={160} required />
-                  </label>
                 </div>
               )}
 
               {(mode === "create" || preview) && (
-                <label className="block">
-                  <span className="mb-2 block text-sm font-semibold text-ink">Contact Number</span>
-                  <span className="flex min-h-11 overflow-hidden rounded-control border border-line-strong bg-surface/95 shadow-soft focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/20">
-                    <span className="flex items-center border-r border-line px-3 text-sm font-semibold text-ink-muted">+91</span>
-                    <input
-                      type="tel"
-                      inputMode="numeric"
-                      className="min-w-0 flex-1 bg-transparent px-3 py-2 text-sm text-ink outline-none placeholder:text-ink-subtle"
-                      value={contactNumber}
-                      onChange={(e) => handleContactChange(e.target.value)}
-                      placeholder="Enter mobile number"
-                      required
-                    />
-                  </span>
-                </label>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-semibold text-ink">Branch Name</span>
+                    <input className={inputClass} value={branch} onChange={(e) => setBranch(e.target.value)} maxLength={160} placeholder="Enter branch name" required />
+                  </label>
+                  <label className="block">
+                    <span className="mb-2 block text-sm font-semibold text-ink">Contact Number</span>
+                    <span className="flex min-h-11 overflow-hidden rounded-control border border-line-strong bg-surface/95 shadow-soft focus-within:border-primary/60 focus-within:ring-2 focus-within:ring-primary/20">
+                      <span className="flex items-center border-r border-line px-3 text-sm font-semibold text-ink-muted">+91</span>
+                      <input
+                        type="tel"
+                        inputMode="numeric"
+                        className="min-w-0 flex-1 bg-transparent px-3 py-2 text-sm text-ink outline-none placeholder:text-ink-subtle"
+                        value={contactNumber}
+                        onChange={(e) => handleContactChange(e.target.value)}
+                        placeholder="Enter mobile number"
+                        required
+                      />
+                    </span>
+                  </label>
+                </div>
               )}
 
               {error && <p role="alert" className="rounded-control border border-rose/30 bg-rose/10 px-4 py-3 text-sm font-semibold text-rose-text">{error}</p>}

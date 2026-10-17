@@ -59,7 +59,7 @@ This backend provides secure authentication, role-based authorization, OTP verif
 
 # Tech Stack
 
-- Node.js
+- Node.js 20.19.0 or newer
 - Express.js
 - TypeScript
 - MongoDB Atlas
@@ -100,7 +100,7 @@ backend/
 
 # Requirements
 
-- Node.js
+- Node.js 20.19.0 or newer
 - npm
 - MongoDB Atlas
 - SMTP Email Account

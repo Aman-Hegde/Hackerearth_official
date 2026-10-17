@@ -2,8 +2,8 @@ import { useEffect, useRef, useState, type FC, type FocusEvent } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { Home, Menu, Moon, Sun } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { useTheme } from '../context/ThemeContext';
+import { useAuth } from '../context/authContextValue';
+import { useTheme } from '../context/themeContextValue';
 import UserMenu from './UserMenu';
 import logo from '../assets/image.png';
 

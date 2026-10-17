@@ -1,6 +1,15 @@
 import mongoose from "mongoose";
+import {
+  assertVerifiedLocalTestMode,
+  isLocalTestEnvironmentLoaded,
+} from "./localTestEnvironment";
 
 export const connectDatabase = async (): Promise<void> => {
+  assertVerifiedLocalTestMode(
+    process.env,
+    isLocalTestEnvironmentLoaded()
+  );
+
   const mongoUri = process.env.MONGODB_URI;
 
   if (!mongoUri) {
@@ -11,7 +20,11 @@ export const connectDatabase = async (): Promise<void> => {
     await mongoose.connect(mongoUri);
     console.log("MongoDB connected successfully.");
   } catch (error) {
-    console.error("MongoDB connection failed:", error);
+    if (process.env.LOCAL_TEST_MODE === "true") {
+      console.error("Local test MongoDB connection failed.");
+    } else {
+      console.error("MongoDB connection failed:", error);
+    }
     throw error;
   }
 };

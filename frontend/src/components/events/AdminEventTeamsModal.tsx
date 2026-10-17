@@ -122,9 +122,9 @@ const AdminEventTeamsModal = ({ event, onClose }: Props) => {
                     </div>
                   </div>
                   <div className="max-w-full overflow-x-auto overscroll-x-contain">
-                    <table className="min-w-[68rem] w-full border-collapse text-left text-sm">
+                    <table className="min-w-[60rem] w-full border-collapse text-left text-sm">
                       <thead className="border-b border-line bg-surface-muted/50 text-xs uppercase text-ink-muted">
-                        <tr>{["Participant", "Role", "USN", "Email", "Phone", "College", "Branch", "Year", "Joined"].map((heading) => <th key={heading} className="px-4 py-3 font-semibold">{heading}</th>)}</tr>
+                        <tr>{["Participant", "Role", "USN", "Email", "Phone", "Branch", "Year", "Joined"].map((heading) => <th key={heading} className="px-4 py-3 font-semibold">{heading}</th>)}</tr>
                       </thead>
                       <tbody className="divide-y divide-line/70">
                         {team.members.map((member) => (
@@ -134,7 +134,6 @@ const AdminEventTeamsModal = ({ event, onClose }: Props) => {
                             <td className="px-4 py-3 font-mono text-xs text-ink-muted">{member.usn || "-"}</td>
                             <td className="px-4 py-3 text-ink-muted">{member.email || "-"}</td>
                             <td className="px-4 py-3 text-ink-muted">{member.contactNumber || "-"}</td>
-                            <td className="px-4 py-3 text-ink-muted">{member.collegeName || "-"}</td>
                             <td className="px-4 py-3 text-ink-muted">{member.branch || "-"}</td>
                             <td className="px-4 py-3 text-ink-muted">{member.year ?? "-"}</td>
                             <td className="px-4 py-3 text-ink-muted">{formatDateTime(member.joinedAt)}</td>

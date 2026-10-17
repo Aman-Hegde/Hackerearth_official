@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { useTheme } from "../context/ThemeContext"; // Adjust path to your theme context
+import { useTheme } from "../context/themeContextValue"; // Adjust path to your theme context
 import { Quote } from "lucide-react";
 
 // Testimonial Card Component
