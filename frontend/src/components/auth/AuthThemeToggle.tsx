@@ -1,5 +1,5 @@
 import { Moon, Sun } from "lucide-react";
-import { useTheme } from "../../context/ThemeContext";
+import { useTheme } from "../../context/themeContextValue";
 
 export default function AuthThemeToggle() {
   const { isDark, toggleTheme } = useTheme();

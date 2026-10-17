@@ -1,38 +1,13 @@
 import React, {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useState,
 } from "react";
 import { ApiError, apiRequest } from "../lib/api";
+import { AuthContext, type User } from "./authContextValue";
 
-export type UserRole = "student" | "admin";
-export type EnrolledDomain = "Web Development" | "DSA" | "Aptitude";
-
-export interface User {
-  id: string;
-  name: string;
-  email: string;
-  usn: string;
-  contactNumber: string;
-  branch: string;
-  year: number;
-  enrolledDomains: EnrolledDomain[];
-  role: UserRole;
-  emailVerified: boolean;
-  isActive?: boolean;
-}
-
-interface AuthContextType {
-  user: User | null;
-  isAuthenticated: boolean;
-  isLoading: boolean;
-  login: (email: string, password: string) => Promise<User>;
-  logout: () => Promise<void>;
-  refreshUser: () => Promise<User | null>;
-}
+export type { EnrolledDomain, User, UserRole } from "./authContextValue";
 
 interface UserResponse {
   success: boolean;
@@ -43,16 +18,6 @@ interface LoginResponse extends UserResponse {
   message: string;
   redirectTo: string;
 }
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
-
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider");
-  }
-  return context;
-};
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   children,

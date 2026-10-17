@@ -6,8 +6,17 @@ import EventRegistration from "../models/EventRegistration";
 import User from "../models/user";
 import GuestEventRegistration, { GuestParticipant } from "../models/GuestEventRegistration";
 import { uploadEventPosterToCloudinary } from "../config/cloudinary";
-
-type EventStatus = "open" | "full" | "closed" | "ongoing" | "past";
+import {
+  InvalidLocalPosterError,
+  storeLocalTestEventPoster,
+} from "../services/localEventPosterStorage";
+import EventTeam from "../models/EventTeam";
+import {
+  getEventEligibility,
+  getEventParticipationType,
+  getEventStatus,
+  isEventRegistrationOpen,
+} from "../services/eventRules";
 
 interface EventBody {
   tagline?: unknown;
@@ -24,6 +33,10 @@ interface EventBody {
   registrationDeadline?: unknown;
   maxRegistrations?: unknown;
   active?: unknown;
+  participationType?: unknown;
+  eligibility?: unknown;
+  minTeamSize?: unknown;
+  maxTeamSize?: unknown;
 }
 
 const MAX_EVENT_TITLE_LENGTH = 120;
@@ -31,6 +44,7 @@ const MAX_EVENT_DESCRIPTION_LENGTH = 2000;
 const MAX_EVENT_VENUE_LENGTH = 160;
 const MAX_POSTER_URL_LENGTH = 1000;
 const MAX_EVENT_REGISTRATIONS = 10000;
+const MAX_TEAM_SIZE = 100;
 const EVENT_REGISTRATION_STUDENT_FIELDS =
   "name usn email contactNumber year";
 
@@ -56,41 +70,6 @@ const parsePositiveInteger = (
     : null;
 };
 
-const getEventStatus = (event: {
-  eventDateTime: Date;
-  eventEndDateTime?: Date | null;
-  registrationDeadline: Date;
-  registrationCount: number;
-  maxRegistrations: number;
-  active: boolean;
-}): EventStatus => {
-  const now = new Date();
-  const eventEndDateTime =
-    event.eventEndDateTime instanceof Date && !Number.isNaN(event.eventEndDateTime.getTime())
-      ? event.eventEndDateTime
-      : null;
-
-  if (eventEndDateTime) {
-    if (now >= eventEndDateTime) return "past";
-    if (now >= event.eventDateTime) return "ongoing";
-  } else if (now >= event.eventDateTime) {
-    return "past";
-  }
-
-  if (event.registrationCount >= event.maxRegistrations) return "full";
-  if (!event.active || now >= event.registrationDeadline) return "closed";
-  return "open";
-};
-
-const getRegistrationOpen = (event: {
-  eventDateTime: Date;
-  eventEndDateTime?: Date | null;
-  registrationDeadline: Date;
-  registrationCount: number;
-  maxRegistrations: number;
-  active: boolean;
-}) => getEventStatus(event) === "open";
-
 const toSafeEvent = (event: IEvent, isRegistered = false) => ({
   id: event._id.toString(),
   tagline: event.tagline ?? "",
@@ -107,9 +86,16 @@ const toSafeEvent = (event: IEvent, isRegistered = false) => ({
   registrationDeadline: event.registrationDeadline,
   maxRegistrations: event.maxRegistrations,
   registrationCount: event.registrationCount,
+  participationType: getEventParticipationType(event),
+  eligibility: getEventEligibility(event),
+  minTeamSize:
+    getEventParticipationType(event) === "team" ? event.minTeamSize ?? null : null,
+  maxTeamSize:
+    getEventParticipationType(event) === "team" ? event.maxTeamSize ?? null : null,
   active: event.active,
   status: getEventStatus(event),
-  registrationOpen: event.published !== false && getRegistrationOpen(event),
+  registrationOpen:
+    event.published !== false && isEventRegistrationOpen(event),
   isRegistered,
   createdAt: event.createdAt,
   updatedAt: event.updatedAt,
@@ -118,6 +104,7 @@ const toSafeEvent = (event: IEvent, isRegistered = false) => ({
 const toEventRegistrationStudent = (registration: {
   _id: unknown;
   createdAt: Date;
+  contactNumber?: string;
   studentId?: {
     name?: string;
     usn?: string;
@@ -130,7 +117,8 @@ const toEventRegistrationStudent = (registration: {
   name: registration.studentId?.name ?? "Unknown student",
   usn: registration.studentId?.usn ?? "",
   email: registration.studentId?.email ?? "",
-  contactNumber: registration.studentId?.contactNumber ?? "",
+  contactNumber:
+    registration.contactNumber ?? registration.studentId?.contactNumber ?? "",
   year: registration.studentId?.year ?? null,
   registeredAt: registration.createdAt,
 });
@@ -171,6 +159,10 @@ const validateEventPayload = (
     registrationDeadline: Date;
     maxRegistrations: number;
     active: boolean;
+    participationType: "individual" | "team";
+    eligibility: "members_only" | "public";
+    minTeamSize: number;
+    maxTeamSize: number;
   }> = {};
 
   if (body.tagline !== undefined) {
@@ -238,9 +230,6 @@ const validateEventPayload = (
   if (body.eventDateTime !== undefined || required) {
     const eventDateTime = parseDate(body.eventDateTime);
     if (!eventDateTime) return { error: "A valid event date and time is required." };
-    if (!options.partial && eventDateTime <= new Date()) {
-      return { error: "Event date and time must be in the future." };
-    }
     update.eventDateTime = eventDateTime;
   }
 
@@ -285,6 +274,29 @@ const validateEventPayload = (
     update.active = body.active;
   }
 
+  if (body.participationType !== undefined) {
+    if (body.participationType !== "individual" && body.participationType !== "team") {
+      return { error: "Participation type must be individual or team." };
+    }
+    update.participationType = body.participationType;
+  }
+
+  if (body.eligibility !== undefined) {
+    if (body.eligibility !== "members_only" && body.eligibility !== "public") {
+      return { error: "Eligibility must be members_only or public." };
+    }
+    update.eligibility = body.eligibility;
+  }
+
+  for (const field of ["minTeamSize", "maxTeamSize"] as const) {
+    if (body[field] === undefined) continue;
+    const parsed = parsePositiveInteger(body[field], MAX_TEAM_SIZE);
+    if (!parsed || parsed < 2) {
+      return { error: "Team sizes must be whole numbers from 2 to 100." };
+    }
+    update[field] = parsed;
+  }
+
   return { update };
 };
 
@@ -327,8 +339,35 @@ export const createAdminEvent = async (
       });
     }
 
+    const participationType = validation.update.participationType ?? "individual";
+    if (
+      participationType === "team" &&
+      (!validation.update.minTeamSize ||
+        !validation.update.maxTeamSize ||
+        validation.update.minTeamSize > validation.update.maxTeamSize)
+    ) {
+      return res.status(400).json({
+        success: false,
+        code: "INVALID_TEAM_SIZE",
+        message: "Team events require valid minimum and maximum team sizes.",
+      });
+    }
+    if (
+      participationType === "individual" &&
+      (validation.update.minTeamSize !== undefined ||
+        validation.update.maxTeamSize !== undefined)
+    ) {
+      return res.status(400).json({
+        success: false,
+        code: "INVALID_TEAM_SIZE",
+        message: "Individual events cannot define team-size limits.",
+      });
+    }
+
     const event = await Event.create({
       ...validation.update,
+      participationType,
+      eligibility: validation.update.eligibility ?? "public",
       createdBy: new Types.ObjectId(req.auth.userId),
       active: validation.update.active ?? true,
     });
@@ -356,16 +395,27 @@ export const uploadAdminEventPoster = async (req: Request, res: Response) => {
       });
     }
 
-    const result = await uploadEventPosterToCloudinary(req.file.buffer);
+    const result =
+      process.env.LOCAL_TEST_MODE === "true"
+        ? await storeLocalTestEventPoster(req.file.buffer, req.file.mimetype)
+        : await uploadEventPosterToCloudinary(req.file.buffer);
 
     return res.status(200).json({
       success: true,
       poster: {
-        url: result.secure_url,
-        publicId: result.public_id,
+        url: "secure_url" in result ? result.secure_url : result.url,
+        publicId: "public_id" in result ? result.public_id : result.publicId,
       },
     });
-  } catch (_error) {
+  } catch (error) {
+    if (error instanceof InvalidLocalPosterError) {
+      return res.status(400).json({
+        success: false,
+        code: "INVALID_POSTER_CONTENT",
+        message: "Poster file contents must be a valid JPG, PNG, or WebP image.",
+      });
+    }
+
     return res.status(502).json({
       success: false,
       code: "POSTER_UPLOAD_FAILED",
@@ -465,6 +515,9 @@ export const updateAdminEvent = async (
       validation.update.eventEndDateTime ?? event.eventEndDateTime;
     const nextRegistrationDeadline =
       validation.update.registrationDeadline ?? event.registrationDeadline;
+    const currentParticipationType = getEventParticipationType(event);
+    const nextParticipationType =
+      validation.update.participationType ?? currentParticipationType;
 
     if (nextEventEndDateTime && nextEventEndDateTime <= nextEventDateTime) {
       return res.status(400).json({
@@ -482,7 +535,69 @@ export const updateAdminEvent = async (
       });
     }
 
+
+    const teams = await EventTeam.find({ eventId: event._id })
+      .select("currentMemberCount")
+      .lean()
+      .exec();
+    if (
+      nextParticipationType !== currentParticipationType &&
+      (event.registrationCount > 0 || teams.length > 0)
+    ) {
+      return res.status(409).json({
+        success: false,
+        code: "EVENT_PARTICIPATION_TYPE_LOCKED",
+        message: "Participation type cannot change after registrations exist.",
+      });
+    }
+
+    const nextMinTeamSize = validation.update.minTeamSize ?? event.minTeamSize;
+    const nextMaxTeamSize = validation.update.maxTeamSize ?? event.maxTeamSize;
+    if (nextParticipationType === "team") {
+      if (
+        !nextMinTeamSize ||
+        !nextMaxTeamSize ||
+        nextMinTeamSize > nextMaxTeamSize
+      ) {
+        return res.status(400).json({
+          success: false,
+          code: "INVALID_TEAM_SIZE",
+          message: "Team events require valid minimum and maximum team sizes.",
+        });
+      }
+
+      const currentMinTeamSize = event.minTeamSize ?? nextMinTeamSize;
+      const invalidatesTeam = teams.some(
+        (team) =>
+          team.currentMemberCount > nextMaxTeamSize ||
+          (team.currentMemberCount >= currentMinTeamSize &&
+            team.currentMemberCount < nextMinTeamSize)
+      );
+      if (invalidatesTeam) {
+        return res.status(409).json({
+          success: false,
+          code: "TEAM_SIZE_LIMIT_LOCKED",
+          message: "Team-size limits cannot invalidate an existing team.",
+        });
+      }
+    } else if (
+      validation.update.minTeamSize !== undefined ||
+      validation.update.maxTeamSize !== undefined
+    ) {
+      return res.status(400).json({
+        success: false,
+        code: "INVALID_TEAM_SIZE",
+        message: "Individual events cannot define team-size limits.",
+      });
+    }
+
     Object.assign(event, validation.update);
+    if (
+      currentParticipationType === "team" &&
+      nextParticipationType === "individual"
+    ) {
+      event.set({ minTeamSize: undefined, maxTeamSize: undefined });
+    }
     await event.save();
 
     return res.status(200).json({
@@ -497,6 +612,58 @@ export const updateAdminEvent = async (
     });
   }
 };
+
+const setAdminEventPublished = async (
+  req: Request<{ eventId: string }>,
+  res: Response,
+  published: boolean
+) => {
+  try {
+    const { eventId } = req.params;
+    if (!mongoose.Types.ObjectId.isValid(eventId)) {
+      return res.status(400).json({
+        success: false,
+        code: "INVALID_EVENT_ID",
+        message: "A valid event id is required.",
+      });
+    }
+
+    const event = await Event.findById(eventId).exec();
+    if (!event) {
+      return res.status(404).json({
+        success: false,
+        code: "EVENT_NOT_FOUND",
+        message: "Event not found.",
+      });
+    }
+
+    event.published = published;
+    await event.save();
+
+    return res.status(200).json({
+      success: true,
+      message: published
+        ? "Event restored successfully."
+        : "Event removed from public listings. Existing registrations and teams were preserved.",
+      event: toSafeEvent(event),
+    });
+  } catch (_error) {
+    return res.status(500).json({
+      success: false,
+      message: "Unexpected server error.",
+    });
+  }
+};
+
+export const archiveAdminEvent = (
+  req: Request<{ eventId: string }>,
+  res: Response
+) => setAdminEventPublished(req, res, false);
+
+export const restoreAdminEvent = (
+  req: Request<{ eventId: string }>,
+  res: Response
+) => setAdminEventPublished(req, res, true);
 
 export const getAdminEventRegistrations = async (
   req: Request<{ eventId: string }>,
@@ -683,18 +850,6 @@ export const registerForEvent = async (
     return res.status(400).json({ success: false, code: "INVALID_REGISTRATION",
       message: "Only participant registration fields are allowed." });
   }
-  let guest: GuestParticipant | undefined;
-  if (!req.auth) {
-    const input = body as Record<string, unknown>;
-    guest = { name: normalizeString(input.name), email: normalizeString(input.email).toLowerCase(),
-      contactNumber: normalizeString(input.contactNumber) };
-    if (guest.name.length < 2 || guest.name.length > 100 || guest.email.length > 254 ||
-        !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guest.email) || !/^\d{10}$/.test(guest.contactNumber)) {
-      return res.status(400).json({ success: false, code: "INVALID_PARTICIPANT",
-        message: "Enter your name, valid email, and 10-digit phone number." });
-    }
-  }
-
   const { eventId } = req.params;
   if (!mongoose.Types.ObjectId.isValid(eventId)) {
     return res.status(400).json({
@@ -707,6 +862,43 @@ export const registerForEvent = async (
   let session: mongoose.ClientSession | undefined;
 
   try {
+    const eventConfiguration = await Event.findById(eventId)
+      .select("participationType eligibility")
+      .exec();
+    if (!eventConfiguration) {
+      return res.status(404).json({
+        success: false,
+        code: "EVENT_NOT_FOUND",
+        message: "Event not found.",
+      });
+    }
+    if (getEventParticipationType(eventConfiguration) === "team") {
+      return res.status(409).json({
+        success: false,
+        code: "TEAM_REGISTRATION_REQUIRED",
+        message: "Use team registration for this event.",
+      });
+    }
+    if (getEventEligibility(eventConfiguration) === "members_only" && !req.auth) {
+      return res.status(401).json({
+        success: false,
+        code: "MEMBERS_ONLY_EVENT",
+        message: "Sign in with an active club account to register for this event.",
+      });
+    }
+
+    let guest: GuestParticipant | undefined;
+    if (!req.auth) {
+      const input = body as Record<string, unknown>;
+      guest = { name: normalizeString(input.name), email: normalizeString(input.email).toLowerCase(),
+        contactNumber: normalizeString(input.contactNumber) };
+      if (guest.name.length < 2 || guest.name.length > 100 || guest.email.length > 254 ||
+          !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guest.email) || !/^\d{10}$/.test(guest.contactNumber)) {
+        return res.status(400).json({ success: false, code: "INVALID_PARTICIPANT",
+          message: "Enter your name, valid email, and 10-digit phone number." });
+      }
+    }
+
     const student = req.auth ? await User.findOne({
       _id: req.auth.userId,
       role: { $in: ["student", "admin"] },
@@ -739,6 +931,10 @@ export const registerForEvent = async (
           published: { $ne: false },
           eventDateTime: { $gt: now },
           registrationDeadline: { $gt: now },
+          $or: [
+            { participationType: "individual" },
+            { participationType: { $exists: false } },
+          ],
           $expr: { $lt: ["$registrationCount", "$maxRegistrations"] },
         },
         { $inc: { registrationCount: 1 } },

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Trophy, Sparkles } from 'lucide-react';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../context/themeContextValue';
 
 const Achievements = () => {
   const { isDark } = useTheme();

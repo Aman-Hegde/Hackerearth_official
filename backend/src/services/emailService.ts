@@ -56,6 +56,9 @@ const BREVO_TRANSACTIONAL_EMAIL_URL =
 
 let transporter: Transporter | null = null;
 
+const isEmailDeliveryDisabled = (): boolean =>
+  process.env.EMAIL_DELIVERY_MODE === "disabled";
+
 const getRequiredEnv = (key: (typeof requiredEnvVars)[number]): string => {
   const value = process.env[key];
 
@@ -133,6 +136,11 @@ const escapeHtml = (value: string): string => {
 };
 
 export const verifyEmailTransport = async (): Promise<void> => {
+  if (isEmailDeliveryDisabled()) {
+    console.log("Email delivery is disabled for this environment.");
+    return;
+  }
+
   await getTransporter().verify();
   console.log("SMTP configuration is valid.");
 };
@@ -142,6 +150,10 @@ export const sendRegistrationOtpEmail = async ({
   recipientName,
   otp,
 }: RegistrationOtpEmailInput): Promise<void> => {
+  if (isEmailDeliveryDisabled()) {
+    return;
+  }
+
   const config = parseSmtpConfig();
   const safeRecipientName = escapeHtml(recipientName);
 
@@ -182,6 +194,10 @@ export const sendPasswordResetOtpEmail = async ({
   recipientName,
   otp,
 }: PasswordResetOtpEmailInput): Promise<void> => {
+  if (isEmailDeliveryDisabled()) {
+    return;
+  }
+
   const config = parseSmtpConfig();
   const safeRecipientName = escapeHtml(recipientName);
 
@@ -261,6 +277,10 @@ export const sendPasswordResetOtp = async ({
   name,
   otp,
 }: PasswordResetOtpInput): Promise<void> => {
+  if (isEmailDeliveryDisabled()) {
+    return;
+  }
+
   const provider = getEmailProvider();
 
   if (provider !== "brevo") {

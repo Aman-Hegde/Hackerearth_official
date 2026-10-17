@@ -9,16 +9,18 @@ const User = require('../dist/models/user').default;
 const Event = require('../dist/models/Event').default;
 const Registration = require('../dist/models/EventRegistration').default;
 const GuestRegistration = require('../dist/models/GuestEventRegistration').default;
+const EventTeam = require('../dist/models/EventTeam').default;
 const cloudinary = require('../dist/config/cloudinary');
+const localPosterStorage = require('../dist/services/localEventPosterStorage');
 const { generateAuthToken } = require('../dist/utils/jwt');
 const { AUTH_COOKIE_NAME } = require('../dist/utils/authCookie');
 process.env.JWT_SECRET = 'isolated-event-permission-test-secret';
 const id = '507f1f77bcf86cd799439011';
 const participant = { name: 'Guest Participant', email: 'guest@example.com', contactNumber: '9876543210' };
-const chain = (value) => ({ sort() { return this; }, select() { return this; }, populate() { return this; }, exec: async () => value });
+const chain = (value) => ({ sort() { return this; }, select() { return this; }, populate() { return this; }, lean() { return this; }, exec: async () => value });
 
 test('event API permission and participant registration regression suite', async (t) => {
-  let account, event, writes, registrations, guests, duplicate, unavailable, imported;
+  let account, event, writes, registrations, guests, duplicate, unavailable, imported, cloudUploads, localUploads;
   const reset = () => {
     account = { _id: new mongoose.Types.ObjectId(id), role: 'admin', isActive: true, emailVerified: true };
     event = { _id: new mongoose.Types.ObjectId(id), title: 'Workshop', description: 'Workshop description',
@@ -27,6 +29,7 @@ test('event API permission and participant registration regression suite', async
       registrationDeadline: new Date(Date.now() + 3600000), registrationCount: 0, maxRegistrations: 5,
       save: async () => { writes++; } };
     imported = null; writes = 0; registrations = []; guests = []; duplicate = false; unavailable = false;
+    cloudUploads = 0; localUploads = 0;
   };
   reset();
   t.mock.method(User, 'findById', () => chain(account));
@@ -45,10 +48,11 @@ test('event API permission and participant registration regression suite', async
     assert.deepEqual(filter.$expr, { $lt: ['$registrationCount', '$maxRegistrations'] });
     assert.deepEqual(update, { $inc: { registrationCount: 1 } });
     assert.ok(options.session);
-    return { exec: async () => { if (unavailable) return null; writes++; event.registrationCount++; return event; } };
+    return { exec: async () => { if (unavailable || event.published === false) return null; writes++; event.registrationCount++; return event; } };
   });
   t.mock.method(Registration, 'find', () => chain(registrations));
   t.mock.method(GuestRegistration, 'find', () => chain(guests));
+  t.mock.method(EventTeam, 'find', () => chain([]));
   t.mock.method(Registration, 'create', async (docs) => { if (duplicate) throw { code: 11000 }; registrations.push(...docs); return docs; });
   t.mock.method(GuestRegistration, 'create', async (docs) => { if (duplicate) throw { code: 11000 }; guests.push(...docs); return docs; });
   t.mock.method(mongoose, 'startSession', async () => {
@@ -59,7 +63,15 @@ test('event API permission and participant registration regression suite', async
     return session;
   });
   t.mock.method(cloudinary, 'uploadEventPosterToCloudinary', async () => {
-    writes++; return { secure_url: 'https://example.com/poster.png', public_id: 'poster' };
+    writes++; cloudUploads++; return { secure_url: 'https://example.com/poster.png', public_id: 'poster' };
+  });
+  t.mock.method(localPosterStorage, 'storeLocalTestEventPoster', async () => {
+    writes++; localUploads++;
+    return {
+      url: 'http://localhost:5000/local-test-uploads/event-posters/test-poster.png',
+      publicId: 'local-test/event-posters/test-poster.png',
+      filePath: 'unused-test-path',
+    };
   });
   const app = express(); app.use(express.json(), cookieParser());
   app.use('/api/admin', require('../dist/routes/admin').default);
@@ -76,7 +88,7 @@ test('event API permission and participant registration regression suite', async
   });
   const management = [['POST', '/events/import/project-doomsday'], ['GET', '/events'], ['POST', '/events'], ['POST', '/events/poster'],
     ['GET', `/events/${id}`], ['PATCH', `/events/${id}`], ['PUT', `/events/${id}`], ['DELETE', `/events/${id}`],
-    ['PATCH', `/events/${id}/archive`], ['POST', `/events/${id}/publish`],
+    ['PATCH', `/events/${id}/archive`], ['PATCH', `/events/${id}/restore`], ['POST', `/events/${id}/publish`],
     ['DELETE', `/events/${id}/poster`], ['GET', `/events/${id}/registrations`],
     ['GET', `/events/${id}/registrations/export`], ['DELETE', `/events/${id}/registrations/${id}`]];
   for (const role of [undefined, 'student']) {
@@ -117,6 +129,52 @@ test('event API permission and participant registration regression suite', async
     }
     const form = new FormData(); form.append('poster', new Blob(['image'], { type: 'image/png' }), 'poster.png');
     assert.equal((await fetch(base + '/api/admin/events/poster', { method: 'POST', headers: { authorization: `Bearer ${tokens.admin}` }, body: form })).status, 200);
+    assert.equal(cloudUploads, 1);
+    assert.equal(localUploads, 0);
+  });
+  await t.test('local-test poster upload uses local storage and never calls Cloudinary', async () => {
+    reset();
+    const previousLocalTestMode = process.env.LOCAL_TEST_MODE;
+    process.env.LOCAL_TEST_MODE = 'true';
+    try {
+      const form = new FormData();
+      form.append('poster', new Blob(['image'], { type: 'image/png' }), 'poster.png');
+      const response = await fetch(base + '/api/admin/events/poster', {
+        method: 'POST', headers: { authorization: `Bearer ${tokens.admin}` }, body: form,
+      });
+      assert.equal(response.status, 200);
+      const body = await response.json();
+      assert.equal(body.poster.url, 'http://localhost:5000/local-test-uploads/event-posters/test-poster.png');
+      assert.equal(localUploads, 1);
+      assert.equal(cloudUploads, 0);
+
+      const unsupported = new FormData();
+      unsupported.append('poster', new Blob(['plain text'], { type: 'text/plain' }), 'poster.txt');
+      const rejected = await fetch(base + '/api/admin/events/poster', {
+        method: 'POST', headers: { authorization: `Bearer ${tokens.admin}` }, body: unsupported,
+      });
+      assert.equal(rejected.status, 400);
+      assert.equal((await rejected.json()).code, 'UNSUPPORTED_POSTER_TYPE');
+      assert.equal(localUploads, 1);
+      assert.equal(cloudUploads, 0);
+
+      const oversized = new FormData();
+      oversized.append(
+        'poster',
+        new Blob([new Uint8Array(5 * 1024 * 1024 + 1)], { type: 'image/png' }),
+        'oversized.png'
+      );
+      const oversizedResponse = await fetch(base + '/api/admin/events/poster', {
+        method: 'POST', headers: { authorization: `Bearer ${tokens.admin}` }, body: oversized,
+      });
+      assert.equal(oversizedResponse.status, 400);
+      assert.equal((await oversizedResponse.json()).code, 'POSTER_TOO_LARGE');
+      assert.equal(localUploads, 1);
+      assert.equal(cloudUploads, 0);
+    } finally {
+      if (previousLocalTestMode === undefined) delete process.env.LOCAL_TEST_MODE;
+      else process.env.LOCAL_TEST_MODE = previousLocalTestMode;
+    }
   });
   for (const role of [undefined, 'student', 'admin']) {
     await t.test(`${role || 'guest'} can view and register for eligible events`, async () => {
@@ -169,6 +227,37 @@ test('event API permission and participant registration regression suite', async
     assert.equal((await (await request('GET', '/api/events')).json()).past.length, 1);
     for (const input of [{ imageUrls: ['javascript:alert(1)'] }, { imageUrls: ['/events/../secret.webp'] }, { rounds: [7] }, { published: 'true' }, { imageUrls: Array(21).fill('https://example.com/a.webp') }])
       assert.equal((await request('PATCH', `/api/admin/events/${id}`, 'admin', input)).status, 400);
+  });
+  await t.test('admin event archive is reversible, hidden publicly, and blocks registration without deleting history', async () => {
+    reset();
+    registrations.push({ eventId: event._id, studentId: account._id, createdAt: new Date() });
+    const preservedRegistrations = registrations.length;
+
+    const archived = await request('PATCH', `/api/admin/events/${id}/archive`, 'admin', {});
+    assert.equal(archived.status, 200);
+    assert.equal(event.published, false);
+    assert.equal((await (await request('GET', '/api/events')).json()).upcoming.length, 0);
+    assert.equal((await request('POST', `/api/events/${id}/register`, undefined, participant)).status, 409);
+    assert.equal(registrations.length, preservedRegistrations);
+
+    const restored = await request('PATCH', `/api/admin/events/${id}/restore`, 'admin', {});
+    assert.equal(restored.status, 200);
+    assert.equal(event.published, true);
+    assert.equal((await (await request('GET', '/api/events')).json()).upcoming.length, 1);
+  });
+  await t.test('admin can create a historical event with its actual past dates', async () => {
+    reset();
+    const response = await request('POST', '/api/admin/events', 'admin', {
+      title: 'Historical Showcase', description: 'A completed event.', venue: 'Campus',
+      posterUrl: 'https://example.com/history.png',
+      eventDateTime: '2025-01-01T10:00:00.000Z',
+      eventEndDateTime: '2025-01-01T12:00:00.000Z',
+      registrationDeadline: '2025-01-01T09:00:00.000Z', maxRegistrations: 100,
+    });
+    assert.equal(response.status, 201);
+    const created = (await response.json()).event;
+    assert.equal(created.status, 'past');
+    assert.equal(created.registrationOpen, false);
   });
   await t.test('malformed guest data and invalid optional credentials are rejected', async () => {
     reset();

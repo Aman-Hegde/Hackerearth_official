@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTheme } from '../context/ThemeContext';
+import { useTheme } from '../context/themeContextValue';
 
 const CurvedHorizonGlow: React.FC = () => {
   const { isDark } = useTheme();

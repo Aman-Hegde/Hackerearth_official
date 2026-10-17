@@ -1,5 +1,5 @@
 import { FormEvent, useState } from "react";
-import type { ChangeEvent, FocusEvent } from "react";
+import type { ChangeEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { ArrowLeft, ArrowRight, Mail } from "lucide-react";
@@ -51,7 +51,7 @@ export default function ForgotPasswordPage() {
     }
   };
 
-  const handleEmailBlur = (_event: FocusEvent<HTMLInputElement>) => {
+  const handleEmailBlur = () => {
     setHasTouchedEmail(true);
     setEmailError(validateEmail(email));
   };

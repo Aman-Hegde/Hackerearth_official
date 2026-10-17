@@ -8,7 +8,7 @@ import AuthShell from "../components/auth/AuthShell";
 import AuthThemeToggle from "../components/auth/AuthThemeToggle";
 import AuthVisual from "../components/auth/AuthVisual";
 import PasswordInput from "../components/auth/PasswordInput";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/authContextValue";
 import { ApiError } from "../lib/api";
 import logo from "../assets/image.png";
 

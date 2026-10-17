@@ -3,12 +3,12 @@ import type { ChangeEvent, FocusEvent } from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Check, FileText, Lock, ShieldCheck, UserRound, X } from "lucide-react";
 import PasswordInput from "../components/auth/PasswordInput";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/authContextValue";
 import type { EnrolledDomain, User } from "../context/AuthContext";
 import { ApiError, apiRequest } from "../lib/api";
 import { updateStudentProfile } from "../lib/studentApi";
 import { cn } from "../lib/utils";
-import { useToast } from "../components/ToastProvider";
+import { useToast } from "../components/toastContext";
 
 interface PasswordForm {
   currentPassword: string;

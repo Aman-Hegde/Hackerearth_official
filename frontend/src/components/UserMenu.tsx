@@ -9,9 +9,9 @@ import {
   User,
 } from "lucide-react";
 
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/authContextValue";
 import { cn } from "../lib/utils";
-import { useToast } from "./ToastProvider";
+import { useToast } from "./toastContext";
 
 interface UserMenuProps {
   triggerClassName?: string;

@@ -1,12 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { 
   Play, 
-  Square, 
   RotateCcw, 
-  Save, 
-  Download, 
-  Upload, 
   Settings, 
   Maximize2, 
   Minimize2,
@@ -27,7 +23,6 @@ import {
 
 const CodingEnvironment = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const [code, setCode] = useState(`// Welcome to HackerEarth Coding Environment
 // Problem: Two Sum
 // Write your solution below
@@ -125,7 +120,7 @@ You can return the answer in any order.`,
           { input: [3, 3], target: 6, expected: [0, 1] }
         ];
 
-        let results = [];
+        const results = [];
         let allPassed = true;
 
         testCases.forEach((test, index) => {

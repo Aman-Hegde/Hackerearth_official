@@ -6,8 +6,8 @@ import { blogPosts, categories } from '../lib/resourcesData';
 import ResourceCard from '../components/ResourceCard';
 import CategoryFilter from '../components/CategoryFilter';
 import WeekFilter from '../components/WeekTabs';
-import { useTheme } from '../context/ThemeContext';
-import { useAuth } from '../context/AuthContext';
+import { useTheme } from '../context/themeContextValue';
+import { useAuth } from '../context/authContextValue';
 import PageTransition from '../components/ui/PageTransition';
 import SectionReveal from '../components/ui/SectionReveal';
 import {

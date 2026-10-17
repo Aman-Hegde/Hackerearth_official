@@ -1,37 +1,23 @@
 import {
-  createContext,
   type ReactNode,
   useCallback,
-  useContext,
   useMemo,
   useState,
 } from "react";
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { AlertCircle, AlertTriangle, CheckCircle2, Info, X } from "lucide-react";
 import { cn } from "../lib/utils";
-
-export type ToastVariant = "success" | "error" | "warning" | "info";
-
-interface ToastInput {
-  title?: string;
-  message: string;
-  variant?: ToastVariant;
-  action?: ReactNode;
-  durationMs?: number;
-}
+import {
+  ToastContext,
+  type ToastInput,
+  type ToastVariant,
+} from "./toastContext";
 
 interface Toast extends Required<Omit<ToastInput, "title" | "action">> {
   id: string;
   title?: string;
   action?: ReactNode;
 }
-
-interface ToastContextValue {
-  showToast: (toast: ToastInput) => string;
-  dismissToast: (id: string) => void;
-}
-
-const ToastContext = createContext<ToastContextValue | null>(null);
 
 const variantStyles: Record<
   ToastVariant,
@@ -175,13 +161,3 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     </ToastContext.Provider>
   );
 }
-
-export const useToast = () => {
-  const context = useContext(ToastContext);
-
-  if (!context) {
-    throw new Error("useToast must be used within ToastProvider.");
-  }
-
-  return context;
-};

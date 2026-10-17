@@ -17,7 +17,7 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import PageTransition from "../components/ui/PageTransition";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../context/authContextValue";
 import { ApiError } from "../lib/api";
 import {
   getOverallLeaderboard,

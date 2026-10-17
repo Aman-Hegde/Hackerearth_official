@@ -3,23 +3,31 @@ import {
   Calendar,
   CheckCircle2,
   Clock,
+  Eye,
   Loader2,
   Lock,
   MapPin,
+  PlusCircle,
+  UserPlus,
   Users,
 } from "lucide-react";
 import { motion, useReducedMotion } from "framer-motion";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { useEffect, useState } from "react";
 import EventCarousel from "../components/EventCarousel";
+import EventTeamDashboardModal from "../components/events/EventTeamDashboardModal";
+import EventTeamRegistrationModal from "../components/events/EventTeamRegistrationModal";
 import PageTransition from "../components/ui/PageTransition";
 import SectionReveal from "../components/ui/SectionReveal";
-import { useToast } from "../components/ToastProvider";
-import { useAuth } from "../context/AuthContext";
+import { useToast } from "../components/toastContext";
+import { useAuth } from "../context/authContextValue";
 import { ApiError } from "../lib/api";
 import {
   getStudentEvents,
+  getEventTeamAccessToken,
   registerForEvent,
+  storeEventTeamAccessToken,
+  type EventTeamRegistrationResult,
   type EventSummary,
 } from "../lib/eventApi";
 
@@ -75,11 +83,19 @@ const UpcomingEventCard = ({
   index,
   pending,
   onRegister,
+  onCreateTeam,
+  onJoinTeam,
+  onViewTeam,
+  hasTeamAccess,
 }: {
   event: EventSummary;
   index: number;
   pending: boolean;
   onRegister: (event: EventSummary) => void;
+  onCreateTeam: (event: EventSummary) => void;
+  onJoinTeam: (event: EventSummary) => void;
+  onViewTeam: (event: EventSummary) => void;
+  hasTeamAccess: boolean;
 }) => {
   const shouldReduceMotion = useReducedMotion();
   const disabled = pending || event.isRegistered || !event.registrationOpen;
@@ -107,6 +123,14 @@ const UpcomingEventCard = ({
           <span className="inline-flex min-h-8 items-center gap-2 rounded-full border border-line bg-surface/80 px-3 text-xs font-semibold text-ink-muted">
             <Users className="size-3.5" aria-hidden="true" />
             {event.registrationCount}/{event.maxRegistrations}
+          </span>
+          <span className="inline-flex min-h-8 items-center rounded-full border border-primary/25 bg-primary/10 px-3 text-xs font-semibold text-primary-text">
+            {event.participationType === "team"
+              ? `TEAM · ${event.minTeamSize}-${event.maxTeamSize} MEMBERS`
+              : "INDIVIDUAL"}
+          </span>
+          <span className="inline-flex min-h-8 items-center rounded-full border border-line bg-surface/80 px-3 text-xs font-semibold text-ink-muted">
+            {event.eligibility === "members_only" ? "MEMBERS ONLY" : "OPEN TO EVERYONE"}
           </span>
         </div>
 
@@ -145,23 +169,43 @@ const UpcomingEventCard = ({
 
         <ProgressBar event={event} />
 
-        <button
-          type="button"
-          onClick={() => onRegister(event)}
-          disabled={disabled}
-          className="btn btn-primary mt-auto w-full justify-center disabled:cursor-not-allowed disabled:opacity-60 sm:w-fit"
-        >
-          {pending ? (
-            <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
-          ) : event.isRegistered ? (
-            <CheckCircle2 className="size-4" aria-hidden="true" />
-          ) : !event.registrationOpen ? (
-            <Lock className="size-4" aria-hidden="true" />
-          ) : (
-            <ArrowRight className="size-4" aria-hidden="true" />
-          )}
-          {pending ? "REGISTERING..." : getButtonLabel(event)}
-        </button>
+        {event.participationType === "team" ? (
+          <div className="mt-auto flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            {event.isRegistered || hasTeamAccess ? (
+              <button type="button" onClick={() => onViewTeam(event)} className="btn btn-primary w-full justify-center sm:w-fit">
+                <Eye className="size-4" aria-hidden="true" /> View My Team
+              </button>
+            ) : (
+              <>
+                <button type="button" onClick={() => onCreateTeam(event)} disabled={!event.registrationOpen} className="btn btn-primary w-full justify-center disabled:cursor-not-allowed disabled:opacity-60 sm:w-fit">
+                  {event.registrationOpen ? <PlusCircle className="size-4" aria-hidden="true" /> : <Lock className="size-4" aria-hidden="true" />}
+                  {event.registrationOpen ? "Create Team" : getButtonLabel(event)}
+                </button>
+                <button type="button" onClick={() => onJoinTeam(event)} disabled={!event.registrationOpen} className="btn btn-secondary w-full justify-center disabled:cursor-not-allowed disabled:opacity-60 sm:w-fit">
+                  <UserPlus className="size-4" aria-hidden="true" /> Join Existing Team
+                </button>
+              </>
+            )}
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => onRegister(event)}
+            disabled={disabled}
+            className="btn btn-primary mt-auto w-full justify-center disabled:cursor-not-allowed disabled:opacity-60 sm:w-fit"
+          >
+            {pending ? (
+              <Loader2 className="size-4 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+            ) : event.isRegistered ? (
+              <CheckCircle2 className="size-4" aria-hidden="true" />
+            ) : !event.registrationOpen ? (
+              <Lock className="size-4" aria-hidden="true" />
+            ) : (
+              <ArrowRight className="size-4" aria-hidden="true" />
+            )}
+            {pending ? "REGISTERING..." : getButtonLabel(event)}
+          </button>
+        )}
       </div>
     </motion.article>
   );
@@ -191,6 +235,10 @@ const PastEventCard = ({ event, index }: { event: EventSummary; index: number })
 const Events = () => {
   const { user, isLoading } = useAuth();
   const { showToast } = useToast();
+  const navigate = useNavigate();
+  const { eventId: invitationEventId } = useParams<{ eventId?: string }>();
+  const [searchParams] = useSearchParams();
+  const invitationCode = searchParams.get("invite") ?? "";
   const [upcomingEvents, setUpcomingEvents] = useState<EventSummary[]>([]);
   const [pastEvents, setPastEvents] = useState<EventSummary[]>([]);
   const [isLoadingEvents, setIsLoadingEvents] = useState(true);
@@ -198,6 +246,12 @@ const Events = () => {
   const [guestEvent, setGuestEvent] = useState<EventSummary | null>(null);
   const [participant, setParticipant] = useState({ name: "", email: "", contactNumber: "" });
   const [pendingEventId, setPendingEventId] = useState<string | null>(null);
+  const [teamRegistration, setTeamRegistration] = useState<{
+    event: EventSummary;
+    mode: "create" | "join";
+    invitationCode?: string;
+  } | null>(null);
+  const [teamDashboardEvent, setTeamDashboardEvent] = useState<EventSummary | null>(null);
 
   useEffect(() => {
     if (isLoading) return;
@@ -223,6 +277,52 @@ const Events = () => {
 
     return () => controller.abort();
   }, [isLoading, user]);
+
+  useEffect(() => {
+    if (isLoadingEvents || !invitationEventId || !invitationCode || teamRegistration) return;
+    const targetEvent = [...upcomingEvents, ...pastEvents].find((event) => event.id === invitationEventId);
+    if (targetEvent) {
+      setTeamRegistration({ event: targetEvent, mode: "join", invitationCode });
+    } else if (!eventsError) {
+      showToast({ variant: "error", message: "This event invitation is unavailable." });
+      void navigate("/events", { replace: true });
+    }
+  }, [eventsError, invitationCode, invitationEventId, isLoadingEvents, navigate, pastEvents, showToast, teamRegistration, upcomingEvents]);
+
+  const closeTeamRegistration = () => {
+    setTeamRegistration(null);
+    if (invitationEventId && invitationCode) {
+      void navigate("/events", { replace: true });
+    }
+  };
+
+  const handleTeamRegistrationComplete = (
+    result: EventTeamRegistrationResult,
+    message: string
+  ) => {
+    if (!teamRegistration) return;
+    if (result.accessToken) {
+      storeEventTeamAccessToken(teamRegistration.event.id, result.accessToken);
+    }
+    setUpcomingEvents((current) =>
+      current.map((item) =>
+        item.id === teamRegistration.event.id
+          ? {
+              ...item,
+              isRegistered: Boolean(user) || item.isRegistered,
+              registrationCount: Math.min(item.maxRegistrations, item.registrationCount + 1),
+            }
+          : item
+      )
+    );
+    const registeredEvent = teamRegistration.event;
+    setTeamRegistration(null);
+    if (invitationEventId && invitationCode) {
+      void navigate("/events", { replace: true });
+    }
+    showToast({ variant: "success", message });
+    setTeamDashboardEvent(registeredEvent);
+  };
 
   const handleRegister = async (event: EventSummary, submitGuest = false) => {
     if (!user && !submitGuest) { setGuestEvent(event); return; }
@@ -351,6 +451,10 @@ const Events = () => {
                           index={index}
                           pending={pendingEventId === event.id}
                           onRegister={handleRegister}
+                          onCreateTeam={(selectedEvent) => setTeamRegistration({ event: selectedEvent, mode: "create" })}
+                          onJoinTeam={(selectedEvent) => setTeamRegistration({ event: selectedEvent, mode: "join" })}
+                          onViewTeam={setTeamDashboardEvent}
+                          hasTeamAccess={Boolean(getEventTeamAccessToken(event.id))}
                         />
                       ))}
                     </div>
@@ -384,6 +488,22 @@ const Events = () => {
           </div>
         </section>
       </main>
+      {teamRegistration && (
+        <EventTeamRegistrationModal
+          event={teamRegistration.event}
+          mode={teamRegistration.mode}
+          user={user}
+          initialInvitationCode={teamRegistration.invitationCode}
+          onClose={closeTeamRegistration}
+          onComplete={handleTeamRegistrationComplete}
+        />
+      )}
+      {teamDashboardEvent && (
+        <EventTeamDashboardModal
+          event={teamDashboardEvent}
+          onClose={() => setTeamDashboardEvent(null)}
+        />
+      )}
     </PageTransition>
   );
 };

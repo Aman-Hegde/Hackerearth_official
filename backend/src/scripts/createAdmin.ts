@@ -3,8 +3,13 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import { connectDatabase } from "../config/db";
 import User, { VALID_DOMAINS } from "../models/user";
+import {
+  initializeRuntimeEnvironment,
+} from "../config/localTestEnvironment";
 
-dotenv.config();
+initializeRuntimeEnvironment(process.env, () => {
+  dotenv.config();
+});
 
 const PASSWORD_SALT_ROUNDS = 12;
 const EMAIL_DOMAIN = "@nmamit.in";
@@ -140,7 +145,12 @@ const run = async (): Promise<void> => {
     process.exit(0);
   } catch (error) {
     await mongoose.disconnect().catch(() => undefined);
-    const message = error instanceof Error ? error.message : "Failed to create admin.";
+    const message =
+      process.env.LOCAL_TEST_MODE === "true"
+        ? "Failed to create the local test admin."
+        : error instanceof Error
+          ? error.message
+          : "Failed to create admin.";
     console.error(message);
     process.exit(1);
   }

@@ -34,7 +34,8 @@ import ForgotPasswordOtpPage from "./pages/ForgotPasswordOtp";
 import ChangeForgottenPasswordPage from "./pages/ChangeForgottenPassword";
 import SettingsPage from "./pages/Settings";
 
-import { AuthProvider, useAuth } from "./context/AuthContext";
+import { AuthProvider } from "./context/AuthContext";
+import { useAuth } from "./context/authContextValue";
 import type { UserRole } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 
@@ -140,6 +141,7 @@ function AppWrapper() {
             <Route path="/" element={<Home />} />
 
             <Route path="/events" element={<PastEvents />} />
+            <Route path="/events/:eventId" element={<PastEvents />} />
 
             <Route path="/team" element={<Team />} />
 
