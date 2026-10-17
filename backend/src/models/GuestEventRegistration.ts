@@ -5,6 +5,7 @@ export interface GuestParticipant {
   name: string;
   email: string;
   contactNumber: string;
+  collegeName?: string;
 }
 interface GuestRegistration extends GuestParticipant {
   eventId: Types.ObjectId;
@@ -15,6 +16,7 @@ const schema = new Schema<GuestRegistration>({
   name: { type: String, required: true, maxlength: 100 },
   email: { type: String, required: true, lowercase: true, maxlength: 254 },
   contactNumber: { type: String, required: true, match: /^\d{10}$/ },
+  collegeName: { type: String, trim: true, maxlength: 160 },
 }, { timestamps: true });
 schema.index({ eventId: 1, email: 1 }, { unique: true });
 export default mongoose.model<GuestRegistration>("GuestEventRegistration", schema);

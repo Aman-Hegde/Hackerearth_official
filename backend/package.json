@@ -9,6 +9,8 @@
     "test:db": "ts-node src/testDb.ts",
     "test:email": "ts-node src/testEmail.ts",
     "test:leaderboard-search-ranks": "ts-node src/scripts/testLeaderboardSearchRanks.ts",
+    "test:events": "npm run build && node --test tests/eventPermissions.test.cjs",
+    "test:event-teams": "npm run build && node --test tests/eventTeamRegistration.test.cjs",
     "create:admin": "ts-node --files src/scripts/createAdmin.ts"
   },
   "keywords": [],

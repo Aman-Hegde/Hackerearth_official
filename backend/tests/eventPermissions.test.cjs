@@ -9,13 +9,14 @@ const User = require('../dist/models/user').default;
 const Event = require('../dist/models/Event').default;
 const Registration = require('../dist/models/EventRegistration').default;
 const GuestRegistration = require('../dist/models/GuestEventRegistration').default;
+const EventTeam = require('../dist/models/EventTeam').default;
 const cloudinary = require('../dist/config/cloudinary');
 const { generateAuthToken } = require('../dist/utils/jwt');
 const { AUTH_COOKIE_NAME } = require('../dist/utils/authCookie');
 process.env.JWT_SECRET = 'isolated-event-permission-test-secret';
 const id = '507f1f77bcf86cd799439011';
 const participant = { name: 'Guest Participant', email: 'guest@example.com', contactNumber: '9876543210' };
-const chain = (value) => ({ sort() { return this; }, select() { return this; }, populate() { return this; }, exec: async () => value });
+const chain = (value) => ({ sort() { return this; }, select() { return this; }, populate() { return this; }, lean() { return this; }, exec: async () => value });
 
 test('event API permission and participant registration regression suite', async (t) => {
   let account, event, writes, registrations, guests, duplicate, unavailable, imported;
@@ -49,6 +50,7 @@ test('event API permission and participant registration regression suite', async
   });
   t.mock.method(Registration, 'find', () => chain(registrations));
   t.mock.method(GuestRegistration, 'find', () => chain(guests));
+  t.mock.method(EventTeam, 'find', () => chain([]));
   t.mock.method(Registration, 'create', async (docs) => { if (duplicate) throw { code: 11000 }; registrations.push(...docs); return docs; });
   t.mock.method(GuestRegistration, 'create', async (docs) => { if (duplicate) throw { code: 11000 }; guests.push(...docs); return docs; });
   t.mock.method(mongoose, 'startSession', async () => {
@@ -169,6 +171,20 @@ test('event API permission and participant registration regression suite', async
     assert.equal((await (await request('GET', '/api/events')).json()).past.length, 1);
     for (const input of [{ imageUrls: ['javascript:alert(1)'] }, { imageUrls: ['/events/../secret.webp'] }, { rounds: [7] }, { published: 'true' }, { imageUrls: Array(21).fill('https://example.com/a.webp') }])
       assert.equal((await request('PATCH', `/api/admin/events/${id}`, 'admin', input)).status, 400);
+  });
+  await t.test('admin can create a historical event with its actual past dates', async () => {
+    reset();
+    const response = await request('POST', '/api/admin/events', 'admin', {
+      title: 'Historical Showcase', description: 'A completed event.', venue: 'Campus',
+      posterUrl: 'https://example.com/history.png',
+      eventDateTime: '2025-01-01T10:00:00.000Z',
+      eventEndDateTime: '2025-01-01T12:00:00.000Z',
+      registrationDeadline: '2025-01-01T09:00:00.000Z', maxRegistrations: 100,
+    });
+    assert.equal(response.status, 201);
+    const created = (await response.json()).event;
+    assert.equal(created.status, 'past');
+    assert.equal(created.registrationOpen, false);
   });
   await t.test('malformed guest data and invalid optional credentials are rejected', async () => {
     reset();

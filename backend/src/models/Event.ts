@@ -15,6 +15,10 @@ export interface IEvent extends Document {
   registrationDeadline: Date;
   maxRegistrations: number;
   registrationCount: number;
+  participationType: "individual" | "team";
+  eligibility: "members_only" | "public";
+  minTeamSize?: number;
+  maxTeamSize?: number;
   createdBy: Types.ObjectId;
   active: boolean;
   createdAt: Date;
@@ -89,6 +93,36 @@ const eventSchema = new Schema<IEvent>(
         message: "Registration count must be an integer",
       },
     },
+    participationType: {
+      type: String,
+      enum: ["individual", "team"],
+      default: "individual",
+      index: true,
+    },
+    eligibility: {
+      type: String,
+      enum: ["members_only", "public"],
+      default: "public",
+      index: true,
+    },
+    minTeamSize: {
+      type: Number,
+      min: 2,
+      max: 100,
+      validate: {
+        validator: Number.isInteger,
+        message: "Minimum team size must be an integer",
+      },
+    },
+    maxTeamSize: {
+      type: Number,
+      min: 2,
+      max: 100,
+      validate: {
+        validator: Number.isInteger,
+        message: "Maximum team size must be an integer",
+      },
+    },
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: "User",
@@ -109,6 +143,26 @@ const eventSchema = new Schema<IEvent>(
 eventSchema.index({ active: 1, eventDateTime: 1 });
 
 eventSchema.pre("validate", function validateEventDates() {
+  const participationType = this.participationType ?? "individual";
+  if (participationType === "team") {
+    if (!this.minTeamSize || !this.maxTeamSize) {
+      this.invalidate(
+        "minTeamSize",
+        "Team events require minimum and maximum team sizes"
+      );
+    } else if (this.minTeamSize > this.maxTeamSize) {
+      this.invalidate(
+        "maxTeamSize",
+        "Maximum team size must be greater than or equal to minimum team size"
+      );
+    }
+  } else if (this.minTeamSize !== undefined || this.maxTeamSize !== undefined) {
+    this.invalidate(
+      "minTeamSize",
+      "Individual events cannot define team-size limits"
+    );
+  }
+
   if (
     this.eventDateTime instanceof Date &&
     this.eventEndDateTime instanceof Date &&

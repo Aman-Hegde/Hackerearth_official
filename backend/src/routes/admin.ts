@@ -25,6 +25,10 @@ import {
 } from "../controllers/eventController";
 import { uploadEventPosterMiddleware } from "../middleware/eventPosterUpload";
 import {
+  exportAdminEventTeams,
+  getAdminEventTeams,
+} from "../controllers/eventTeamController";
+import {
   archiveAdminWeeklyContest,
   createAdminWeeklyContest,
   exportAdminWeeklyContestAttempts,
@@ -52,6 +56,8 @@ router.post("/events/poster", uploadEventPosterMiddleware, uploadAdminEventPoste
 router.post("/events/import/project-doomsday", importProjectDoomsday);
 router.post("/events", createAdminEvent);
 router.get("/events", getAdminEvents);
+router.get("/events/:eventId/teams/export", exportAdminEventTeams);
+router.get("/events/:eventId/teams", getAdminEventTeams);
 router.get("/events/:eventId/registrations/export", exportAdminEventRegistrations);
 router.get("/events/:eventId/registrations", getAdminEventRegistrations);
 router.get("/events/:eventId", getAdminEvent);
