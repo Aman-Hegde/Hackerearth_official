@@ -245,12 +245,15 @@ const getTeamAccessStorageKey = (eventId: string) =>
 
 export const getEventTeamAccessToken = (eventId: string) => {
   if (typeof window === "undefined") return null;
-  return window.sessionStorage.getItem(getTeamAccessStorageKey(eventId));
+  return (
+    window.localStorage.getItem(getTeamAccessStorageKey(eventId)) ??
+    window.sessionStorage.getItem(getTeamAccessStorageKey(eventId))
+  );
 };
 
 export const storeEventTeamAccessToken = (eventId: string, token: string) => {
   if (typeof window === "undefined") return;
-  window.sessionStorage.setItem(getTeamAccessStorageKey(eventId), token);
+  window.localStorage.setItem(getTeamAccessStorageKey(eventId), token);
 };
 
 interface TeamRegistrationResponse {

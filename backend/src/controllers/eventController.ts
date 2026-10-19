@@ -11,6 +11,7 @@ import {
   storeLocalTestEventPoster,
 } from "../services/localEventPosterStorage";
 import EventTeam from "../models/EventTeam";
+import EventTeamMember from "../models/EventTeamMember";
 import {
   getEventEligibility,
   getEventParticipationType,
@@ -125,9 +126,11 @@ const toEventRegistrationStudent = (registration: {
 
 const getGuestAttendees = async (eventId: string) => {
   const guests = await GuestEventRegistration.find({ eventId }).sort({ createdAt: 1 }).exec();
-  return guests.map((guest) => ({ id: String(guest._id), name: guest.name,
+  return guests.map((guest) => ({
+    id: String(guest._id), name: guest.name,
     email: guest.email, contactNumber: guest.contactNumber, usn: "", year: null,
-    registeredAt: guest.createdAt }));
+    registeredAt: guest.createdAt
+  }));
 };
 
 const sanitizeFilenamePart = (value: string) => {
@@ -710,7 +713,7 @@ export const getAdminEventRegistrations = async (
         maxRegistrations: event.maxRegistrations,
       },
       registrations: [...registrations.map(toEventRegistrationStudent),
-        ...await getGuestAttendees(eventId)],
+      ...await getGuestAttendees(eventId)],
     });
   } catch (_error) {
     return res.status(500).json({
@@ -811,17 +814,38 @@ export const exportAdminEventRegistrations = async (
   }
 };
 
+
 export const getStudentEvents = async (req: Request, res: Response) => {
   try {
-    const [events, registrations] = await Promise.all([
-      Event.find({ published: { $ne: false } }).sort({ eventDateTime: 1 }).exec(),
-      req.auth ? EventRegistration.find({ studentId: req.auth.userId })
-        .select("eventId")
-        .exec() : Promise.resolve([]),
+    const studentId = req.auth?.userId;
+
+    const [events, registrations, teamMemberships] = await Promise.all([
+      Event.find({ published: { $ne: false } })
+        .sort({ eventDateTime: 1 })
+        .exec(),
+
+      studentId
+        ? EventRegistration.find({ studentId })
+          .select("eventId")
+          .exec()
+        : Promise.resolve([]),
+
+      studentId
+        ? EventTeamMember.find({ studentId })
+          .select("eventId")
+          .exec()
+        : Promise.resolve([]),
     ]);
-    const registeredEventIds = new Set(
-      registrations.map((registration) => registration.eventId.toString())
-    );
+
+    const registeredEventIds = new Set([
+      ...registrations.map((registration) =>
+        registration.eventId.toString()
+      ),
+      ...teamMemberships.map((membership) =>
+        membership.eventId.toString()
+      ),
+    ]);
+
     const safeEvents = events.map((event) =>
       toSafeEvent(event, registeredEventIds.has(event._id.toString()))
     );
@@ -839,6 +863,7 @@ export const getStudentEvents = async (req: Request, res: Response) => {
   }
 };
 
+
 export const registerForEvent = async (
   req: Request<{ eventId: string }>,
   res: Response
@@ -846,9 +871,11 @@ export const registerForEvent = async (
   const body: unknown = req.body ?? {};
   const allowedFields = req.auth ? [] : ["name", "email", "contactNumber"];
   if (!body || typeof body !== "object" || Array.isArray(body) ||
-      Object.keys(body).some((key) => !allowedFields.includes(key))) {
-    return res.status(400).json({ success: false, code: "INVALID_REGISTRATION",
-      message: "Only participant registration fields are allowed." });
+    Object.keys(body).some((key) => !allowedFields.includes(key))) {
+    return res.status(400).json({
+      success: false, code: "INVALID_REGISTRATION",
+      message: "Only participant registration fields are allowed."
+    });
   }
   const { eventId } = req.params;
   if (!mongoose.Types.ObjectId.isValid(eventId)) {
@@ -890,12 +917,16 @@ export const registerForEvent = async (
     let guest: GuestParticipant | undefined;
     if (!req.auth) {
       const input = body as Record<string, unknown>;
-      guest = { name: normalizeString(input.name), email: normalizeString(input.email).toLowerCase(),
-        contactNumber: normalizeString(input.contactNumber) };
+      guest = {
+        name: normalizeString(input.name), email: normalizeString(input.email).toLowerCase(),
+        contactNumber: normalizeString(input.contactNumber)
+      };
       if (guest.name.length < 2 || guest.name.length > 100 || guest.email.length > 254 ||
-          !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guest.email) || !/^\d{10}$/.test(guest.contactNumber)) {
-        return res.status(400).json({ success: false, code: "INVALID_PARTICIPANT",
-          message: "Enter your name, valid email, and 10-digit phone number." });
+        !/^[^\s@]+@nmamit\.in$/i.test(guest.email) || !/^\d{10}$/.test(guest.contactNumber)) {
+        return res.status(400).json({
+          success: false, code: "INVALID_PARTICIPANT",
+          message: "Enter your name, valid email, and 10-digit phone number."
+        });
       }
     }
 
@@ -1039,9 +1070,11 @@ const isEventImageUrl = (value: string) => {
 export const importProjectDoomsday = async (req: Request, res: Response) => {
   const id = new Types.ObjectId("70c800000000000000000010");
   try {
-    const existing = await Event.findOne({ $or: [
-      { _id: id }, { title: /project\s+doomsday/i }
-    ] }).exec();
+    const existing = await Event.findOne({
+      $or: [
+        { _id: id }, { title: /project\s+doomsday/i }
+      ]
+    }).exec();
     if (existing) return res.status(200).json({ success: true, message: "Project Doomsday already exists. Use Edit to manage its photographs; no record was overwritten.", event: toSafeEvent(existing) });
     const event = await Event.create({
       _id: id, createdBy: new Types.ObjectId(req.auth!.userId),
@@ -1050,10 +1083,10 @@ export const importProjectDoomsday = async (req: Request, res: Response) => {
       description: "Project Doomsday brought together participants for a three-round technical challenge testing knowledge, logical thinking, pattern printing, and data structure and algorithm skills.",
       rounds: ["MCQ Challenge", "Pattern Printing", "DSA Challenge"],
       imageUrls: Array.from(
-  { length: 7 },
-  (_, i) =>
-    `/events/project-doomsday/doomsday-${String(i + 2).padStart(2, "0")}.webp`
-),
+        { length: 7 },
+        (_, i) =>
+          `/events/project-doomsday/doomsday-${String(i + 2).padStart(2, "0")}.webp`
+      ),
       posterUrl: "/events/project-doomsday/doomsday-02.webp",
       venue: "Not specified", eventDateTime: new Date("2026-10-10T09:00:00+05:30"),
       registrationDeadline: new Date("2026-10-10T09:00:00+05:30"),

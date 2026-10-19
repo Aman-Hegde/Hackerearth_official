@@ -86,7 +86,7 @@ const parseGuest = (body: TeamRequestBody): GuestParticipant | null => {
     guest.name.length < 2 ||
     guest.name.length > 100 ||
     guest.email.length > 254 ||
-    !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guest.email) ||
+    !/^[^\s@]+@nmamit\.in$/i.test(guest.email) ||
     !guest.contactNumber ||
     guest.branch.length < 2 ||
     guest.branch.length > 160

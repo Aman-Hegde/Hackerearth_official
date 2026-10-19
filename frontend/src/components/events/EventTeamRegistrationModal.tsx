@@ -149,17 +149,21 @@ const EventTeamRegistrationModal = ({
       setError("Enter your full name, email address, contact number, and branch name.");
       return;
     }
+    if (!user && !/^[^\s@]+@nmamit\.in$/i.test(email.trim())) {
+      setError("Please enter a valid college email address ending in @nmamit.in.");
+      return;
+    }
 
     setSubmitting(true);
     setError("");
     const participant = user
       ? { contactNumber: normalizedContact, branch: branch.trim() }
       : {
-          name: name.trim(),
-          email: email.trim(),
-          contactNumber: normalizedContact,
-          branch: branch.trim(),
-        };
+        name: name.trim(),
+        email: email.trim(),
+        contactNumber: normalizedContact,
+        branch: branch.trim(),
+      };
     try {
       const response = mode === "create"
         ? await createEventTeam(event.id, { ...participant, teamName: teamName.trim() })
@@ -237,7 +241,16 @@ const EventTeamRegistrationModal = ({
                   </label>
                   <label>
                     <span className="mb-2 block text-sm font-semibold text-ink">Email Address</span>
-                    <input type="email" className={inputClass} value={email} onChange={(e) => setEmail(e.target.value)} maxLength={254} required />
+                    <input
+                      type="email"
+                      className={inputClass}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="yourusn@nmamit.in"
+                      title="Use your college email address ending in @nmamit.in"
+                      maxLength={254}
+                      required
+                    />
                   </label>
                 </div>
               )}

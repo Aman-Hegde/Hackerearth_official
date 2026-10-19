@@ -172,9 +172,20 @@ const UpcomingEventCard = ({
         {event.participationType === "team" ? (
           <div className="mt-auto flex flex-col gap-2 sm:flex-row sm:flex-wrap">
             {event.isRegistered || hasTeamAccess ? (
-              <button type="button" onClick={() => onViewTeam(event)} className="btn btn-primary w-full justify-center sm:w-fit">
-                <Eye className="size-4" aria-hidden="true" /> View My Team
-              </button>
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="inline-flex items-center gap-2 font-semibold text-green-600">
+                  <CheckCircle2 className="size-4" aria-hidden="true" />
+                  Registered
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onViewTeam(event)}
+                  className="btn btn-primary w-full justify-center sm:w-fit"
+                >
+                  <Eye className="size-4" aria-hidden="true" />
+                  View My Team
+                </button>
+              </div>
             ) : (
               <>
                 <button type="button" onClick={() => onCreateTeam(event)} disabled={!event.registrationOpen} className="btn btn-primary w-full justify-center disabled:cursor-not-allowed disabled:opacity-60 sm:w-fit">
@@ -308,10 +319,10 @@ const Events = () => {
       current.map((item) =>
         item.id === teamRegistration.event.id
           ? {
-              ...item,
-              isRegistered: Boolean(user) || item.isRegistered,
-              registrationCount: Math.min(item.maxRegistrations, item.registrationCount + 1),
-            }
+            ...item,
+            isRegistered: Boolean(user) || item.isRegistered,
+            registrationCount: Math.min(item.maxRegistrations, item.registrationCount + 1),
+          }
           : item
       )
     );
@@ -335,12 +346,12 @@ const Events = () => {
       const updateEvent = (item: EventSummary) =>
         item.id === event.id
           ? {
-              ...item,
-              isRegistered: true,
-              registrationCount: response.registrationCount,
-              maxRegistrations: response.maxRegistrations,
-              registrationOpen: false,
-            }
+            ...item,
+            isRegistered: true,
+            registrationCount: response.registrationCount,
+            maxRegistrations: response.maxRegistrations,
+            registrationOpen: false,
+          }
           : item;
 
       setUpcomingEvents((current) => current.map(updateEvent));
@@ -412,7 +423,15 @@ const Events = () => {
                       type={field === "email" ? "email" : field === "contactNumber" ? "tel" : "text"}
                       minLength={field === "name" ? 2 : undefined}
                       maxLength={field === "name" ? 100 : field === "email" ? 254 : 10}
-                      pattern={field === "contactNumber" ? "[0-9]{10}" : undefined}
+                      pattern={
+                        field === "contactNumber"
+                          ? "[0-9]{10}"
+                          : field === "email"
+                            ? "[^\\s@]+@[nN][mM][aA][mM][iI][tT]\\.[iI][nN]"
+                            : undefined
+                      }
+                      title={field === "email" ? "Use your college email address ending in @nmamit.in" : undefined}
+                      placeholder={field === "email" ? "yourusn@nmamit.in" : undefined}
                       value={participant[field]} onChange={(e) => setParticipant({ ...participant, [field]: e.target.value })} />
                   </label>
                 ))}

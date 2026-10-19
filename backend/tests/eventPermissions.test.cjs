@@ -8,6 +8,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../dist/models/user').default;
 const Event = require('../dist/models/Event').default;
 const Registration = require('../dist/models/EventRegistration').default;
+const EventTeamMember = require('../dist/models/EventTeamMember').default;
 const GuestRegistration = require('../dist/models/GuestEventRegistration').default;
 const EventTeam = require('../dist/models/EventTeam').default;
 const cloudinary = require('../dist/config/cloudinary');
@@ -16,19 +17,21 @@ const { generateAuthToken } = require('../dist/utils/jwt');
 const { AUTH_COOKIE_NAME } = require('../dist/utils/authCookie');
 process.env.JWT_SECRET = 'isolated-event-permission-test-secret';
 const id = '507f1f77bcf86cd799439011';
-const participant = { name: 'Guest Participant', email: 'guest@example.com', contactNumber: '9876543210' };
+const participant = { name: 'Guest Participant', email: 'guest@nmamit.in', contactNumber: '9876543210' };
 const chain = (value) => ({ sort() { return this; }, select() { return this; }, populate() { return this; }, lean() { return this; }, exec: async () => value });
 
 test('event API permission and participant registration regression suite', async (t) => {
-  let account, event, writes, registrations, guests, duplicate, unavailable, imported, cloudUploads, localUploads;
+  let account, event, writes, registrations, teamMemberships, guests, duplicate, unavailable, imported, cloudUploads, localUploads;
   const reset = () => {
     account = { _id: new mongoose.Types.ObjectId(id), role: 'admin', isActive: true, emailVerified: true };
-    event = { _id: new mongoose.Types.ObjectId(id), title: 'Workshop', description: 'Workshop description',
+    event = {
+      _id: new mongoose.Types.ObjectId(id), title: 'Workshop', description: 'Workshop description',
       venue: 'Campus', posterUrl: 'https://example.com/poster.png', active: true,
       eventDateTime: new Date(Date.now() + 86400000), eventEndDateTime: new Date(Date.now() + 90000000),
       registrationDeadline: new Date(Date.now() + 3600000), registrationCount: 0, maxRegistrations: 5,
-      save: async () => { writes++; } };
-    imported = null; writes = 0; registrations = []; guests = []; duplicate = false; unavailable = false;
+      save: async () => { writes++; }
+    };
+    imported = null; writes = 0; registrations = []; teamMemberships = []; guests = []; duplicate = false; unavailable = false;
     cloudUploads = 0; localUploads = 0;
   };
   reset();
@@ -53,13 +56,16 @@ test('event API permission and participant registration regression suite', async
   t.mock.method(Registration, 'find', () => chain(registrations));
   t.mock.method(GuestRegistration, 'find', () => chain(guests));
   t.mock.method(EventTeam, 'find', () => chain([]));
+  t.mock.method(EventTeamMember, 'find', () => chain(teamMemberships));
   t.mock.method(Registration, 'create', async (docs) => { if (duplicate) throw { code: 11000 }; registrations.push(...docs); return docs; });
   t.mock.method(GuestRegistration, 'create', async (docs) => { if (duplicate) throw { code: 11000 }; guests.push(...docs); return docs; });
   t.mock.method(mongoose, 'startSession', async () => {
-    const session = { endSession: async () => {}, withTransaction: async (fn) => {
-      const count = event.registrationCount;
-      try { await fn(session); } catch (error) { event.registrationCount = count; throw error; }
-    } };
+    const session = {
+      endSession: async () => { }, withTransaction: async (fn) => {
+        const count = event.registrationCount;
+        try { await fn(session); } catch (error) { event.registrationCount = count; throw error; }
+      }
+    };
     return session;
   });
   t.mock.method(cloudinary, 'uploadEventPosterToCloudinary', async () => {
@@ -82,15 +88,17 @@ test('event API permission and participant registration regression suite', async
   const base = `http://127.0.0.1:${server.address().port}`;
   const tokens = { student: generateAuthToken({ userId: id, role: 'student' }), admin: generateAuthToken({ userId: id, role: 'admin' }) };
   const request = (method, path, role, body, cookie = false) => fetch(base + path, {
-    method, headers: { ...(role ? cookie ? { cookie: `${AUTH_COOKIE_NAME}=${tokens[role]}` } : { authorization: `Bearer ${tokens[role]}` } : {}),
-      ...(body !== undefined ? { 'content-type': 'application/json' } : {}) },
+    method, headers: {
+      ...(role ? cookie ? { cookie: `${AUTH_COOKIE_NAME}=${tokens[role]}` } : { authorization: `Bearer ${tokens[role]}` } : {}),
+      ...(body !== undefined ? { 'content-type': 'application/json' } : {})
+    },
     ...(body !== undefined ? { body: JSON.stringify(body) } : {})
   });
   const management = [['POST', '/events/import/project-doomsday'], ['GET', '/events'], ['POST', '/events'], ['POST', '/events/poster'],
-    ['GET', `/events/${id}`], ['PATCH', `/events/${id}`], ['PUT', `/events/${id}`], ['DELETE', `/events/${id}`],
-    ['PATCH', `/events/${id}/archive`], ['PATCH', `/events/${id}/restore`], ['POST', `/events/${id}/publish`],
-    ['DELETE', `/events/${id}/poster`], ['GET', `/events/${id}/registrations`],
-    ['GET', `/events/${id}/registrations/export`], ['DELETE', `/events/${id}/registrations/${id}`]];
+  ['GET', `/events/${id}`], ['PATCH', `/events/${id}`], ['PUT', `/events/${id}`], ['DELETE', `/events/${id}`],
+  ['PATCH', `/events/${id}/archive`], ['PATCH', `/events/${id}/restore`], ['POST', `/events/${id}/publish`],
+  ['DELETE', `/events/${id}/poster`], ['GET', `/events/${id}/registrations`],
+  ['GET', `/events/${id}/registrations/export`], ['DELETE', `/events/${id}/registrations/${id}`]];
   for (const role of [undefined, 'student']) {
     await t.test(`${role || 'guest'} cannot call any management API`, async () => {
       reset();
@@ -119,9 +127,11 @@ test('event API permission and participant registration regression suite', async
   });
   await t.test('admin can create, edit, list, inspect attendees, export and upload posters', async () => {
     reset();
-    const input = { title: event.title, description: event.description, venue: event.venue, posterUrl: event.posterUrl,
+    const input = {
+      title: event.title, description: event.description, venue: event.venue, posterUrl: event.posterUrl,
       eventDateTime: event.eventDateTime.toISOString(), eventEndDateTime: event.eventEndDateTime.toISOString(),
-      registrationDeadline: event.registrationDeadline.toISOString(), maxRegistrations: 5 };
+      registrationDeadline: event.registrationDeadline.toISOString(), maxRegistrations: 5
+    };
     assert.equal((await request('POST', '/api/admin/events', 'admin', input)).status, 201);
     assert.equal((await request('PATCH', `/api/admin/events/${id}`, 'admin', { active: false, maxRegistrations: 10 })).status, 200);
     for (const path of ['/events', `/events/${id}`, `/events/${id}/registrations`, `/events/${id}/registrations/export`]) {
@@ -176,6 +186,33 @@ test('event API permission and participant registration regression suite', async
       else process.env.LOCAL_TEST_MODE = previousLocalTestMode;
     }
   });
+
+  await t.test('team membership remains registered when events are fetched again', async () => {
+    reset();
+    account.role = 'student';
+
+    teamMemberships = [{
+      eventId: event._id,
+      studentId: account._id,
+      participantType: 'member',
+      isLeader: true
+    }];
+
+    const firstResponse = await request('GET', '/api/events', 'student');
+    assert.equal(firstResponse.status, 200);
+
+    const firstBody = await firstResponse.json();
+    assert.equal(firstBody.upcoming[0].isRegistered, true);
+
+    const secondResponse = await request('GET', '/api/events', 'student');
+    assert.equal(secondResponse.status, 200);
+
+    const secondBody = await secondResponse.json();
+    assert.equal(secondBody.upcoming[0].isRegistered, true);
+
+    assert.equal(registrations.length, 0);
+  });
+
   for (const role of [undefined, 'student', 'admin']) {
     await t.test(`${role || 'guest'} can view and register for eligible events`, async () => {
       reset(); account.role = role || 'student';
@@ -259,14 +296,36 @@ test('event API permission and participant registration regression suite', async
     assert.equal(created.status, 'past');
     assert.equal(created.registrationOpen, false);
   });
+
   await t.test('malformed guest data and invalid optional credentials are rejected', async () => {
     reset();
-    for (const body of [{}, [], { ...participant, email: 'invalid' }, { ...participant, contactNumber: '1' }]) {
-      assert.equal((await request('POST', `/api/events/${id}/register`, undefined, body)).status, 400);
+
+    for (const body of [
+      {},
+      [],
+      { ...participant, email: 'invalid' },
+      { ...participant, email: 'student@gmail.com' },
+      { ...participant, email: 'student@yahoo.com' },
+      { ...participant, email: 'student@nmamit.com' },
+      { ...participant, email: 'student@fake-nmamit.in' },
+      { ...participant, contactNumber: '1' }
+    ]) {
+      assert.equal(
+        (await request('POST', `/api/events/${id}/register`, undefined, body)).status,
+        400
+      );
     }
-    assert.equal((await fetch(base + '/api/events', { headers: { authorization: 'Bearer invalid' } })).status, 401);
+
+    assert.equal(
+      (await fetch(base + '/api/events', {
+        headers: { authorization: 'Bearer invalid' }
+      })).status,
+      401
+    );
+
     assert.equal(writes, 0);
   });
+
   await t.test('closed, full, past and duplicate registration remain rejected', async () => {
     for (const changes of [{ active: false }, { registrationCount: 5 }, { eventDateTime: new Date(0), eventEndDateTime: new Date(1) }, { registrationDeadline: new Date(0) }]) {
       reset(); Object.assign(event, changes); unavailable = true;
@@ -293,7 +352,7 @@ test('event API permission and participant registration regression suite', async
   await t.test('public API has no management or attendee routes', async () => {
     reset();
     for (const [method, path] of [['POST', ''], ['PATCH', `/${id}`], ['DELETE', `/${id}`],
-      ['POST', '/poster'], ['GET', `/${id}/registrations`], ['GET', `/${id}/registrations/export`]]) {
+    ['POST', '/poster'], ['GET', `/${id}/registrations`], ['GET', `/${id}/registrations/export`]]) {
       assert.equal((await request(method, '/api/events' + path, undefined, method === 'GET' ? undefined : {})).status, 404);
     }
     assert.equal(writes, 0);
