@@ -145,8 +145,11 @@ const loadAuthenticatedParticipant = async (req: Request) => {
   const student = await User.findOne({
     _id: req.auth.userId,
     role: { $in: ["student", "admin"] },
-    emailVerified: true,
     isActive: true,
+    $or: [
+      { role: "student" },
+      { role: "admin", emailVerified: true },
+    ],
   })
     .select("_id email contactNumber branch")
     .exec();

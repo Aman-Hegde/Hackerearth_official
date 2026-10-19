@@ -933,8 +933,11 @@ export const registerForEvent = async (
     const student = req.auth ? await User.findOne({
       _id: req.auth.userId,
       role: { $in: ["student", "admin"] },
-      emailVerified: true,
       isActive: true,
+      $or: [
+        { role: "student" },
+        { role: "admin", emailVerified: true },
+      ],
     })
       .select("_id")
       .exec() : null;
