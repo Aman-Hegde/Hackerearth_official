@@ -16,7 +16,7 @@ process.env.JWT_SECRET = 'isolated-events-v3-test-secret';
 
 const eventId = new mongoose.Types.ObjectId('507f1f77bcf86cd799439020');
 const adminId = new mongoose.Types.ObjectId('507f1f77bcf86cd799439021');
-const studentIds = Array.from({ length: 6 }, (_, index) =>
+const studentIds = Array.from({ length: 40 }, (_, index) =>
   new mongoose.Types.ObjectId(`507f1f77bcf86cd7994390${30 + index}`)
 );
 
@@ -100,6 +100,9 @@ test('Events V3 team registration, security, capacity and admin regression suite
   );
 
   t.mock.method(Event, 'findById', (id) => chain(() => String(id) === eventId.toString() ? event : null));
+  t.mock.method(Event, 'find', (filter) => chain(() =>
+    filter?.published && event.published === false ? [] : [event]
+  ));
   t.mock.method(Event, 'create', async (data) => {
     Object.assign(event, data, {
       participationType: data.participationType ?? 'individual',
@@ -133,6 +136,11 @@ test('Events V3 team registration, security, capacity and admin regression suite
     registrations.push(registration);
     return [registration];
   });
+  t.mock.method(EventRegistration, 'find', (filter) => chain(() =>
+    filter?.studentId
+      ? registrations.filter((item) => String(item.studentId) === String(filter.studentId))
+      : registrations
+  ));
   t.mock.method(GuestRegistration, 'create', async (docs) => {
     const doc = docs[0];
     if (guests.some((item) => String(item.eventId) === String(doc.eventId) && item.email === doc.email)) {
@@ -319,6 +327,77 @@ test('Events V3 team registration, security, capacity and admin regression suite
       studentIds[2]
     );
     assert.equal(memberPreview.status, 200);
+  });
+
+  await t.test('team creation consumes one event slot while joining consumes none', async () => {
+    reset({ eligibility: 'members_only', minTeamSize: 1, maxTeamSize: 3 });
+    const created = await request('POST', `/api/events/${eventId}/teams`, studentIds[0], { teamName: 'One Slot Team' });
+    assert.equal(created.status, 201);
+    const code = (await created.json()).team.invitationCode;
+    assert.equal(event.registrationCount, 1);
+
+    const joined = await request('POST', `/api/events/${eventId}/teams/join`, studentIds[1], { invitationCode: code });
+    assert.equal(joined.status, 201);
+    assert.equal(event.registrationCount, 1);
+    assert.equal(teams.length, 1);
+    assert.equal(teams[0].currentMemberCount, 2);
+  });
+
+  await t.test('thirty teams exhaust creation capacity but not available team member slots', async () => {
+    reset({ eligibility: 'members_only', minTeamSize: 1, maxTeamSize: 2, maxRegistrations: 30 });
+    let firstInvitationCode = '';
+    for (let index = 0; index < 30; index += 1) {
+      const response = await request(
+        'POST',
+        `/api/events/${eventId}/teams`,
+        studentIds[index],
+        { teamName: `Capacity Team ${index + 1}` }
+      );
+      assert.equal(response.status, 201, `team ${index + 1}`);
+      if (index === 0) firstInvitationCode = (await response.json()).team.invitationCode;
+    }
+
+    assert.equal(teams.length, 30);
+    assert.equal(event.registrationCount, 30);
+
+    const preview = await request(
+      'GET',
+      `/api/events/${eventId}/teams/invitations/${firstInvitationCode}`,
+      studentIds[30]
+    );
+    assert.equal(preview.status, 200);
+    assert.equal((await preview.json()).invitation.registrationOpen, true);
+
+    const join = await request(
+      'POST',
+      `/api/events/${eventId}/teams/join`,
+      studentIds[30],
+      { invitationCode: firstInvitationCode }
+    );
+    assert.equal(join.status, 201);
+    assert.equal(event.registrationCount, 30);
+
+    const rejected = await request(
+      'POST',
+      `/api/events/${eventId}/teams`,
+      studentIds[31],
+      { teamName: 'Capacity Team 31' }
+    );
+    assert.equal(rejected.status, 409);
+    assert.equal((await rejected.json()).code, 'EVENT_FULL');
+    assert.equal(teams.length, 30);
+    assert.equal(event.registrationCount, 30);
+  });
+
+  await t.test('concurrent team creation cannot exceed event team capacity', async () => {
+    reset({ eligibility: 'members_only', maxRegistrations: 1 });
+    const responses = await Promise.all([
+      request('POST', `/api/events/${eventId}/teams`, studentIds[0], { teamName: 'Concurrent Alpha' }),
+      request('POST', `/api/events/${eventId}/teams`, studentIds[1], { teamName: 'Concurrent Beta' }),
+    ]);
+    assert.deepEqual(responses.map((response) => response.status).sort(), [201, 409]);
+    assert.equal(teams.length, 1);
+    assert.equal(event.registrationCount, 1);
   });
 
   await t.test('member contact is required, normalized, and stored per event without changing profile', async () => {
@@ -519,6 +598,9 @@ test('Events V3 team registration, security, capacity and admin regression suite
     assert.deepEqual(responses.map((response) => response.status).sort(), [201, 409]);
     assert.equal(teams[0].currentMemberCount, 2);
     assert.equal(members.filter((member) => String(member.teamId) === String(teams[0]._id)).length, 2);
+    const preview = await request('GET', `/api/events/${eventId}/teams/invitations/${code}`, studentIds[3]);
+    assert.equal(preview.status, 200);
+    assert.equal((await preview.json()).invitation.registrationOpen, false);
     assert.equal((await request('POST', `/api/events/${eventId}/teams/join`, studentIds[3], { invitationCode: code })).status, 409);
   });
 
@@ -537,6 +619,7 @@ test('Events V3 team registration, security, capacity and admin regression suite
     const createdTeam = (await created.json()).team;
     assert.equal(createdTeam.currentMemberCount, 1);
     assert.equal(createdTeam.status, 'complete');
+    assert.equal(event.registrationCount, 1);
 
     const joined = await request(
       'POST',
@@ -550,6 +633,7 @@ test('Events V3 team registration, security, capacity and admin regression suite
     const joinedTeam = (await joined.json()).team;
     assert.equal(joinedTeam.currentMemberCount, 2);
     assert.equal(joinedTeam.status, 'full');
+    assert.equal(event.registrationCount, 1);
 
     const third = await request(
       'POST',
@@ -659,6 +743,18 @@ test('Events V3 team registration, security, capacity and admin regression suite
     assert.equal((await typeChange.json()).code, 'EVENT_PARTICIPATION_TYPE_LOCKED');
   });
 
+  await t.test('admin maximum-team validation uses actual teams rather than a stale stored count', async () => {
+    reset({ eligibility: 'members_only' });
+    assert.equal((await request('POST', `/api/events/${eventId}/teams`, studentIds[0], { teamName: 'Actual Team One' })).status, 201);
+    assert.equal((await request('POST', `/api/events/${eventId}/teams`, studentIds[1], { teamName: 'Actual Team Two' })).status, 201);
+    event.registrationCount = 0;
+
+    const response = await request('PATCH', `/api/admin/events/${eventId}`, adminId, { maxRegistrations: 1 });
+    assert.equal(response.status, 400);
+    assert.equal((await response.json()).code, 'INVALID_EVENT');
+    assert.equal(event.maxRegistrations, 20);
+  });
+
   await t.test('deadlines and past events reject create and join', async () => {
     for (const overrides of [
       { registrationDeadline: new Date(0) },
@@ -668,6 +764,47 @@ test('Events V3 team registration, security, capacity and admin regression suite
       const response = await request('POST', `/api/events/${eventId}/teams`, studentIds[0], { teamName: 'Closed Team' });
       assert.equal(response.status, 409);
     }
+  });
+
+  await t.test('closed, inactive, unpublished, ongoing and past events reject team joins', async () => {
+    const closedStates = [
+      { active: false },
+      { published: false },
+      { registrationDeadline: new Date(0) },
+      { eventDateTime: new Date(Date.now() - 1_000), eventEndDateTime: new Date(Date.now() + 3_600_000) },
+      { eventDateTime: new Date(0), eventEndDateTime: new Date(1) },
+    ];
+
+    for (const closedState of closedStates) {
+      reset({ eligibility: 'members_only' });
+      const created = await request('POST', `/api/events/${eventId}/teams`, studentIds[0], { teamName: 'Join Guard Team' });
+      assert.equal(created.status, 201);
+      const invitationCode = (await created.json()).team.invitationCode;
+      Object.assign(event, closedState);
+
+      const joined = await request('POST', `/api/events/${eventId}/teams/join`, studentIds[1], { invitationCode });
+      assert.equal(joined.status, 409);
+      assert.equal(teams[0].currentMemberCount, 1);
+      assert.equal(event.registrationCount, 1);
+    }
+  });
+
+  await t.test('public and admin event summaries expose the team count, not member count', async () => {
+    reset({ eligibility: 'members_only', maxTeamSize: 3 });
+    const first = await request('POST', `/api/events/${eventId}/teams`, studentIds[0], { teamName: 'Summary One' });
+    const firstCode = (await first.json()).team.invitationCode;
+    assert.equal((await request('POST', `/api/events/${eventId}/teams/join`, studentIds[1], { invitationCode: firstCode })).status, 201);
+    assert.equal((await request('POST', `/api/events/${eventId}/teams`, studentIds[2], { teamName: 'Summary Two' })).status, 201);
+
+    const publicEvents = await request('GET', '/api/events', studentIds[3]);
+    assert.equal(publicEvents.status, 200);
+    assert.equal((await publicEvents.json()).upcoming[0].registrationCount, 2);
+
+    const adminTeams = await request('GET', `/api/admin/events/${eventId}/teams`, adminId);
+    assert.equal(adminTeams.status, 200);
+    assert.equal((await adminTeams.json()).event.registrationCount, 2);
+    assert.equal(event.registrationCount, 2);
+    assert.equal(members.length, 3);
   });
 
   await t.test('archived events reject invitation previews and new team registrations while preserving teams', async () => {

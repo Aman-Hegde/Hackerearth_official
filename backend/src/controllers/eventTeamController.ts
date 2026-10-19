@@ -16,6 +16,7 @@ import {
   getEventStatus,
   getTeamStatus,
   isEventRegistrationOpen,
+  isEventRegistrationWindowOpen,
   normalizeIndianContactNumber,
 } from "../services/eventRules";
 
@@ -308,7 +309,6 @@ const joinTeamRegistration = async ({
   try {
     session = await mongoose.startSession();
     const result = await session.withTransaction(async (transactionSession) => {
-      await reserveEventCapacity(event._id, new Date(), transactionSession);
       const joinedTeam = await EventTeam.findOneAndUpdate(
         {
           eventId: event._id,
@@ -441,7 +441,10 @@ const mapTeamError = async (error: unknown, eventId: string, res: Response) => {
   });
 };
 
-const loadEventForTeamAction = async (eventId: string) => {
+const loadEventForTeamAction = async (
+  eventId: string,
+  action: "create" | "join"
+) => {
   if (!mongoose.Types.ObjectId.isValid(eventId)) {
     throw new TeamRegistrationError(
       400,
@@ -454,7 +457,24 @@ const loadEventForTeamAction = async (eventId: string) => {
     throw new TeamRegistrationError(404, "EVENT_NOT_FOUND", "Event not found.");
   }
   getTeamConfiguration(event);
-  ensureEventCanRegister(event);
+
+  if (action === "create") {
+    ensureEventCanRegister(event);
+  } else {
+    const now = new Date();
+
+    if (
+      event.published === false ||
+      !isEventRegistrationWindowOpen(event, now)
+    ) {
+      throw new TeamRegistrationError(
+        409,
+        "REGISTRATION_CLOSED",
+        "Registration is closed for this event."
+      );
+    }
+  }
+
   return event;
 };
 
@@ -509,7 +529,7 @@ const handleTeamAction = async (
   }
 
   try {
-    const event = await loadEventForTeamAction(req.params.eventId);
+    const event = await loadEventForTeamAction(req.params.eventId, action);
     const teamName = normalizeString(req.body.teamName);
     const invitationCode = normalizeString(req.body.invitationCode);
     if (action === "create" && (teamName.length < 2 || teamName.length > 80)) {
@@ -726,7 +746,8 @@ export const previewEventTeamInvitation = async (
           ),
         },
         registrationOpen:
-          isEventRegistrationOpen(event) && availableSlots > 0,
+          isEventRegistrationWindowOpen(event) &&
+          availableSlots > 0,
       },
     });
   } catch (error) {

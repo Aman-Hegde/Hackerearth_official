@@ -15,10 +15,23 @@ const cloudinary = require('../dist/config/cloudinary');
 const localPosterStorage = require('../dist/services/localEventPosterStorage');
 const { generateAuthToken } = require('../dist/utils/jwt');
 const { AUTH_COOKIE_NAME } = require('../dist/utils/authCookie');
+const { getEventStatus } = require('../dist/services/eventRules');
 process.env.JWT_SECRET = 'isolated-event-permission-test-secret';
 const id = '507f1f77bcf86cd799439011';
 const participant = { name: 'Guest Participant', email: 'guest@nmamit.in', contactNumber: '9876543210' };
 const chain = (value) => ({ sort() { return this; }, select() { return this; }, populate() { return this; }, lean() { return this; }, exec: async () => value });
+
+test('event status reports a closed deadline before capacity exhaustion', () => {
+  const now = new Date();
+  assert.equal(getEventStatus({
+    active: true,
+    eventDateTime: new Date(now.getTime() + 60_000),
+    eventEndDateTime: new Date(now.getTime() + 120_000),
+    registrationDeadline: new Date(now.getTime() - 1),
+    registrationCount: 30,
+    maxRegistrations: 30,
+  }, now), 'closed');
+});
 
 test('event API permission and participant registration regression suite', async (t) => {
   let account, event, writes, registrations, teamMemberships, guests, duplicate, unavailable, imported, cloudUploads, localUploads;

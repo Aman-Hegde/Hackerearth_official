@@ -86,7 +86,7 @@ const AdminEventTeamsModal = ({ event, onClose }: Props) => {
           <div>
             <p className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-dream-text">Registered Teams</p>
             <h2 id="admin-event-teams-heading" className="mt-1 font-display text-2xl font-semibold text-ink">{summary.title}</h2>
-            <p className="mt-2 text-sm font-semibold text-ink-muted">{summary.registrationCount} / {summary.maxRegistrations} participants registered</p>
+            <p className="mt-2 text-sm font-semibold text-ink-muted">{summary.registrationCount} / {summary.maxRegistrations} teams registered</p>
           </div>
           <div className="flex items-center gap-2">
             <button type="button" className="btn btn-secondary" onClick={() => void downloadTeams()} disabled={downloading}>

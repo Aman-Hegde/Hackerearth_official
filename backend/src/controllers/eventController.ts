@@ -501,9 +501,19 @@ export const updateAdminEvent = async (
       });
     }
 
+    const currentParticipationType = getEventParticipationType(event);
+    const teams = await EventTeam.find({ eventId: event._id })
+      .select("currentMemberCount")
+      .lean()
+      .exec();
+    const currentCapacityCount =
+      currentParticipationType === "team"
+        ? teams.length
+        : event.registrationCount;
+
     const validation = validateEventPayload(req.body, {
       partial: true,
-      currentRegistrationCount: event.registrationCount,
+      currentRegistrationCount: currentCapacityCount,
     });
     if (validation.error || !validation.update) {
       return res.status(400).json({
@@ -518,7 +528,6 @@ export const updateAdminEvent = async (
       validation.update.eventEndDateTime ?? event.eventEndDateTime;
     const nextRegistrationDeadline =
       validation.update.registrationDeadline ?? event.registrationDeadline;
-    const currentParticipationType = getEventParticipationType(event);
     const nextParticipationType =
       validation.update.participationType ?? currentParticipationType;
 
@@ -538,11 +547,6 @@ export const updateAdminEvent = async (
       });
     }
 
-
-    const teams = await EventTeam.find({ eventId: event._id })
-      .select("currentMemberCount")
-      .lean()
-      .exec();
     if (
       nextParticipationType !== currentParticipationType &&
       (event.registrationCount > 0 || teams.length > 0)

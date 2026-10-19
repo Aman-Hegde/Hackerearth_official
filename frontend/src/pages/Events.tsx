@@ -63,9 +63,12 @@ const ProgressBar = ({ event }: { event: EventSummary }) => {
   return (
     <div>
       <div className="flex items-center justify-between gap-3 text-sm">
-        <span className="font-semibold text-ink">Registrations</span>
+        <span className="font-semibold text-ink">
+          {event.participationType === "team" ? "Teams Registered" : "Individual Registrations"}
+        </span>
         <span className="font-mono text-xs font-semibold text-ink-muted">
-          {event.registrationCount} / {event.maxRegistrations} Registered
+          {event.registrationCount} / {event.maxRegistrations}{" "}
+          {event.participationType === "team" ? "Teams" : "Individuals"}
         </span>
       </div>
       <div className="mt-2 h-2.5 overflow-hidden rounded-full bg-surface-muted">
@@ -122,7 +125,8 @@ const UpcomingEventCard = ({
           </span>
           <span className="inline-flex min-h-8 items-center gap-2 rounded-full border border-line bg-surface/80 px-3 text-xs font-semibold text-ink-muted">
             <Users className="size-3.5" aria-hidden="true" />
-            {event.registrationCount}/{event.maxRegistrations}
+            {event.registrationCount}/{event.maxRegistrations}{" "}
+            {event.participationType === "team" ? "Teams" : "Individuals"}
           </span>
           <span className="inline-flex min-h-8 items-center rounded-full border border-primary/25 bg-primary/10 px-3 text-xs font-semibold text-primary-text">
             {event.participationType === "team"
@@ -192,7 +196,12 @@ const UpcomingEventCard = ({
                   {event.registrationOpen ? <PlusCircle className="size-4" aria-hidden="true" /> : <Lock className="size-4" aria-hidden="true" />}
                   {event.registrationOpen ? "Create Team" : getButtonLabel(event)}
                 </button>
-                <button type="button" onClick={() => onJoinTeam(event)} disabled={!event.registrationOpen} className="btn btn-secondary w-full justify-center disabled:cursor-not-allowed disabled:opacity-60 sm:w-fit">
+                <button
+                  type="button"
+                  onClick={() => onJoinTeam(event)}
+                  disabled={!event.registrationOpen && event.status !== "full"}
+                  className="btn btn-secondary w-full justify-center disabled:cursor-not-allowed disabled:opacity-60 sm:w-fit"
+                >
                   <UserPlus className="size-4" aria-hidden="true" /> Join Existing Team
                 </button>
               </>
@@ -321,7 +330,10 @@ const Events = () => {
           ? {
             ...item,
             isRegistered: Boolean(user) || item.isRegistered,
-            registrationCount: Math.min(item.maxRegistrations, item.registrationCount + 1),
+            registrationCount:
+              teamRegistration.mode === "create"
+                ? Math.min(item.maxRegistrations, item.registrationCount + 1)
+                : item.registrationCount,
           }
           : item
       )

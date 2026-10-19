@@ -2373,7 +2373,9 @@ const AdminDashboard = () => {
                             <dd>{event.venue}</dd>
                           </div>
                           <div>
-                            <dt className="font-semibold text-ink">Registrations</dt>
+                            <dt className="font-semibold text-ink">
+                              {event.participationType === 'team' ? 'Teams Registered' : 'Individuals Registered'}
+                            </dt>
                             <dd>{event.registrationCount} / {event.maxRegistrations}</dd>
                           </div>
                           <div>
@@ -2436,7 +2438,10 @@ const AdminDashboard = () => {
                         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                           <div className="min-w-0">
                             <h4 className="break-words font-semibold text-ink">{event.title}</h4>
-                            <p className="mt-1 text-sm text-ink-muted">{formatDateTime(event.eventDateTime)} | {event.registrationCount} / {event.maxRegistrations} registered</p>
+                            <p className="mt-1 text-sm text-ink-muted">
+                              {formatDateTime(event.eventDateTime)} | {event.registrationCount} / {event.maxRegistrations}{' '}
+                              {event.participationType === 'team' ? 'teams registered' : 'individuals registered'}
+                            </p>
                           </div>
                           <span className="inline-flex w-fit rounded-full border border-line px-3 py-1 text-xs font-bold uppercase text-ink-muted">Archived</span>
                         </div>
@@ -4212,7 +4217,9 @@ const AdminDashboard = () => {
                   </label>
 
                   <label>
-                    <span className="mb-2 block text-sm font-semibold text-ink">Maximum Registrations</span>
+                    <span className="mb-2 block text-sm font-semibold text-ink">
+                      {eventForm.participationType === 'team' ? 'Maximum Teams' : 'Maximum Individual Registrations'}
+                    </span>
                     <input
                       type="number"
                       min={1}
@@ -4223,6 +4230,11 @@ const AdminDashboard = () => {
                       className="min-h-11 w-full rounded-control border border-line-strong bg-surface/95 px-3 py-2 text-sm text-ink shadow-soft placeholder:text-ink-subtle focus:border-primary/60 focus:ring-2 focus:ring-primary/20"
                       required
                     />
+                    {eventForm.participationType === 'team' && (
+                      <span className="mt-2 block text-xs text-ink-muted">
+                        Each created team uses one slot, whether it has one member or several.
+                      </span>
+                    )}
                   </label>
 
                   <label>

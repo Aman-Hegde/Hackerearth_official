@@ -40,10 +40,21 @@ export const getEventStatus = (
     return "past";
   }
 
+  if (!isEventRegistrationWindowOpen(event, now)) return "closed";
   if (event.registrationCount >= event.maxRegistrations) return "full";
-  if (!event.active || now >= event.registrationDeadline) return "closed";
   return "open";
 };
+
+export const isEventRegistrationWindowOpen = (
+  event: Pick<
+    IEvent,
+    "active" | "eventDateTime" | "registrationDeadline"
+  >,
+  now = new Date()
+) =>
+  event.active &&
+  now < event.registrationDeadline &&
+  now < event.eventDateTime;
 
 export const isEventRegistrationOpen = (
   event: EventRuleInput,

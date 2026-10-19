@@ -125,8 +125,13 @@ const DashboardEventPreview = ({ event }: { event: EventSummary }) => (
           <div className="flex gap-2">
             <Users className="mt-0.5 size-3.5 shrink-0 text-rose-text" aria-hidden="true" />
             <div>
-              <dt className="sr-only">Registrations</dt>
-              <dd>{event.registrationCount} / {event.maxRegistrations} Registered</dd>
+              <dt className="sr-only">
+                {event.participationType === "team" ? "Teams registered" : "Individuals registered"}
+              </dt>
+              <dd>
+                {event.registrationCount} / {event.maxRegistrations}{" "}
+                {event.participationType === "team" ? "Teams Registered" : "Individuals Registered"}
+              </dd>
             </div>
           </div>
         </dl>
