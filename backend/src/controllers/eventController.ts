@@ -291,8 +291,8 @@ const validateEventPayload = (
   for (const field of ["minTeamSize", "maxTeamSize"] as const) {
     if (body[field] === undefined) continue;
     const parsed = parsePositiveInteger(body[field], MAX_TEAM_SIZE);
-    if (!parsed || parsed < 2) {
-      return { error: "Team sizes must be whole numbers from 2 to 100." };
+    if (!parsed) {
+      return { error: "Team sizes must be whole numbers from 1 to 100." };
     }
     update[field] = parsed;
   }

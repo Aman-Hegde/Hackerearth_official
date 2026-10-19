@@ -107,7 +107,7 @@ const eventSchema = new Schema<IEvent>(
     },
     minTeamSize: {
       type: Number,
-      min: 2,
+      min: 1,
       max: 100,
       validate: {
         validator: Number.isInteger,

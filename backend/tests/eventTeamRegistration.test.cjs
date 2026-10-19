@@ -393,6 +393,18 @@ test('Events V3 team registration, security, capacity and admin regression suite
     assert.equal(createdEvent.participationType, 'team');
     assert.equal(createdEvent.eligibility, 'members_only');
     assert.equal(createdEvent.maxTeamSize, 4);
+    const soloOrPair = await request('POST', '/api/admin/events', adminId, {
+      ...input,
+      title: 'Solo or Pair Event',
+      minTeamSize: 1,
+      maxTeamSize: 2,
+    });
+
+    assert.equal(soloOrPair.status, 201);
+
+    const soloOrPairEvent = (await soloOrPair.json()).event;
+    assert.equal(soloOrPairEvent.minTeamSize, 1);
+    assert.equal(soloOrPairEvent.maxTeamSize, 2);
     const invalid = await request('POST', '/api/admin/events', adminId, { ...input, minTeamSize: 5, maxTeamSize: 4 });
     assert.equal(invalid.status, 400);
   });
@@ -508,6 +520,46 @@ test('Events V3 team registration, security, capacity and admin regression suite
     assert.equal(teams[0].currentMemberCount, 2);
     assert.equal(members.filter((member) => String(member.teamId) === String(teams[0]._id)).length, 2);
     assert.equal((await request('POST', `/api/events/${eventId}/teams/join`, studentIds[3], { invitationCode: code })).status, 409);
+  });
+
+  await t.test('solo or pair event accepts one or two participants only', async () => {
+    reset({ minTeamSize: 1, maxTeamSize: 2 });
+
+    const created = await request(
+      'POST',
+      `/api/events/${eventId}/teams`,
+      studentIds[0],
+      { teamName: 'Solo or Pair Team' }
+    );
+
+    assert.equal(created.status, 201);
+
+    const createdTeam = (await created.json()).team;
+    assert.equal(createdTeam.currentMemberCount, 1);
+    assert.equal(createdTeam.status, 'complete');
+
+    const joined = await request(
+      'POST',
+      `/api/events/${eventId}/teams/join`,
+      studentIds[1],
+      { invitationCode: createdTeam.invitationCode }
+    );
+
+    assert.equal(joined.status, 201);
+
+    const joinedTeam = (await joined.json()).team;
+    assert.equal(joinedTeam.currentMemberCount, 2);
+    assert.equal(joinedTeam.status, 'full');
+
+    const third = await request(
+      'POST',
+      `/api/events/${eventId}/teams/join`,
+      studentIds[2],
+      { invitationCode: createdTeam.invitationCode }
+    );
+
+    assert.equal(third.status, 409);
+    assert.equal(teams[0].currentMemberCount, 2);
   });
 
   await t.test('team members can view safe team state while only the leader sees the invitation code', async () => {
